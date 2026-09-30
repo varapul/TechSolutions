@@ -223,7 +223,7 @@ The bar under each diagram shows which of the four steps is playing.
 
 ## Use a diagram
 
-Each `patterns/<slug>/diagram.svg` is self-contained: no scripts, fonts or external files. Drop it into a README, wiki or slide as an image and it animates on its own:
+Each `patterns/<slug>/diagram.svg` is self-contained: no scripts, fonts or external files. Put it in a README, a wiki or a browser-based deck (reveal.js, Slidev) as an image and it animates on its own. PowerPoint shows SVGs without animation and Google Slides doesn't accept them, so present from the step-by-step player instead:
 
 ```md
 ![Circuit Breaker](patterns/circuit-breaker/diagram.svg)

@@ -35,3 +35,27 @@
   });
   if (input.value) apply();
 })();
+
+// Pause or play every animated preview on the index (WCAG 2.2.2). Starts paused when the
+// visitor prefers reduced motion, and remembers an explicit choice.
+(() => {
+  const toggle = document.querySelector('.motion-toggle');
+  const imgs = [...document.querySelectorAll('img[data-still]')];
+  if (!toggle || !imgs.length) return;
+  imgs.forEach((img) => { img.dataset.anim = img.getAttribute('src'); });
+  let saved = null;
+  try { saved = localStorage.getItem('motion'); } catch { /* storage blocked */ }
+  let still = saved ? saved === 'off' : matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function apply() {
+    imgs.forEach((img) => { img.src = still ? img.dataset.still : img.dataset.anim; });
+    toggle.setAttribute('aria-pressed', String(still));
+    toggle.textContent = still ? '▶ Play animations' : '⏸ Pause animations';
+  }
+  toggle.addEventListener('click', () => {
+    still = !still;
+    try { localStorage.setItem('motion', still ? 'off' : 'on'); } catch { /* storage blocked */ }
+    apply();
+  });
+  if (still) apply();
+})();

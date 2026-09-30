@@ -18,7 +18,7 @@
 
 ## The problem
 
-In a request/response world, the service where something *happens* has to call every service that *cares*. Placing an order means calling Inventory, then Payments, then Notifications, and so on. That caller must know every downstream service, wait for all of them, fail when any of them fails, and change every time a new one is added. Its latency and availability become the product of everyone else's.
+In a request/response world, the service where something *happens* has to call every service that *cares*. Placing an order means calling Inventory, then Payments, then Notifications, and so on. That caller must know every downstream service, wait for all of them, fail when any of them fails, and change every time a new one is added. Its latency becomes the sum of theirs, and its availability the product of theirs.
 
 ## How it works
 

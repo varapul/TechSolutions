@@ -11,7 +11,7 @@ export const CANVAS = { width: 960, height: 576, stage: '0 80 960 400' };
 export const CAPTION_MAX = 100; // characters; SVG text does not wrap
 
 export const abs = (...p) => join(ROOT, ...p);
-export const readText = (p) => readFileSync(abs(p), 'utf8');
+export const readText = (p) => readFileSync(abs(p), 'utf8').replace(/\r\n/g, '\n'); // tolerate CRLF checkouts
 export const readJSON = (p) => JSON.parse(readText(p));
 
 export const esc = (s) =>

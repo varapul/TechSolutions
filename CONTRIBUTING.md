@@ -44,6 +44,7 @@ One loop is `var(--T)` = **20 s = 4 steps × 5 s**. In keyframe percentages, **1
 - **An element runs one `animation` shorthand.** Put a phase class on a wrapping `<g>` and the motion on the child, never both on the same element.
 - **The resting style is the static fallback.** Renderers without animation show the non-animated state, so make it look like step 1: tokens start with `opacity: 0`, step-1 things are visible.
 - Make step 4 end the way step 1 begins, so the loop restarts without a jump. Where the story really does reset (a migration), let the pieces fade out in the last half-second.
+- The site's step player holds each step on its frame **0.4 s before the step ends** (0.6 s for step 4). Finish each step's story by then: a fade that is still running at that moment is shown half-done.
 
 ## Motion
 
@@ -87,3 +88,4 @@ console.log(track('xx-call', go.segs));                              // go.end i
 
 - **meta.json:** four steps, each with a `title`, a one-sentence `caption` (shown in the SVG) and a two-to-three-sentence `body` (README table and site, with inline Markdown allowed). `related` holds catalog slugs and `references` holds `{title, url}` pairs with primary sources where possible (standards, vendor architecture centres, the original article or book).
 - **README.md:** keep the sections from the template (*The problem*, *How it works*, *When to use it*, *Trade-offs*, *Implementation notes*). Be concrete and vendor-neutral; name managed services as examples, not requirements.
+- Link to another pattern as `../<slug>/`. It works on GitHub, the site rewrites it to that pattern's page, and `npm run check` rejects links to patterns that aren't animated yet.

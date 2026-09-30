@@ -9,6 +9,9 @@ export function xmlErrors(src) {
   const errors = [];
   const stack = [];
   const lineOf = (pos) => src.slice(0, pos).split('\n').length;
+  // Namespace prefixes must be declared (e.g. xlink:href needs xmlns:xlink); xml: is predefined.
+  const declared = new Set(['xml', 'xmlns', ...[...src.matchAll(/\sxmlns:([A-Za-z_][\w.-]*)\s*=/g)].map((d) => d[1])]);
+  const undeclared = (name) => name.includes(':') && !declared.has(name.split(':')[0]);
   let i = 0;
   while (i < src.length) {
     const lt = src.indexOf('<', i);
@@ -24,7 +27,14 @@ export function xmlErrors(src) {
       else i = end + close.length;
       return true;
     };
-    if (skip('<!--', '-->') || skip('<![CDATA[', ']]>') || skip('<?', '?>') || skip('<!', '>')) continue;
+    if (src.startsWith('<!--', lt)) {
+      const end = src.indexOf('-->', lt + 4);
+      if (end === -1) { errors.push(`line ${lineOf(lt)}: unterminated <!--`); break; }
+      if (src.slice(lt + 4, end + 1).includes('--')) errors.push(`line ${lineOf(lt)}: "--" inside a comment`);
+      i = end + 3;
+      continue;
+    }
+    if (skip('<![CDATA[', ']]>') || skip('<?', '?>') || skip('<!', '>')) continue;
 
     TAG.lastIndex = lt;
     const m = TAG.exec(src);
@@ -34,6 +44,8 @@ export function xmlErrors(src) {
       continue;
     }
     const [, closing, name, attrs, selfClosing] = m;
+    if (undeclared(name)) errors.push(`line ${lineOf(lt)}: undeclared namespace prefix in <${name}>`);
+    if (closing && attrs.trim()) errors.push(`line ${lineOf(lt)}: attributes on end tag </${name}>`);
     if (closing) {
       const open = stack.pop();
       if (open !== name) errors.push(`line ${lineOf(lt)}: </${name}> closes <${open ?? 'nothing'}>`);
@@ -41,6 +53,7 @@ export function xmlErrors(src) {
       const seen = new Set();
       for (const a of attrs.matchAll(ATTR)) {
         if (seen.has(a[1])) errors.push(`line ${lineOf(lt)}: duplicate attribute ${a[1]} on <${name}>`);
+        if (undeclared(a[1]) && !a[1].startsWith('xmlns:')) errors.push(`line ${lineOf(lt)}: undeclared namespace prefix in ${a[1]}`);
         seen.add(a[1]);
         if (BARE_AMP.test(a[2] ?? a[3])) errors.push(`line ${lineOf(lt)}: unescaped "&" in ${a[1]}`);
       }

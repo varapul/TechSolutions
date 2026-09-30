@@ -32,7 +32,7 @@ function stageSvg(svg, { inline, label }) {
   out = out.replace(/<svg\b[^>]*>/, (tag) => {
     let t = tag.replace(/viewBox="[^"]*"/, `viewBox="${CANVAS.stage}"`);
     t = inline
-      ? t.replace(/\s(width|height)="[^"]*"/g, '').replace(/\saria-labelledby="[^"]*"/, ` aria-label="${esc(label)}"`)
+      ? t.replace(/\s(width|height)="[^"]*"/g, '').replace(/\saria-labelledby="[^"]*"/, ` aria-label="${esc(label)}"`).replace('class="diagram"', 'class="diagram live"')
       : t.replace(/width="[^"]*"/, `width="${w}"`).replace(/height="[^"]*"/, `height="${h}"`);
     return t;
   });
@@ -76,6 +76,13 @@ ${scripts.map((s) => `<script src="assets/${s}" defer></script>`).join('\n')}
 </html>
 `;
 
+// README prose links to sibling patterns as ../<slug>/ (right on GitHub); on the site that page is <slug>.html.
+const siteLinks = (html) => html.replace(/href="\.\.\/([a-z0-9-]+)\/?(#[^"]*)?"/g, (m, slug, hash = '') =>
+  catalog.bySlug.get(slug)?.animated ? `href="${slug}.html${hash}"` : m);
+
+// Same diagram with every animation switched off: the resting state reads as step 1.
+const still = (svg) => svg.replace(/<\/svg>\s*$/, '<style>.diagram,.diagram *{animation:none!important}</style>\n</svg>\n');
+
 const searchText = (p) => [p.title, p.summary, p.category.title, ...(p.meta?.aka ?? [])].join(' ').toLowerCase();
 
 // ---------------------------------------------------------------------------
@@ -92,7 +99,7 @@ function indexPage() {
   const sections = catalog.categories.map((c) => {
     const cards = c.items.filter((p) => p.animated).map((p) => `
       <a class="card" href="${p.slug}.html" data-search="${esc(searchText(p))}">
-        <div class="thumb"><img src="diagrams/${p.slug}.stage.svg" alt="" loading="lazy" width="960" height="400"></div>
+        <div class="thumb"><img src="diagrams/${p.slug}.stage.svg" data-still="diagrams/${p.slug}.stage.still.svg" alt="" loading="lazy" width="960" height="400"></div>
         <div class="body"><h3>${esc(p.title)}</h3><p>${esc(p.summary)}</p></div>
       </a>`).join('');
     const planned = c.items.filter((p) => !p.animated).map((p) =>
@@ -115,11 +122,12 @@ function indexPage() {
         <li><strong>${animated.length}</strong> animated</li>
         <li><strong>${total - animated.length}</strong> planned</li>
         <li><strong>${catalog.categories.length}</strong> categories</li>
+        <li><button type="button" class="motion-toggle" aria-pressed="false">⏸ Pause animations</button></li>
       </ul>
       <label class="search">${ICON.search}<span class="sr-only">Filter patterns</span><input type="search" placeholder="Filter patterns, e.g. oauth, queue, failover  ( / )" autocomplete="off"></label>
     </div>
     <figure class="featured">
-      <a href="${featured.slug}.html"><img src="diagrams/${featured.slug}.svg" alt="Animated diagram: ${esc(featured.title)}" width="960" height="576"></a>
+      <a href="${featured.slug}.html"><img src="diagrams/${featured.slug}.svg" data-still="diagrams/${featured.slug}.still.svg" alt="Animated diagram: ${esc(featured.title)}" width="960" height="576"></a>
       <figcaption>${esc(featured.title)}: ${esc(featured.summary)}</figcaption>
     </figure>
   </section>
@@ -140,7 +148,7 @@ function patternPage(p, i) {
   const steps = p.meta.steps.map((s, k) => `
         <li><button type="button"><span class="n">${k + 1}</span><span class="t">${esc(s.title)}</span></button></li>`).join('');
   const details = p.meta.steps.map((s, k) => `
-        <p class="detail${k ? '' : ' on'}"><strong>Step ${k + 1} · ${esc(s.title)}.</strong> ${marked.parseInline(s.body)}</p>`).join('');
+        <p class="detail${k ? '' : ' on'}"><strong>Step ${k + 1} · ${esc(s.title)}.</strong> ${siteLinks(marked.parseInline(s.body))}</p>`).join('');
   const related = (p.meta.related ?? []).map((slug) => catalog.bySlug.get(slug)).filter(Boolean).map((r) => r.animated
     ? `<li><a href="${r.slug}.html">${esc(r.title)}</a></li>`
     : `<li class="planned-item">${esc(r.title)}<span class="tag">planned</span></li>`).join('\n');
@@ -159,7 +167,7 @@ function patternPage(p, i) {
   </header>
   <div class="wrap">
     <section class="player" aria-label="Animated diagram with step controls">
-      <div class="stage" title="Click to play, pause or continue">${svg}<span class="hint" aria-hidden="true">Paused</span></div>
+      <div class="stage" title="Click to play, pause or continue">${svg}</div>
       <div class="controls" title="Keyboard: ← → play the previous / next step · Space play, pause or continue · R replay · 1–${p.meta.steps.length} jump to a step">
         <button type="button" data-action="play" aria-label="Pause">${ICON.pause}${ICON.play}</button>
         <button type="button" data-action="prev" aria-label="Previous step" title="Previous step (←)">${ICON.prev}</button>
@@ -176,7 +184,7 @@ function patternPage(p, i) {
   </div>
   <div class="content wrap">
     <article class="prose">
-${marked.parse(readmeBody(readText(`${p.dir}/README.md`)))}
+${siteLinks(marked.parse(readmeBody(readText(`${p.dir}/README.md`))))}
     </article>
     <aside class="side">
       ${related ? `<section><h2>Related patterns</h2><ul>${related}</ul></section>` : ''}
@@ -198,6 +206,8 @@ animated.forEach((p, i) => {
   const svg = readText(`${p.dir}/diagram.svg`);
   writeFileSync(`${OUT}/diagrams/${p.slug}.svg`, svg);
   writeFileSync(`${OUT}/diagrams/${p.slug}.stage.svg`, stageSvg(svg, { inline: false }));
+  writeFileSync(`${OUT}/diagrams/${p.slug}.still.svg`, still(svg));
+  writeFileSync(`${OUT}/diagrams/${p.slug}.stage.still.svg`, still(stageSvg(svg, { inline: false })));
   writeFileSync(`${OUT}/${p.slug}.html`, patternPage(p, i));
 });
 writeFileSync(`${OUT}/index.html`, indexPage());

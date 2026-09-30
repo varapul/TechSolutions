@@ -11,7 +11,7 @@
 | Step | What happens |
 |---|---|
 | **1 · Closed** | In the normal **closed** state every call goes through to Service B. The breaker sits on the wire and records the outcome of each call. |
-| **2 · Failures pile up** | Service B starts timing out. Each failure bumps the breaker's counter; when it crosses the threshold (3 here, in practice usually a failure *rate* over a sliding window) the breaker **trips open**. |
+| **2 · Failures pile up** | Service B starts returning errors. Each failure bumps the breaker's counter; when it crosses the threshold (3 here, in practice usually a failure *rate* over a sliding window) the breaker **trips open**. |
 | **3 · Open: fail fast** | While **open**, calls are rejected immediately instead of waiting for a timeout. Service A serves a fallback (cached data, a default, a friendly error) and Service B gets breathing room to recover. |
 | **4 · Half-open trial** | When the cooldown ends the breaker goes **half-open** and lets a single trial call through. It succeeds, so the breaker closes and resets its counter. Had it failed, the breaker would have gone straight back to open for another cooldown. |
 <!-- END GENERATED: header -->

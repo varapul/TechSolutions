@@ -16,11 +16,12 @@
   const playBtn = player.querySelector('[data-action="play"]');
   const rateBtn = player.querySelector('[data-action="rate"]');
   const status = player.querySelector('.status');
-  const hint = player.querySelector('.hint');
   const N = items.length;
   const T = (parseFloat(getComputedStyle(svg).getPropertyValue('--T')) || 20) * 1000;
   const D = T / N;
-  const HOLD = 400; // hold this many ms before the step boundary, before its fade-out starts
+  // Hold on the frame 0.4 s before a step ends, before its phase fade-out starts; the last step
+  // holds 0.6 s early because a story reset may fade out in the loop's last half-second.
+  const holdAt = (k) => (k + 1) * D - (k === N - 1 ? 600 : 400);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let step = null; // index of the step being played in step mode, or null for "play all"
@@ -58,7 +59,7 @@
       seek(step * D + 1);
       setPlaying(true);
     } else {
-      seek(step * D + D - HOLD);
+      seek(holdAt(step));
       setPlaying(false);
       held = true;
     }
@@ -85,7 +86,7 @@
     const k = current();
     const frac = step == null
       ? Math.min(1, Math.max(0, (t - k * D) / D))
-      : held ? 1 : Math.min(1, Math.max(0, (t - k * D) / (D - HOLD)));
+      : held ? 1 : Math.min(1, Math.max(0, (t - k * D) / (holdAt(k) - k * D)));
     items.forEach((li, i) => li.style.setProperty('--p', i === k ? frac.toFixed(3) : i < k && step == null ? 1 : 0));
 
     const key = `${k}|${step}|${playing}|${held}`;
@@ -102,20 +103,20 @@
     const label = held ? 'Next step' : playing ? 'Pause' : 'Play';
     playBtn.setAttribute('aria-label', label);
     playBtn.title = `${label} (Space)`;
-    hint.textContent = held ? (k === N - 1 ? 'Space or → to start over' : 'Space or → for the next step') : 'Paused';
 
     const n = `Step <b>${k + 1}</b> of ${N}`;
     const all = '<a href="#" data-action="all">play all</a>';
     const replay = '<a href="#" data-action="replay">↻ replay</a>';
+    const next = `<a href="#" data-action="next">${k === N - 1 ? 'start over' : 'next step'} →</a>`;
     status.innerHTML = step == null
       ? `${n} · ${playing ? 'playing all steps' : 'paused'}`
-      : held ? `${n} · ${replay} · ${all}` : `${n} · ${playing ? 'playing this step' : 'paused'} · ${all}`;
+      : held ? `${n} · ${next} · ${replay} · ${all}` : `${n} · ${playing ? 'playing this step' : 'paused'} · ${all}`;
   }
 
   function tick() {
     if (step != null && playing) {
       const start = step * D;
-      const end = start + D - HOLD;
+      const end = holdAt(step);
       const t = now();
       // Reached the end of the step (or wrapped while the tab was hidden): hold on its final frame.
       if (t < start || t >= end) {
@@ -146,6 +147,13 @@
     e.preventDefault();
     if (a.dataset.action === 'all') playAll();
     else if (a.dataset.action === 'replay') playStep(current());
+    else if (a.dataset.action === 'next') playStep(current() + 1);
+  });
+  // A mouse click shouldn't leave focus on a button, or Space would press that button again
+  // instead of continuing the story. Keyboard activation (detail 0) keeps focus.
+  player.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (b && e.detail) b.blur();
   });
   document.addEventListener('keydown', (e) => {
     if (e.target.closest('input, textarea, select, [contenteditable]') || e.metaKey || e.ctrlKey || e.altKey) return;

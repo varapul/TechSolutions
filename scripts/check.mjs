@@ -3,7 +3,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import {
   CANVAS, CAPTION_MAX, STEPS, abs, catalogBlock, hasBlock, loadCatalog, readText,
-  replaceBlock, syncPatternReadme, syncSvg,
+  readmeBody, replaceBlock, syncPatternReadme, syncSvg,
 } from './lib/core.mjs';
 import { xmlErrors } from './lib/xml.mjs';
 
@@ -40,7 +40,7 @@ for (const p of patterns) {
   if (!SLUG.test(p.slug)) err(where, 'slug must be kebab-case');
   if (!p.title || !p.summary) err(where, 'needs title and summary');
   if (/[|]/.test(p.title + p.summary)) err(where, '"|" breaks the Markdown tables');
-  if (p.summary.length > 140) warn(where, `summary is ${p.summary.length} chars (keep it to one line, ≤ 140)`);
+  if (p.summary?.length > 140) warn(where, `summary is ${p.summary.length} chars (keep it to one line, ≤ 140)`);
 }
 
 // ---- pattern folders ---------------------------------------------------------
@@ -102,19 +102,25 @@ for (const p of patterns.filter((x) => x.animated && inScope(x.slug))) {
   const kb = Buffer.byteLength(svg) / 1024;
   if (kb > 90) warn(svgPath, `${kb.toFixed(0)} KB — consider simplifying`);
 
-  // every animation must loop in step with the 20s timeline
-  for (const a of svg.matchAll(/animation\s*:\s*([^;}]+)/g)) {
-    for (const t of a[1].matchAll(/(-?\d*\.?\d+)(m?s)\b/g)) {
-      const s = parseFloat(t[1]) / (t[2] === 'ms' ? 1000 : 1);
-      const ratio = LOOP_S / s;
-      if (s > 0 && Math.abs(ratio - Math.round(ratio)) > 1e-6) {
-        err(svgPath, `animation duration ${t[0]} does not divide the ${LOOP_S}s loop ("${a[1].trim()}")`);
+  // Every animation must stay on the shared 20s timeline: each duration is var(--T) or divides 20s,
+  // and each delay is zero or negative. In the shorthand the first time is the duration, the second the delay.
+  const TIME = /var\(--T\)|(?<![\w.-])(-?\d*\.?\d+)(m?s)\b/g;
+  const secs = (m) => (m[1] === undefined ? LOOP_S : parseFloat(m[1]) / (m[2] === 'ms' ? 1000 : 1));
+  for (const a of svg.matchAll(/animation(-duration|-delay)?\s*:\s*([^;}]+)/g)) {
+    const kind = a[1] ?? '';
+    for (const layer of a[2].split(/,(?![^(]*\))/)) {
+      const times = [...layer.matchAll(TIME)].map(secs);
+      const durations = kind === '-delay' ? [] : kind === '-duration' ? times : times.slice(0, 1);
+      const delays = kind === '-duration' ? [] : kind === '-delay' ? times : times.slice(1, 2);
+      for (const s of durations) {
+        const ratio = LOOP_S / s;
+        if (!(s > 0) || Math.abs(ratio - Math.round(ratio)) > 1e-6) {
+          err(svgPath, `animation duration ${s}s does not divide the ${LOOP_S}s loop ("${layer.trim()}")`);
+        }
       }
-    }
-  }
-  for (const d of svg.matchAll(/animation-delay\s*:\s*([^;}]+)/g)) {
-    if ([...d[1].matchAll(/(-?\d*\.?\d+)m?s/g)].some((t) => parseFloat(t[1]) > 0)) {
-      err(svgPath, `animation-delay must be negative or zero so the site can scrub the timeline ("${d[1].trim()}")`);
+      for (const s of delays) {
+        if (s > 0) err(svgPath, `animation delay ${s}s must be zero or negative so the site can scrub the timeline ("${layer.trim()}")`);
+      }
     }
   }
 
@@ -127,7 +133,17 @@ for (const p of patterns.filter((x) => x.animated && inScope(x.slug))) {
   if (!existsSync(abs(mdPath))) continue;
   const md = readText(mdPath);
   if (!hasBlock(md, 'md', 'header') || !hasBlock(md, 'md', 'footer')) err(mdPath, 'missing generated header/footer blocks');
-  else if (syncPatternReadme(md, p, bySlug) !== md) err(mdPath, 'generated blocks are stale — run `npm run sync`');
+  else {
+    if (syncPatternReadme(md, p, bySlug) !== md) err(mdPath, 'generated blocks are stale — run `npm run sync`');
+    for (const l of readmeBody(md).matchAll(/\]\(\.\.\/([a-z0-9-]+)\/?(?:#[^)]*)?\)/g)) {
+      if (!bySlug.get(l[1])?.animated) err(mdPath, `links to ../${l[1]}/, which has no page yet (link only animated patterns)`);
+    }
+  }
+}
+
+// ---- templates -------------------------------------------------------------
+if (!only.length) {
+  for (const e of xmlErrors(readText('templates/diagram.svg'))) err('templates/diagram.svg', e);
 }
 
 // ---- root README -----------------------------------------------------------

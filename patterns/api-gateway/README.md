@@ -11,7 +11,7 @@
 | Step | What happens |
 |---|---|
 | **1 · One front door** | Web, mobile and partner clients all call **one public endpoint**. Every request runs through the same policy pipeline (authenticate, rate limit, route) and is forwarded by path to the service that owns it: `/orders` to Orders, `/users` to Users, `/catalog` to Catalog. Responses come back the same way, and the services stay on a private network, so clients never learn where they live or how they are split. |
-| **2 · Authenticate at the edge** | The gateway checks credentials before anything else. A request with a missing or invalid token is rejected with **401 Unauthorized** and never reaches a backend. For a valid token the gateway verifies the signature and claims once, then forwards the caller's identity (here as an `X-User-Id` header) so services don't each re-implement token validation. |
+| **2 · Authenticate at the edge** | The gateway checks credentials before rate limiting or routing. A request with a missing or invalid token is rejected with **401 Unauthorized** and never reaches a backend. For a valid token the gateway verifies the signature and claims once, then forwards the caller's identity (here as an `X-User-Id` header) so services don't each re-implement token validation. |
 | **3 · Rate limit per client** | Each client (API key or client ID) has its own **token bucket**: every call spends a token and tokens refill at a steady rate (4 max, 1 per second here). The partner's burst drains its bucket, so the extra calls get **429 Too Many Requests**, ideally with a `Retry-After` header, while Web's calls pass untouched. The bucket then refills and the partner can call again. |
 | **4 · Serve from cache** | The first `GET /catalog` is a cache **miss**: it goes to Catalog, and the gateway keeps the response for its time-to-live. The repeat is a **hit**, answered by the gateway in a fraction of the time without touching the service. Caching is one of several cross-cutting concerns a gateway offloads from services, alongside TLS termination, request and response transformation, logging and metrics. |
 <!-- END GENERATED: header -->
@@ -30,7 +30,7 @@ An API gateway is a layer-7 reverse proxy that becomes the only public entry poi
 4. **Route.** Match the path, host or a header to a backend and balance across its instances, or answer a cacheable request from the gateway's cache.
 5. **On the way back,** transform the response if needed, then log, meter and trace the call.
 
-Authenticating first lets quotas and cache keys depend on a *verified* identity; a coarse per-IP limit or a web application firewall in front can still absorb anonymous floods. Other common offloads are CORS, compression and IP allow lists.
+Authenticating first lets quotas and cache keys depend on a *verified* identity; a coarse per-IP limit or a web application firewall in front can still absorb anonymous floods. Other common offloads are CORS, compression and IP allow lists. Answer CORS preflight (`OPTIONS`) requests before the authentication step: browsers never send credentials on a preflight, and a `401` there blocks the real call.
 
 **Variants and neighbours:**
 

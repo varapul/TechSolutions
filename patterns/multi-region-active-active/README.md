@@ -47,7 +47,7 @@ A single region is a single failure domain. Spreading instances across availabil
 ## Implementation notes
 
 - **Global routing.** DNS-based examples are Amazon Route 53 latency or geoproximity records with health checks, Azure Traffic Manager, Google Cloud DNS routing policies and NS1. Anycast edge examples are AWS Global Accelerator, Azure Front Door, Google Cloud's global external Application Load Balancer and Cloudflare.
-- **Multi-writer data.** Amazon DynamoDB global tables and Azure Cosmos DB with multi-region writes replicate asynchronously and resolve conflicts with last-writer-wins by default (Cosmos DB can also run a custom merge procedure). Cassandra and ScyllaDB replicate between data centres with per-request consistency levels such as `LOCAL_QUORUM`. Spanner and CockroachDB use synchronous consensus instead (RPO = 0, higher write latency), and CockroachDB's `REGIONAL BY ROW` tables give each row a home region.
+- **Multi-writer data.** Amazon DynamoDB global tables (in their default multi-region eventual consistency mode) and Azure Cosmos DB with multi-region writes replicate asynchronously and resolve conflicts with last-writer-wins by default (Cosmos DB can also run a custom merge procedure). DynamoDB's multi-region strong consistency mode instead replicates each write synchronously to at least one other region before acknowledging it (RPO = 0, exactly three regions, higher write latency). Cassandra and ScyllaDB replicate between data centres with per-request consistency levels such as `LOCAL_QUORUM`. Spanner and CockroachDB use synchronous consensus instead (RPO = 0, higher write latency), and CockroachDB's `REGIONAL BY ROW` tables give each row a home region.
 - **Keep users in one region.** Route each user consistently to one region so they read their own writes. Keep the app tier stateless (sessions in signed tokens or a replicated store), and make writes idempotent so that a request retried in another region after failover has no extra effect.
 - **Watch the lag.** Export replication lag as a metric and alert well before it exceeds your RPO budget. Design health checks to catch a broken dependency, but make sure one shared dependency can't mark every region unhealthy at once.
 - **Rehearse evacuation.** Regularly drain a region on purpose (game days, chaos experiments) to prove the others can take the load. When a failed region returns, let it catch up on replication and warm up, then shift traffic back gradually.
@@ -70,8 +70,8 @@ A single region is a single failure domain. Spreading instances across availabil
 - [AWS Well-Architected Framework — Reliability Pillar](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/welcome.html)
 - [Azure Architecture Center — Geode pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes)
 - [Azure Well-Architected Framework — Mission-critical workloads](https://learn.microsoft.com/en-us/azure/well-architected/mission-critical/mission-critical-overview)
-- [Google Cloud Architecture Framework — Reliability](https://docs.cloud.google.com/architecture/framework/reliability)
-- [Google SRE Book — Load Balancing at the Frontend (DNS vs. anycast VIPs)](https://sre.google/sre-book/load-balancing-frontend/)
+- [Google Cloud Well-Architected Framework — Reliability pillar](https://docs.cloud.google.com/architecture/framework/reliability)
+- [Google SRE Book — Load Balancing at the Frontend (DNS and virtual IP load balancing)](https://sre.google/sre-book/load-balancing-frontend/)
 - [Martin Kleppmann — Designing Data-Intensive Applications (multi-leader replication)](https://dataintensive.net/)
 
 ---

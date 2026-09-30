@@ -13,7 +13,7 @@
 | **1 · Authorization request** | The App generates a one-time random **code_verifier** (43–128 characters) and keeps it to itself. It redirects the browser to the authorization endpoint with `response_type=code`, `client_id`, `redirect_uri`, `scope`, an unguessable `state`, and `code_challenge` = BASE64URL(SHA-256(code_verifier)) with `code_challenge_method=S256`. The authorization server stores the challenge with the request. |
 | **2 · Sign in & consent** | The authorization server authenticates the user (password, passkey, MFA, federated login) and asks for consent to the requested scopes; the App never sees the credentials. It then redirects the browser to `redirect_uri?code=…&state=…`, and the App checks that `state` matches the value it sent. This is the **front channel**: the code travels in a URL, where browser history, logs or a malicious app claiming the same redirect URI can see it, so holding the code alone must not be enough to get tokens. |
 | **3 · Code exchange** | Over the **back channel** (a direct HTTPS request, not a browser redirect) the App posts the code together with its `code_verifier` to the token endpoint. The server checks that the SHA-256 hash of the verifier matches the stored `code_challenge` (and that the code is unused, unexpired and issued to this `client_id` and `redirect_uri`), then returns an **access token**, usually a refresh token, and an ID token with OpenID Connect. A stolen code is useless without the verifier: the server answers `invalid_grant`. |
-| **4 · Call the API** | The App sends `Authorization: Bearer <access_token>`. The API validates the JWT locally: the signature against the authorization server's public keys (JWKS, fetched once and cached), then `iss`, `aud`, `exp` and the required scope, and returns 200 OK. When the access token expires, the App uses its refresh token instead of sending the user through the flow again. |
+| **4 · Call the API** | The App sends `Authorization: Bearer <access_token>`. The API validates the JWT locally: the signature against the authorization server's public keys (JWKS, cached and re-fetched when an unknown `kid` appears), then `iss`, `aud`, `exp` and the required scope, and returns 200 OK. When the access token expires, the App uses its refresh token instead of sending the user through the flow again. |
 <!-- END GENERATED: header -->
 
 ## The problem
@@ -50,7 +50,7 @@ The hash only works one way. Seeing the challenge in step 1 doesn't reveal the v
 
 - **Verifier:** 32 bytes from a cryptographically secure random generator, base64url-encoded without padding (43 characters). Use one per authorization request, keep it next to `state`, and delete both after the exchange. Always use `S256`: the `plain` method sends the verifier itself and only exists for clients that can't compute SHA-256.
 - **`state` and `nonce`:** send an unguessable `state` and check it on the callback. PKCE (when the server enforces it) and the OpenID Connect `nonce` also stop CSRF, but `state` is cheap and carries app context across the redirect.
-- **Redirect URIs:** register them exactly; the server must compare them by exact string match (RFC 9700). Native apps open the system browser, never an embedded web view, and receive the redirect on a claimed HTTPS link, a private-use URI scheme or a loopback address (RFC 8252).
+- **Redirect URIs:** register them exactly; the server must compare them by exact string match, except that it must accept any port on a native app's loopback redirect URI (RFC 9700, RFC 8252 §7.3). Native apps open the system browser, never an embedded web view, and receive the redirect on a claimed HTTPS link, a private-use URI scheme or a loopback address (RFC 8252).
 - **Confidential clients** (a web backend) also authenticate at the token endpoint, preferably with `private_key_jwt` or mutual TLS rather than a shared secret. PKCE still applies on top.
 - **Authorization server:** make codes single-use and short-lived (RFC 6749 recommends at most 10 minutes), bind them to `client_id`, `redirect_uri` and the challenge, and reject a token request that carries a `code_verifier` when the authorization request had no challenge (a PKCE downgrade).
 - **API:** validate JWT access tokens locally (RFC 9068): the signature with keys from the issuer's JWKS (cached, and refreshed when an unknown `kid` shows up), then `iss`, `aud`, `exp` and the required scope. Send opaque tokens to the introspection endpoint instead.
@@ -74,7 +74,7 @@ The hash only works one way. Seeing the challenge in step 1 doesn't reveal the v
 - [RFC 7636 — Proof Key for Code Exchange by OAuth Public Clients (PKCE)](https://www.rfc-editor.org/rfc/rfc7636)
 - [RFC 9700 — Best Current Practice for OAuth 2.0 Security](https://www.rfc-editor.org/rfc/rfc9700)
 - [RFC 8252 — OAuth 2.0 for Native Apps](https://www.rfc-editor.org/rfc/rfc8252)
-- [IETF draft — OAuth 2.0 for Browser-Based Applications](https://datatracker.ietf.org/doc/draft-ietf-oauth-browser-based-apps/)
+- [RFC 10017 — OAuth 2.0 for Browser-Based Applications](https://www.rfc-editor.org/rfc/rfc10017)
 - [RFC 9068 — JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://www.rfc-editor.org/rfc/rfc9068)
 
 ---

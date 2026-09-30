@@ -11,7 +11,7 @@
 | Step | What happens |
 |---|---|
 | **1 · Add a facade** | Place a **facade** (an API gateway, reverse proxy or routing layer) in front of the legacy system. Clients now talk to the facade, which forwards every route to the monolith unchanged. Nothing has migrated yet, but you now control where each request goes. |
-| **2 · Extract /catalog** | Pick one capability with clear boundaries, rebuild it as a new service, and **flip its route** in the facade. The matching code in the monolith stops receiving traffic and can be deleted later. |
+| **2 · Extract /catalog** | Pick one capability with clear boundaries, rebuild it as a new service, and **flip its route** in the facade. The matching code in the monolith stops receiving traffic from the facade and can be deleted later, once calls to it from other legacy modules are redirected to the new service too. |
 | **3 · Peel off more** | Repeat, one route at a time, in whatever order delivers value or reduces risk. Each step is small and reversible: if the new service misbehaves, flip the route back to legacy. |
 | **4 · Retire the monolith** | When the last route has moved, the monolith serves nothing and can be switched off. The new system has grown around the old one and replaced it, like the strangler fig vine the pattern is named after. |
 <!-- END GENERATED: header -->
@@ -24,7 +24,7 @@ A legacy system is too important to switch off and too costly to keep changing. 
 
 1. **Intercept.** Put a facade in front of the legacy system so that every request passes through something you control.
 2. **Replace one slice.** Build the new implementation of a single capability, usually one route or one bounded context.
-3. **Redirect.** Change the facade's routing so that slice goes to the new implementation. Legacy code for it goes dark.
+3. **Redirect.** Change the facade's routing so that slice goes to the new implementation, and redirect calls to it from other legacy modules as well. Legacy code for it then goes dark.
 4. **Repeat, then retire.** Keep going until nothing is routed to the old system, then decommission it.
 
 The migration becomes a long series of small, reversible releases instead of one irreversible leap.
@@ -61,7 +61,7 @@ The migration becomes a long series of small, reversible releases instead of one
 
 ## References
 
-- [Martin Fowler — StranglerFigApplication](https://martinfowler.com/bliki/StranglerFigApplication.html)
+- [Martin Fowler — Strangler Fig](https://martinfowler.com/bliki/StranglerFigApplication.html)
 - [Azure Architecture Center — Strangler Fig pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig)
 - [AWS Prescriptive Guidance — Strangler fig pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/strangler-fig.html)
 - [Sam Newman — Monolith to Microservices](https://samnewman.io/books/monolith-to-microservices/)
