@@ -6,6 +6,7 @@
 > The standard sign-in flow for web, mobile and single-page apps: code via the browser, tokens via the back channel.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: OAuth 2.0 Authorization Code + PKCE" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/oauth2-authorization-code-pkce.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -78,5 +79,5 @@ The hash only works one way. Seeing the challenge in step 1 doesn't reveal the v
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/oauth2-authorization-code-pkce.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

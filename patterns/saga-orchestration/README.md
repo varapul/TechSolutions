@@ -6,6 +6,7 @@
 > A coordinator runs local transactions in sequence and triggers compensations when one fails.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: Saga (Orchestration)" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/saga-orchestration.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -77,5 +78,5 @@ Compensation is **semantic**, not an undo. The charge stays in the payments ledg
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/saga-orchestration.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

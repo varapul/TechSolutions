@@ -49,6 +49,7 @@ const ICON = {
   pause: '<svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/></svg>',
   prev: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3L5.5 8l5 5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   next: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  replay: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v2.4h-2.4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   search: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
 };
 
@@ -158,11 +159,12 @@ function patternPage(p, i) {
   </header>
   <div class="wrap">
     <section class="player" aria-label="Animated diagram with step controls">
-      <div class="stage" title="Click to pause or play">${svg}<span class="hint">paused</span></div>
-      <div class="controls">
+      <div class="stage" title="Click to play, pause or continue">${svg}<span class="hint" aria-hidden="true">Paused</span></div>
+      <div class="controls" title="Keyboard: ← → play the previous / next step · Space play, pause or continue · R replay · 1–${p.meta.steps.length} jump to a step">
         <button type="button" data-action="play" aria-label="Pause">${ICON.pause}${ICON.play}</button>
-        <button type="button" data-action="prev" aria-label="Previous step">${ICON.prev}</button>
-        <button type="button" data-action="next" aria-label="Next step">${ICON.next}</button>
+        <button type="button" data-action="prev" aria-label="Previous step" title="Previous step (←)">${ICON.prev}</button>
+        <button type="button" data-action="next" aria-label="Next step" title="Next step (→)">${ICON.next}</button>
+        <button type="button" data-action="replay" aria-label="Replay this step" title="Replay this step (R)">${ICON.replay}</button>
         <button type="button" data-action="rate" aria-label="Slow down">1×</button>
         <span class="status" aria-live="polite"></span>
       </div>

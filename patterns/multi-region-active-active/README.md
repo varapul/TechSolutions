@@ -6,6 +6,7 @@
 > Serve users from several regions at once and shift traffic away from a region that fails.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: Multi-Region Active-Active" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/multi-region-active-active.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -75,5 +76,5 @@ A single region is a single failure domain. Spreading instances across availabil
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/multi-region-active-active.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

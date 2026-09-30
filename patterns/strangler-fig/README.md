@@ -6,6 +6,7 @@
 > Put a facade in front of the legacy system and move routes to new services one at a time.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: Strangler Fig" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/strangler-fig.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -67,5 +68,5 @@ The migration becomes a long series of small, reversible releases instead of one
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/strangler-fig.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

@@ -210,6 +210,7 @@ function relatedLine(slug, bySlug, prefix) {
 
 export function patternHeader(p) {
   const rows = p.meta.steps.map((s, i) => `| **${i + 1} · ${s.title}** | ${s.body} |`).join('\n');
+  const site = readJSON('package.json').homepage;
   return [
     `[Catalog](../../README.md#contents) › [${p.category.icon} ${p.category.title}](../../README.md#${catAnchor(p.category)})`,
     ``,
@@ -218,6 +219,7 @@ export function patternHeader(p) {
     `> ${p.summary}`,
     ``,
     `<p align="center"><img src="diagram.svg" alt="Animated diagram: ${esc(p.title)}" width="100%"></p>`,
+    ...(site ? [`<p align="center"><a href="${site}${p.slug}.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>`] : []),
     ``,
     `| Step | What happens |`,
     `|---|---|`,
@@ -233,9 +235,7 @@ export function patternFooter(p, bySlug) {
   if (p.meta.references?.length) {
     out.push(`## References`, ``, ...p.meta.references.map((r) => `- [${r.title}](${r.url})`), ``);
   }
-  const site = readJSON('package.json').homepage;
-  const player = site ? `[▶ Step through it on the site](${site}${p.slug}.html) · ` : '';
-  out.push(`---`, ``, `${player}[← Back to the catalog](../../README.md#contents)`);
+  out.push(`---`, ``, `[← Back to the catalog](../../README.md#contents)`);
   return out.join('\n');
 }
 

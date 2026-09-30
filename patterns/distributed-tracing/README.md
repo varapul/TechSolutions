@@ -6,6 +6,7 @@
 > Propagate a trace context across services and assemble the spans into one timeline.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: Distributed Tracing" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/distributed-tracing.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -86,5 +87,5 @@ A **trace** records one request as a tree of **spans**. A span is one timed oper
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/distributed-tracing.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

@@ -6,6 +6,7 @@
 > Producers publish events to a broker; any number of consumers react on their own schedule.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: Event-Driven Architecture" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/event-driven-architecture.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -72,5 +73,5 @@ Adding a new capability usually means adding a new subscriber, with no change to
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/event-driven-architecture.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

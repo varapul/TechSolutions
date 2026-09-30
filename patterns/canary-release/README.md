@@ -6,6 +6,7 @@
 > Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: Canary Release" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/canary-release.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -90,5 +91,5 @@ They combine well: a canary build usually ships new features dark behind flags, 
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/canary-release.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

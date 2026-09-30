@@ -6,6 +6,7 @@
 > One entry point that authenticates, rate-limits and routes calls to backend services.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: API Gateway" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/api-gateway.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -86,5 +87,5 @@ Authenticating first lets quotas and cache keys depend on a *verified* identity;
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/api-gateway.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

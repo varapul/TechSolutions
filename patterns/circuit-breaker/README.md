@@ -6,6 +6,7 @@
 > Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers.
 
 <p align="center"><img src="diagram.svg" alt="Animated diagram: Circuit Breaker" width="100%"></p>
+<p align="center"><a href="https://varapul.github.io/TechSolutions/circuit-breaker.html"><b>▶ Step through it one step at a time</b></a> in the interactive player</p>
 
 | Step | What happens |
 |---|---|
@@ -64,5 +65,5 @@ A circuit breaker wraps calls to a dependency and watches their outcomes. It is 
 
 ---
 
-[▶ Step through it on the site](https://varapul.github.io/TechSolutions/circuit-breaker.html) · [← Back to the catalog](../../README.md#contents)
+[← Back to the catalog](../../README.md#contents)
 <!-- END GENERATED: footer -->

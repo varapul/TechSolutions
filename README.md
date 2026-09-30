@@ -6,7 +6,7 @@ Self-explaining, looping diagrams of **architecture styles, cloud design pattern
 
 Every diagram is a single, dependency-free SVG file animated with CSS. It plays right here on GitHub (and anywhere else an `<img>` works), follows your light/dark theme, and tells its story in four steps: the caption under the diagram changes with each step.
 
-**▶ [Browse the catalog with the step-by-step player](https://varapul.github.io/TechSolutions/)**: pause, loop a single step, or slow it down.
+**▶ [Browse the catalog with the step-by-step player](https://varapul.github.io/TechSolutions/)**: press → to play one step at a time and hold on its last frame, ideal for presenting. You can also replay a step, slow it down, or link straight to one (`…/circuit-breaker.html#step-3`).
 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
