@@ -1,0 +1,34 @@
+{
+  "aka": ["Lazy loading", "Look-aside cache"],
+  "steps": [
+    {
+      "title": "Miss: load and cache",
+      "caption": "Miss: user:42 isn't cached, so the App reads the database (slow) and caches the row with a TTL.",
+      "body": "The App asks the cache for `user:42` and gets nothing back: a **cache miss**. It reads the row from the database (the slow path, ~20 ms here), stores a copy in the cache with a **TTL**, and returns it. The application does the loading itself; the cache never talks to the database."
+    },
+    {
+      "title": "Hits from the cache",
+      "caption": "Hits: the next reads of user:42 come straight from the cache in ~1 ms; the database stays idle.",
+      "body": "The next reads of `user:42` are **cache hits**, answered from memory in about a millisecond without touching the database. As long as the entry lives, the database does no work for this key: that is where the latency and load savings come from."
+    },
+    {
+      "title": "Write, then invalidate",
+      "caption": "Write: update the database first, then delete the cache entry instead of overwriting it.",
+      "body": "An update goes to the **database first**, because it is the system of record, and the cached copy is stale until the App **deletes** it. The App deletes the entry instead of writing the new value into it: deletes are idempotent, so two concurrent writers can't leave the older of their two values in the cache."
+    },
+    {
+      "title": "Miss again, refill",
+      "caption": "Miss again: the next read misses, as after a TTL expiry, and refills the cache with the new value.",
+      "body": "The next read misses, loads the **fresh value** from the database and repopulates the cache. A **TTL expiry** produces exactly the same miss and refill, which is why every entry gets a TTL: it bounds how long a lost or failed invalidation can keep serving stale data."
+    }
+  ],
+  "related": ["read-replicas", "change-data-capture", "materialized-view", "cdn-edge-caching", "cqrs", "space-based-architecture"],
+  "references": [
+    { "title": "Azure Architecture Center — Cache-Aside pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside" },
+    { "title": "AWS — Caching best practices", "url": "https://aws.amazon.com/caching/best-practices/" },
+    { "title": "Amazon Builders' Library — Caching challenges and strategies", "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/" },
+    { "title": "Nishtala et al. — Scaling Memcache at Facebook (NSDI '13)", "url": "https://www.usenix.org/conference/nsdi13/technical-sessions/presentation/nishtala" },
+    { "title": "Vattani, Chierichetti, Lowenstein — Optimal Probabilistic Cache Stampede Prevention (VLDB 2015)", "url": "https://www.vldb.org/pvldb/vol8/p886-vattani.pdf" },
+    { "title": "Redis docs — Key eviction", "url": "https://redis.io/docs/latest/develop/reference/eviction/" }
+  ]
+}

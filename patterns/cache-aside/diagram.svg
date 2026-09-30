@@ -1,0 +1,780 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Cache-Aside</title>
+<desc id="dg-desc">Cache-Aside. Read from the cache first; on a miss load from the database and populate the cache. Step 1, Miss: load and cache: Miss: user:42 isn't cached, so the App reads the database (slow) and caches the row with a TTL. Step 2, Hits from the cache: Hits: the next reads of user:42 come straight from the cache in ~1 ms; the database stays idle. Step 3, Write, then invalidate: Write: update the database first, then delete the cache entry instead of overwriting it. Step 4, Miss again, refill: Miss again: the next read misses, as after a TTL expiry, and refills the cache with the new value.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#8c959f;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#6e7681;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATA MANAGEMENT</text>
+  <text class="title" x="40" y="64">Cache-Aside</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Miss: load and cache</text>
+  <text class="step on p1" x="40" y="518">1 · Miss: load and cache</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Hits from the cache</text>
+  <text class="step on p2" x="262" y="518">2 · Hits from the cache</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Write, then invalidate</text>
+  <text class="step on p3" x="484" y="518">3 · Write, then invalidate</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Miss again, refill</text>
+  <text class="step on p4" x="706" y="518">4 · Miss again, refill</text>
+  <text class="caption p1" x="40" y="552">Miss: user:42 isn't cached, so the App reads the database (slow) and caches the row with a TTL.</text>
+  <text class="caption p2" x="40" y="552">Hits: the next reads of user:42 come straight from the cache in ~1 ms; the database stays idle.</text>
+  <text class="caption p3" x="40" y="552">Write: update the database first, then delete the cache entry instead of overwriting it.</text>
+  <text class="caption p4" x="40" y="552">Miss again: the next read misses, as after a TTL expiry, and refills the cache with the new value.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Cache-Aside. Timeline (20s loop, 1s = 5%):
+   0-25%   miss: GET misses (3.5%), SELECT + ~20 ms read (7-16%), SET with a TTL (16.5-18.5%), respond
+   25-50%  three hits at 27/34.5/42%: GET + value back in ~1 ms each; the database stays idle
+   50-75%  write: UPDATE travels and commits (51.5-57.25%), cached copy is stale until DEL lands at 63.25%
+   75-100% the next read misses and refills the cache with the new value (93.5%);
+           the last 0.3 s fades back to the step-1 state (empty cache, plan "pro") */
+.diagram .code { font-size: 12px; }
+.diagram .ca-get { opacity: 0; animation: ca-get var(--T) linear infinite; }
+.diagram .ca-miss { opacity: 0; animation: ca-miss var(--T) linear infinite; }
+.diagram .ca-sel { opacity: 0; animation: ca-sel var(--T) linear infinite; }
+.diagram .ca-row { opacity: 0; animation: ca-row var(--T) linear infinite; }
+.diagram .ca-set { opacity: 0; animation: ca-set var(--T) linear infinite; }
+.diagram .ca-hit { opacity: 0; animation: ca-hit var(--T) linear infinite; }
+.diagram .ca-upd { opacity: 0; animation: ca-upd var(--T) linear infinite; }
+.diagram .ca-ok { opacity: 0; animation: ca-ok var(--T) linear infinite; }
+.diagram .ca-del { opacity: 0; animation: ca-del var(--T) linear infinite; }
+.diagram .ca-l2 { opacity: 0; animation: ca-l2 var(--T) linear infinite; }
+.diagram .ca-l3 { opacity: 0; animation: ca-l3 var(--T) linear infinite; }
+.diagram .ca-l4 { opacity: 0; animation: ca-l4 var(--T) linear infinite; }
+.diagram .ca-l5 { opacity: 0; animation: ca-l5 var(--T) linear infinite; }
+.diagram .ca-l6 { opacity: 0; animation: ca-l6 var(--T) linear infinite; }
+.diagram .ca-l8 { opacity: 0; animation: ca-l8 var(--T) linear infinite; }
+.diagram .ca-l9 { opacity: 0; animation: ca-l9 var(--T) linear infinite; }
+.diagram .ca-pro { opacity: 0; animation: ca-pro var(--T) linear infinite; }
+.diagram .ca-team { opacity: 0; animation: ca-team var(--T) linear infinite; }
+.diagram .ca-flash { opacity: 0; animation: ca-flash var(--T) linear infinite; }
+.diagram .ca-mflash { opacity: 0; animation: ca-mflash var(--T) linear infinite; }
+.diagram .ca-stale { opacity: 0; animation: ca-stale var(--T) linear infinite; }
+.diagram .ca-dbteam { opacity: 0; animation: ca-dbteam var(--T) linear infinite; }
+.diagram .ca-dbhl { opacity: 0; animation: ca-dbhl var(--T) linear infinite; }
+.diagram .ca-reading { opacity: 0; animation: ca-reading var(--T) linear infinite; }
+.diagram .ca-writing { opacity: 0; animation: ca-writing var(--T) linear infinite; }
+.diagram .ca-commit { opacity: 0; animation: ca-commit var(--T) linear infinite; }
+.diagram .ca-b22 { opacity: 0; animation: ca-b22 var(--T) linear infinite; }
+.diagram .ca-b1 { opacity: 0; animation: ca-b1 var(--T) linear infinite; }
+.diagram .ca-h1 { opacity: 0; animation: ca-h1 var(--T) linear infinite; }
+.diagram .ca-h2 { opacity: 0; animation: ca-h2 var(--T) linear infinite; }
+.diagram .ca-h3 { opacity: 0; animation: ca-h3 var(--T) linear infinite; }
+.diagram .ca-n3a { opacity: 0; animation: ca-n3a var(--T) linear infinite; }
+.diagram .ca-n3b { opacity: 0; animation: ca-n3b var(--T) linear infinite; }
+.diagram .ca-empty { animation: ca-empty var(--T) linear infinite; }
+.diagram .ca-dbpro { animation: ca-dbpro var(--T) linear infinite; }
+.diagram .ca-ttl1 { transform-box: fill-box; transform-origin: 0 50%; animation: ca-ttl1 var(--T) linear infinite; }
+.diagram .ca-ttl2 { transform-box: fill-box; transform-origin: 0 50%; animation: ca-ttl2 var(--T) linear infinite; }
+@keyframes ca-get {
+  0% { transform: translate(298px, 206px); opacity: 0; }
+  1.5% { transform: translate(298px, 206px); opacity: 0; }
+  1.75% { opacity: 1; }
+  3.5% { transform: translate(582px, 206px); opacity: 1; }
+  3.75% { transform: translate(582px, 206px); opacity: 0; }
+  27% { transform: translate(298px, 206px); opacity: 0; }
+  27.25% { opacity: 1; }
+  29% { transform: translate(582px, 206px); opacity: 1; }
+  29.25% { transform: translate(582px, 206px); opacity: 0; }
+  34.5% { transform: translate(298px, 206px); opacity: 0; }
+  34.75% { opacity: 1; }
+  36.5% { transform: translate(582px, 206px); opacity: 1; }
+  36.75% { transform: translate(582px, 206px); opacity: 0; }
+  42% { transform: translate(298px, 206px); opacity: 0; }
+  42.25% { opacity: 1; }
+  44% { transform: translate(582px, 206px); opacity: 1; }
+  44.25% { transform: translate(582px, 206px); opacity: 0; }
+  76.5% { transform: translate(298px, 206px); opacity: 0; }
+  76.75% { opacity: 1; }
+  78.5% { transform: translate(582px, 206px); opacity: 1; }
+  78.75% { transform: translate(582px, 206px); opacity: 0; }
+  100% { transform: translate(582px, 206px); opacity: 0; }
+}
+@keyframes ca-miss {
+  0% { transform: translate(582px, 206px); opacity: 0; }
+  3.75% { transform: translate(582px, 206px); opacity: 0; }
+  4% { opacity: 1; }
+  5.75% { transform: translate(298px, 206px); opacity: 1; }
+  6% { transform: translate(298px, 206px); opacity: 0; }
+  78.75% { transform: translate(582px, 206px); opacity: 0; }
+  79% { opacity: 1; }
+  80.75% { transform: translate(298px, 206px); opacity: 1; }
+  81% { transform: translate(298px, 206px); opacity: 0; }
+  100% { transform: translate(298px, 206px); opacity: 0; }
+}
+@keyframes ca-sel {
+  0% { transform: translate(298px, 400px); opacity: 0; }
+  7% { transform: translate(298px, 400px); opacity: 0; }
+  7.25% { opacity: 1; }
+  10.25% { transform: translate(582px, 400px); opacity: 1; }
+  10.5% { transform: translate(582px, 400px); opacity: 0; }
+  82% { transform: translate(298px, 400px); opacity: 0; }
+  82.25% { opacity: 1; }
+  85.25% { transform: translate(582px, 400px); opacity: 1; }
+  85.5% { transform: translate(582px, 400px); opacity: 0; }
+  100% { transform: translate(582px, 400px); opacity: 0; }
+}
+@keyframes ca-row {
+  0% { transform: translate(582px, 400px); opacity: 0; }
+  12.75% { transform: translate(582px, 400px); opacity: 0; }
+  13% { opacity: 1; }
+  16% { transform: translate(298px, 400px); opacity: 1; }
+  16.25% { transform: translate(298px, 400px); opacity: 0; }
+  87.75% { transform: translate(582px, 400px); opacity: 0; }
+  88% { opacity: 1; }
+  91% { transform: translate(298px, 400px); opacity: 1; }
+  91.25% { transform: translate(298px, 400px); opacity: 0; }
+  100% { transform: translate(298px, 400px); opacity: 0; }
+}
+@keyframes ca-set {
+  0% { transform: translate(298px, 206px); opacity: 0; }
+  16.5% { transform: translate(298px, 206px); opacity: 0; }
+  16.75% { opacity: 1; }
+  18.5% { transform: translate(582px, 206px); opacity: 1; }
+  18.75% { transform: translate(582px, 206px); opacity: 0; }
+  91.5% { transform: translate(298px, 206px); opacity: 0; }
+  91.75% { opacity: 1; }
+  93.5% { transform: translate(582px, 206px); opacity: 1; }
+  93.75% { transform: translate(582px, 206px); opacity: 0; }
+  100% { transform: translate(582px, 206px); opacity: 0; }
+}
+@keyframes ca-hit {
+  0% { transform: translate(582px, 206px); opacity: 0; }
+  29.25% { transform: translate(582px, 206px); opacity: 0; }
+  29.5% { opacity: 1; }
+  31.25% { transform: translate(298px, 206px); opacity: 1; }
+  31.5% { transform: translate(298px, 206px); opacity: 0; }
+  36.75% { transform: translate(582px, 206px); opacity: 0; }
+  37% { opacity: 1; }
+  38.75% { transform: translate(298px, 206px); opacity: 1; }
+  39% { transform: translate(298px, 206px); opacity: 0; }
+  44.25% { transform: translate(582px, 206px); opacity: 0; }
+  44.5% { opacity: 1; }
+  46.25% { transform: translate(298px, 206px); opacity: 1; }
+  46.5% { transform: translate(298px, 206px); opacity: 0; }
+  100% { transform: translate(298px, 206px); opacity: 0; }
+}
+@keyframes ca-upd {
+  0% { transform: translate(298px, 400px); opacity: 0; }
+  51.5% { transform: translate(298px, 400px); opacity: 0; }
+  51.75% { opacity: 1; }
+  54.75% { transform: translate(582px, 400px); opacity: 1; }
+  55% { transform: translate(582px, 400px); opacity: 0; }
+  100% { transform: translate(582px, 400px); opacity: 0; }
+}
+@keyframes ca-ok {
+  0% { transform: translate(582px, 400px); opacity: 0; }
+  57.5% { transform: translate(582px, 400px); opacity: 0; }
+  57.75% { opacity: 1; }
+  60.75% { transform: translate(298px, 400px); opacity: 1; }
+  61% { transform: translate(298px, 400px); opacity: 0; }
+  100% { transform: translate(298px, 400px); opacity: 0; }
+}
+@keyframes ca-del {
+  0% { transform: translate(298px, 206px); opacity: 0; }
+  61.25% { transform: translate(298px, 206px); opacity: 0; }
+  61.5% { opacity: 1; }
+  63.25% { transform: translate(582px, 206px); opacity: 1; }
+  63.5% { transform: translate(582px, 206px); opacity: 0; }
+  100% { transform: translate(582px, 206px); opacity: 0; }
+}
+@keyframes ca-l2 {
+  0% { opacity: 0; }
+  1.25% { opacity: 0; }
+  1.75% { opacity: 1; }
+  5.75% { opacity: 1; }
+  6.25% { opacity: 0; }
+  26.75% { opacity: 0; }
+  27.25% { opacity: 1; }
+  31.25% { opacity: 1; }
+  31.75% { opacity: 0; }
+  34.25% { opacity: 0; }
+  34.75% { opacity: 1; }
+  38.75% { opacity: 1; }
+  39.25% { opacity: 0; }
+  41.75% { opacity: 0; }
+  42.25% { opacity: 1; }
+  46.25% { opacity: 1; }
+  46.75% { opacity: 0; }
+  76.25% { opacity: 0; }
+  76.75% { opacity: 1; }
+  80.75% { opacity: 1; }
+  81.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-l3 {
+  0% { opacity: 0; }
+  5.75% { opacity: 0; }
+  6.25% { opacity: 1; }
+  7% { opacity: 1; }
+  7.5% { opacity: 0; }
+  80.75% { opacity: 0; }
+  81.25% { opacity: 1; }
+  82% { opacity: 1; }
+  82.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-l4 {
+  0% { opacity: 0; }
+  7% { opacity: 0; }
+  7.5% { opacity: 1; }
+  16% { opacity: 1; }
+  16.5% { opacity: 0; }
+  82% { opacity: 0; }
+  82.5% { opacity: 1; }
+  91% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-l5 {
+  0% { opacity: 0; }
+  16% { opacity: 0; }
+  16.5% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.25% { opacity: 0; }
+  91% { opacity: 0; }
+  91.5% { opacity: 1; }
+  93.75% { opacity: 1; }
+  94.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-l6 {
+  0% { opacity: 0; }
+  18.75% { opacity: 0; }
+  19.25% { opacity: 1; }
+  21.5% { opacity: 1; }
+  22% { opacity: 0; }
+  31.25% { opacity: 0; }
+  31.75% { opacity: 1; }
+  33% { opacity: 1; }
+  33.5% { opacity: 0; }
+  38.75% { opacity: 0; }
+  39.25% { opacity: 1; }
+  40.5% { opacity: 1; }
+  41% { opacity: 0; }
+  46.25% { opacity: 0; }
+  46.75% { opacity: 1; }
+  48% { opacity: 1; }
+  48.5% { opacity: 0; }
+  93.75% { opacity: 0; }
+  94.25% { opacity: 1; }
+  96.5% { opacity: 1; }
+  97% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-l8 {
+  0% { opacity: 0; }
+  51.25% { opacity: 0; }
+  51.75% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-l9 {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61.25% { opacity: 1; }
+  63.75% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-pro {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  19% { opacity: 1; }
+  63.25% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-team {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  94% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-flash {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  19% { opacity: 1; }
+  20.5% { opacity: 1; }
+  21% { opacity: 0; }
+  29% { opacity: 0; }
+  29.5% { opacity: 1; }
+  30.75% { opacity: 1; }
+  31.25% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  38.25% { opacity: 1; }
+  38.75% { opacity: 0; }
+  44% { opacity: 0; }
+  44.5% { opacity: 1; }
+  45.75% { opacity: 1; }
+  46.25% { opacity: 0; }
+  93.5% { opacity: 0; }
+  94% { opacity: 1; }
+  95.5% { opacity: 1; }
+  96% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-mflash {
+  0% { opacity: 0; }
+  3.5% { opacity: 0; }
+  4% { opacity: 1; }
+  5.75% { opacity: 1; }
+  6.25% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79% { opacity: 1; }
+  80.75% { opacity: 1; }
+  81.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-stale {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.25% { opacity: 1; }
+  63.25% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-dbteam {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  56.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-dbhl {
+  0% { opacity: 0; }
+  10.25% { opacity: 0; }
+  10.75% { opacity: 1; }
+  12.75% { opacity: 1; }
+  13.25% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.25% { opacity: 1; }
+  57.25% { opacity: 1; }
+  57.75% { opacity: 0; }
+  85.25% { opacity: 0; }
+  85.75% { opacity: 1; }
+  87.75% { opacity: 1; }
+  88.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-reading {
+  0% { opacity: 0; }
+  10.25% { opacity: 0; }
+  10.75% { opacity: 1; }
+  12.75% { opacity: 1; }
+  13.25% { opacity: 0; }
+  85.25% { opacity: 0; }
+  85.75% { opacity: 1; }
+  87.75% { opacity: 1; }
+  88.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-writing {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.25% { opacity: 1; }
+  57.25% { opacity: 1; }
+  57.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-commit {
+  0% { opacity: 0; }
+  57.25% { opacity: 0; }
+  57.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-b22 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  19.5% { opacity: 1; }
+  24% { opacity: 1; }
+  24.5% { opacity: 0; }
+  94% { opacity: 0; }
+  94.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-b1 {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32% { opacity: 1; }
+  34% { opacity: 1; }
+  34.5% { opacity: 0; }
+  39% { opacity: 0; }
+  39.5% { opacity: 1; }
+  41.5% { opacity: 1; }
+  42% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47% { opacity: 1; }
+  49% { opacity: 1; }
+  49.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-h1 {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  29.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-h2 {
+  0% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-h3 {
+  0% { opacity: 0; }
+  44% { opacity: 0; }
+  44.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-n3a {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.25% { opacity: 1; }
+  63.25% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-n3b {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ca-empty {
+  0% { opacity: 1; }
+  18.5% { opacity: 1; }
+  19% { opacity: 0; }
+  63.25% { opacity: 0; }
+  63.75% { opacity: 1; }
+  93.5% { opacity: 1; }
+  94% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ca-dbpro {
+  0% { opacity: 1; }
+  56.25% { opacity: 1; }
+  56.75% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ca-ttl1 {
+  0% { transform: scaleX(1); }
+  18.5% { transform: scaleX(1); }
+  63.25% { transform: scaleX(0.55); }
+  100% { transform: scaleX(0.55); }
+}
+@keyframes ca-ttl2 {
+  0% { transform: scaleX(1); }
+  93.5% { transform: scaleX(1); }
+  100% { transform: scaleX(0.935); }
+}
+</style>
+<g class="stage">
+  <!-- lanes: App to the cache (level with its key row) and to the database (level with row 42) -->
+  <line class="wire" x1="290" y1="206" x2="590" y2="206"/>
+  <line class="wire" x1="290" y1="400" x2="590" y2="400"/>
+
+  <!-- App: the caching logic lives in application code -->
+  <rect class="box" x="40" y="104" width="250" height="352" rx="14"/>
+  <text class="label mid" x="165" y="132">App</text>
+  <text class="sub mid" x="165" y="150">owns the caching logic</text>
+  <rect class="f-bg s-line" x="54" y="164" width="222" height="216" rx="8" stroke-width="1"/>
+  <g class="ca-l2"><rect class="f-blue-soft" x="58" y="193" width="214" height="19" rx="4"/><rect class="f-blue" x="58" y="193" width="3" height="19" rx="1.5"/></g>
+  <g class="ca-l3"><rect class="f-blue-soft" x="58" y="214" width="214" height="19" rx="4"/><rect class="f-blue" x="58" y="214" width="3" height="19" rx="1.5"/></g>
+  <g class="ca-l4"><rect class="f-blue-soft" x="58" y="235" width="214" height="19" rx="4"/><rect class="f-blue" x="58" y="235" width="3" height="19" rx="1.5"/></g>
+  <g class="ca-l5"><rect class="f-blue-soft" x="58" y="256" width="214" height="19" rx="4"/><rect class="f-blue" x="58" y="256" width="3" height="19" rx="1.5"/></g>
+  <g class="ca-l6"><rect class="f-blue-soft" x="58" y="277" width="214" height="19" rx="4"/><rect class="f-blue" x="58" y="277" width="3" height="19" rx="1.5"/></g>
+  <g class="ca-l8"><rect class="f-blue-soft" x="58" y="331" width="214" height="19" rx="4"/><rect class="f-blue" x="58" y="331" width="3" height="19" rx="1.5"/></g>
+  <g class="ca-l9"><rect class="f-blue-soft" x="58" y="352" width="214" height="19" rx="4"/><rect class="f-blue" x="58" y="352" width="3" height="19" rx="1.5"/></g>
+  <text class="code mono sb" x="66" y="186">read(key):</text>
+  <text class="code mono" x="80" y="207">v = cache.get(key)</text>
+  <text class="code mono" x="80" y="228">if v == null:</text>
+  <text class="code mono" x="95" y="249">v = db.read(key)</text>
+  <text class="code mono" x="95" y="270">cache.set(key, v, ttl)</text>
+  <text class="code mono" x="80" y="291">return v</text>
+  <text class="code mono sb" x="66" y="324">write(key, v):</text>
+  <text class="code mono" x="80" y="345">db.update(key, v)</text>
+  <text class="code mono" x="80" y="366">cache.delete(key)</text>
+  <g class="ca-b22">
+    <rect class="f-green-soft s-green" x="62" y="406" width="206" height="26" rx="13" stroke-width="1.5"/>
+    <text class="tiny mid sb f-green" x="165" y="423">responds in ~22 ms</text>
+  </g>
+  <g class="ca-b1">
+    <rect class="f-green-soft s-green" x="62" y="406" width="206" height="26" rx="13" stroke-width="1.5"/>
+    <text class="tiny mid sb f-green" x="165" y="423">responds in ~1 ms</text>
+  </g>
+
+  <!-- cache: one key row with its TTL -->
+  <rect class="box" x="590" y="104" width="330" height="136" rx="14"/>
+  <text class="label mid" x="755" y="130">Cache</text>
+  <text class="sub mid" x="755" y="148">in-memory, e.g. Redis</text>
+  <g class="p2">
+    <text class="tiny end" x="862" y="132">hits</text>
+    <circle class="f-bg s-line" cx="874" cy="128" r="5" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="888" cy="128" r="5" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="902" cy="128" r="5" stroke-width="1.5"/>
+    <circle class="f-teal ca-h1" cx="874" cy="128" r="5"/>
+    <circle class="f-teal ca-h2" cx="888" cy="128" r="5"/>
+    <circle class="f-teal ca-h3" cx="902" cy="128" r="5"/>
+  </g>
+  <text class="tiny" x="612" y="178">key</text>
+  <text class="tiny" x="684" y="178">value</text>
+  <text class="tiny" x="836" y="178">TTL</text>
+  <line class="s-line" x1="606" y1="186" x2="904" y2="186"/>
+  <g class="ca-empty">
+    <rect class="none s-line dash" x="606" y="194" width="298" height="24" rx="6" stroke-width="1.5"/>
+    <text class="tiny mid f-faint" x="755" y="210">no entry for user:42</text>
+  </g>
+  <rect class="f-amber-soft s-amber ca-mflash" x="606" y="194" width="298" height="24" rx="6" stroke-width="1.5"/>
+  <rect class="f-teal-soft s-teal ca-flash" x="606" y="194" width="298" height="24" rx="6" stroke-width="1.5"/>
+  <rect class="f-amber-soft s-amber ca-stale" x="606" y="194" width="298" height="24" rx="6" stroke-width="1.5"/>
+  <g class="ca-pro">
+    <text class="code mono" x="612" y="210">user:42</text>
+    <text class="tiny f-faint" x="668" y="210">→</text>
+    <text class="code mono" x="684" y="210">{"plan":"pro"}</text>
+    <rect class="f-line" x="836" y="203" width="60" height="6" rx="3"/>
+    <rect class="f-teal ca-ttl1" x="836" y="203" width="60" height="6" rx="3"/>
+  </g>
+  <g class="ca-team">
+    <text class="code mono" x="612" y="210">user:42</text>
+    <text class="tiny f-faint" x="668" y="210">→</text>
+    <text class="code mono" x="684" y="210">{"plan":"team"}</text>
+    <rect class="f-line" x="836" y="203" width="60" height="6" rx="3"/>
+    <rect class="f-teal ca-ttl2" x="836" y="203" width="60" height="6" rx="3"/>
+  </g>
+  <text class="tiny b f-amber-ink ca-stale" x="794" y="210">stale</text>
+
+  <!-- running notes under the cache -->
+  <text class="tiny mid p1" x="755" y="270"><tspan class="sb f-ink">Lazy loading:</tspan> a key is cached only once something reads it.</text>
+  <text class="tiny mid p2" x="755" y="270">Served from memory until it expires, is deleted or is evicted.</text>
+  <text class="tiny mid f-amber-ink ca-n3a" x="755" y="270">The cached copy is stale until the App deletes it.</text>
+  <g class="ca-n3b">
+    <text class="tiny mid" x="755" y="262"><tspan class="sb f-ink">Delete, don't overwrite:</tspan> two writers' SETs</text>
+    <text class="tiny mid" x="755" y="277">could land out of order and cache the older value.</text>
+  </g>
+  <text class="tiny mid p4" x="755" y="270">An expired TTL causes exactly the same miss and refill.</text>
+
+  <!-- database: the system of record -->
+  <rect class="box" x="590" y="292" width="330" height="164" rx="14"/>
+  <text class="label mid" x="755" y="318">Database</text>
+  <text class="sub mid" x="755" y="336">system of record</text>
+  <text class="tiny" x="652" y="360">id</text>
+  <text class="tiny" x="688" y="360">plan</text>
+  <line class="s-line" x1="646" y1="367" x2="780" y2="367"/>
+  <rect class="f-teal-soft s-teal ca-dbhl" x="646" y="389" width="134" height="22" rx="5" stroke-width="1.5"/>
+  <text class="code mono" x="652" y="382">41</text>
+  <text class="code mono" x="688" y="382">free</text>
+  <text class="code mono" x="652" y="404">42</text>
+  <text class="code mono ca-dbpro" x="688" y="404">pro</text>
+  <text class="code mono ca-dbteam" x="688" y="404">team</text>
+  <text class="code mono" x="652" y="426">43</text>
+  <text class="code mono" x="688" y="426">free</text>
+  <g class="ca-reading">
+    <circle class="none s-line" cx="806" cy="400" r="7" stroke-width="2.5"/>
+    <circle class="none s-teal spin" cx="806" cy="400" r="7" stroke-width="2.5" stroke-dasharray="11 33" stroke-linecap="round"/>
+    <text class="tiny sb f-teal" x="820" y="404">reading row 42</text>
+  </g>
+  <g class="ca-writing">
+    <circle class="none s-line" cx="806" cy="400" r="7" stroke-width="2.5"/>
+    <circle class="none s-teal spin" cx="806" cy="400" r="7" stroke-width="2.5" stroke-dasharray="11 33" stroke-linecap="round"/>
+    <text class="tiny sb f-teal" x="820" y="404">writing row 42</text>
+  </g>
+  <g class="ca-commit">
+    <circle class="f-green" cx="806" cy="400" r="8"/>
+    <path class="none s-bg" d="M802 400l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="tiny sb f-green" x="820" y="404">committed</text>
+  </g>
+  <g class="p2">
+    <circle class="none s-wire" cx="806" cy="400" r="5" stroke-width="1.5"/>
+    <text class="tiny" x="820" y="404">idle: no queries</text>
+  </g>
+
+  <!-- traffic: blue asks, teal carries data, amber is a miss, green an acknowledgement -->
+  <g class="ca-get">
+    <circle class="pkt f-blue" r="7"/>
+    <text class="tiny mid b mono f-blue" y="-14">GET user:42</text>
+  </g>
+  <g class="ca-miss">
+    <circle class="pkt f-amber" r="7"/>
+    <text class="tiny mid b f-amber-ink" y="-14">miss</text>
+  </g>
+  <g class="ca-hit">
+    <circle class="pkt f-teal" r="7"/>
+    <text class="tiny mid b f-teal" y="-14">hit · ~1 ms</text>
+  </g>
+  <g class="ca-set">
+    <circle class="pkt f-teal" r="7"/>
+    <text class="tiny mid b f-teal" y="-14">SET · TTL 300 s</text>
+  </g>
+  <g class="ca-del">
+    <circle class="pkt f-blue" r="7"/>
+    <text class="tiny mid b mono f-blue" y="-14">DEL user:42</text>
+  </g>
+  <g class="ca-sel">
+    <circle class="pkt f-blue" r="7"/>
+    <text class="tiny mid b mono f-blue" y="-14">SELECT id=42</text>
+  </g>
+  <g class="ca-row">
+    <circle class="pkt f-teal" r="7"/>
+    <text class="tiny mid b f-teal" y="-14">row · ~20 ms</text>
+  </g>
+  <g class="ca-upd">
+    <circle class="pkt f-teal" r="7"/>
+    <text class="tiny mid b mono f-teal" y="-14">UPDATE plan='team'</text>
+  </g>
+  <g class="ca-ok">
+    <circle class="pkt f-green" r="7"/>
+    <text class="tiny mid b f-green" y="-14">OK</text>
+  </g>
+</g>
+</svg>

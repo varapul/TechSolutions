@@ -1,0 +1,35 @@
+{
+  "aka": ["Edge gateway", "API facade"],
+  "steps": [
+    {
+      "title": "One front door",
+      "caption": "Clients call one endpoint; each request is authenticated, rate-limited and routed by path.",
+      "body": "Web, mobile and partner clients all call **one public endpoint**. Every request runs through the same policy pipeline (authenticate, rate limit, route) and is forwarded by path to the service that owns it: `/orders` to Orders, `/users` to Users, `/catalog` to Catalog. Responses come back the same way, and the services stay on a private network, so clients never learn where they live or how they are split."
+    },
+    {
+      "title": "Authenticate at the edge",
+      "caption": "No valid token: 401 at the edge and no service is called. A valid call goes on with its identity.",
+      "body": "The gateway checks credentials before anything else. A request with a missing or invalid token is rejected with **401 Unauthorized** and never reaches a backend. For a valid token the gateway verifies the signature and claims once, then forwards the caller's identity (here as an `X-User-Id` header) so services don't each re-implement token validation."
+    },
+    {
+      "title": "Rate limit per client",
+      "caption": "Partner bursts: its token bucket empties and the excess gets 429. Web is unaffected; tokens refill.",
+      "body": "Each client (API key or client ID) has its own **token bucket**: every call spends a token and tokens refill at a steady rate (4 max, 1 per second here). The partner's burst drains its bucket, so the extra calls get **429 Too Many Requests**, ideally with a `Retry-After` header, while Web's calls pass untouched. The bucket then refills and the partner can call again."
+    },
+    {
+      "title": "Serve from cache",
+      "caption": "A repeated GET /catalog is answered from the gateway's cache, so the Catalog service isn't called.",
+      "body": "The first `GET /catalog` is a cache **miss**: it goes to Catalog, and the gateway keeps the response for its time-to-live. The repeat is a **hit**, answered by the gateway in a fraction of the time without touching the service. Caching is one of several cross-cutting concerns a gateway offloads from services, alongside TLS termination, request and response transformation, logging and metrics."
+    }
+  ],
+  "related": ["backends-for-frontends", "gateway-aggregation", "gateway-offloading", "rate-limiting", "jwt-validation", "service-mesh", "strangler-fig", "microservices"],
+  "references": [
+    { "title": "Azure Architecture Center — API gateways (microservices design)", "url": "https://learn.microsoft.com/en-us/azure/architecture/microservices/design/gateway" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: API Gateway / Backends for Frontends", "url": "https://microservices.io/patterns/apigateway.html" },
+    { "title": "Azure Architecture Center — Gateway Routing pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-routing" },
+    { "title": "Azure Architecture Center — Gateway Offloading pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-offloading" },
+    { "title": "Sam Newman — Pattern: Backends For Frontends", "url": "https://samnewman.io/patterns/architectural/bff/" },
+    { "title": "Amazon API Gateway Developer Guide — Throttle requests to your REST APIs", "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html" },
+    { "title": "RFC 6585 — Additional HTTP Status Codes (429 Too Many Requests)", "url": "https://www.rfc-editor.org/rfc/rfc6585" }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "aka": ["EDA", "Publish-subscribe architecture"],
+  "steps": [
+    {
+      "title": "Publish",
+      "caption": "Order Service publishes an OrderPlaced event to a topic, then moves on without waiting.",
+      "body": "The producer records a fact (*an order was placed*) as an event on a topic. It doesn't know or care who is listening, and it doesn't wait for anyone to finish."
+    },
+    {
+      "title": "Fan out",
+      "caption": "The broker delivers a copy to every subscriber; each one reacts independently.",
+      "body": "Each subscriber has its own subscription (a queue). The broker drops a copy of the event into every one, so Inventory, Payments and Notifications each react at their own pace, in parallel."
+    },
+    {
+      "title": "Backlog builds",
+      "caption": "A burst arrives. Two consumers keep up, but slow Notifications builds a backlog of its own.",
+      "body": "During a spike the producer keeps publishing at full speed. Fast consumers stay at zero lag, while the slow one (waiting on an email API) builds a **backlog**. Nobody else is slowed down: the queue absorbs the difference."
+    },
+    {
+      "title": "Scale out",
+      "caption": "Scale the slow consumer out: three instances share its queue and the backlog drains.",
+      "body": "Because work waits in a queue, the slow consumer can scale out as **competing consumers** without any change to the producer or the other services. The backlog drains, and the instances can scale back in once it's empty."
+    }
+  ],
+  "related": ["publish-subscribe", "competing-consumers", "queue-based-load-leveling", "transactional-outbox", "saga-choreography", "idempotent-consumer", "dead-letter-queue", "cqrs"],
+  "references": [
+    { "title": "Azure Architecture Center — Event-driven architecture style", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven" },
+    { "title": "Martin Fowler — What do you mean by \"Event-Driven\"?", "url": "https://martinfowler.com/articles/201701-event-driven.html" },
+    { "title": "AWS — What is an event-driven architecture?", "url": "https://aws.amazon.com/event-driven-architecture/" },
+    { "title": "Enterprise Integration Patterns — Publish-Subscribe Channel", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html" }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "aka": ["Multi-site active/active", "Geode pattern", "Hot-hot"],
+  "steps": [
+    {
+      "title": "Both regions serve",
+      "caption": "Each user group is routed to its nearest region. Both regions serve traffic and pass health checks.",
+      "body": "A **global load balancer** (anycast, or DNS with latency-based routing) sends Europe to Region A and the Americas to Region B, the lowest-latency region for each. Both regions are **active**: each runs the full stack and serves real traffic, and the load balancer health-checks both of them all the time."
+    },
+    {
+      "title": "Replicate data",
+      "caption": "Writes commit locally, then replicate asynchronously to the other region. Reads stay local.",
+      "body": "Each region holds a writable copy of the data. A write **commits in the local region** and the user gets an answer straight away; the change then ships to the other region **asynchronously**, usually within a second (the **replication lag**). Reads are served from the local copy, so no request waits on a cross-region round trip."
+    },
+    {
+      "title": "Region B fails",
+      "caption": "Region B goes down. Its health checks fail, so the global load balancer marks it unhealthy.",
+      "body": "Region B has an outage. Americas users see errors until the load balancer notices: after a few consecutive failed probes it marks B **unhealthy** and stops routing traffic there. Writes that B had committed but not yet replicated are lost, or stranded until B returns, so the replication lag is your effective **RPO**."
+    },
+    {
+      "title": "Fail over",
+      "caption": "Americas traffic is routed to Region A: a longer trip, but still served. Region A scales out.",
+      "body": "The load balancer now sends Americas users to Region A. Their requests travel further (roughly 110 ms instead of 20 ms), but they are served. Region A's load doubles, so it needs **headroom** or has to **scale out**. When B recovers, it catches up on replication before traffic fails back."
+    }
+  ],
+  "related": [
+    "active-passive-failover",
+    "disaster-recovery-strategies",
+    "load-balancing",
+    "health-endpoint-monitoring",
+    "autoscaling",
+    "deployment-stamps",
+    "cell-based-architecture",
+    "read-replicas"
+  ],
+  "references": [
+    { "title": "AWS whitepaper — Disaster recovery options in the cloud (multi-site active/active)", "url": "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html" },
+    { "title": "AWS Well-Architected Framework — Reliability Pillar", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/welcome.html" },
+    { "title": "Azure Architecture Center — Geode pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes" },
+    { "title": "Azure Well-Architected Framework — Mission-critical workloads", "url": "https://learn.microsoft.com/en-us/azure/well-architected/mission-critical/mission-critical-overview" },
+    { "title": "Google Cloud Architecture Framework — Reliability", "url": "https://docs.cloud.google.com/architecture/framework/reliability" },
+    { "title": "Google SRE Book — Load Balancing at the Frontend (DNS vs. anycast VIPs)", "url": "https://sre.google/sre-book/load-balancing-frontend/" },
+    { "title": "Martin Kleppmann — Designing Data-Intensive Applications (multi-leader replication)", "url": "https://dataintensive.net/" }
+  ]
+}

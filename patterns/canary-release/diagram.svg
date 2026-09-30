@@ -1,0 +1,964 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Canary Release</title>
+<desc id="dg-desc">Canary Release. Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back. Step 1, Deploy the canary: v2 is deployed next to v1, and the router sends it a small slice: 5% of the traffic. Step 2, Compare metrics: Automated analysis compares v2 with the v1 baseline on error rate and p95 latency: pass. Step 3, Ramp up: Each pass raises v2's weight (25%, then 50%) and v2 scales out. Metrics stay healthy. Step 4, Promote: All traffic moves to v2 and v1 is scaled down. v2 becomes the stable baseline for the next release.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#8c959f;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#6e7681;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DEPLOYMENT &amp; RELEASE</text>
+  <text class="title" x="40" y="64">Canary Release</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Deploy the canary</text>
+  <text class="step on p1" x="40" y="518">1 · Deploy the canary</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Compare metrics</text>
+  <text class="step on p2" x="262" y="518">2 · Compare metrics</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Ramp up</text>
+  <text class="step on p3" x="484" y="518">3 · Ramp up</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Promote</text>
+  <text class="step on p4" x="706" y="518">4 · Promote</text>
+  <text class="caption p1" x="40" y="552">v2 is deployed next to v1, and the router sends it a small slice: 5% of the traffic.</text>
+  <text class="caption p2" x="40" y="552">Automated analysis compares v2 with the v1 baseline on error rate and p95 latency: pass.</text>
+  <text class="caption p3" x="40" y="552">Each pass raises v2's weight (25%, then 50%) and v2 scales out. Metrics stay healthy.</text>
+  <text class="caption p4" x="40" y="552">All traffic moves to v2 and v1 is scaled down. v2 becomes the stable baseline for the next release.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Canary Release. Timeline (20s loop, 1s = 5%):
+   0-25%   v2 deploys next to v1 (0.3s); the router moves 5% of requests to it (1.75-2.25s)
+   25-50%  analysis compares v2 with the v1 baseline; bars settle by 7.5s, PASS at 8s; "25%" goes back to the router
+   50-75%  weight 25% (10-10.5s), PASS, v2 scales out, weight 50% (13-13.5s), PASS
+   75-100% v2 scales out again, weight 100% (15.5-16s), v1 scaled down (16.25-17.25s),
+           v2 takes the stable slot (18-18.5s); 19.5-20s crossfades to the next release */
+.diagram .cr-tok, .diagram .cr-win { opacity: 0; }
+.diagram .cr-b1 { animation: cr-b1 var(--T) linear infinite; }
+.diagram .cr-b2 { animation: cr-b2 var(--T) linear infinite; }
+.diagram .cr-g1 { animation: cr-g1 var(--T) linear infinite; }
+.diagram .cr-g2 { animation: cr-g2 var(--T) linear infinite; }
+.diagram .cr-set25 { animation: cr-set25 var(--T) linear infinite; }
+.diagram .cr-set50 { animation: cr-set50 var(--T) linear infinite; }
+.diagram .cr-set100 { animation: cr-set100 var(--T) linear infinite; }
+.diagram .cr-split { animation: cr-split var(--T) linear infinite; }
+.diagram .cr-split { transform: translateX(140.6px); }
+.diagram .cr-v2mv { animation: cr-v2mv var(--T) linear infinite; }
+.diagram .cr-grow { transform: scaleX(0); transform-box: fill-box; transform-origin: 0 50%; }
+.diagram .cr-e2 { animation: cr-e2 var(--T) linear infinite; }
+.diagram .cr-p2 { animation: cr-p2 var(--T) linear infinite; }
+.diagram .cr-wA { animation: cr-wA var(--T) linear infinite; }
+.diagram .cr-wB { animation: cr-wB var(--T) linear infinite; }
+.diagram .cr-wC { animation: cr-wC var(--T) linear infinite; }
+.diagram .cr-wD { animation: cr-wD var(--T) linear infinite; }
+.diagram .cr-wE { animation: cr-wE var(--T) linear infinite; }
+.diagram .cr-v2 { animation: cr-v2 var(--T) linear infinite; }
+.diagram .cr-v2dep { animation: cr-v2dep var(--T) linear infinite; }
+.diagram .cr-v2so { animation: cr-v2so var(--T) linear infinite; }
+.diagram .cr-v2i2 { animation: cr-v2i2 var(--T) linear infinite; }
+.diagram .cr-v2i3 { animation: cr-v2i3 var(--T) linear infinite; }
+.diagram .cr-v2can { animation: cr-v2can var(--T) linear infinite; }
+.diagram .cr-v2st { animation: cr-v2st var(--T) linear infinite; }
+.diagram .cr-v1i3 { animation: cr-v1i3 var(--T) linear infinite; }
+.diagram .cr-v1i2 { animation: cr-v1i2 var(--T) linear infinite; }
+.diagram .cr-v1i1 { animation: cr-v1i1 var(--T) linear infinite; }
+.diagram .cr-v1si { animation: cr-v1si var(--T) linear infinite; }
+.diagram .cr-v1lab { animation: cr-v1lab var(--T) linear infinite; }
+.diagram .cr-v1ret { animation: cr-v1ret var(--T) linear infinite; }
+.diagram .cr-mv2 { animation: cr-mv2 var(--T) linear infinite; }
+.diagram .cr-v2val { animation: cr-v2val var(--T) linear infinite; }
+.diagram .cr-ok { animation: cr-ok var(--T) linear infinite; }
+.diagram .cr-vw { animation: cr-vw var(--T) linear infinite; }
+.diagram .cr-vc1 { animation: cr-vc1 var(--T) linear infinite; }
+.diagram .cr-vp5 { animation: cr-vp5 var(--T) linear infinite; }
+.diagram .cr-vc25 { animation: cr-vc25 var(--T) linear infinite; }
+.diagram .cr-vp25 { animation: cr-vp25 var(--T) linear infinite; }
+.diagram .cr-vc50 { animation: cr-vc50 var(--T) linear infinite; }
+.diagram .cr-vp50 { animation: cr-vp50 var(--T) linear infinite; }
+.diagram .cr-vpro { animation: cr-vpro var(--T) linear infinite; }
+.diagram .cr-flow { animation: cr-flow 1s linear infinite; }
+.diagram .cr-half { animation-delay: -0.5s; }
+.diagram .state { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+@keyframes cr-flow { 0% { transform: translateX(0); opacity: 0; } 10% { opacity: 1; } 70% { transform: translateX(38px); opacity: 1; } 80%, 100% { transform: translateX(38px); opacity: 0; } }
+@keyframes cr-b1 {
+  0% { transform: translate(344px, 216px); opacity: 0; }
+  1.25% { transform: translate(344px, 216px); opacity: 0; }
+  1.5% { opacity: 1; }
+  2.248% { transform: translate(385px, 216px); }
+  3.807% { transform: translate(385px, 152px); }
+  5% { transform: translate(434px, 152px); opacity: 1; }
+  5.25% { transform: translate(434px, 152px); opacity: 0; }
+  6.25% { transform: translate(344px, 216px); opacity: 0; }
+  6.5% { opacity: 1; }
+  7.248% { transform: translate(385px, 216px); }
+  8.807% { transform: translate(385px, 152px); }
+  10% { transform: translate(434px, 152px); opacity: 1; }
+  10.25% { transform: translate(434px, 152px); opacity: 0; }
+  11.25% { transform: translate(344px, 216px); opacity: 0; }
+  11.5% { opacity: 1; }
+  12.248% { transform: translate(385px, 216px); }
+  13.807% { transform: translate(385px, 152px); }
+  15% { transform: translate(434px, 152px); opacity: 1; }
+  15.25% { transform: translate(434px, 152px); opacity: 0; }
+  16.25% { transform: translate(344px, 216px); opacity: 0; }
+  16.5% { opacity: 1; }
+  17.248% { transform: translate(385px, 216px); }
+  18.807% { transform: translate(385px, 152px); }
+  20% { transform: translate(434px, 152px); opacity: 1; }
+  20.25% { transform: translate(434px, 152px); opacity: 0; }
+  21.25% { transform: translate(344px, 216px); opacity: 0; }
+  21.5% { opacity: 1; }
+  22.248% { transform: translate(385px, 216px); }
+  23.807% { transform: translate(385px, 152px); }
+  25% { transform: translate(434px, 152px); opacity: 1; }
+  25.25% { transform: translate(434px, 152px); opacity: 0; }
+  26.25% { transform: translate(344px, 216px); opacity: 0; }
+  26.5% { opacity: 1; }
+  27.248% { transform: translate(385px, 216px); }
+  28.807% { transform: translate(385px, 152px); }
+  30% { transform: translate(434px, 152px); opacity: 1; }
+  30.25% { transform: translate(434px, 152px); opacity: 0; }
+  31.25% { transform: translate(344px, 216px); opacity: 0; }
+  31.5% { opacity: 1; }
+  32.248% { transform: translate(385px, 216px); }
+  33.807% { transform: translate(385px, 152px); }
+  35% { transform: translate(434px, 152px); opacity: 1; }
+  35.25% { transform: translate(434px, 152px); opacity: 0; }
+  36.25% { transform: translate(344px, 216px); opacity: 0; }
+  36.5% { opacity: 1; }
+  37.248% { transform: translate(385px, 216px); }
+  38.807% { transform: translate(385px, 152px); }
+  40% { transform: translate(434px, 152px); opacity: 1; }
+  40.25% { transform: translate(434px, 152px); opacity: 0; }
+  41.25% { transform: translate(344px, 216px); opacity: 0; }
+  41.5% { opacity: 1; }
+  42.248% { transform: translate(385px, 216px); }
+  43.807% { transform: translate(385px, 152px); }
+  45% { transform: translate(434px, 152px); opacity: 1; }
+  45.25% { transform: translate(434px, 152px); opacity: 0; }
+  46.25% { transform: translate(344px, 216px); opacity: 0; }
+  46.5% { opacity: 1; }
+  47.248% { transform: translate(385px, 216px); }
+  48.807% { transform: translate(385px, 152px); }
+  50% { transform: translate(434px, 152px); opacity: 1; }
+  50.25% { transform: translate(434px, 152px); opacity: 0; }
+  51.25% { transform: translate(344px, 216px); opacity: 0; }
+  51.5% { opacity: 1; }
+  52.248% { transform: translate(385px, 216px); }
+  53.807% { transform: translate(385px, 152px); }
+  55% { transform: translate(434px, 152px); opacity: 1; }
+  55.25% { transform: translate(434px, 152px); opacity: 0; }
+  56.25% { transform: translate(344px, 216px); opacity: 0; }
+  56.5% { opacity: 1; }
+  57.248% { transform: translate(385px, 216px); }
+  58.807% { transform: translate(385px, 152px); }
+  60% { transform: translate(434px, 152px); opacity: 1; }
+  60.25% { transform: translate(434px, 152px); opacity: 0; }
+  63.75% { transform: translate(344px, 216px); opacity: 0; }
+  64% { opacity: 1; }
+  64.748% { transform: translate(385px, 216px); }
+  66.307% { transform: translate(385px, 152px); }
+  67.5% { transform: translate(434px, 152px); opacity: 1; }
+  67.75% { transform: translate(434px, 152px); opacity: 0; }
+  68.75% { transform: translate(344px, 216px); opacity: 0; }
+  69% { opacity: 1; }
+  69.748% { transform: translate(385px, 216px); }
+  71.307% { transform: translate(385px, 152px); }
+  72.5% { transform: translate(434px, 152px); opacity: 1; }
+  72.75% { transform: translate(434px, 152px); opacity: 0; }
+  73.75% { transform: translate(344px, 216px); opacity: 0; }
+  74% { opacity: 1; }
+  74.748% { transform: translate(385px, 216px); }
+  76.307% { transform: translate(385px, 152px); }
+  77.5% { transform: translate(434px, 152px); opacity: 1; }
+  77.75% { transform: translate(434px, 152px); opacity: 0; }
+  100% { transform: translate(434px, 152px); opacity: 0; }
+}
+@keyframes cr-b2 {
+  0% { transform: translate(344px, 216px); opacity: 0; }
+  3.75% { transform: translate(344px, 216px); opacity: 0; }
+  4% { opacity: 1; }
+  4.748% { transform: translate(385px, 216px); }
+  6.307% { transform: translate(385px, 152px); }
+  7.5% { transform: translate(434px, 152px); opacity: 1; }
+  7.75% { transform: translate(434px, 152px); opacity: 0; }
+  8.75% { transform: translate(344px, 216px); opacity: 0; }
+  9% { opacity: 1; }
+  9.748% { transform: translate(385px, 216px); }
+  11.307% { transform: translate(385px, 152px); }
+  12.5% { transform: translate(434px, 152px); opacity: 1; }
+  12.75% { transform: translate(434px, 152px); opacity: 0; }
+  13.75% { transform: translate(344px, 216px); opacity: 0; }
+  14% { opacity: 1; }
+  14.748% { transform: translate(385px, 216px); }
+  16.307% { transform: translate(385px, 152px); }
+  17.5% { transform: translate(434px, 152px); opacity: 1; }
+  17.75% { transform: translate(434px, 152px); opacity: 0; }
+  23.75% { transform: translate(344px, 216px); opacity: 0; }
+  24% { opacity: 1; }
+  24.748% { transform: translate(385px, 216px); }
+  26.307% { transform: translate(385px, 152px); }
+  27.5% { transform: translate(434px, 152px); opacity: 1; }
+  27.75% { transform: translate(434px, 152px); opacity: 0; }
+  28.75% { transform: translate(344px, 216px); opacity: 0; }
+  29% { opacity: 1; }
+  29.748% { transform: translate(385px, 216px); }
+  31.307% { transform: translate(385px, 152px); }
+  32.5% { transform: translate(434px, 152px); opacity: 1; }
+  32.75% { transform: translate(434px, 152px); opacity: 0; }
+  33.75% { transform: translate(344px, 216px); opacity: 0; }
+  34% { opacity: 1; }
+  34.748% { transform: translate(385px, 216px); }
+  36.307% { transform: translate(385px, 152px); }
+  37.5% { transform: translate(434px, 152px); opacity: 1; }
+  37.75% { transform: translate(434px, 152px); opacity: 0; }
+  43.75% { transform: translate(344px, 216px); opacity: 0; }
+  44% { opacity: 1; }
+  44.748% { transform: translate(385px, 216px); }
+  46.307% { transform: translate(385px, 152px); }
+  47.5% { transform: translate(434px, 152px); opacity: 1; }
+  47.75% { transform: translate(434px, 152px); opacity: 0; }
+  48.75% { transform: translate(344px, 216px); opacity: 0; }
+  49% { opacity: 1; }
+  49.748% { transform: translate(385px, 216px); }
+  51.307% { transform: translate(385px, 152px); }
+  52.5% { transform: translate(434px, 152px); opacity: 1; }
+  52.75% { transform: translate(434px, 152px); opacity: 0; }
+  58.75% { transform: translate(344px, 216px); opacity: 0; }
+  59% { opacity: 1; }
+  59.748% { transform: translate(385px, 216px); }
+  61.307% { transform: translate(385px, 152px); }
+  62.5% { transform: translate(434px, 152px); opacity: 1; }
+  62.75% { transform: translate(434px, 152px); opacity: 0; }
+  100% { transform: translate(434px, 152px); opacity: 0; }
+}
+@keyframes cr-g1 {
+  0% { transform: translate(344px, 216px); opacity: 0; }
+  18.75% { transform: translate(344px, 216px); opacity: 0; }
+  19% { opacity: 1; }
+  19.748% { transform: translate(385px, 216px); }
+  21.307% { transform: translate(385px, 280px); }
+  22.5% { transform: translate(434px, 280px); opacity: 1; }
+  22.75% { transform: translate(434px, 280px); opacity: 0; }
+  38.75% { transform: translate(344px, 216px); opacity: 0; }
+  39% { opacity: 1; }
+  39.748% { transform: translate(385px, 216px); }
+  41.307% { transform: translate(385px, 280px); }
+  42.5% { transform: translate(434px, 280px); opacity: 1; }
+  42.75% { transform: translate(434px, 280px); opacity: 0; }
+  53.75% { transform: translate(344px, 216px); opacity: 0; }
+  54% { opacity: 1; }
+  54.748% { transform: translate(385px, 216px); }
+  56.307% { transform: translate(385px, 280px); }
+  57.5% { transform: translate(434px, 280px); opacity: 1; }
+  57.75% { transform: translate(434px, 280px); opacity: 0; }
+  61.25% { transform: translate(344px, 216px); opacity: 0; }
+  61.5% { opacity: 1; }
+  62.248% { transform: translate(385px, 216px); }
+  63.807% { transform: translate(385px, 280px); }
+  65% { transform: translate(434px, 280px); opacity: 1; }
+  65.25% { transform: translate(434px, 280px); opacity: 0; }
+  66.25% { transform: translate(344px, 216px); opacity: 0; }
+  66.5% { opacity: 1; }
+  67.248% { transform: translate(385px, 216px); }
+  68.807% { transform: translate(385px, 280px); }
+  70% { transform: translate(434px, 280px); opacity: 1; }
+  70.25% { transform: translate(434px, 280px); opacity: 0; }
+  71.25% { transform: translate(344px, 216px); opacity: 0; }
+  71.5% { opacity: 1; }
+  72.248% { transform: translate(385px, 216px); }
+  73.807% { transform: translate(385px, 280px); }
+  75% { transform: translate(434px, 280px); opacity: 1; }
+  75.25% { transform: translate(434px, 280px); opacity: 0; }
+  76.25% { transform: translate(344px, 216px); opacity: 0; }
+  76.5% { opacity: 1; }
+  77.248% { transform: translate(385px, 216px); }
+  78.807% { transform: translate(385px, 280px); }
+  80% { transform: translate(434px, 280px); opacity: 1; }
+  80.25% { transform: translate(434px, 280px); opacity: 0; }
+  81.25% { transform: translate(344px, 216px); opacity: 0; }
+  81.5% { opacity: 1; }
+  82.248% { transform: translate(385px, 216px); }
+  83.807% { transform: translate(385px, 280px); }
+  85% { transform: translate(434px, 280px); opacity: 1; }
+  85.25% { transform: translate(434px, 280px); opacity: 0; }
+  86.25% { transform: translate(344px, 216px); opacity: 0; }
+  86.5% { opacity: 1; }
+  87.248% { transform: translate(385px, 216px); }
+  88.807% { transform: translate(385px, 280px); }
+  90% { transform: translate(434px, 280px); opacity: 1; }
+  90.25% { transform: translate(434px, 280px); opacity: 0; }
+  91.25% { transform: translate(344px, 216px); opacity: 0; }
+  91.5% { opacity: 1; }
+  92.248% { transform: translate(385px, 216px); }
+  93.807% { transform: translate(385px, 152px); }
+  95% { transform: translate(434px, 152px); opacity: 1; }
+  95.25% { transform: translate(434px, 152px); opacity: 0; }
+  100% { transform: translate(434px, 152px); opacity: 0; }
+}
+@keyframes cr-g2 {
+  0% { transform: translate(344px, 216px); opacity: 0; }
+  78.75% { transform: translate(344px, 216px); opacity: 0; }
+  79% { opacity: 1; }
+  79.748% { transform: translate(385px, 216px); }
+  81.307% { transform: translate(385px, 280px); }
+  82.5% { transform: translate(434px, 280px); opacity: 1; }
+  82.75% { transform: translate(434px, 280px); opacity: 0; }
+  83.75% { transform: translate(344px, 216px); opacity: 0; }
+  84% { opacity: 1; }
+  84.748% { transform: translate(385px, 216px); }
+  86.307% { transform: translate(385px, 280px); }
+  87.5% { transform: translate(434px, 280px); opacity: 1; }
+  87.75% { transform: translate(434px, 280px); opacity: 0; }
+  93.75% { transform: translate(344px, 216px); opacity: 0; }
+  94% { opacity: 1; }
+  94.748% { transform: translate(385px, 216px); }
+  96.307% { transform: translate(385px, 152px); }
+  97.5% { transform: translate(434px, 152px); opacity: 1; }
+  97.75% { transform: translate(434px, 152px); opacity: 0; }
+  100% { transform: translate(434px, 152px); opacity: 0; }
+}
+@keyframes cr-set25 {
+  0% { transform: translate(790px, 340px); opacity: 0; }
+  42.25% { transform: translate(790px, 340px); opacity: 0; }
+  42.5% { opacity: 1; }
+  42.706% { transform: translate(790px, 388px); }
+  47.838% { transform: translate(250px, 388px); }
+  48.75% { transform: translate(250px, 292px); opacity: 1; }
+  49% { transform: translate(250px, 292px); opacity: 0; }
+  100% { transform: translate(250px, 292px); opacity: 0; }
+}
+@keyframes cr-set50 {
+  0% { transform: translate(790px, 340px); opacity: 0; }
+  59.5% { transform: translate(790px, 340px); opacity: 0; }
+  59.75% { opacity: 1; }
+  59.886% { transform: translate(790px, 388px); }
+  64.228% { transform: translate(250px, 388px); }
+  65% { transform: translate(250px, 292px); opacity: 1; }
+  65.25% { transform: translate(250px, 292px); opacity: 0; }
+  100% { transform: translate(250px, 292px); opacity: 0; }
+}
+@keyframes cr-set100 {
+  0% { transform: translate(790px, 340px); opacity: 0; }
+  72.75% { transform: translate(790px, 340px); opacity: 0; }
+  73% { opacity: 1; }
+  73.083% { transform: translate(790px, 388px); }
+  76.833% { transform: translate(250px, 388px); }
+  77.5% { transform: translate(250px, 292px); opacity: 1; }
+  77.75% { transform: translate(250px, 292px); opacity: 0; }
+  100% { transform: translate(250px, 292px); opacity: 0; }
+}
+@keyframes cr-split {
+  0% { transform: translateX(150px); opacity: 1; }
+  8.75% { transform: translateX(150px); animation-timing-function: ease-in-out; }
+  11.25% { transform: translateX(140.6px); }
+  50% { transform: translateX(140.6px); animation-timing-function: ease-in-out; }
+  52.5% { transform: translateX(111px); }
+  65% { transform: translateX(111px); animation-timing-function: ease-in-out; }
+  67.5% { transform: translateX(74px); }
+  77.5% { transform: translateX(74px); animation-timing-function: ease-in-out; }
+  80% { transform: translateX(0px); }
+  97.5% { transform: translateX(0px); opacity: 1; }
+  100% { transform: translateX(0px); opacity: 0; }
+}
+@keyframes cr-v2mv {
+  0% { transform: translate(0px, 0px); }
+  90% { transform: translate(0px, 0px); animation-timing-function: ease-in-out; }
+  92.5% { transform: translate(0px, -128px); }
+  100% { transform: translate(0px, -128px); }
+}
+@keyframes cr-e2 {
+  0% { transform: scaleX(0); opacity: 1; }
+  26.25% { transform: scaleX(0); }
+  30% { transform: scaleX(0.55); }
+  33% { transform: scaleX(1.1); }
+  35.5% { transform: scaleX(0.92); }
+  37.5% { transform: scaleX(1); }
+  97.5% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes cr-p2 {
+  0% { transform: scaleX(0); opacity: 1; }
+  26.25% { transform: scaleX(0); }
+  30% { transform: scaleX(0.55); }
+  33% { transform: scaleX(1.1); }
+  35.5% { transform: scaleX(0.92); }
+  37.5% { transform: scaleX(1); }
+  97.5% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes cr-wA {
+  0% { opacity: 1; }
+  10% { opacity: 1; }
+  10.6% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes cr-wB {
+  0% { opacity: 0; }
+  10.6% { opacity: 0; }
+  11.2% { opacity: 1; }
+  51.25% { opacity: 1; }
+  51.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-wC {
+  0% { opacity: 0; }
+  51.85% { opacity: 0; }
+  52.45% { opacity: 1; }
+  66.25% { opacity: 1; }
+  66.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-wD {
+  0% { opacity: 0; }
+  66.85% { opacity: 0; }
+  67.45% { opacity: 1; }
+  78.75% { opacity: 1; }
+  79.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-wE {
+  0% { opacity: 0; }
+  79.35% { opacity: 0; }
+  79.95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v2 {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  3.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v2dep {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  3.5% { opacity: 1; }
+  9% { opacity: 1; }
+  9.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v2so {
+  0% { opacity: 0; }
+  60.5% { opacity: 0; }
+  61.25% { opacity: 1; }
+  65.5% { opacity: 1; }
+  66.25% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  80% { opacity: 1; }
+  80.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v2i2 {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  62.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cr-v2i3 {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  77% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cr-v2can {
+  0% { opacity: 1; }
+  92% { opacity: 1; }
+  92.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v2st {
+  0% { opacity: 0; }
+  92.6% { opacity: 0; }
+  93.2% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v1i3 {
+  0% { opacity: 1; }
+  81.25% { opacity: 1; }
+  82.75% { opacity: 0; }
+  94% { opacity: 0; }
+  95.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cr-v1i2 {
+  0% { opacity: 1; }
+  83.75% { opacity: 1; }
+  85.25% { opacity: 0; }
+  94% { opacity: 0; }
+  95.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cr-v1i1 {
+  0% { opacity: 1; }
+  86.25% { opacity: 1; }
+  87.75% { opacity: 0; }
+  94% { opacity: 0; }
+  95.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cr-v1si {
+  0% { opacity: 0; }
+  80.5% { opacity: 0; }
+  81.1% { opacity: 1; }
+  86.25% { opacity: 1; }
+  86.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v1lab {
+  0% { opacity: 1; }
+  86.25% { opacity: 1; }
+  86.85% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes cr-v1ret {
+  0% { opacity: 0; }
+  86.85% { opacity: 0; }
+  87.45% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-mv2 {
+  0% { opacity: 0; }
+  11.25% { opacity: 0; }
+  12.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-v2val {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-ok {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  40.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-vw {
+  0% { opacity: 1; }
+  11.25% { opacity: 1; }
+  11.85% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes cr-vc1 {
+  0% { opacity: 0; }
+  11.85% { opacity: 0; }
+  12.45% { opacity: 1; }
+  40% { opacity: 1; }
+  40.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-vp5 {
+  0% { opacity: 0; }
+  40.6% { opacity: 0; }
+  41.2% { opacity: 1; }
+  51.25% { opacity: 1; }
+  51.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-vc25 {
+  0% { opacity: 0; }
+  51.85% { opacity: 0; }
+  52.45% { opacity: 1; }
+  58.75% { opacity: 1; }
+  59.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-vp25 {
+  0% { opacity: 0; }
+  59.35% { opacity: 0; }
+  59.95% { opacity: 1; }
+  66.25% { opacity: 1; }
+  66.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-vc50 {
+  0% { opacity: 0; }
+  66.85% { opacity: 0; }
+  67.45% { opacity: 1; }
+  72% { opacity: 1; }
+  72.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-vp50 {
+  0% { opacity: 0; }
+  72.6% { opacity: 0; }
+  73.2% { opacity: 1; }
+  92% { opacity: 1; }
+  92.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cr-vpro {
+  0% { opacity: 0; }
+  92.6% { opacity: 0; }
+  93.2% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <defs>
+    <clipPath id="cr-clip"><rect x="176" y="226" width="148" height="14" rx="7"/></clipPath>
+  </defs>
+
+  <!-- wires -->
+  <line class="wire" x1="110" y1="216" x2="158" y2="216" marker-end="url(#ah)"/>
+  <path class="wire" d="M340 216H385V152H428" marker-end="url(#ah)"/>
+  <path class="wire" d="M340 216H385V280H428" marker-end="url(#ah)"/>
+  <line class="wire dash s-teal" x1="650" y1="152" x2="697" y2="152" marker-end="url(#ah-teal)"/>
+  <line class="wire dash s-teal" x1="650" y1="280" x2="697" y2="280" marker-end="url(#ah-teal)"/>
+  <text class="tiny mid" x="674" y="143">metrics</text>
+  <text class="tiny mid" x="674" y="271">metrics</text>
+
+  <!-- verdict feeds back into the router: pass raises the weight, fail rolls back -->
+  <path class="wire" d="M790 328V388H250V279" marker-end="url(#ah)"/>
+  <path class="none s-red dash" d="M860 328V436H205V279" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <text class="tiny sb f-green" x="520" y="416">pass → next weight step</text>
+  <text class="tiny sb f-red" x="520" y="458">fail → roll back: all traffic to v1</text>
+
+  <!-- users -->
+  <rect class="box" x="30" y="178" width="80" height="76" rx="12"/>
+  <circle class="f-faint" cx="80" cy="194" r="5"/>
+  <path class="f-faint" d="M70 211a10 9 0 0 1 20 0z"/>
+  <circle class="f-muted" cx="64" cy="197" r="6"/>
+  <path class="f-muted" d="M52 216a12 10 0 0 1 24 0z"/>
+  <text class="label mid" x="70" y="240">Users</text>
+
+  <!-- router with the traffic-weight bar -->
+  <rect class="box" x="160" y="156" width="180" height="120" rx="12"/>
+  <text class="label mid" x="250" y="181">Router</text>
+  <text class="sub mid" x="250" y="198">load balancer</text>
+  <circle class="f-blue" cx="180" cy="216" r="4"/>
+  <text class="tiny sb f-ink" x="188" y="220">v1</text>
+  <circle class="f-green" cx="320" cy="216" r="4"/>
+  <text class="tiny sb f-ink end" x="312" y="220">v2</text>
+  <g clip-path="url(#cr-clip)">
+    <rect class="f-blue" x="176" y="226" width="148" height="14"/>
+    <g class="cr-split">
+      <rect class="f-panel" x="174" y="226" width="2" height="14"/>
+      <rect class="f-green" x="176" y="226" width="148" height="14"/>
+    </g>
+  </g>
+  <g class="cr-win cr-wA"><text class="label b" x="176" y="261">100%</text><text class="label b end" x="324" y="261">0%</text></g>
+  <g class="cr-wB"><text class="label b" x="176" y="261">95%</text><text class="label b end" x="324" y="261">5%</text></g>
+  <g class="cr-win cr-wC"><text class="label b" x="176" y="261">75%</text><text class="label b end" x="324" y="261">25%</text></g>
+  <g class="cr-win cr-wD"><text class="label b" x="176" y="261">50%</text><text class="label b end" x="324" y="261">50%</text></g>
+  <g class="cr-win cr-wE"><text class="label b" x="176" y="261">0%</text><text class="label b end" x="324" y="261">100%</text></g>
+
+  <!-- stable slot: v1 -->
+  <rect class="box" x="430" y="104" width="220" height="96" rx="12"/>
+  <rect class="none s-line dash" x="446" y="146" width="56" height="36" rx="8" stroke-width="1.5"/>
+  <rect class="none s-line dash" x="514" y="146" width="56" height="36" rx="8" stroke-width="1.5"/>
+  <rect class="none s-line dash" x="582" y="146" width="56" height="36" rx="8" stroke-width="1.5"/>
+  <g class="cr-v1i1">
+    <rect class="f-blue-soft s-blue" x="446" y="146" width="56" height="36" rx="8" stroke-width="1.5"/>
+    <path class="s-blue" d="M458 159h22M458 169h22" stroke-width="2" stroke-linecap="round"/>
+    <circle class="f-blue" cx="490" cy="164" r="3"/>
+  </g>
+  <g class="cr-v1i2">
+    <rect class="f-blue-soft s-blue" x="514" y="146" width="56" height="36" rx="8" stroke-width="1.5"/>
+    <path class="s-blue" d="M526 159h22M526 169h22" stroke-width="2" stroke-linecap="round"/>
+    <circle class="f-blue" cx="558" cy="164" r="3"/>
+  </g>
+  <g class="cr-v1i3">
+    <rect class="f-blue-soft s-blue" x="582" y="146" width="56" height="36" rx="8" stroke-width="1.5"/>
+    <path class="s-blue" d="M594 159h22M594 169h22" stroke-width="2" stroke-linecap="round"/>
+    <circle class="f-blue" cx="626" cy="164" r="3"/>
+  </g>
+  <text class="label cr-v1lab" x="446" y="130">v1 · stable</text>
+  <text class="label f-faint cr-win cr-v1ret" x="446" y="130">v1 · retired</text>
+  <text class="tiny sb f-amber-ink end cr-win cr-v1si" x="634" y="129">scaling down</text>
+
+  <!-- canary slot, empty until a release is deployed into it -->
+  <rect class="zone" x="430" y="232" width="220" height="96" rx="12"/>
+  <text class="tiny mid f-faint" x="540" y="284">no canary running</text>
+
+  <!-- v2: deployed as the canary, promoted into the stable slot at the end -->
+  <g class="cr-v2">
+    <g class="cr-v2mv">
+      <rect class="box" x="430" y="232" width="220" height="96" rx="12"/>
+      <g>
+        <rect class="f-green-soft s-green" x="446" y="274" width="56" height="36" rx="8" stroke-width="1.5"/>
+        <path class="s-green" d="M458 287h22M458 297h22" stroke-width="2" stroke-linecap="round"/>
+        <circle class="f-green" cx="490" cy="292" r="3"/>
+      </g>
+      <g class="cr-win cr-v2i2">
+        <rect class="f-green-soft s-green" x="514" y="274" width="56" height="36" rx="8" stroke-width="1.5"/>
+        <path class="s-green" d="M526 287h22M526 297h22" stroke-width="2" stroke-linecap="round"/>
+        <circle class="f-green" cx="558" cy="292" r="3"/>
+      </g>
+      <g class="cr-win cr-v2i3">
+        <rect class="f-green-soft s-green" x="582" y="274" width="56" height="36" rx="8" stroke-width="1.5"/>
+        <path class="s-green" d="M594 287h22M594 297h22" stroke-width="2" stroke-linecap="round"/>
+        <circle class="f-green" cx="626" cy="292" r="3"/>
+      </g>
+      <text class="label cr-v2can" x="446" y="258">v2 · canary</text>
+      <text class="label cr-win cr-v2st" x="446" y="258">v2 · stable</text>
+      <g class="cr-win cr-v2dep">
+        <circle class="none s-line" cx="560" cy="254" r="5" stroke-width="2"/>
+        <circle class="none s-amber spin" cx="560" cy="254" r="5" stroke-width="2" stroke-dasharray="8 24" stroke-linecap="round"/>
+        <text class="tiny sb f-amber-ink end" x="634" y="258">deploying</text>
+      </g>
+      <text class="tiny sb f-amber-ink end cr-win cr-v2so" x="634" y="258">scaling out</text>
+      <text class="tiny sb f-green end cr-win cr-v2st" x="634" y="258">promoted</text>
+    </g>
+  </g>
+
+  <!-- canary analysis -->
+  <rect class="box" x="700" y="104" width="230" height="224" rx="12"/>
+  <text class="label" x="716" y="130">Canary analysis</text>
+  <rect class="f-blue" x="716" y="142" width="8" height="8" rx="2"/>
+  <text class="tiny" x="729" y="150">v1 baseline</text>
+  <rect class="f-green" x="806" y="142" width="8" height="8" rx="2"/>
+  <text class="tiny" x="819" y="150">v2 canary</text>
+
+  <text class="tiny sb f-ink" x="716" y="178">error rate</text>
+  <text class="tiny mid f-red" x="825" y="178">max 1.5× v1</text>
+  <line class="s-line" x1="734.5" y1="182" x2="734.5" y2="206" stroke-width="1"/>
+  <text class="tiny" x="716" y="192">v1</text>
+  <path class="f-blue" d="M735 184h56a4 4 0 0 1 0 8h-56z"/>
+  <text class="tiny f-ink" x="856" y="192">0.40%</text>
+  <text class="tiny" x="716" y="204">v2</text>
+  <path class="f-green cr-grow cr-e2" d="M735 196h63.5a4 4 0 0 1 0 8h-63.5z"/>
+  <text class="tiny f-ink cr-win cr-v2val" x="856" y="204">0.45%</text>
+  <line class="s-red" x1="825" y1="181" x2="825" y2="207" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+  <text class="tiny sb f-ink" x="716" y="230">p95 latency</text>
+  <text class="tiny mid f-red" x="843" y="230">max 1.2× v1</text>
+  <line class="s-line" x1="734.5" y1="234" x2="734.5" y2="258" stroke-width="1"/>
+  <text class="tiny" x="716" y="244">v1</text>
+  <path class="f-blue" d="M735 236h86a4 4 0 0 1 0 8h-86z"/>
+  <text class="tiny f-ink" x="856" y="244">180 ms</text>
+  <text class="tiny" x="716" y="256">v2</text>
+  <path class="f-green cr-grow cr-p2" d="M735 248h91a4 4 0 0 1 0 8h-91z"/>
+  <text class="tiny f-ink cr-win cr-v2val" x="856" y="256">190 ms</text>
+  <line class="s-red" x1="843" y1="233" x2="843" y2="259" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+  <g class="cr-win cr-ok">
+    <circle class="f-green" cx="908" cy="200" r="7"/>
+    <path class="none s-bg" d="M904.5 200l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle class="f-green" cx="908" cy="252" r="7"/>
+    <path class="none s-bg" d="M904.5 252l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- verdict -->
+  <g class="cr-win cr-vw">
+    <rect class="f-panel-2 s-line" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <text class="sub mid" x="815" y="299">waiting for a canary</text>
+  </g>
+  <g class="cr-vc1">
+    <rect class="f-amber-soft s-amber" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="none s-amber spin" cx="734" cy="295" r="6" stroke-width="2" stroke-dasharray="9 29" stroke-linecap="round"/>
+    <text class="sub sb f-amber-ink" x="748" y="299">collecting samples…</text>
+  </g>
+  <g class="cr-win cr-vp5">
+    <rect class="f-green-soft s-green" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="f-green" cx="734" cy="295" r="7"/>
+    <path class="none s-bg" d="M730.5 295l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="sub f-green" x="748" y="299"><tspan class="b">PASS</tspan> at 5%</text>
+  </g>
+  <g class="cr-win cr-vc25">
+    <rect class="f-amber-soft s-amber" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="none s-amber spin" cx="734" cy="295" r="6" stroke-width="2" stroke-dasharray="9 29" stroke-linecap="round"/>
+    <text class="sub sb f-amber-ink" x="748" y="299">checking at 25%…</text>
+  </g>
+  <g class="cr-win cr-vp25">
+    <rect class="f-green-soft s-green" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="f-green" cx="734" cy="295" r="7"/>
+    <path class="none s-bg" d="M730.5 295l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="sub f-green" x="748" y="299"><tspan class="b">PASS</tspan> at 25%</text>
+  </g>
+  <g class="cr-win cr-vc50">
+    <rect class="f-amber-soft s-amber" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="none s-amber spin" cx="734" cy="295" r="6" stroke-width="2" stroke-dasharray="9 29" stroke-linecap="round"/>
+    <text class="sub sb f-amber-ink" x="748" y="299">checking at 50%…</text>
+  </g>
+  <g class="cr-win cr-vp50">
+    <rect class="f-green-soft s-green" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="f-green" cx="734" cy="295" r="7"/>
+    <path class="none s-bg" d="M730.5 295l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="sub f-green" x="748" y="299"><tspan class="b">PASS</tspan> at 50%</text>
+  </g>
+  <g class="cr-win cr-vpro">
+    <rect class="f-green-soft s-green" x="716" y="282" width="198" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="f-green" cx="734" cy="295" r="7"/>
+    <path class="none s-bg" d="M730.5 295l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="sub f-green" x="748" y="299"><tspan class="b">PROMOTED</tspan> v2</text>
+  </g>
+
+  <!-- traffic -->
+  <circle class="pkt f-muted cr-flow" cx="114" cy="216" r="5"/>
+  <circle class="pkt f-muted cr-flow cr-half" cx="114" cy="216" r="5"/>
+  <g class="p123">
+    <circle class="f-teal cr-flow" cx="654" cy="152" r="3.5"/>
+    <circle class="f-teal cr-flow cr-half" cx="654" cy="152" r="3.5"/>
+  </g>
+  <g class="cr-win cr-mv2">
+    <circle class="f-teal cr-flow" cx="654" cy="280" r="3.5"/>
+    <circle class="f-teal cr-flow cr-half" cx="654" cy="280" r="3.5"/>
+  </g>
+  <circle class="pkt f-blue cr-tok cr-b1" r="6"/>
+  <circle class="pkt f-blue cr-tok cr-b2" r="6"/>
+  <circle class="pkt f-green cr-tok cr-g1" r="6"/>
+  <circle class="pkt f-green cr-tok cr-g2" r="6"/>
+
+  <!-- verdicts travelling back to the router -->
+  <g class="cr-tok cr-set25">
+    <rect class="f-bg" x="-24" y="-11" width="48" height="22" rx="11"/>
+    <rect class="f-green-soft s-green" x="-24" y="-11" width="48" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny b mid f-green" y="4">25%</text>
+  </g>
+  <g class="cr-tok cr-set50">
+    <rect class="f-bg" x="-24" y="-11" width="48" height="22" rx="11"/>
+    <rect class="f-green-soft s-green" x="-24" y="-11" width="48" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny b mid f-green" y="4">50%</text>
+  </g>
+  <g class="cr-tok cr-set100">
+    <rect class="f-bg" x="-24" y="-11" width="48" height="22" rx="11"/>
+    <rect class="f-green-soft s-green" x="-24" y="-11" width="48" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny b mid f-green" y="4">100%</text>
+  </g>
+</g>
+</svg>
