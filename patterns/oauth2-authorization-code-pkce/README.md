@@ -61,11 +61,11 @@ The hash only works one way. Seeing the challenge in step 1 doesn't reveal the v
 
 - [OpenID Connect (OIDC)](../openid-connect/) — An ID token on top of OAuth 2.0 tells the app who signed in.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
-- Refresh Token Rotation *(planned)* — Short-lived access tokens, single-use refresh tokens, and reuse detection that revokes the whole family.
+- [Refresh Token Rotation](../refresh-token-rotation/) — Short-lived access tokens, single-use refresh tokens, and reuse detection that revokes the whole family.
 - [Backends for Frontends (BFF)](../backends-for-frontends/) — A dedicated backend per client type, shaped for exactly what that UI needs.
 - OAuth 2.0 Client Credentials *(planned)* — Machine-to-machine access tokens, with no user involved.
 - Device Authorization Grant *(planned)* — Sign in on a TV or CLI by approving a short code on your phone.
-- Sessions vs Tokens *(planned)* — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
+- [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 - Federated Identity *(planned)* — Let an external identity provider authenticate users; the application trusts its tokens.
 
 ## References

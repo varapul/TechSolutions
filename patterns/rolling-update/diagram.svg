@@ -1,0 +1,1444 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Rolling Update</title>
+<desc id="dg-desc">Rolling Update. Replace instances batch by batch while the service stays up. Step 1, Surge one new instance: Four instances run v1. A v2 instance starts in the surge slot and gets no traffic until it is ready. Step 2, Swap one at a time: When a v2 is ready, one v1 drains and leaves, then the next v2 starts: at least 4 ready, at most 5. Step 3, A bad instance stalls it: The last v2 fails its readiness check: it gets no traffic and the rollout stalls, not the service. Step 4, Fix and finish: After the fix it turns ready and the rollout finishes with four v2. Revision 1 is kept for rollback.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DEPLOYMENT &amp; RELEASE</text>
+  <text class="title" x="40" y="64">Rolling Update</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Surge one new instance</text>
+  <text class="step on p1" x="40" y="518">1 · Surge one new instance</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Swap one at a time</text>
+  <text class="step on p2" x="262" y="518">2 · Swap one at a time</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · A bad instance stalls it</text>
+  <text class="step on p3" x="484" y="518">3 · A bad instance stalls it</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Fix and finish</text>
+  <text class="step on p4" x="706" y="518">4 · Fix and finish</text>
+  <text class="caption p1" x="40" y="552">Four instances run v1. A v2 instance starts in the surge slot and gets no traffic until it is ready.</text>
+  <text class="caption p2" x="40" y="552">When a v2 is ready, one v1 drains and leaves, then the next v2 starts: at least 4 ready, at most 5.</text>
+  <text class="caption p3" x="40" y="552">The last v2 fails its readiness check: it gets no traffic and the rollout stalls, not the service.</text>
+  <text class="caption p4" x="40" y="552">After the fix it turns ready and the rollout finishes with four v2. Revision 1 is kept for rollback.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Rolling Update. Timeline (20s loop, 1s = 5%). Desired 4, max surge 1, max unavailable 0.
+   0-25%   four v1 instances serve; at 1.2 s a v2 instance starts in the surge slot: no traffic, not ready
+   25-50%  it turns ready at 5.2 s and joins; the oldest v1 gets its last request at 5.5 s, drains
+           and is gone by 6.6 s; the belt shifts left and the next v2 starts (7.1 s, ready 7.7 s);
+           second swap done by 9.35 s, when the third v2 starts
+   50-75%  third swap (ready 10.7 s, done by 12.2 s); the fourth v2 starts and fails its readiness
+           check at 12.75 s: never in rotation; the progress deadline passes at 13.7 s and the rollout is
+           reported as stalled; four ready instances (one v1, three v2) keep serving
+   75-100% the configuration is fixed at 15.2 s, the instance is ready at 15.95 s and the last swap
+           follows; complete at 17.5 s; from 19.5 s everything fades back to the all-v1 start
+   Requests leave the load balancer every 0.25 s, round robin over the instances in rotation. The dots,
+   the instance states, the belt shifts and the counters are all generated from that one timeline
+   (scripts/lib/motion.mjs), so they always agree. Each instance is drawn at slot 1 and moved by ru-x-*. */
+.diagram .ru-ver { font-size: 20px; font-weight: 700; }
+.diagram .ru-num { font-size: 15px; font-weight: 700; }
+.diagram .ru-st { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+.diagram .ru-x-v1a { transform: translate(0px, 0px); animation: ru-x-v1a var(--T) linear infinite; }
+.diagram .ru-o-v1a { opacity: 1; animation: ru-o-v1a var(--T) linear infinite; }
+.diagram .ru-s-v1a { opacity: 1; animation: ru-s-v1a var(--T) linear infinite; }
+.diagram .ru-d-v1a { opacity: 0; animation: ru-d-v1a var(--T) linear infinite; }
+.diagram .ru-q-v1a { opacity: 0; animation: ru-q-v1a var(--T) linear infinite; }
+.diagram .ru-x-v1b { transform: translate(160px, 0px); animation: ru-x-v1b var(--T) linear infinite; }
+.diagram .ru-o-v1b { opacity: 1; animation: ru-o-v1b var(--T) linear infinite; }
+.diagram .ru-s-v1b { opacity: 1; animation: ru-s-v1b var(--T) linear infinite; }
+.diagram .ru-d-v1b { opacity: 0; animation: ru-d-v1b var(--T) linear infinite; }
+.diagram .ru-q-v1b { opacity: 0; animation: ru-q-v1b var(--T) linear infinite; }
+.diagram .ru-x-v1c { transform: translate(320px, 0px); animation: ru-x-v1c var(--T) linear infinite; }
+.diagram .ru-o-v1c { opacity: 1; animation: ru-o-v1c var(--T) linear infinite; }
+.diagram .ru-s-v1c { opacity: 1; animation: ru-s-v1c var(--T) linear infinite; }
+.diagram .ru-d-v1c { opacity: 0; animation: ru-d-v1c var(--T) linear infinite; }
+.diagram .ru-q-v1c { opacity: 0; animation: ru-q-v1c var(--T) linear infinite; }
+.diagram .ru-x-v1d { transform: translate(480px, 0px); animation: ru-x-v1d var(--T) linear infinite; }
+.diagram .ru-o-v1d { opacity: 1; animation: ru-o-v1d var(--T) linear infinite; }
+.diagram .ru-s-v1d { opacity: 1; animation: ru-s-v1d var(--T) linear infinite; }
+.diagram .ru-d-v1d { opacity: 0; animation: ru-d-v1d var(--T) linear infinite; }
+.diagram .ru-q-v1d { opacity: 0; animation: ru-q-v1d var(--T) linear infinite; }
+.diagram .ru-x-v2a { transform: translate(640px, 0px); animation: ru-x-v2a var(--T) linear infinite; }
+.diagram .ru-o-v2a { opacity: 1; animation: ru-o-v2a var(--T) linear infinite; }
+.diagram .ru-w-v2a { opacity: 1; animation: ru-w-v2a var(--T) linear infinite; }
+.diagram .ru-s-v2a { opacity: 0; animation: ru-s-v2a var(--T) linear infinite; }
+.diagram .ru-q-v2a { opacity: 0; animation: ru-q-v2a var(--T) linear infinite; }
+.diagram .ru-x-v2b { transform: translate(640px, 0px); animation: ru-x-v2b var(--T) linear infinite; }
+.diagram .ru-o-v2b { opacity: 0; animation: ru-o-v2b var(--T) linear infinite; }
+.diagram .ru-w-v2b { opacity: 0; animation: ru-w-v2b var(--T) linear infinite; }
+.diagram .ru-s-v2b { opacity: 0; animation: ru-s-v2b var(--T) linear infinite; }
+.diagram .ru-q-v2b { opacity: 0; animation: ru-q-v2b var(--T) linear infinite; }
+.diagram .ru-x-v2c { transform: translate(640px, 0px); animation: ru-x-v2c var(--T) linear infinite; }
+.diagram .ru-o-v2c { opacity: 0; animation: ru-o-v2c var(--T) linear infinite; }
+.diagram .ru-w-v2c { opacity: 0; animation: ru-w-v2c var(--T) linear infinite; }
+.diagram .ru-s-v2c { opacity: 0; animation: ru-s-v2c var(--T) linear infinite; }
+.diagram .ru-q-v2c { opacity: 0; animation: ru-q-v2c var(--T) linear infinite; }
+.diagram .ru-x-v2d { transform: translate(640px, 0px); animation: ru-x-v2d var(--T) linear infinite; }
+.diagram .ru-o-v2d { opacity: 0; animation: ru-o-v2d var(--T) linear infinite; }
+.diagram .ru-w-v2d { opacity: 0; animation: ru-w-v2d var(--T) linear infinite; }
+.diagram .ru-f-v2d { opacity: 0; animation: ru-f-v2d var(--T) linear infinite; }
+.diagram .ru-s-v2d { opacity: 0; animation: ru-s-v2d var(--T) linear infinite; }
+.diagram .ru-q-v2d { opacity: 0; animation: ru-q-v2d var(--T) linear infinite; }
+.diagram .ru-tot5 { opacity: 1; animation: ru-tot5 var(--T) linear infinite; }
+.diagram .ru-tot4 { opacity: 0; animation: ru-tot4 var(--T) linear infinite; }
+.diagram .ru-rdy5 { opacity: 0; animation: ru-rdy5 var(--T) linear infinite; }
+.diagram .ru-rdy4 { opacity: 1; animation: ru-rdy4 var(--T) linear infinite; }
+.diagram .ru-u1 { opacity: 0; animation: ru-u1 var(--T) linear infinite; }
+.diagram .ru-u2 { opacity: 0; animation: ru-u2 var(--T) linear infinite; }
+.diagram .ru-u3 { opacity: 0; animation: ru-u3 var(--T) linear infinite; }
+.diagram .ru-u4 { opacity: 0; animation: ru-u4 var(--T) linear infinite; }
+.diagram .ru-n0 { opacity: 1; animation: ru-n0 var(--T) linear infinite; }
+.diagram .ru-n1 { opacity: 0; animation: ru-n1 var(--T) linear infinite; }
+.diagram .ru-n2 { opacity: 0; animation: ru-n2 var(--T) linear infinite; }
+.diagram .ru-n3 { opacity: 0; animation: ru-n3 var(--T) linear infinite; }
+.diagram .ru-n4 { opacity: 0; animation: ru-n4 var(--T) linear infinite; }
+.diagram .ru-p-roll { opacity: 1; animation: ru-p-roll var(--T) linear infinite; }
+.diagram .ru-p-stall { opacity: 0; animation: ru-p-stall var(--T) linear infinite; }
+.diagram .ru-p-done { opacity: 0; animation: ru-p-done var(--T) linear infinite; }
+.diagram .ru-m-cycle { opacity: 1; animation: ru-m-cycle var(--T) linear infinite; }
+.diagram .ru-m-dl { opacity: 0; animation: ru-m-dl var(--T) linear infinite; }
+.diagram .ru-m-wait { opacity: 0; animation: ru-m-wait var(--T) linear infinite; }
+.diagram .ru-m-stall { opacity: 0; animation: ru-m-stall var(--T) linear infinite; }
+.diagram .ru-m-fix { opacity: 0; animation: ru-m-fix var(--T) linear infinite; }
+.diagram .ru-m-done { opacity: 0; animation: ru-m-done var(--T) linear infinite; }
+.diagram .ru-dl { transform-box: fill-box; transform-origin: 0 50%; animation: ru-dl var(--T) linear infinite; }
+.diagram .ru-new { opacity: 0; animation: ru-new var(--T) linear infinite; }
+.diagram .ru-c1 { opacity: 1; animation: ru-c1 var(--T) linear infinite; }
+.diagram .ru-c2 { opacity: 0; animation: ru-c2 var(--T) linear infinite; }
+.diagram .ru-c3 { opacity: 0; animation: ru-c3 var(--T) linear infinite; }
+.diagram .ru-empty { opacity: 0; animation: ru-empty var(--T) linear infinite; }
+.diagram .ru-feed { opacity: 0; animation: ru-feed 0.5s linear infinite; }
+.diagram .ru-feed2 { animation-delay: -0.25s; }
+@keyframes ru-x-v1a {
+  0% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes ru-o-v1a {
+  0% { opacity: 1; }
+  32.25% { opacity: 1; }
+  33% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-s-v1a {
+  0% { opacity: 1; }
+  28% { opacity: 1; }
+  28.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  97.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-d-v1a {
+  0% { opacity: 0; }
+  28% { opacity: 0; }
+  28.75% { opacity: 1; }
+  33.25% { opacity: 1; }
+  34% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-q-v1a {
+  0% { transform: translate(220px, 193.69px); opacity: 1; }
+  0.75% { transform: translate(220px, 208px); opacity: 1; }
+  1% { transform: translate(220px, 208px); opacity: 0; }
+  2.5% { transform: translate(220px, 146px); opacity: 0; }
+  2.75% { opacity: 1; }
+  5.75% { transform: translate(220px, 208px); opacity: 1; }
+  6% { transform: translate(220px, 208px); opacity: 0; }
+  7.5% { transform: translate(220px, 146px); opacity: 0; }
+  7.75% { opacity: 1; }
+  10.75% { transform: translate(220px, 208px); opacity: 1; }
+  11% { transform: translate(220px, 208px); opacity: 0; }
+  12.5% { transform: translate(220px, 146px); opacity: 0; }
+  12.75% { opacity: 1; }
+  15.75% { transform: translate(220px, 208px); opacity: 1; }
+  16% { transform: translate(220px, 208px); opacity: 0; }
+  17.5% { transform: translate(220px, 146px); opacity: 0; }
+  17.75% { opacity: 1; }
+  20.75% { transform: translate(220px, 208px); opacity: 1; }
+  21% { transform: translate(220px, 208px); opacity: 0; }
+  22.5% { transform: translate(220px, 146px); opacity: 0; }
+  22.75% { opacity: 1; }
+  25.75% { transform: translate(220px, 208px); opacity: 1; }
+  26% { transform: translate(220px, 208px); opacity: 0; }
+  27.5% { transform: translate(220px, 146px); opacity: 0; }
+  27.75% { opacity: 1; }
+  30.75% { transform: translate(220px, 208px); opacity: 1; }
+  31% { transform: translate(220px, 208px); opacity: 0; }
+  97.5% { transform: translate(220px, 146px); opacity: 0; }
+  97.75% { opacity: 1; }
+  100% { transform: translate(220px, 193.69px); opacity: 1; }
+}
+@keyframes ru-x-v1b {
+  0% { transform: translate(160px, 0px); }
+  33.5% { transform: translate(160px, 0px); animation-timing-function: ease-in-out; }
+  35.25% { transform: translate(0px, 0px); }
+  46.25% { transform: translate(0px, 0px); }
+  46.5% { transform: translate(160px, 0px); }
+  100% { transform: translate(160px, 0px); }
+}
+@keyframes ru-o-v1b {
+  0% { opacity: 1; }
+  44.25% { opacity: 1; }
+  45% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-s-v1b {
+  0% { opacity: 1; }
+  40.5% { opacity: 1; }
+  41.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  97.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-d-v1b {
+  0% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41.25% { opacity: 1; }
+  45.25% { opacity: 1; }
+  46% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-q-v1b {
+  0% { transform: translate(220px, 169.85px); opacity: 1; }
+  2% { transform: translate(220px, 208px); opacity: 1; }
+  2.25% { transform: translate(220px, 208px); opacity: 0; }
+  3.75% { transform: translate(220px, 146px); opacity: 0; }
+  4% { opacity: 1; }
+  7% { transform: translate(220px, 208px); opacity: 1; }
+  7.25% { transform: translate(220px, 208px); opacity: 0; }
+  8.75% { transform: translate(220px, 146px); opacity: 0; }
+  9% { opacity: 1; }
+  12% { transform: translate(220px, 208px); opacity: 1; }
+  12.25% { transform: translate(220px, 208px); opacity: 0; }
+  13.75% { transform: translate(220px, 146px); opacity: 0; }
+  14% { opacity: 1; }
+  17% { transform: translate(220px, 208px); opacity: 1; }
+  17.25% { transform: translate(220px, 208px); opacity: 0; }
+  18.75% { transform: translate(220px, 146px); opacity: 0; }
+  19% { opacity: 1; }
+  22% { transform: translate(220px, 208px); opacity: 1; }
+  22.25% { transform: translate(220px, 208px); opacity: 0; }
+  23.75% { transform: translate(220px, 146px); opacity: 0; }
+  24% { opacity: 1; }
+  27% { transform: translate(220px, 208px); opacity: 1; }
+  27.25% { transform: translate(220px, 208px); opacity: 0; }
+  28.75% { transform: translate(220px, 146px); opacity: 0; }
+  29% { opacity: 1; }
+  32% { transform: translate(220px, 208px); opacity: 1; }
+  32.25% { transform: translate(220px, 208px); opacity: 0; }
+  33.75% { transform: translate(220px, 146px); opacity: 0; }
+  34% { opacity: 1; }
+  37% { transform: translate(220px, 208px); opacity: 1; }
+  37.25% { transform: translate(220px, 208px); opacity: 0; }
+  40% { transform: translate(220px, 146px); opacity: 0; }
+  40.25% { opacity: 1; }
+  43.25% { transform: translate(220px, 208px); opacity: 1; }
+  43.5% { transform: translate(220px, 208px); opacity: 0; }
+  98.75% { transform: translate(220px, 146px); opacity: 0; }
+  99% { opacity: 1; }
+  100% { transform: translate(220px, 169.85px); opacity: 1; }
+}
+@keyframes ru-x-v1c {
+  0% { transform: translate(320px, 0px); }
+  33.5% { transform: translate(320px, 0px); animation-timing-function: ease-in-out; }
+  35.25% { transform: translate(160px, 0px); }
+  45.25% { transform: translate(160px, 0px); animation-timing-function: ease-in-out; }
+  46.75% { transform: translate(0px, 0px); }
+  60.75% { transform: translate(0px, 0px); }
+  61% { transform: translate(320px, 0px); }
+  100% { transform: translate(320px, 0px); }
+}
+@keyframes ru-o-v1c {
+  0% { opacity: 1; }
+  58.75% { opacity: 1; }
+  59.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-s-v1c {
+  0% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  97.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-d-v1c {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.25% { opacity: 1; }
+  59.75% { opacity: 1; }
+  60.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-q-v1c {
+  0% { transform: translate(220px, 146px); opacity: 0; }
+  0.25% { opacity: 1; }
+  3.25% { transform: translate(220px, 208px); opacity: 1; }
+  3.5% { transform: translate(220px, 208px); opacity: 0; }
+  5% { transform: translate(220px, 146px); opacity: 0; }
+  5.25% { opacity: 1; }
+  8.25% { transform: translate(220px, 208px); opacity: 1; }
+  8.5% { transform: translate(220px, 208px); opacity: 0; }
+  10% { transform: translate(220px, 146px); opacity: 0; }
+  10.25% { opacity: 1; }
+  13.25% { transform: translate(220px, 208px); opacity: 1; }
+  13.5% { transform: translate(220px, 208px); opacity: 0; }
+  15% { transform: translate(220px, 146px); opacity: 0; }
+  15.25% { opacity: 1; }
+  18.25% { transform: translate(220px, 208px); opacity: 1; }
+  18.5% { transform: translate(220px, 208px); opacity: 0; }
+  20% { transform: translate(220px, 146px); opacity: 0; }
+  20.25% { opacity: 1; }
+  23.25% { transform: translate(220px, 208px); opacity: 1; }
+  23.5% { transform: translate(220px, 208px); opacity: 0; }
+  25% { transform: translate(220px, 146px); opacity: 0; }
+  25.25% { opacity: 1; }
+  28.25% { transform: translate(220px, 208px); opacity: 1; }
+  28.5% { transform: translate(220px, 208px); opacity: 0; }
+  30% { transform: translate(220px, 146px); opacity: 0; }
+  30.25% { opacity: 1; }
+  33.25% { transform: translate(220px, 208px); opacity: 1; }
+  33.5% { transform: translate(220px, 208px); opacity: 0; }
+  35% { transform: translate(220px, 146px); opacity: 0; }
+  35.25% { opacity: 1; }
+  38.25% { transform: translate(220px, 208px); opacity: 1; }
+  38.5% { transform: translate(220px, 208px); opacity: 0; }
+  41.25% { transform: translate(220px, 146px); opacity: 0; }
+  41.5% { opacity: 1; }
+  44.5% { transform: translate(220px, 208px); opacity: 1; }
+  44.75% { transform: translate(220px, 208px); opacity: 0; }
+  46.25% { transform: translate(220px, 146px); opacity: 0; }
+  46.5% { opacity: 1; }
+  49.5% { transform: translate(220px, 208px); opacity: 1; }
+  49.75% { transform: translate(220px, 208px); opacity: 0; }
+  51.25% { transform: translate(220px, 146px); opacity: 0; }
+  51.5% { opacity: 1; }
+  54.5% { transform: translate(220px, 208px); opacity: 1; }
+  54.75% { transform: translate(220px, 208px); opacity: 0; }
+  55% { transform: translate(220px, 146px); opacity: 0; }
+  55.25% { opacity: 1; }
+  58.25% { transform: translate(220px, 208px); opacity: 1; }
+  58.5% { transform: translate(220px, 208px); opacity: 0; }
+  100% { transform: translate(220px, 146px); opacity: 0; }
+}
+@keyframes ru-x-v1d {
+  0% { transform: translate(480px, 0px); }
+  33.5% { transform: translate(480px, 0px); animation-timing-function: ease-in-out; }
+  35.25% { transform: translate(320px, 0px); }
+  45.25% { transform: translate(320px, 0px); animation-timing-function: ease-in-out; }
+  46.75% { transform: translate(160px, 0px); }
+  59.5% { transform: translate(160px, 0px); animation-timing-function: ease-in-out; }
+  61% { transform: translate(0px, 0px); }
+  87% { transform: translate(0px, 0px); }
+  87.25% { transform: translate(480px, 0px); }
+  100% { transform: translate(480px, 0px); }
+}
+@keyframes ru-o-v1d {
+  0% { opacity: 1; }
+  85% { opacity: 1; }
+  85.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-s-v1d {
+  0% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  97.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-d-v1d {
+  0% { opacity: 0; }
+  81.75% { opacity: 0; }
+  82.5% { opacity: 1; }
+  86% { opacity: 1; }
+  86.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-q-v1d {
+  0% { transform: translate(220px, 146px); opacity: 0; }
+  1.25% { transform: translate(220px, 146px); opacity: 0; }
+  1.5% { opacity: 1; }
+  4.5% { transform: translate(220px, 208px); opacity: 1; }
+  4.75% { transform: translate(220px, 208px); opacity: 0; }
+  6.25% { transform: translate(220px, 146px); opacity: 0; }
+  6.5% { opacity: 1; }
+  9.5% { transform: translate(220px, 208px); opacity: 1; }
+  9.75% { transform: translate(220px, 208px); opacity: 0; }
+  11.25% { transform: translate(220px, 146px); opacity: 0; }
+  11.5% { opacity: 1; }
+  14.5% { transform: translate(220px, 208px); opacity: 1; }
+  14.75% { transform: translate(220px, 208px); opacity: 0; }
+  16.25% { transform: translate(220px, 146px); opacity: 0; }
+  16.5% { opacity: 1; }
+  19.5% { transform: translate(220px, 208px); opacity: 1; }
+  19.75% { transform: translate(220px, 208px); opacity: 0; }
+  21.25% { transform: translate(220px, 146px); opacity: 0; }
+  21.5% { opacity: 1; }
+  24.5% { transform: translate(220px, 208px); opacity: 1; }
+  24.75% { transform: translate(220px, 208px); opacity: 0; }
+  31.25% { transform: translate(220px, 146px); opacity: 0; }
+  31.5% { opacity: 1; }
+  34.5% { transform: translate(220px, 208px); opacity: 1; }
+  34.75% { transform: translate(220px, 208px); opacity: 0; }
+  36.25% { transform: translate(220px, 146px); opacity: 0; }
+  36.5% { opacity: 1; }
+  39.5% { transform: translate(220px, 208px); opacity: 1; }
+  39.75% { transform: translate(220px, 208px); opacity: 0; }
+  42.5% { transform: translate(220px, 146px); opacity: 0; }
+  42.75% { opacity: 1; }
+  45.75% { transform: translate(220px, 208px); opacity: 1; }
+  46% { transform: translate(220px, 208px); opacity: 0; }
+  47.5% { transform: translate(220px, 146px); opacity: 0; }
+  47.75% { opacity: 1; }
+  50.75% { transform: translate(220px, 208px); opacity: 1; }
+  51% { transform: translate(220px, 208px); opacity: 0; }
+  52.5% { transform: translate(220px, 146px); opacity: 0; }
+  52.75% { opacity: 1; }
+  55.75% { transform: translate(220px, 208px); opacity: 1; }
+  56% { transform: translate(220px, 208px); opacity: 0; }
+  56.25% { transform: translate(220px, 146px); opacity: 0; }
+  56.5% { opacity: 1; }
+  59.5% { transform: translate(220px, 208px); opacity: 1; }
+  59.75% { transform: translate(220px, 208px); opacity: 0; }
+  61.25% { transform: translate(220px, 146px); opacity: 0; }
+  61.5% { opacity: 1; }
+  64.5% { transform: translate(220px, 208px); opacity: 1; }
+  64.75% { transform: translate(220px, 208px); opacity: 0; }
+  66.25% { transform: translate(220px, 146px); opacity: 0; }
+  66.5% { opacity: 1; }
+  69.5% { transform: translate(220px, 208px); opacity: 1; }
+  69.75% { transform: translate(220px, 208px); opacity: 0; }
+  71.25% { transform: translate(220px, 146px); opacity: 0; }
+  71.5% { opacity: 1; }
+  74.5% { transform: translate(220px, 208px); opacity: 1; }
+  74.75% { transform: translate(220px, 208px); opacity: 0; }
+  76.25% { transform: translate(220px, 146px); opacity: 0; }
+  76.5% { opacity: 1; }
+  79.5% { transform: translate(220px, 208px); opacity: 1; }
+  79.75% { transform: translate(220px, 208px); opacity: 0; }
+  81.25% { transform: translate(220px, 146px); opacity: 0; }
+  81.5% { opacity: 1; }
+  84.5% { transform: translate(220px, 208px); opacity: 1; }
+  84.75% { transform: translate(220px, 208px); opacity: 0; }
+  100% { transform: translate(220px, 146px); opacity: 0; }
+}
+@keyframes ru-x-v2a {
+  0% { transform: translate(640px, 0px); }
+  33.5% { transform: translate(640px, 0px); animation-timing-function: ease-in-out; }
+  35.25% { transform: translate(480px, 0px); }
+  45.25% { transform: translate(480px, 0px); animation-timing-function: ease-in-out; }
+  46.75% { transform: translate(320px, 0px); }
+  59.5% { transform: translate(320px, 0px); animation-timing-function: ease-in-out; }
+  61% { transform: translate(160px, 0px); }
+  86% { transform: translate(160px, 0px); animation-timing-function: ease-in-out; }
+  87.5% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes ru-o-v2a {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  7% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-w-v2a {
+  0% { opacity: 0; }
+  5.75% { opacity: 0; }
+  6.5% { opacity: 1; }
+  26% { opacity: 1; }
+  26.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-s-v2a {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-q-v2a {
+  0% { transform: translate(220px, 146px); opacity: 0; }
+  26.25% { transform: translate(220px, 146px); opacity: 0; }
+  26.5% { opacity: 1; }
+  29.5% { transform: translate(220px, 208px); opacity: 1; }
+  29.75% { transform: translate(220px, 208px); opacity: 0; }
+  32.5% { transform: translate(220px, 146px); opacity: 0; }
+  32.75% { opacity: 1; }
+  35.75% { transform: translate(220px, 208px); opacity: 1; }
+  36% { transform: translate(220px, 208px); opacity: 0; }
+  37.5% { transform: translate(220px, 146px); opacity: 0; }
+  37.75% { opacity: 1; }
+  40.75% { transform: translate(220px, 208px); opacity: 1; }
+  41% { transform: translate(220px, 208px); opacity: 0; }
+  43.75% { transform: translate(220px, 146px); opacity: 0; }
+  44% { opacity: 1; }
+  47% { transform: translate(220px, 208px); opacity: 1; }
+  47.25% { transform: translate(220px, 208px); opacity: 0; }
+  48.75% { transform: translate(220px, 146px); opacity: 0; }
+  49% { opacity: 1; }
+  52% { transform: translate(220px, 208px); opacity: 1; }
+  52.25% { transform: translate(220px, 208px); opacity: 0; }
+  57.5% { transform: translate(220px, 146px); opacity: 0; }
+  57.75% { opacity: 1; }
+  60.75% { transform: translate(220px, 208px); opacity: 1; }
+  61% { transform: translate(220px, 208px); opacity: 0; }
+  62.5% { transform: translate(220px, 146px); opacity: 0; }
+  62.75% { opacity: 1; }
+  65.75% { transform: translate(220px, 208px); opacity: 1; }
+  66% { transform: translate(220px, 208px); opacity: 0; }
+  67.5% { transform: translate(220px, 146px); opacity: 0; }
+  67.75% { opacity: 1; }
+  70.75% { transform: translate(220px, 208px); opacity: 1; }
+  71% { transform: translate(220px, 208px); opacity: 0; }
+  72.5% { transform: translate(220px, 146px); opacity: 0; }
+  72.75% { opacity: 1; }
+  75.75% { transform: translate(220px, 208px); opacity: 1; }
+  76% { transform: translate(220px, 208px); opacity: 0; }
+  77.5% { transform: translate(220px, 146px); opacity: 0; }
+  77.75% { opacity: 1; }
+  80.75% { transform: translate(220px, 208px); opacity: 1; }
+  81% { transform: translate(220px, 208px); opacity: 0; }
+  82.5% { transform: translate(220px, 146px); opacity: 0; }
+  82.75% { opacity: 1; }
+  85.75% { transform: translate(220px, 208px); opacity: 1; }
+  86% { transform: translate(220px, 208px); opacity: 0; }
+  87.5% { transform: translate(220px, 146px); opacity: 0; }
+  87.75% { opacity: 1; }
+  90.75% { transform: translate(220px, 208px); opacity: 1; }
+  91% { transform: translate(220px, 208px); opacity: 0; }
+  92.5% { transform: translate(220px, 146px); opacity: 0; }
+  92.75% { opacity: 1; }
+  95.75% { transform: translate(220px, 208px); opacity: 1; }
+  96% { transform: translate(220px, 208px); opacity: 0; }
+  100% { transform: translate(220px, 146px); opacity: 0; }
+}
+@keyframes ru-x-v2b {
+  0% { transform: translate(640px, 0px); }
+  45.25% { transform: translate(640px, 0px); animation-timing-function: ease-in-out; }
+  46.75% { transform: translate(480px, 0px); }
+  59.5% { transform: translate(480px, 0px); animation-timing-function: ease-in-out; }
+  61% { transform: translate(320px, 0px); }
+  86% { transform: translate(320px, 0px); animation-timing-function: ease-in-out; }
+  87.5% { transform: translate(160px, 0px); }
+  100% { transform: translate(160px, 0px); }
+}
+@keyframes ru-o-v2b {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-w-v2b {
+  0% { opacity: 0; }
+  35.25% { opacity: 0; }
+  36% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-s-v2b {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-q-v2b {
+  0% { transform: translate(220px, 146px); opacity: 0; }
+  38.75% { transform: translate(220px, 146px); opacity: 0; }
+  39% { opacity: 1; }
+  42% { transform: translate(220px, 208px); opacity: 1; }
+  42.25% { transform: translate(220px, 208px); opacity: 0; }
+  45% { transform: translate(220px, 146px); opacity: 0; }
+  45.25% { opacity: 1; }
+  48.25% { transform: translate(220px, 208px); opacity: 1; }
+  48.5% { transform: translate(220px, 208px); opacity: 0; }
+  50% { transform: translate(220px, 146px); opacity: 0; }
+  50.25% { opacity: 1; }
+  53.25% { transform: translate(220px, 208px); opacity: 1; }
+  53.5% { transform: translate(220px, 208px); opacity: 0; }
+  58.75% { transform: translate(220px, 146px); opacity: 0; }
+  59% { opacity: 1; }
+  62% { transform: translate(220px, 208px); opacity: 1; }
+  62.25% { transform: translate(220px, 208px); opacity: 0; }
+  63.75% { transform: translate(220px, 146px); opacity: 0; }
+  64% { opacity: 1; }
+  67% { transform: translate(220px, 208px); opacity: 1; }
+  67.25% { transform: translate(220px, 208px); opacity: 0; }
+  68.75% { transform: translate(220px, 146px); opacity: 0; }
+  69% { opacity: 1; }
+  72% { transform: translate(220px, 208px); opacity: 1; }
+  72.25% { transform: translate(220px, 208px); opacity: 0; }
+  73.75% { transform: translate(220px, 146px); opacity: 0; }
+  74% { opacity: 1; }
+  77% { transform: translate(220px, 208px); opacity: 1; }
+  77.25% { transform: translate(220px, 208px); opacity: 0; }
+  78.75% { transform: translate(220px, 146px); opacity: 0; }
+  79% { opacity: 1; }
+  82% { transform: translate(220px, 208px); opacity: 1; }
+  82.25% { transform: translate(220px, 208px); opacity: 0; }
+  83.75% { transform: translate(220px, 146px); opacity: 0; }
+  84% { opacity: 1; }
+  87% { transform: translate(220px, 208px); opacity: 1; }
+  87.25% { transform: translate(220px, 208px); opacity: 0; }
+  88.75% { transform: translate(220px, 146px); opacity: 0; }
+  89% { opacity: 1; }
+  92% { transform: translate(220px, 208px); opacity: 1; }
+  92.25% { transform: translate(220px, 208px); opacity: 0; }
+  93.75% { transform: translate(220px, 146px); opacity: 0; }
+  94% { opacity: 1; }
+  97% { transform: translate(220px, 208px); opacity: 1; }
+  97.25% { transform: translate(220px, 208px); opacity: 0; }
+  100% { transform: translate(220px, 146px); opacity: 0; }
+}
+@keyframes ru-x-v2c {
+  0% { transform: translate(640px, 0px); }
+  59.5% { transform: translate(640px, 0px); animation-timing-function: ease-in-out; }
+  61% { transform: translate(480px, 0px); }
+  86% { transform: translate(480px, 0px); animation-timing-function: ease-in-out; }
+  87.5% { transform: translate(320px, 0px); }
+  100% { transform: translate(320px, 0px); }
+}
+@keyframes ru-o-v2c {
+  0% { opacity: 0; }
+  46.75% { opacity: 0; }
+  47.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-w-v2c {
+  0% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47.25% { opacity: 1; }
+  53.5% { opacity: 1; }
+  54.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-s-v2c {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-q-v2c {
+  0% { transform: translate(220px, 146px); opacity: 0; }
+  53.75% { transform: translate(220px, 146px); opacity: 0; }
+  54% { opacity: 1; }
+  57% { transform: translate(220px, 208px); opacity: 1; }
+  57.25% { transform: translate(220px, 208px); opacity: 0; }
+  60% { transform: translate(220px, 146px); opacity: 0; }
+  60.25% { opacity: 1; }
+  63.25% { transform: translate(220px, 208px); opacity: 1; }
+  63.5% { transform: translate(220px, 208px); opacity: 0; }
+  65% { transform: translate(220px, 146px); opacity: 0; }
+  65.25% { opacity: 1; }
+  68.25% { transform: translate(220px, 208px); opacity: 1; }
+  68.5% { transform: translate(220px, 208px); opacity: 0; }
+  70% { transform: translate(220px, 146px); opacity: 0; }
+  70.25% { opacity: 1; }
+  73.25% { transform: translate(220px, 208px); opacity: 1; }
+  73.5% { transform: translate(220px, 208px); opacity: 0; }
+  75% { transform: translate(220px, 146px); opacity: 0; }
+  75.25% { opacity: 1; }
+  78.25% { transform: translate(220px, 208px); opacity: 1; }
+  78.5% { transform: translate(220px, 208px); opacity: 0; }
+  85% { transform: translate(220px, 146px); opacity: 0; }
+  85.25% { opacity: 1; }
+  88.25% { transform: translate(220px, 208px); opacity: 1; }
+  88.5% { transform: translate(220px, 208px); opacity: 0; }
+  90% { transform: translate(220px, 146px); opacity: 0; }
+  90.25% { opacity: 1; }
+  93.25% { transform: translate(220px, 208px); opacity: 1; }
+  93.5% { transform: translate(220px, 208px); opacity: 0; }
+  95% { transform: translate(220px, 146px); opacity: 0; }
+  95.25% { opacity: 1; }
+  98.25% { transform: translate(220px, 208px); opacity: 1; }
+  98.5% { transform: translate(220px, 208px); opacity: 0; }
+  100% { transform: translate(220px, 146px); opacity: 0; }
+}
+@keyframes ru-x-v2d {
+  0% { transform: translate(640px, 0px); }
+  86% { transform: translate(640px, 0px); animation-timing-function: ease-in-out; }
+  87.5% { transform: translate(480px, 0px); }
+  100% { transform: translate(480px, 0px); }
+}
+@keyframes ru-o-v2d {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  62% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-w-v2d {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61.5% { opacity: 1; }
+  63.75% { opacity: 1; }
+  64.5% { opacity: 0; }
+  76% { opacity: 0; }
+  76.75% { opacity: 1; }
+  79.75% { opacity: 1; }
+  80.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-f-v2d {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.5% { opacity: 1; }
+  76% { opacity: 1; }
+  76.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-s-v2d {
+  0% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-q-v2d {
+  0% { transform: translate(220px, 146px); opacity: 0; }
+  80% { transform: translate(220px, 146px); opacity: 0; }
+  80.25% { opacity: 1; }
+  83.25% { transform: translate(220px, 208px); opacity: 1; }
+  83.5% { transform: translate(220px, 208px); opacity: 0; }
+  86.25% { transform: translate(220px, 146px); opacity: 0; }
+  86.5% { opacity: 1; }
+  89.5% { transform: translate(220px, 208px); opacity: 1; }
+  89.75% { transform: translate(220px, 208px); opacity: 0; }
+  91.25% { transform: translate(220px, 146px); opacity: 0; }
+  91.5% { opacity: 1; }
+  94.5% { transform: translate(220px, 208px); opacity: 1; }
+  94.75% { transform: translate(220px, 208px); opacity: 0; }
+  96.25% { transform: translate(220px, 146px); opacity: 0; }
+  96.5% { opacity: 1; }
+  99.5% { transform: translate(220px, 208px); opacity: 1; }
+  99.75% { transform: translate(220px, 208px); opacity: 0; }
+  100% { transform: translate(220px, 146px); opacity: 0; }
+}
+@keyframes ru-tot5 {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  6.75% { opacity: 1; }
+  32.25% { opacity: 1; }
+  33% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.25% { opacity: 1; }
+  44.25% { opacity: 1; }
+  45% { opacity: 0; }
+  46.75% { opacity: 0; }
+  47.5% { opacity: 1; }
+  58.75% { opacity: 1; }
+  59.5% { opacity: 0; }
+  61% { opacity: 0; }
+  61.75% { opacity: 1; }
+  85% { opacity: 1; }
+  85.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-tot4 {
+  0% { opacity: 1; }
+  6% { opacity: 1; }
+  6.75% { opacity: 0; }
+  32.25% { opacity: 0; }
+  33% { opacity: 1; }
+  35.5% { opacity: 1; }
+  36.25% { opacity: 0; }
+  44.25% { opacity: 0; }
+  45% { opacity: 1; }
+  46.75% { opacity: 1; }
+  47.5% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.5% { opacity: 1; }
+  61% { opacity: 1; }
+  61.75% { opacity: 0; }
+  85% { opacity: 0; }
+  85.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-rdy5 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.5% { opacity: 1; }
+  28% { opacity: 1; }
+  28.5% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39% { opacity: 1; }
+  40.5% { opacity: 1; }
+  41% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.25% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-rdy4 {
+  0% { opacity: 1; }
+  26% { opacity: 1; }
+  26.5% { opacity: 0; }
+  28% { opacity: 0; }
+  28.5% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41% { opacity: 1; }
+  53.5% { opacity: 1; }
+  54% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56% { opacity: 1; }
+  79.75% { opacity: 1; }
+  80.25% { opacity: 0; }
+  81.75% { opacity: 0; }
+  82.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-u1 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-u2 {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-u3 {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-u4 {
+  0% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-n0 {
+  0% { opacity: 1; }
+  26% { opacity: 1; }
+  26.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-n1 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.75% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-n2 {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.25% { opacity: 1; }
+  53.5% { opacity: 1; }
+  54.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-n3 {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.25% { opacity: 1; }
+  79.75% { opacity: 1; }
+  80.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-n4 {
+  0% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-p-roll {
+  0% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.25% { opacity: 0; }
+  76% { opacity: 0; }
+  76.75% { opacity: 1; }
+  87.5% { opacity: 1; }
+  88.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-p-stall {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.25% { opacity: 1; }
+  76% { opacity: 1; }
+  76.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-p-done {
+  0% { opacity: 0; }
+  87.5% { opacity: 0; }
+  88.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-m-cycle {
+  0% { opacity: 1; }
+  63.75% { opacity: 1; }
+  64.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-m-dl {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.5% { opacity: 1; }
+  76% { opacity: 1; }
+  76.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-m-wait {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.5% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-m-stall {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.25% { opacity: 1; }
+  76% { opacity: 1; }
+  76.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-m-fix {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  76.75% { opacity: 1; }
+  87.5% { opacity: 1; }
+  88.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-m-done {
+  0% { opacity: 0; }
+  87.5% { opacity: 0; }
+  88.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-dl {
+  0% { transform: scaleX(1); }
+  63.75% { transform: scaleX(1); }
+  68.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes ru-new {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.5% { opacity: 1; }
+  11% { opacity: 1; }
+  12.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-c1 {
+  0% { opacity: 1; }
+  26% { opacity: 1; }
+  26.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ru-c2 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.75% { opacity: 1; }
+  85% { opacity: 1; }
+  85.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ru-c3 {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ru-empty {
+  0% { opacity: 1; }
+  5.5% { opacity: 1; }
+  6.25% { opacity: 0; }
+  87% { opacity: 0; }
+  87.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ru-feed {
+  0% { transform: translate(113px, 126px); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translate(147px, 126px); opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- four slots for the desired instances and, dashed like them, the surge slot on the right -->
+  <rect class="zone" x="150" y="216" width="140" height="90" rx="10"/>
+  <rect class="zone" x="310" y="216" width="140" height="90" rx="10"/>
+  <rect class="zone" x="470" y="216" width="140" height="90" rx="10"/>
+  <rect class="zone" x="630" y="216" width="140" height="90" rx="10"/>
+  <rect class="zone" x="790" y="216" width="140" height="90" rx="10"/>
+  <g class="ru-empty">
+    <text class="sub mid" x="860" y="259">surge slot</text>
+    <text class="tiny mid" x="860" y="276">empty</text>
+  </g>
+  <path class="none s-line" d="M152 311v8H768v-8" stroke-width="1.5"/>
+  <rect class="f-bg" x="398" y="311" width="124" height="16"/>
+  <text class="tiny mid" x="460" y="323">desired: 4 instances</text>
+  <path class="none s-line" d="M792 311v8H928v-8" stroke-width="1.5"/>
+  <rect class="f-bg" x="816" y="311" width="88" height="16"/>
+  <text class="tiny mid" x="860" y="323">max surge: +1</text>
+
+  <!-- instances: drawn at slot 1, moved by the group transform; each owns its wire and its requests -->
+  <g class="ru-x-v1a">
+    <g class="ru-o-v1a">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <rect class="f-blue-soft s-blue" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+      <g class="ru-s-v1a">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <g class="ru-d-v1a">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="none s-amber" x="150" y="216" width="140" height="90" rx="10" stroke-width="2.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-amber-ink" x="220" y="269">draining</text>
+        <text class="tiny mid sb f-amber-ink" x="220" y="294">in-flight ones finish</text>
+      </g>
+      <text class="ru-ver mono mid f-blue" x="220" y="244">v1</text>
+      <circle class="pkt f-blue ru-q-v1a" r="6"/>
+    </g>
+  </g>
+  <g class="ru-x-v1b">
+    <g class="ru-o-v1b">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <rect class="f-blue-soft s-blue" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+      <g class="ru-s-v1b">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <g class="ru-d-v1b">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="none s-amber" x="150" y="216" width="140" height="90" rx="10" stroke-width="2.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-amber-ink" x="220" y="269">draining</text>
+        <text class="tiny mid sb f-amber-ink" x="220" y="294">in-flight ones finish</text>
+      </g>
+      <text class="ru-ver mono mid f-blue" x="220" y="244">v1</text>
+      <circle class="pkt f-blue ru-q-v1b" r="6"/>
+    </g>
+  </g>
+  <g class="ru-x-v1c">
+    <g class="ru-o-v1c">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <rect class="f-blue-soft s-blue" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+      <g class="ru-s-v1c">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <g class="ru-d-v1c">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="none s-amber" x="150" y="216" width="140" height="90" rx="10" stroke-width="2.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-amber-ink" x="220" y="269">draining</text>
+        <text class="tiny mid sb f-amber-ink" x="220" y="294">in-flight ones finish</text>
+      </g>
+      <text class="ru-ver mono mid f-blue" x="220" y="244">v1</text>
+      <circle class="pkt f-blue ru-q-v1c" r="6"/>
+    </g>
+  </g>
+  <g class="ru-x-v1d">
+    <g class="ru-o-v1d">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <rect class="f-blue-soft s-blue" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+      <g class="ru-s-v1d">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <g class="ru-d-v1d">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="none s-amber" x="150" y="216" width="140" height="90" rx="10" stroke-width="2.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-amber-ink" x="220" y="269">draining</text>
+        <text class="tiny mid sb f-amber-ink" x="220" y="294">in-flight ones finish</text>
+      </g>
+      <text class="ru-ver mono mid f-blue" x="220" y="244">v1</text>
+      <circle class="pkt f-blue ru-q-v1d" r="6"/>
+    </g>
+  </g>
+  <g class="ru-x-v2a">
+    <g class="ru-o-v2a">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <g class="ru-w-v2a">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="f-panel s-green dash" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <circle class="none s-line" cx="192" cy="265" r="5" stroke-width="2"/>
+        <circle class="none s-amber spin" cx="192" cy="265" r="5" stroke-width="2" stroke-dasharray="8 24" stroke-linecap="round"/>
+        <text class="tiny mid sb f-amber-ink" x="229" y="269">starting</text>
+        <text class="tiny mid" x="220" y="294">not ready: no traffic</text>
+      </g>
+      <g class="ru-s-v2a">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-green-soft s-green" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <text class="ru-ver mono mid f-green" x="220" y="244">v2</text>
+      <circle class="pkt f-green ru-q-v2a" r="6"/>
+    </g>
+  </g>
+  <g class="ru-x-v2b">
+    <g class="ru-o-v2b">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <g class="ru-w-v2b">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="f-panel s-green dash" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <circle class="none s-line" cx="192" cy="265" r="5" stroke-width="2"/>
+        <circle class="none s-amber spin" cx="192" cy="265" r="5" stroke-width="2" stroke-dasharray="8 24" stroke-linecap="round"/>
+        <text class="tiny mid sb f-amber-ink" x="229" y="269">starting</text>
+        <text class="tiny mid" x="220" y="294">not ready: no traffic</text>
+      </g>
+      <g class="ru-s-v2b">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-green-soft s-green" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <text class="ru-ver mono mid f-green" x="220" y="244">v2</text>
+      <circle class="pkt f-green ru-q-v2b" r="6"/>
+    </g>
+  </g>
+  <g class="ru-x-v2c">
+    <g class="ru-o-v2c">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <g class="ru-w-v2c">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="f-panel s-green dash" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <circle class="none s-line" cx="192" cy="265" r="5" stroke-width="2"/>
+        <circle class="none s-amber spin" cx="192" cy="265" r="5" stroke-width="2" stroke-dasharray="8 24" stroke-linecap="round"/>
+        <text class="tiny mid sb f-amber-ink" x="229" y="269">starting</text>
+        <text class="tiny mid" x="220" y="294">not ready: no traffic</text>
+      </g>
+      <g class="ru-s-v2c">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-green-soft s-green" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <text class="ru-ver mono mid f-green" x="220" y="244">v2</text>
+      <circle class="pkt f-green ru-q-v2c" r="6"/>
+    </g>
+  </g>
+  <g class="ru-x-v2d">
+    <g class="ru-o-v2d">
+      <rect class="f-bg" x="150" y="216" width="140" height="90" rx="10"/>
+      <g class="ru-w-v2d">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="f-panel s-green dash" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <circle class="none s-line" cx="192" cy="265" r="5" stroke-width="2"/>
+        <circle class="none s-amber spin" cx="192" cy="265" r="5" stroke-width="2" stroke-dasharray="8 24" stroke-linecap="round"/>
+        <text class="tiny mid sb f-amber-ink" x="229" y="269">starting</text>
+        <text class="tiny mid" x="220" y="294">not ready: no traffic</text>
+      </g>
+      <g class="ru-f-v2d">
+        <line class="wire dash" x1="220" y1="150" x2="220" y2="216"/>
+        <rect class="f-red-soft s-red" x="150" y="216" width="140" height="90" rx="10" stroke-width="2"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-red-soft s-red" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-red" x="220" y="269">✕ not ready</text>
+        <text class="tiny mid sb f-red" x="220" y="294">check fails: no traffic</text>
+      </g>
+      <g class="ru-s-v2d">
+        <line class="wire" x1="220" y1="150" x2="220" y2="215" marker-end="url(#ah)"/>
+        <rect class="f-green-soft s-green" x="150" y="216" width="140" height="90" rx="10" stroke-width="1.5"/>
+        <rect class="f-bg" x="170" y="254" width="100" height="22" rx="11"/><rect class="f-green-soft s-green" x="170" y="254" width="100" height="22" rx="11" stroke-width="1.2"/>
+        <text class="tiny mid sb f-green" x="220" y="269">● ready</text>
+        <text class="tiny mid" x="220" y="294">serving</text>
+      </g>
+      <text class="ru-ver mono mid f-green" x="220" y="244">v2</text>
+      <circle class="pkt f-green ru-q-v2d" r="6"/>
+    </g>
+  </g>
+
+  <!-- load balancer (drawn over the wire tops, so requests emerge from it) -->
+  <rect class="box" x="150" y="100" width="780" height="52" rx="12"/>
+  <text class="label" x="168" y="122">Load balancer</text>
+  <text class="sub" x="168" y="140">sends requests only to ready instances</text>
+  <text class="sub end ru-c1" x="912" y="131">every request is served by <tspan class="mono b f-blue">v1</tspan></text>
+  <g class="ru-c2">
+    <text class="sub end sb f-amber-ink" x="912" y="122"><tspan class="mono b f-blue">v1</tspan> and <tspan class="mono b f-green">v2</tspan> serve side by side</text>
+    <text class="tiny end" x="912" y="140">so the two versions must be compatible</text>
+  </g>
+  <text class="sub end ru-c3" x="912" y="131">every request is served by <tspan class="mono b f-green">v2</tspan></text>
+
+  <!-- users -->
+  <rect class="box" x="30" y="94" width="80" height="64" rx="12"/>
+  <circle class="f-faint" cx="80" cy="110" r="5"/>
+  <path class="f-faint" d="M70 127a10 9 0 0 1 20 0z"/>
+  <circle class="f-muted" cx="64" cy="113" r="6"/>
+  <path class="f-muted" d="M52 132a12 10 0 0 1 24 0z"/>
+  <text class="label mid" x="70" y="151">Users</text>
+  <line class="wire" x1="110" y1="126" x2="149" y2="126" marker-end="url(#ah)"/>
+  <circle class="f-muted ru-feed" r="4"/>
+  <circle class="f-muted ru-feed ru-feed2" r="4"/>
+
+  <!-- legend -->
+  <circle class="f-blue" cx="37" cy="196" r="5"/>
+  <text class="tiny" x="50" y="200">served by v1</text>
+  <circle class="f-green" cx="37" cy="216" r="5"/>
+  <text class="tiny" x="50" y="220">served by v2</text>
+  <line class="wire" x1="30" y1="238" x2="44" y2="238"/>
+  <text class="tiny" x="50" y="242">in rotation</text>
+  <line class="wire dash" x1="30" y1="258" x2="44" y2="258"/>
+  <text class="tiny" x="50" y="262">no new requests</text>
+
+  <!-- deployment controller: the two dials and what they hold the fleet to, live -->
+  <rect class="box" x="30" y="338" width="432" height="128" rx="12"/>
+  <text class="label" x="46" y="362">Deployment controller</text>
+  <text class="sub" x="46" y="380">one batch at a time, gated by readiness</text>
+  <path class="none s-line" d="M46 390H446" stroke-width="1"/>
+  <text class="sub" x="46" y="409">desired</text>
+  <text class="ru-num mid" x="164" y="410">4</text>
+  <text class="tiny" x="190" y="409">instances in normal operation</text>
+  <text class="sub" x="46" y="431">max surge</text>
+  <text class="ru-num mid" x="164" y="432">1</text>
+  <rect class="f-wire" x="190" y="421" width="12" height="12" rx="2.5"/>
+  <rect class="f-wire" x="207" y="421" width="12" height="12" rx="2.5"/>
+  <rect class="f-wire" x="224" y="421" width="12" height="12" rx="2.5"/>
+  <rect class="f-wire" x="241" y="421" width="12" height="12" rx="2.5"/>
+  <rect class="f-bg s-line" x="258" y="421" width="12" height="12" rx="2.5" stroke-width="1.5"/>
+  <rect class="f-wire ru-tot5" x="258" y="421" width="12" height="12" rx="2.5"/>
+  <line class="s-ink" x1="275" y1="417" x2="275" y2="437" stroke-width="1.5"/>
+  <text class="ru-num mid ru-tot4" x="292" y="432">4</text>
+  <text class="ru-num mid ru-tot5" x="292" y="432">5</text>
+  <text class="tiny" x="306" y="431">instances · never above 5</text>
+  <text class="sub" x="46" y="453">max unavailable</text>
+  <text class="ru-num mid" x="164" y="454">0</text>
+  <circle class="f-green" cx="196" cy="449" r="6"/>
+  <circle class="f-green" cx="213" cy="449" r="6"/>
+  <circle class="f-green" cx="230" cy="449" r="6"/>
+  <circle class="f-green" cx="247" cy="449" r="6"/>
+  <circle class="f-bg s-line" cx="264" cy="449" r="5.25" stroke-width="1.5"/>
+  <circle class="f-green ru-rdy5" cx="264" cy="449" r="6"/>
+  <line class="s-ink" x1="255.5" y1="439" x2="255.5" y2="459" stroke-width="1.5"/>
+  <text class="ru-num mid ru-rdy4" x="292" y="454">4</text>
+  <text class="ru-num mid ru-rdy5" x="292" y="454">5</text>
+  <text class="tiny" x="306" y="453">ready · never below 4</text>
+
+  <!-- this rollout: status, progress, revision history -->
+  <rect class="box" x="474" y="338" width="456" height="128" rx="12"/>
+  <text class="label" x="490" y="362">Rollout</text>
+  <text class="sub" x="550" y="362">to revision 2 (v2)</text>
+  <g class="ru-p-roll">
+    <rect class="f-amber-soft s-amber" x="800" y="347" width="114" height="22" rx="11" stroke-width="1.5"/>
+    <text class="ru-st mid f-amber-ink" x="857" y="362">ROLLING OUT</text>
+  </g>
+  <g class="ru-p-stall">
+    <rect class="f-red-soft s-red" x="800" y="347" width="114" height="22" rx="11" stroke-width="1.5"/>
+    <text class="ru-st mid f-red" x="857" y="362">STALLED</text>
+  </g>
+  <g class="ru-p-done">
+    <rect class="f-green-soft s-green" x="800" y="347" width="114" height="22" rx="11" stroke-width="1.5"/>
+    <text class="ru-st mid f-green" x="857" y="362">COMPLETE</text>
+  </g>
+  <text class="sub" x="490" y="391">updated</text>
+  <rect class="f-line" x="556" y="382" width="46" height="8" rx="4"/>
+  <rect class="f-line" x="606" y="382" width="46" height="8" rx="4"/>
+  <rect class="f-line" x="656" y="382" width="46" height="8" rx="4"/>
+  <rect class="f-line" x="706" y="382" width="46" height="8" rx="4"/>
+  <rect class="f-green ru-u1" x="556" y="382" width="46" height="8" rx="4"/>
+  <rect class="f-green ru-u2" x="606" y="382" width="46" height="8" rx="4"/>
+  <rect class="f-green ru-u3" x="656" y="382" width="46" height="8" rx="4"/>
+  <rect class="f-green ru-u4" x="706" y="382" width="46" height="8" rx="4"/>
+  <text class="ru-num end ru-n0" x="774" y="392">0</text>
+  <text class="ru-num end ru-n1" x="774" y="392">1</text>
+  <text class="ru-num end ru-n2" x="774" y="392">2</text>
+  <text class="ru-num end ru-n3" x="774" y="392">3</text>
+  <text class="ru-num end ru-n4" x="774" y="392">4</text>
+  <text class="tiny" x="780" y="391">of 4</text>
+  <text class="sub" x="490" y="418">revisions</text>
+  <rect class="f-blue-soft s-blue" x="556" y="403" width="64" height="22" rx="6" stroke-width="1.2"/>
+  <text class="tiny mid b mono f-blue" x="588" y="418">1 · v1</text>
+  <line class="wire" x1="624" y1="414" x2="641" y2="414" marker-end="url(#ah)"/>
+  <rect class="f-green-soft s-green" x="644" y="403" width="64" height="22" rx="6" stroke-width="1.2"/>
+  <text class="tiny mid b mono f-green" x="676" y="418">2 · v2</text>
+  <g class="ru-new">
+    <rect class="none s-green" x="641" y="400" width="70" height="28" rx="9" stroke-width="2"/>
+    <text class="tiny sb f-green" x="720" y="418">new revision: update starts</text>
+  </g>
+  <g class="ru-m-done">
+    <rect class="none s-blue" x="553" y="400" width="70" height="28" rx="9" stroke-width="2"/>
+  </g>
+  <text class="tiny ru-m-cycle" x="490" y="447">repeat: start one v2 → wait until it is ready → drain one v1</text>
+  <g class="ru-m-dl">
+    <text class="tiny" x="490" y="447">progress deadline</text>
+    <rect class="f-line" x="598" y="439" width="86" height="6" rx="3"/>
+    <rect class="f-amber ru-dl" x="598" y="439" width="86" height="6" rx="3"/>
+  </g>
+  <text class="tiny ru-m-wait" x="694" y="447">waiting for a ready instance…</text>
+  <text class="tiny sb f-red ru-m-stall" x="694" y="447">passed: roll back, or fix forward</text>
+  <text class="tiny sb f-green ru-m-fix" x="490" y="447">configuration fixed: the instance restarts and passes its check</text>
+  <text class="tiny sb f-green ru-m-done" x="490" y="447">revision 1 is kept: rolling back is one command</text>
+</g>
+</svg>

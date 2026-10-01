@@ -99,8 +99,8 @@ Vendor behaviour and defaults change, so treat these as examples and check the c
 - [Multi-Region Active-Active](../multi-region-active-active/) — Serve users from several regions at once and shift traffic away from a region that fails.
 - Active-Passive Failover *(planned)* — A warm standby region is promoted when the primary region goes down.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
-- Service Mesh *(planned)* — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
-- Rolling Update *(planned)* — Replace instances batch by batch while the service stays up.
+- [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
+- [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
 - [Circuit Breaker](../circuit-breaker/) — Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers.
 
 ## References

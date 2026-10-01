@@ -1,0 +1,916 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Service Mesh</title>
+<desc id="dg-desc">Service Mesh. Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code. Step 1, Calls go through proxies: Orders calls Payments: its sidecar intercepts the call and hands it to Payments' sidecar. Step 2, Control plane configures: The control plane sends endpoints, routes, policy and certificates. If it fails, calls still flow. Step 3, Mutual TLS and policy: The proxies authenticate each other with mutual TLS; policy lets Orders in and answers Web with 403. Step 4, Split traffic and retry: A routing rule splits calls 90/10 between v1 and v2, and the proxy retries a failed call in time.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">API &amp; EDGE</text>
+  <text class="title" x="40" y="64">Service Mesh</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Calls go through proxies</text>
+  <text class="step on p1" x="40" y="518">1 · Calls go through proxies</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Control plane configures</text>
+  <text class="step on p2" x="262" y="518">2 · Control plane configures</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Mutual TLS and policy</text>
+  <text class="step on p3" x="484" y="518">3 · Mutual TLS and policy</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Split traffic and retry</text>
+  <text class="step on p4" x="706" y="518">4 · Split traffic and retry</text>
+  <text class="caption p1" x="40" y="552">Orders calls Payments: its sidecar intercepts the call and hands it to Payments' sidecar.</text>
+  <text class="caption p2" x="40" y="552">The control plane sends endpoints, routes, policy and certificates. If it fails, calls still flow.</text>
+  <text class="caption p3" x="40" y="552">The proxies authenticate each other with mutual TLS; policy lets Orders in and answers Web with 403.</text>
+  <text class="caption p4" x="40" y="552">A routing rule splits calls 90/10 between v1 and v2, and the proxy retries a failed call in time.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Service Mesh. Timeline (20s loop, 1s = 5%):
+   0-25%   one call, three hops: Orders app -> its sidecar -> Payments v1's sidecar -> Payments app, and the reply
+   25-50%  the control plane sends configuration (26-30%), then certificates (31.5-35.5%), down to all four proxies;
+           it goes down at 37.5% and a call is still served on the last configuration (38.75-46.5%)
+   50-75%  the two proxies swap certificates (51.5-55%) and the wire becomes mutual TLS; Orders' call is allowed
+           (59.75%); Web's direct call is answered 403 by Payments v2's proxy (66.5%) and never reaches the app;
+           the 403 is back at Web by 71.5%
+   75-100% ten calls split 9 to v1, 1 to v2 (76-84%); the last one fails with 503 (84.5%), the error stops at
+           Orders' sidecar, which retries (89%) and hands the app a success (95.7%); the timeout bar drains meanwhile
+   Generated from one timeline with scripts/lib/motion.mjs (track, windows, keys). */
+.diagram .sm-t, .diagram .sm-w { opacity: 0; }
+.diagram .sm-ctl { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 2 4; stroke-linecap: round; }
+.diagram .sm-proxy { fill: var(--panel-2); stroke: var(--wire); stroke-width: 1.5; }
+.diagram .sm-app { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.diagram .sm-card { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .sm-pin { font-size: 10px; font-weight: 700; fill: var(--bg); text-anchor: middle; }
+.diagram .sm-lbl { paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
+.diagram .sm-tunnel { fill: none; stroke: var(--orange-soft); stroke-width: 14; stroke-linecap: round; }
+.diagram .sm-tel { animation: pulse 1s ease-in-out -0.6s infinite; }
+.diagram .sm-clock { transform-box: fill-box; transform-origin: 0 50%; animation: sm-clock var(--T) linear infinite; }
+.diagram .sm-req { animation: sm-req var(--T) linear infinite; }
+.diagram .sm-ok { animation: sm-ok var(--T) linear infinite; }
+.diagram .sm-hit-o { animation: sm-hit-o var(--T) linear infinite; }
+.diagram .sm-hit-a { animation: sm-hit-a var(--T) linear infinite; }
+.diagram .sm-n1 { animation: sm-n1 var(--T) linear infinite; }
+.diagram .sm-n2 { animation: sm-n2 var(--T) linear infinite; }
+.diagram .sm-n3 { animation: sm-n3 var(--T) linear infinite; }
+.diagram .sm-cfg-w { animation: sm-cfg-w var(--T) linear infinite; }
+.diagram .sm-cfg-o { animation: sm-cfg-o var(--T) linear infinite; }
+.diagram .sm-cfg-a { animation: sm-cfg-a var(--T) linear infinite; }
+.diagram .sm-cfg-b { animation: sm-cfg-b var(--T) linear infinite; }
+.diagram .sm-crt-w { animation: sm-crt-w var(--T) linear infinite; }
+.diagram .sm-crt-o { animation: sm-crt-o var(--T) linear infinite; }
+.diagram .sm-crt-a { animation: sm-crt-a var(--T) linear infinite; }
+.diagram .sm-crt-b { animation: sm-crt-b var(--T) linear infinite; }
+.diagram .sm-chip-cfg { animation: sm-chip-cfg var(--T) linear infinite; }
+.diagram .sm-chip-ca { animation: sm-chip-ca var(--T) linear infinite; }
+.diagram .sm-got-cfg { animation: sm-got-cfg var(--T) linear infinite; }
+.diagram .sm-got-crt { animation: sm-got-crt var(--T) linear infinite; }
+.diagram .sm-got-crt2 { animation: sm-got-crt2 var(--T) linear infinite; }
+.diagram .sm-down { animation: sm-down var(--T) linear infinite; }
+.diagram .sm-l1 { animation: sm-l1 var(--T) linear infinite; }
+.diagram .sm-l2 { animation: sm-l2 var(--T) linear infinite; }
+.diagram .sm-l3 { animation: sm-l3 var(--T) linear infinite; }
+.diagram .sm-l4 { animation: sm-l4 var(--T) linear infinite; }
+.diagram .sm-ca { animation: sm-ca var(--T) linear infinite; }
+.diagram .sm-cb { animation: sm-cb var(--T) linear infinite; }
+.diagram .sm-mtls { animation: sm-mtls var(--T) linear infinite; }
+.diagram .sm-rq3 { animation: sm-rq3 var(--T) linear infinite; }
+.diagram .sm-allow { animation: sm-allow var(--T) linear infinite; }
+.diagram .sm-direct { animation: sm-direct var(--T) linear infinite; }
+.diagram .sm-rqw { animation: sm-rqw var(--T) linear infinite; }
+.diagram .sm-deny { animation: sm-deny var(--T) linear infinite; }
+.diagram .sm-403 { animation: sm-403 var(--T) linear infinite; }
+.diagram .sm-refused { animation: sm-refused var(--T) linear infinite; }
+.diagram .sm-s0 { animation: sm-s0 var(--T) linear infinite; }
+.diagram .sm-s1 { animation: sm-s1 var(--T) linear infinite; }
+.diagram .sm-s2 { animation: sm-s2 var(--T) linear infinite; }
+.diagram .sm-s3 { animation: sm-s3 var(--T) linear infinite; }
+.diagram .sm-s4 { animation: sm-s4 var(--T) linear infinite; }
+.diagram .sm-s5 { animation: sm-s5 var(--T) linear infinite; }
+.diagram .sm-s6 { animation: sm-s6 var(--T) linear infinite; }
+.diagram .sm-s7 { animation: sm-s7 var(--T) linear infinite; }
+.diagram .sm-s8 { animation: sm-s8 var(--T) linear infinite; }
+.diagram .sm-s9 { animation: sm-s9 var(--T) linear infinite; }
+.diagram .sm-cnt { animation: sm-cnt var(--T) linear infinite; }
+.diagram .sm-fail { animation: sm-fail var(--T) linear infinite; }
+.diagram .sm-503 { animation: sm-503 var(--T) linear infinite; }
+.diagram .sm-err { animation: sm-err var(--T) linear infinite; }
+.diagram .sm-retry { animation: sm-retry var(--T) linear infinite; }
+.diagram .sm-rty { animation: sm-rty var(--T) linear infinite; }
+.diagram .sm-done { animation: sm-done var(--T) linear infinite; }
+@keyframes sm-req {
+  0% { transform: translate(486px, 273px); opacity: 0; }
+  3% { transform: translate(486px, 273px); opacity: 0; }
+  3.25% { opacity: 1; }
+  5% { transform: translate(486px, 211px); }
+  6.25% { transform: translate(486px, 211px); }
+  10.75% { transform: translate(740px, 211px); }
+  12% { transform: translate(740px, 211px); }
+  14% { transform: translate(740px, 273px); opacity: 1; }
+  14.25% { transform: translate(740px, 273px); opacity: 0; }
+  38.75% { transform: translate(486px, 273px); opacity: 0; }
+  39% { opacity: 1; }
+  39.5% { transform: translate(486px, 211px); }
+  41.75% { transform: translate(740px, 211px); }
+  42.5% { transform: translate(740px, 273px); opacity: 1; }
+  42.75% { transform: translate(740px, 273px); opacity: 0; }
+  100% { transform: translate(740px, 273px); opacity: 0; }
+}
+@keyframes sm-ok {
+  0% { transform: translate(740px, 273px); opacity: 0; }
+  15.5% { transform: translate(740px, 273px); opacity: 0; }
+  15.75% { opacity: 1; }
+  17% { transform: translate(740px, 211px); }
+  20% { transform: translate(486px, 211px); }
+  21.5% { transform: translate(486px, 273px); opacity: 1; }
+  21.75% { transform: translate(486px, 273px); opacity: 0; }
+  42.75% { transform: translate(740px, 273px); opacity: 0; }
+  43% { opacity: 1; }
+  43.5% { transform: translate(740px, 211px); }
+  45.75% { transform: translate(486px, 211px); }
+  46.5% { transform: translate(486px, 273px); opacity: 1; }
+  46.75% { transform: translate(486px, 273px); opacity: 0; }
+  92.5% { transform: translate(740px, 273px); opacity: 0; }
+  92.75% { opacity: 1; }
+  93.1% { transform: translate(740px, 211px); }
+  95.1% { transform: translate(486px, 211px); }
+  95.7% { transform: translate(486px, 273px); opacity: 1; }
+  95.95% { transform: translate(486px, 273px); opacity: 0; }
+  100% { transform: translate(486px, 273px); opacity: 0; }
+}
+@keyframes sm-hit-o {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  5.75% { opacity: 1; }
+  6.75% { opacity: 1; }
+  7.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-hit-a {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.5% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-n1 {
+  0% { opacity: 0; }
+  4% { opacity: 0; }
+  4.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-n2 {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  8.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-n3 {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  13.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-cfg-w {
+  0% { transform: translate(64px, 115px); opacity: 0; }
+  26.25% { transform: translate(64px, 115px); opacity: 0; }
+  26.5% { opacity: 1; transform: translate(46px, 115px); }
+  29.85% { transform: translate(46px, 347px); }
+  30.25% { transform: translate(74px, 347px); opacity: 1; }
+  30.5% { transform: translate(74px, 347px); opacity: 0; }
+  100% { transform: translate(74px, 347px); opacity: 0; }
+}
+@keyframes sm-cfg-o {
+  0% { transform: translate(425px, 138px); opacity: 0; }
+  27.75% { transform: translate(425px, 138px); opacity: 0; }
+  28% { opacity: 1; }
+  30.25% { transform: translate(425px, 195px); opacity: 1; }
+  30.5% { transform: translate(425px, 195px); opacity: 0; }
+  100% { transform: translate(425px, 195px); opacity: 0; }
+}
+@keyframes sm-cfg-a {
+  0% { transform: translate(801px, 138px); opacity: 0; }
+  27.75% { transform: translate(801px, 138px); opacity: 0; }
+  28% { opacity: 1; }
+  30.25% { transform: translate(801px, 195px); opacity: 1; }
+  30.5% { transform: translate(801px, 195px); opacity: 0; }
+  100% { transform: translate(801px, 195px); opacity: 0; }
+}
+@keyframes sm-cfg-b {
+  0% { transform: translate(896px, 115px); opacity: 0; }
+  26.25% { transform: translate(896px, 115px); opacity: 0; }
+  26.5% { opacity: 1; transform: translate(914px, 115px); }
+  29.85% { transform: translate(914px, 347px); }
+  30.25% { transform: translate(886px, 347px); opacity: 1; }
+  30.5% { transform: translate(886px, 347px); opacity: 0; }
+  100% { transform: translate(886px, 347px); opacity: 0; }
+}
+@keyframes sm-crt-w {
+  0% { transform: translate(64px, 115px); opacity: 0; }
+  31.5% { transform: translate(64px, 115px); opacity: 0; }
+  31.75% { opacity: 1; transform: translate(46px, 115px); }
+  35.1% { transform: translate(46px, 347px); }
+  35.5% { transform: translate(74px, 347px); opacity: 1; }
+  35.75% { transform: translate(74px, 347px); opacity: 0; }
+  100% { transform: translate(74px, 347px); opacity: 0; }
+}
+@keyframes sm-crt-o {
+  0% { transform: translate(425px, 138px); opacity: 0; }
+  33% { transform: translate(425px, 138px); opacity: 0; }
+  33.25% { opacity: 1; }
+  35.5% { transform: translate(425px, 195px); opacity: 1; }
+  35.75% { transform: translate(425px, 195px); opacity: 0; }
+  100% { transform: translate(425px, 195px); opacity: 0; }
+}
+@keyframes sm-crt-a {
+  0% { transform: translate(801px, 138px); opacity: 0; }
+  33% { transform: translate(801px, 138px); opacity: 0; }
+  33.25% { opacity: 1; }
+  35.5% { transform: translate(801px, 195px); opacity: 1; }
+  35.75% { transform: translate(801px, 195px); opacity: 0; }
+  100% { transform: translate(801px, 195px); opacity: 0; }
+}
+@keyframes sm-crt-b {
+  0% { transform: translate(896px, 115px); opacity: 0; }
+  31.5% { transform: translate(896px, 115px); opacity: 0; }
+  31.75% { opacity: 1; transform: translate(914px, 115px); }
+  35.1% { transform: translate(914px, 347px); }
+  35.5% { transform: translate(886px, 347px); opacity: 1; }
+  35.75% { transform: translate(886px, 347px); opacity: 0; }
+  100% { transform: translate(886px, 347px); opacity: 0; }
+}
+@keyframes sm-chip-cfg {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.75% { opacity: 1; }
+  30.5% { opacity: 1; }
+  31.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-chip-ca {
+  0% { opacity: 0; }
+  31.25% { opacity: 0; }
+  32% { opacity: 1; }
+  35.75% { opacity: 1; }
+  36.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-got-cfg {
+  0% { opacity: 0; }
+  30.25% { opacity: 0; }
+  31% { opacity: 1; }
+  32.5% { opacity: 1; }
+  33.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-got-crt {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.25% { opacity: 1; }
+  37.75% { opacity: 1; }
+  38.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-got-crt2 {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.25% { opacity: 1; }
+  37.75% { opacity: 1; }
+  38.5% { opacity: 0; }
+  55% { opacity: 0; }
+  55.75% { opacity: 1; }
+  57.25% { opacity: 1; }
+  58% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-down {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  37.8% { opacity: 1; }
+  49.7% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-l1 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-l2 {
+  0% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-l3 {
+  0% { opacity: 0; }
+  37.75% { opacity: 0; }
+  38.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-l4 {
+  0% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-ca {
+  0% { transform: translate(534px, 211px); opacity: 0; }
+  51.5% { transform: translate(534px, 211px); opacity: 0; }
+  51.75% { opacity: 1; }
+  55% { transform: translate(686px, 211px); opacity: 1; }
+  55.25% { transform: translate(686px, 211px); opacity: 0; }
+  100% { transform: translate(686px, 211px); opacity: 0; }
+}
+@keyframes sm-cb {
+  0% { transform: translate(686px, 211px); opacity: 0; }
+  51.5% { transform: translate(686px, 211px); opacity: 0; }
+  51.75% { opacity: 1; }
+  55% { transform: translate(534px, 211px); opacity: 1; }
+  55.25% { transform: translate(534px, 211px); opacity: 0; }
+  100% { transform: translate(534px, 211px); opacity: 0; }
+}
+@keyframes sm-mtls {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  56.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-rq3 {
+  0% { transform: translate(486px, 273px); opacity: 0; }
+  56.75% { transform: translate(486px, 273px); opacity: 0; }
+  57% { opacity: 1; }
+  57.5% { transform: translate(486px, 211px); }
+  59.75% { transform: translate(740px, 211px); }
+  61% { transform: translate(740px, 211px); }
+  61.75% { transform: translate(740px, 273px); opacity: 1; }
+  62% { transform: translate(740px, 273px); opacity: 0; }
+  100% { transform: translate(740px, 273px); opacity: 0; }
+}
+@keyframes sm-allow {
+  0% { opacity: 0; }
+  59.75% { opacity: 0; }
+  60.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-direct {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  61.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-rqw {
+  0% { transform: translate(220px, 409px); opacity: 0; }
+  62% { transform: translate(220px, 409px); opacity: 0; }
+  62.25% { opacity: 1; }
+  62.75% { transform: translate(220px, 347px); }
+  66.5% { transform: translate(740px, 347px); }
+  67.25% { transform: translate(740px, 347px); opacity: 1; }
+  67.5% { transform: translate(740px, 347px); opacity: 0; }
+  100% { transform: translate(740px, 347px); opacity: 0; }
+}
+@keyframes sm-deny {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-403 {
+  0% { transform: translate(740px, 347px); opacity: 0; }
+  67.25% { transform: translate(740px, 347px); opacity: 0; }
+  67.5% { opacity: 1; }
+  70.75% { transform: translate(220px, 347px); }
+  71.5% { transform: translate(220px, 409px); opacity: 1; }
+  71.75% { transform: translate(220px, 409px); opacity: 0; }
+  100% { transform: translate(220px, 409px); opacity: 0; }
+}
+@keyframes sm-refused {
+  0% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-s0 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  76.25% { transform: translate(510px, 211px); opacity: 0; }
+  76.5% { opacity: 1; }
+  78.4% { transform: translate(716px, 211px); opacity: 1; }
+  78.65% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s1 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  76.9% { transform: translate(510px, 211px); opacity: 0; }
+  77.15% { opacity: 1; }
+  79.05% { transform: translate(716px, 211px); opacity: 1; }
+  79.3% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s2 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  77.55% { transform: translate(510px, 211px); opacity: 0; }
+  77.8% { opacity: 1; }
+  79.7% { transform: translate(716px, 211px); opacity: 1; }
+  79.95% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s3 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  78.2% { transform: translate(510px, 211px); opacity: 0; }
+  78.45% { opacity: 1; }
+  80.35% { transform: translate(716px, 211px); opacity: 1; }
+  80.6% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s4 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  78.85% { transform: translate(510px, 211px); opacity: 0; }
+  79.1% { opacity: 1; }
+  79.8% { transform: translate(590px, 211px); }
+  81.2% { transform: translate(590px, 347px); }
+  82.4% { transform: translate(716px, 347px); opacity: 1; }
+  82.65% { transform: translate(716px, 347px); opacity: 0; }
+  100% { transform: translate(716px, 347px); opacity: 0; }
+}
+@keyframes sm-s5 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  79.5% { transform: translate(510px, 211px); opacity: 0; }
+  79.75% { opacity: 1; }
+  81.65% { transform: translate(716px, 211px); opacity: 1; }
+  81.9% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s6 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  80.15% { transform: translate(510px, 211px); opacity: 0; }
+  80.4% { opacity: 1; }
+  82.3% { transform: translate(716px, 211px); opacity: 1; }
+  82.55% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s7 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  80.8% { transform: translate(510px, 211px); opacity: 0; }
+  81.05% { opacity: 1; }
+  82.95% { transform: translate(716px, 211px); opacity: 1; }
+  83.2% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s8 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  81.45% { transform: translate(510px, 211px); opacity: 0; }
+  81.7% { opacity: 1; }
+  83.6% { transform: translate(716px, 211px); opacity: 1; }
+  83.85% { transform: translate(716px, 211px); opacity: 0; }
+  100% { transform: translate(716px, 211px); opacity: 0; }
+}
+@keyframes sm-s9 {
+  0% { transform: translate(510px, 211px); opacity: 0; }
+  82.1% { transform: translate(510px, 211px); opacity: 0; }
+  82.35% { opacity: 1; }
+  84.25% { transform: translate(716px, 211px); }
+  84.5% { transform: translate(740px, 211px); }
+  85% { transform: translate(740px, 211px); opacity: 1; }
+  85.25% { transform: translate(740px, 211px); opacity: 0; }
+  100% { transform: translate(740px, 211px); opacity: 0; }
+}
+@keyframes sm-cnt {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes sm-fail {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.25% { opacity: 1; }
+  88% { opacity: 1; }
+  88.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-503 {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.25% { opacity: 1; }
+  91.5% { opacity: 1; }
+  92.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sm-err {
+  0% { transform: translate(740px, 211px); opacity: 0; }
+  85% { transform: translate(740px, 211px); opacity: 0; }
+  85.25% { opacity: 1; }
+  87.5% { transform: translate(486px, 211px); }
+  88.75% { transform: translate(486px, 211px); opacity: 1; }
+  89% { transform: translate(486px, 211px); opacity: 0; }
+  100% { transform: translate(486px, 211px); opacity: 0; }
+}
+@keyframes sm-retry {
+  0% { opacity: 0; }
+  87.5% { opacity: 0; }
+  88.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes sm-rty {
+  0% { transform: translate(486px, 211px); opacity: 0; }
+  89% { transform: translate(486px, 211px); opacity: 0; }
+  89.25% { opacity: 1; }
+  91.5% { transform: translate(740px, 211px); }
+  92.1% { transform: translate(740px, 273px); opacity: 1; }
+  92.35% { transform: translate(740px, 273px); opacity: 0; }
+  100% { transform: translate(740px, 273px); opacity: 0; }
+}
+@keyframes sm-done {
+  0% { opacity: 0; }
+  95.7% { opacity: 0; }
+  96.45% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes sm-clock {
+  0% { transform: scaleX(1); }
+  82.1% { transform: scaleX(1); }
+  95.7% { transform: scaleX(0.36); }
+  100% { transform: scaleX(0.36); }
+}
+</style>
+<g class="stage">
+  <!-- control plane: three jobs, and a thin dashed line down to every proxy -->
+  <rect class="box" x="64" y="92" width="832" height="46" rx="12"/>
+  <text class="label" x="80" y="120">Control plane</text>
+  <rect class="sm-app" x="208" y="101" width="218" height="28" rx="8"/>
+  <text class="sub sb f-ink mid" x="317" y="119">service discovery</text>
+  <rect class="sm-app" x="436" y="101" width="218" height="28" rx="8"/>
+  <text class="sub sb f-ink mid" x="545" y="119">configuration and policy</text>
+  <rect class="sm-app" x="664" y="101" width="220" height="28" rx="8"/>
+  <text class="sub sb f-ink mid" x="774" y="119">certificate authority</text>
+  <rect class="none s-purple sm-w sm-chip-cfg" x="208" y="101" width="218" height="28" rx="8" stroke-width="2"/>
+  <rect class="none s-purple sm-w sm-chip-cfg" x="436" y="101" width="218" height="28" rx="8" stroke-width="2"/>
+  <rect class="none s-orange sm-w sm-chip-ca" x="664" y="101" width="220" height="28" rx="8" stroke-width="2"/>
+
+  <!-- pods: every one has an app container and a sidecar proxy -->
+  <text class="tiny" x="68" y="317">pod</text>
+  <rect class="box" x="64" y="322" width="190" height="118" rx="14"/>
+  <text class="tiny" x="334" y="181">pod</text>
+  <rect class="box" x="330" y="186" width="190" height="118" rx="14"/>
+  <text class="tiny" x="710" y="181">pod</text>
+  <rect class="box" x="706" y="186" width="190" height="118" rx="14"/>
+  <text class="tiny" x="710" y="317">pod</text>
+  <rect class="box" x="706" y="322" width="190" height="118" rx="14"/>
+
+  <!-- data plane: the wires between the proxies -->
+  <text class="tiny sb mid" x="613" y="171">data plane</text>
+  <path class="wire" d="M244 347H292V211H339" marker-end="url(#ah)"/>
+  <path class="wire" d="M590 211V347H715" marker-end="url(#ah)"/>
+  <path class="wire" d="M510 211H715" marker-end="url(#ah)"/>
+  <g class="sm-w sm-direct">
+    <path class="none s-red dash" d="M292 347H590" stroke-width="2"/>
+    <text class="tiny sb f-red mid" x="441" y="364">Web calls Payments directly</text>
+  </g>
+
+  <!-- control plane to every proxy -->
+  <path class="sm-ctl" d="M64 115H46V347H73" marker-end="url(#ah-muted)"/>
+  <path class="sm-ctl" d="M896 115H914V347H887" marker-end="url(#ah-muted)"/>
+  <path class="sm-ctl" d="M425 138V194" marker-end="url(#ah-muted)"/>
+  <path class="sm-ctl" d="M801 138V194" marker-end="url(#ah-muted)"/>
+
+  <line class="wire" x1="220" y1="363" x2="220" y2="387"/>
+  <rect class="sm-proxy" x="74" y="331" width="170" height="32" rx="10"/>
+  <text class="tiny sb f-ink" x="86" y="351">sidecar proxy</text>
+  <rect class="sm-app" x="74" y="387" width="170" height="44" rx="10"/>
+  <text class="label" x="86" y="406">Web</text>
+  <text class="tiny" x="86" y="422">app container</text>
+  <line class="wire" x1="486" y1="227" x2="486" y2="251"/>
+  <rect class="sm-proxy" x="340" y="195" width="170" height="32" rx="10"/>
+  <text class="tiny sb f-ink" x="352" y="215">sidecar proxy</text>
+  <rect class="sm-app" x="340" y="251" width="170" height="44" rx="10"/>
+  <text class="label" x="352" y="270">Orders</text>
+  <text class="tiny" x="352" y="286">app container</text>
+  <line class="wire" x1="740" y1="227" x2="740" y2="251"/>
+  <rect class="sm-proxy" x="716" y="195" width="170" height="32" rx="10"/>
+  <text class="tiny sb f-ink end" x="874" y="215">sidecar proxy</text>
+  <rect class="sm-app" x="716" y="251" width="170" height="44" rx="10"/>
+  <text class="label end" x="874" y="270">Payments v1</text>
+  <text class="tiny end" x="874" y="286">app container</text>
+  <line class="wire" x1="740" y1="363" x2="740" y2="387"/>
+  <rect class="sm-proxy" x="716" y="331" width="170" height="32" rx="10"/>
+  <text class="tiny sb f-ink end" x="874" y="351">sidecar proxy</text>
+  <rect class="sm-app" x="716" y="387" width="170" height="44" rx="10"/>
+  <text class="label end" x="874" y="406">Payments v2</text>
+  <text class="tiny end" x="874" y="422">app container</text>
+
+  <!-- step 1: the path of one call, hop by hop -->
+  <g class="p1">
+    <path class="none s-blue" d="M486 251V211H740V251" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
+  <rect class="none s-blue sm-w sm-hit-o" x="340" y="195" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-blue sm-w sm-hit-a" x="716" y="195" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <g class="sm-n1"><circle class="f-blue s-bg" cx="500" cy="239" r="7" stroke-width="1.5"/><text class="sm-pin" x="500" y="242.5">1</text></g>
+  <g class="sm-n2"><circle class="f-blue s-bg" cx="556" cy="196" r="7" stroke-width="1.5"/><text class="sm-pin" x="556" y="199.5">2</text></g>
+  <g class="sm-n3"><circle class="f-blue s-bg" cx="726" cy="239" r="7" stroke-width="1.5"/><text class="sm-pin" x="726" y="242.5">3</text></g>
+
+  <!-- step 2: what arrives at the proxies, then the control plane goes down -->
+  <rect class="none s-purple sm-w sm-got-cfg" x="74" y="331" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-orange sm-w sm-got-crt" x="74" y="331" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-purple sm-w sm-got-cfg" x="716" y="331" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-orange sm-w sm-got-crt" x="716" y="331" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-purple sm-w sm-got-cfg" x="340" y="195" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-orange sm-w sm-got-crt2" x="340" y="195" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-purple sm-w sm-got-cfg" x="716" y="195" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <rect class="none s-orange sm-w sm-got-crt2" x="716" y="195" width="170" height="32" rx="10" stroke-width="2.5"/>
+  <g class="sm-w sm-down">
+    <rect class="f-bg" x="64" y="92" width="832" height="46" rx="12"/>
+    <rect class="f-red-soft s-red" x="64" y="92" width="832" height="46" rx="12" stroke-width="1.5"/>
+    <text class="label" x="80" y="120">Control plane</text>
+    <circle class="f-red" cx="217" cy="115" r="8"/><path class="s-bg" d="M213.8 111.8l6.4 6.4M220.2 111.8l-6.4 6.4" stroke-width="1.8" stroke-linecap="round"/>
+    <text class="sub sb f-red" x="233" y="119">unavailable: no new configuration, no new certificates</text>
+  </g>
+
+  <!-- step 3: mutual TLS on the wire, policy at Payments' proxies -->
+  <g class="sm-w sm-mtls">
+    <line class="sm-tunnel" x1="516" y1="211" x2="708" y2="211"/>
+    <line class="s-orange" x1="510" y1="211" x2="707" y2="211" stroke-width="2.5"/>
+    <circle class="f-bg" cx="555" cy="211" r="11"/>
+    <rect class="f-orange" x="548" y="208" width="14" height="10" rx="2.5"/>
+    <path class="none s-orange" d="M551 208v-3a4 4 0 0 1 8 0v3" stroke-width="2"/>
+    <text class="tiny b mid f-orange" x="555" y="191">mutual TLS</text>
+  </g>
+  <g class="sm-w sm-allow">
+    <rect class="none s-green" x="716" y="195" width="170" height="32" rx="10" stroke-width="2.5"/>
+    <rect class="f-bg s-green" x="604" y="181" width="96" height="20" rx="10" stroke-width="1.5"/><text class="tiny b mid f-green" x="652" y="195">orders: allow</text>
+  </g>
+  <g class="sm-w sm-deny">
+    <rect class="f-red-soft s-red" x="716" y="331" width="170" height="32" rx="10" stroke-width="2"/>
+    <circle class="f-red" cx="740" cy="375" r="7"/><path class="s-bg" d="M737.2 372.2l5.6 5.6M742.8 372.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/>
+    <rect class="f-bg s-red" x="604" y="317" width="96" height="20" rx="10" stroke-width="1.5"/><text class="tiny b mid f-red" x="652" y="331">403 Forbidden</text>
+  </g>
+
+  <g class="sm-w sm-refused"><circle class="f-red" cx="240" cy="391" r="9"/><path class="s-bg" d="M236.4 387.4l7.2 7.2M243.6 387.4l-7.2 7.2" stroke-width="1.8" stroke-linecap="round"/></g>
+  <!-- step 4: the split, one retry, the same telemetry everywhere -->
+  <g class="p4">
+    <text class="sub b mid f-ink" x="652" y="231">90%</text>
+    <text class="sub b mid f-ink" x="652" y="367">10%</text>
+    <text class="tiny mid sm-w sm-cnt" x="652" y="245">9 of 10 calls</text>
+    <text class="tiny mid sm-w sm-cnt" x="652" y="381">1 of 10 calls</text>
+    <path class="f-teal sm-tel" d="M186 347h3v6h-3zM191 342h3v11h-3zM196 345h3v8h-3z"/>
+    <path class="f-teal sm-tel" d="M452 211h3v6h-3zM457 206h3v11h-3zM462 209h3v8h-3z"/>
+    <path class="f-teal sm-tel" d="M760 211h3v6h-3zM765 206h3v11h-3zM770 209h3v8h-3z"/>
+    <path class="f-teal sm-tel" d="M760 347h3v6h-3zM765 342h3v11h-3zM770 345h3v8h-3z"/>
+  </g>
+  <g class="sm-w sm-fail">
+    <rect class="f-red-soft s-red" x="706" y="186" width="190" height="118" rx="14" stroke-width="1.5"/>
+  </g>
+  <g class="sm-w sm-503"><rect class="f-bg s-red" x="660" y="181" width="40" height="20" rx="10" stroke-width="1.5"/><text class="tiny b mid f-red" x="680" y="195">503</text></g>
+  <g class="sm-w sm-retry"><rect class="f-bg s-amber" x="514" y="181" width="88" height="20" rx="10" stroke-width="1.5"/><text class="tiny b mid f-amber-ink" x="558" y="195">retry 1 of 2</text></g>
+  <g class="sm-w sm-done"><circle class="f-green" cx="506" cy="255" r="9"/><path class="none s-bg" d="M501.5 255l3.24 3.24 5.76 -6.48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+  <!-- what each step is about (top left) -->
+  <rect class="sm-card" x="60" y="160" width="218" height="140" rx="10"/>
+  <g class="p1">
+    <text class="sub sb f-ink" x="74" y="182">One call, three hops</text>
+    <circle class="f-blue s-bg" cx="81" cy="201" r="7" stroke-width="1.5"/><text class="sm-pin" x="81" y="204.5">1</text><text class="tiny f-ink" x="96" y="205">app to sidecar: plain HTTP</text>
+    <circle class="f-blue s-bg" cx="81" cy="221" r="7" stroke-width="1.5"/><text class="sm-pin" x="81" y="224.5">2</text><text class="tiny f-ink" x="96" y="225">sidecar to sidecar</text>
+    <circle class="f-blue s-bg" cx="81" cy="241" r="7" stroke-width="1.5"/><text class="sm-pin" x="81" y="244.5">3</text><text class="tiny f-ink" x="96" y="245">sidecar to app: plain HTTP</text>
+    <text class="tiny" x="74" y="276">No mesh code in either app.</text>
+  </g>
+  <g class="p2">
+    <text class="sub sb f-ink" x="74" y="182">Every proxy receives</text>
+    <g class="sm-w sm-l1"><rect class="f-purple" x="76" y="196" width="10" height="10" rx="3"/><text class="tiny f-ink" x="96" y="205">endpoints, routes, policy</text></g>
+    <g class="sm-w sm-l2"><rect class="f-orange" x="74" y="215" width="14" height="10" rx="2.5"/><text class="tiny f-ink" x="96" y="224">its own certificate,</text>
+      <text class="tiny f-ink" x="96" y="238">valid for hours</text></g>
+    <g class="sm-w sm-l3"><circle class="f-red" cx="81" cy="255" r="6.5"/><path class="s-bg" d="M78.4 252.4l5.2 5.2M83.6 252.4l-5.2 5.2" stroke-width="1.8" stroke-linecap="round"/><text class="tiny sb f-red" x="96" y="259">control plane down:</text>
+      <text class="tiny f-ink" x="96" y="273">proxies keep the last config</text></g>
+    <g class="sm-w sm-l4"><circle class="f-green" cx="81" cy="287" r="6.5"/><path class="none s-bg" d="M77.75 287l2.34 2.34 4.16 -4.68" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green" x="96" y="291">calls still flow</text></g>
+  </g>
+  <g class="p3">
+    <text class="sub sb f-ink" x="74" y="182">Identity, not IP address</text>
+    <text class="tiny f-ink" x="74" y="206">Each certificate names its</text>
+    <text class="tiny f-ink" x="74" y="221">service, for example</text>
+    <text class="tiny mono sb f-orange" x="74" y="244">spiffe://example.org/orders</text>
+    <text class="tiny f-ink" x="74" y="268">Policy is written against</text>
+    <text class="tiny f-ink" x="74" y="283">that name.</text>
+  </g>
+  <g class="p4">
+    <text class="sub sb f-ink" x="74" y="182">Rule in Orders' sidecar</text>
+    <text class="tiny" x="74" y="204">split</text><text class="tiny sb f-ink" x="128" y="204">v1 90% · v2 10%</text>
+    <text class="tiny" x="74" y="222">retries</text><text class="tiny sb f-ink" x="128" y="222">up to 2, GET only</text>
+    <text class="tiny" x="74" y="240">timeout</text><text class="tiny sb f-ink" x="128" y="240">2 s</text>
+    <rect class="f-line" x="154" y="233" width="110" height="6" rx="3"/>
+    <rect class="f-amber sm-clock" x="154" y="233" width="110" height="6" rx="3"/>
+    <text class="tiny" x="74" y="266">No change to Orders' code.</text>
+    <g class="sm-w sm-done"><circle class="f-green" cx="81" cy="283" r="6.5"/><path class="none s-bg" d="M77.75 283l2.34 2.34 4.16 -4.68" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green" x="96" y="287">the app saw one success</text></g>
+  </g>
+
+  <!-- the takeaway of each step (under the mesh) -->
+  <g class="p1">
+    <text class="tiny" x="278" y="398">Because every call passes a proxy, the mesh can add</text>
+    <text class="tiny sb f-ink" x="278" y="415">mutual TLS · retries · timeouts · load balancing · telemetry</text>
+  </g>
+  <g class="p2">
+    <text class="tiny" x="278" y="398">The control plane is not on the request path:</text>
+    <text class="tiny sb f-ink" x="278" y="415">it sends updates, and the proxies handle calls on their own.</text>
+  </g>
+  <g class="p3">
+    <rect class="sm-card" x="278" y="380" width="320" height="60" rx="10"/>
+    <text class="tiny sb f-ink" x="292" y="398">Authorization policy at Payments' proxies</text>
+    <g class="sm-w sm-allow"><circle class="f-green" cx="298" cy="410" r="6"/><path class="none s-bg" d="M295 410l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g><text class="tiny f-ink" x="310" y="414">from orders: allow</text>
+    <g class="sm-w sm-deny"><circle class="f-red" cx="298" cy="426" r="6"/><path class="s-bg" d="M295.6 423.6l4.8 4.8M300.4 423.6l-4.8 4.8" stroke-width="1.8" stroke-linecap="round"/></g><text class="tiny f-ink" x="310" y="430">anyone else: 403, the app is never called</text>
+  </g>
+  <g class="p4">
+    <path class="f-teal" d="M278 397h3v6h-3zM283 392h3v11h-3zM288 395h3v8h-3z"/>
+    <text class="tiny" x="300" y="398">Every proxy reports the same metrics and traces:</text>
+    <text class="tiny sb f-ink" x="300" y="415">requests, errors and latency for every call.</text>
+  </g>
+
+  <!-- legend -->
+  <circle class="f-blue" cx="277" cy="456" r="5"/><text class="tiny" x="287" y="460">request</text>
+  <circle class="f-green" cx="349" cy="456" r="5"/><text class="tiny" x="359" y="460">response</text>
+  <circle class="f-red" cx="429" cy="456" r="5"/><text class="tiny" x="439" y="460">refused or failed</text>
+  <rect class="f-purple" x="544" y="451" width="10" height="10" rx="3"/><text class="tiny" x="559" y="460">configuration</text>
+  <rect class="f-orange" x="643" y="451" width="14" height="10" rx="2.5"/><text class="tiny" x="662" y="460">certificate</text>
+
+  <!-- traffic -->
+  <circle class="pkt f-blue sm-t sm-req" r="6"/>
+  <circle class="pkt f-green sm-t sm-ok" r="6"/>
+  <circle class="pkt f-blue sm-t sm-rq3" r="6"/>
+  <g class="sm-t sm-rqw"><circle class="pkt f-blue" r="6"/><text class="tiny mid sb f-orange sm-lbl" y="-12">id: web</text></g>
+  <g class="sm-t sm-403"><circle class="pkt f-red" r="6"/><text class="tiny mid b f-red sm-lbl" y="-12">403</text></g>
+  <g class="sm-t sm-ca"><rect class="pkt f-orange" x="-7" y="-5" width="14" height="10" rx="2.5"/><text class="tiny mid sb f-orange sm-lbl" y="-11">orders</text></g>
+  <g class="sm-t sm-cb"><rect class="pkt f-orange" x="-7" y="-5" width="14" height="10" rx="2.5"/><text class="tiny mid sb f-orange sm-lbl" y="20">payments</text></g>
+  <rect class="pkt f-purple sm-t sm-cfg-w" x="-5" y="-5" width="10" height="10" rx="3"/>
+  <rect class="pkt f-purple sm-t sm-cfg-o" x="-5" y="-5" width="10" height="10" rx="3"/>
+  <rect class="pkt f-purple sm-t sm-cfg-a" x="-5" y="-5" width="10" height="10" rx="3"/>
+  <rect class="pkt f-purple sm-t sm-cfg-b" x="-5" y="-5" width="10" height="10" rx="3"/>
+  <rect class="pkt f-orange sm-t sm-crt-w" x="-7" y="-5" width="14" height="10" rx="2.5"/>
+  <rect class="pkt f-orange sm-t sm-crt-o" x="-7" y="-5" width="14" height="10" rx="2.5"/>
+  <rect class="pkt f-orange sm-t sm-crt-a" x="-7" y="-5" width="14" height="10" rx="2.5"/>
+  <rect class="pkt f-orange sm-t sm-crt-b" x="-7" y="-5" width="14" height="10" rx="2.5"/>
+  <circle class="pkt f-blue sm-t sm-s0" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s1" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s2" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s3" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s4" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s5" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s6" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s7" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s8" r="5"/>
+  <circle class="pkt f-blue sm-t sm-s9" r="5"/>
+  <circle class="pkt f-red sm-t sm-err" r="6"/>
+  <g class="sm-t sm-rty"><circle class="f-blue s-amber" r="6.5" stroke-width="2.5"/></g>
+</g>
+</svg>

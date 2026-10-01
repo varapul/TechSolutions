@@ -1,0 +1,42 @@
+{
+  "aka": ["Log-based change data capture", "Transaction log tailing"],
+  "steps": [
+    {
+      "title": "Every commit is logged",
+      "caption": "The app updates a row as usual. Before the commit returns, the change is in the transaction log.",
+      "body": "The application changes a customer's email address with an ordinary `UPDATE`. Before the database acknowledges the commit, the change is in its **transaction log**, which it keeps anyway for crash recovery and replication. The application is not modified and writes to nothing else."
+    },
+    {
+      "title": "Read the log, emit events",
+      "caption": "The connector tails the log from its saved position and emits each change as an event, in order.",
+      "body": "A **CDC connector** tails that log from its saved position and turns every committed row change into an event on the table's topic, in commit order: the operation (insert, update or delete), the row before and after, and the source table and log position. Polling the table by a timestamp column instead misses deletes and intermediate values, and loads the database with queries."
+    },
+    {
+      "title": "One write, many copies",
+      "caption": "Search index, cache and warehouse each apply the event at their own pace. The app wrote only once.",
+      "body": "The search index, the cache and the data warehouse each consume the topic at their own pace and apply the change to their own copy. A new consumer starts from a **snapshot** of the existing rows and then continues from the stream. There is no dual write: everything downstream derives from what was committed."
+    },
+    {
+      "title": "Restarts and their price",
+      "caption": "While the connector is down the log piles up. It resumes from 42, so 43 arrives again: skipped.",
+      "body": "The connector saves its position only periodically. It crashes after publishing change 43 but before saving that position, so it resumes from 42 and sends 43 again: delivery is **at-least-once**, which is why consumers apply changes idempotently, upserting by key and ignoring positions they have already applied. While the connector is down the database must keep the unread log, so the log grows: monitor the lag."
+    }
+  ],
+  "related": ["transactional-outbox", "cqrs", "materialized-view", "event-sourcing", "cache-aside", "read-replicas", "medallion-architecture", "idempotent-consumer"],
+  "references": [
+    { "title": "Debezium documentation — Architecture", "url": "https://debezium.io/documentation/reference/stable/architecture.html" },
+    { "title": "Debezium documentation — Connector for PostgreSQL (snapshots, change events, WAL disk space, failures)", "url": "https://debezium.io/documentation/reference/stable/connectors/postgresql.html" },
+    { "title": "Gunnar Morling — Five Advantages of Log-Based Change Data Capture (Debezium blog)", "url": "https://debezium.io/blog/2018/07/19/advantages-of-log-based-change-data-capture/" },
+    { "title": "Jiri Pechanec — Incremental Snapshots in Debezium (Debezium blog)", "url": "https://debezium.io/blog/2021/10/07/incremental-snapshots/" },
+    { "title": "PostgreSQL documentation — Logical Decoding Concepts (replication slots)", "url": "https://www.postgresql.org/docs/current/logicaldecoding-explanation.html" },
+    { "title": "MySQL 8.4 Reference Manual — The Binary Log", "url": "https://dev.mysql.com/doc/refman/8.4/en/binary-log.html" },
+    { "title": "Apache Kafka 4.3 documentation — Kafka Connect user guide", "url": "https://kafka.apache.org/43/kafka-connect/user-guide/" },
+    { "title": "Apache Kafka 4.3 documentation — Design: Log Compaction", "url": "https://kafka.apache.org/43/design/design/#log-compaction" },
+    { "title": "Shirshanka Das et al. — All Aboard the Databus! LinkedIn's Scalable Consistent Change Data Capture Platform (SoCC 2012)", "url": "https://dl.acm.org/doi/10.1145/2391229.2391247" },
+    { "title": "Martin Kleppmann — Turning the database inside-out with Apache Samza (Strange Loop 2014 talk)", "url": "https://martin.kleppmann.com/2015/03/04/turning-the-database-inside-out.html" },
+    { "title": "Martin Kleppmann & Chris Riccomini — Designing Data-Intensive Applications, 2nd Edition (O'Reilly, 2026)", "url": "https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Change data capture for DynamoDB Streams", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html" },
+    { "title": "Azure Cosmos DB — Work with the change feed", "url": "https://learn.microsoft.com/en-us/azure/cosmos-db/change-feed" },
+    { "title": "AWS Database Migration Service — Creating tasks for ongoing replication (CDC)", "url": "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Task.CDC.html" }
+  ]
+}

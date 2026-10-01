@@ -81,10 +81,10 @@ The flag in the diagram is a release flag whose rollout borrows from the others.
 
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 - [Blue-Green Deployment](../blue-green-deployment/) — Run the new version beside the old one and switch all traffic in one step.
-- Rolling Update *(planned)* — Replace instances batch by batch while the service stays up.
+- [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
 - Shadow Traffic *(planned)* — Mirror live requests to the new version and compare results without affecting users.
 - External Configuration Store *(planned)* — Keep configuration out of the deployment package, in a central store read at runtime.
-- Expand and Contract *(planned)* — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
+- [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
 - Branch by Abstraction *(planned)* — Introduce an abstraction, build the new implementation behind it, then switch over.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
 

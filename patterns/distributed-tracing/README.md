@@ -69,7 +69,7 @@ A **trace** records one request as a tree of **spans**. A span is one timed oper
 - Telemetry Pipeline (OpenTelemetry) *(planned)* — Receive, process and export traces, metrics and logs through one vendor-neutral collector.
 - Centralized Logging *(planned)* — Ship structured logs from every service to one searchable store, correlated by request ID.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
-- Service Mesh *(planned)* — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
+- [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.

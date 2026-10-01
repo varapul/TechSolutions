@@ -1,0 +1,46 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Calls go through proxies",
+      "caption": "Orders calls Payments: its sidecar intercepts the call and hands it to Payments' sidecar.",
+      "body": "Every pod runs a **sidecar proxy** next to the app container. When Orders calls Payments, the request leaves the app as plain HTTP or gRPC, is intercepted by Orders' own sidecar, travels proxy to proxy, and is handed to the Payments app by its sidecar. Neither app contains any mesh code."
+    },
+    {
+      "title": "Control plane configures",
+      "caption": "The control plane sends endpoints, routes, policy and certificates. If it fails, calls still flow.",
+      "body": "The **control plane** sends every proxy the endpoints of each service, the routing rules, the policies and a short-lived certificate that carries its service's identity. It is not on the request path: if it goes down, the proxies keep working with the last configuration they received."
+    },
+    {
+      "title": "Mutual TLS and policy",
+      "caption": "The proxies authenticate each other with mutual TLS; policy lets Orders in and answers Web with 403.",
+      "body": "The two proxies do a **mutual TLS** handshake with their certificates, so the traffic on the wire is encrypted and each side knows which service it is talking to. An authorization policy at Payments' proxies allows Orders and denies everyone else: Web's direct call gets a `403` from the proxy and never reaches the app."
+    },
+    {
+      "title": "Split traffic and retry",
+      "caption": "A routing rule splits calls 90/10 between v1 and v2, and the proxy retries a failed call in time.",
+      "body": "A routing rule in Orders' sidecar sends 90% of the calls to Payments v1 and 10% to v2. When a call that is safe to repeat fails, the sidecar retries it within the timeout, so the app sees only the success. Every proxy also reports the same metrics and trace spans. None of this needs a code change, though the app must pass trace headers on for the spans to join into one trace."
+    }
+  ],
+  "related": ["sidecar", "ambassador", "mutual-tls", "api-gateway", "canary-release", "circuit-breaker", "retry-with-backoff", "distributed-tracing"],
+  "references": [
+    { "title": "Istio — Architecture", "url": "https://istio.io/latest/docs/ops/deployment/architecture/" },
+    { "title": "Istio — Sidecar or ambient?", "url": "https://istio.io/latest/docs/overview/dataplane-modes/" },
+    { "title": "Istio — Ambient mode: Overview", "url": "https://istio.io/latest/docs/ambient/overview/" },
+    { "title": "Istio — Security (identity, mutual TLS, authorization)", "url": "https://istio.io/latest/docs/concepts/security/" },
+    { "title": "Istio — Performance and Scalability", "url": "https://istio.io/latest/docs/ops/deployment/performance-and-scalability/" },
+    { "title": "Linkerd — Architecture", "url": "https://linkerd.io/docs/reference/architecture/" },
+    { "title": "Linkerd — Automatic mTLS", "url": "https://linkerd.io/docs/features/automatic-mtls/" },
+    { "title": "Envoy — xDS REST and gRPC protocol", "url": "https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol" },
+    { "title": "SPIFFE — SPIFFE Concepts", "url": "https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/" },
+    { "title": "Kubernetes Gateway API — Gateway API for Service Mesh (GAMMA)", "url": "https://gateway-api.sigs.k8s.io/docs/mesh/mesh-overview/" },
+    { "title": "Kubernetes — Sidecar Containers", "url": "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/" },
+    { "title": "Cilium — Service Mesh", "url": "https://docs.cilium.io/en/stable/network/servicemesh/" },
+    { "title": "gRPC — xDS Features in gRPC", "url": "https://grpc.github.io/grpc/core/md_doc_grpc_xds_features.html" },
+    { "title": "William Morgan — Service mesh: A critical component of the cloud native stack (CNCF blog, 2017)", "url": "https://www.cncf.io/blog/2017/04/26/service-mesh-critical-component-cloud-native-stack/" },
+    { "title": "Phil Calçado — Pattern: Service Mesh", "url": "https://philcalcado.com/2017/08/03/pattern_service_mesh.html" },
+    { "title": "Microsoft Learn — About service meshes (Azure Kubernetes Service)", "url": "https://learn.microsoft.com/en-us/azure/aks/servicemesh-about" },
+    { "title": "Google Cloud — Cloud Service Mesh overview", "url": "https://docs.cloud.google.com/service-mesh/docs/overview" },
+    { "title": "AWS — Migrating from AWS App Mesh to Amazon ECS Service Connect (App Mesh end of support)", "url": "https://aws.amazon.com/blogs/containers/migrating-from-aws-app-mesh-to-amazon-ecs-service-connect/" }
+  ]
+}

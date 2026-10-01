@@ -89,8 +89,8 @@ Both are at-least-once: a poller repeats events if it crashes after publishing b
 ## Related patterns
 
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
-- Change Data Capture (CDC) *(planned)* — Stream every committed change from the database log to other systems.
-- Idempotent Consumer *(planned)* — Remember processed message IDs so a redelivered message has no extra effect.
+- [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
+- [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 - [Saga (Orchestration)](../saga-orchestration/) — A coordinator runs local transactions in sequence and triggers compensations when one fails.
 - Publish-Subscribe *(planned)* — Broadcast each message to every interested subscriber through a topic.
 - Dead-Letter Queue *(planned)* — Park messages that keep failing so they stop blocking the queue and can be inspected.

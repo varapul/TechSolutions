@@ -122,11 +122,11 @@ It doesn't have to be all or nothing. Azure's guidance suggests applying it to t
 
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 - Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
-- Change Data Capture (CDC) *(planned)* — Stream every committed change from the database log to other systems.
+- [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - Compensating Transaction *(planned)* — Undo the completed steps of a multi-step operation that failed part-way.
-- Idempotent Consumer *(planned)* — Remember processed message IDs so a redelivered message has no extra effect.
+- [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 
 ## References
 

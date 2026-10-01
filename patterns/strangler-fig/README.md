@@ -56,7 +56,7 @@ The migration becomes a long series of small, reversible releases instead of one
 - Branch by Abstraction *(planned)* — Introduce an abstraction, build the new implementation behind it, then switch over.
 - Parallel Run *(planned)* — Run old and new side by side on the same inputs and compare results before cutting over.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
-- Expand and Contract *(planned)* — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
+- [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 
 ## References

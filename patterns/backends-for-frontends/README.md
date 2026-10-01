@@ -85,7 +85,7 @@ Native apps follow RFC 8252 instead: the app itself is the OAuth client (a publi
 - [OAuth 2.0 Authorization Code + PKCE](../oauth2-authorization-code-pkce/) — The standard sign-in flow for web, mobile and single-page apps: code via the browser, tokens via the back channel.
 - GraphQL Federation *(planned)* — A router composes one graph from many services' subgraphs and plans each query across them.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
-- Sessions vs Tokens *(planned)* — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
+- [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 
 ## References
 

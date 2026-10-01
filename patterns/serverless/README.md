@@ -88,9 +88,9 @@ How a failure is handled depends on how the function was invoked:
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 - Web-Queue-Worker *(planned)* — A web front end hands slow work to background workers through a queue.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
-- Queue-Based Load Leveling *(planned)* — A queue absorbs traffic spikes so the backend can work at a steady pace.
+- [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - Dead-Letter Queue *(planned)* — Park messages that keep failing so they stop blocking the queue and can be inspected.
-- Idempotent Consumer *(planned)* — Remember processed message IDs so a redelivered message has no extra effect.
+- [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 
 ## References
 

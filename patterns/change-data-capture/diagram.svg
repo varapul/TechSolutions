@@ -1,0 +1,1273 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Change Data Capture (CDC)</title>
+<desc id="dg-desc">Change Data Capture (CDC). Stream every committed change from the database log to other systems. Step 1, Every commit is logged: The app updates a row as usual. Before the commit returns, the change is in the transaction log. Step 2, Read the log, emit events: The connector tails the log from its saved position and emits each change as an event, in order. Step 3, One write, many copies: Search index, cache and warehouse each apply the event at their own pace. The app wrote only once. Step 4, Restarts and their price: While the connector is down the log piles up. It resumes from 42, so 43 arrives again: skipped.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATA MANAGEMENT</text>
+  <text class="title" x="40" y="64">Change Data Capture (CDC)</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Every commit is logged</text>
+  <text class="step on p1" x="40" y="518">1 · Every commit is logged</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Read the log, emit events</text>
+  <text class="step on p2" x="262" y="518">2 · Read the log, emit events</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · One write, many copies</text>
+  <text class="step on p3" x="484" y="518">3 · One write, many copies</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Restarts and their price</text>
+  <text class="step on p4" x="706" y="518">4 · Restarts and their price</text>
+  <text class="caption p1" x="40" y="552">The app updates a row as usual. Before the commit returns, the change is in the transaction log.</text>
+  <text class="caption p2" x="40" y="552">The connector tails the log from its saved position and emits each change as an event, in order.</text>
+  <text class="caption p3" x="40" y="552">Search index, cache and warehouse each apply the event at their own pace. The app wrote only once.</text>
+  <text class="caption p4" x="40" y="552">While the connector is down the log piles up. It resumes from 42, so 43 arrives again: skipped.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Change Data Capture. Timeline (20s loop, 1s = 5%):
+   0-25%   the app updates customer 7 (4-7.5%); the change is appended to the log as entry 43 (8.5%),
+           the row changes (12.5%) and the commit returns (15-18%). Nothing else is written.
+   25-50%  the connector reads entry 43 from the log (27-32%), builds a change event (32.5%) and
+           publishes it to the table's topic (34.5-41%). It has read up to 43; its saved position is still 42.
+   50-75%  search index (54%), cache (60%) and warehouse (68%) each apply event 43 at their own pace
+   75-100% the connector crashes (75.25%) before saving position 43; entries 44 and 45 pile up unread
+           (78%, 80.75%); it restarts (82%), resumes after 42 and publishes 43 again, then 44 and 45;
+           every consumer skips the duplicate and applies 44-45; position 45 is saved (92.5%).
+           Everything fades back to the start in the last 0.5s, so the loop restarts at step 1. */
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .ev.dup { stroke: var(--amber); stroke-width: 2.5; }
+.diagram .evt { font-size: 10.5px; font-weight: 700; fill: var(--bg); }
+.diagram .old { opacity: 0.4; }
+.diagram .tname { font-size: 11px; font-weight: 700; fill: var(--teal); }
+.diagram .th { font-size: 10.5px; font-weight: 600; fill: var(--muted); }
+.diagram .cell { font-size: 11px; }
+.diagram .sm { font-size: 10.5px; }
+.diagram .num { font-size: 11px; font-weight: 700; fill: var(--muted); }
+.diagram .cdc-w { opacity: 0; animation: cdc-w var(--T) linear infinite; }
+.diagram .cdc-ack { opacity: 0; animation: cdc-ack var(--T) linear infinite; }
+.diagram .cdc-c43 { animation: cdc-c43 var(--T) linear infinite; }
+.diagram .cdc-c43n { animation: cdc-c43n var(--T) linear infinite; }
+.diagram .cdc-n1 { animation: cdc-n1 var(--T) linear infinite; }
+.diagram .cdc-n2 { animation: cdc-n2 var(--T) linear infinite; }
+.diagram .cdc-eold { opacity: 0; animation: cdc-eold var(--T) linear infinite; }
+.diagram .cdc-enew { animation: cdc-enew var(--T) linear infinite; }
+.diagram .cdc-ehl { animation: cdc-ehl var(--T) linear infinite; }
+.diagram .cdc-efl { opacity: 0; animation: cdc-efl var(--T) linear infinite; }
+.diagram .cdc-okc { animation: cdc-okc var(--T) linear infinite; }
+.diagram .cdc-rd { opacity: 0; animation: cdc-rd var(--T) linear infinite; }
+.diagram .cdc-rng { opacity: 0; animation: cdc-rng var(--T) linear infinite; }
+.diagram .cdc-r42 { animation: cdc-r42 var(--T) linear infinite; }
+.diagram .cdc-r43 { opacity: 0; animation: cdc-r43 var(--T) linear infinite; }
+.diagram .cdc-rx { opacity: 0; animation: cdc-rx var(--T) linear infinite; }
+.diagram .cdc-r45 { opacity: 0; animation: cdc-r45 var(--T) linear infinite; }
+.diagram .cdc-rfl { opacity: 0; animation: cdc-rfl var(--T) linear infinite; }
+.diagram .cdc-card { opacity: 0; animation: cdc-card var(--T) linear infinite; }
+.diagram .cdc-e43 { opacity: 0; animation: cdc-e43 var(--T) linear infinite; }
+.diagram .cdc-cap { opacity: 0; animation: cdc-cap var(--T) linear infinite; }
+.diagram .cdc-s1 { opacity: 0; animation: cdc-s1 var(--T) linear infinite; }
+.diagram .cdc-c1 { opacity: 0; animation: cdc-c1 var(--T) linear infinite; }
+.diagram .cdc-w1 { opacity: 0; animation: cdc-w1 var(--T) linear infinite; }
+.diagram .cdc-cx { opacity: 0; animation: cdc-cx var(--T) linear infinite; }
+.diagram .cdc-cre { opacity: 0; animation: cdc-cre var(--T) linear infinite; }
+.diagram .cdc-st0 { animation: cdc-st0 var(--T) linear infinite; }
+.diagram .cdc-st1 { opacity: 0; animation: cdc-st1 var(--T) linear infinite; }
+.diagram .cdc-st2 { opacity: 0; animation: cdc-st2 var(--T) linear infinite; }
+.diagram .cdc-st3 { opacity: 0; animation: cdc-st3 var(--T) linear infinite; }
+.diagram .cdc-c44 { opacity: 0; animation: cdc-c44 var(--T) linear infinite; }
+.diagram .cdc-c45 { opacity: 0; animation: cdc-c45 var(--T) linear infinite; }
+.diagram .cdc-unread { opacity: 0; animation: cdc-unread var(--T) linear infinite; }
+.diagram .cdc-keep { opacity: 0; animation: cdc-keep var(--T) linear infinite; }
+.diagram .cdc-free { opacity: 0; animation: cdc-free var(--T) linear infinite; }
+.diagram .cdc-p42 { animation: cdc-p42 var(--T) linear infinite; }
+.diagram .cdc-p45 { opacity: 0; animation: cdc-p45 var(--T) linear infinite; }
+.diagram .cdc-v42 { animation: cdc-v42 var(--T) linear infinite; }
+.diagram .cdc-v45 { opacity: 0; animation: cdc-v45 var(--T) linear infinite; }
+.diagram .cdc-vfl { opacity: 0; animation: cdc-vfl var(--T) linear infinite; }
+.diagram .cdc-cov { transform-box: fill-box; transform-origin: 100% 50%; animation: cdc-cov var(--T) linear infinite; }
+.diagram .cdc-x1 { opacity: 0; animation: cdc-x1 var(--T) linear infinite; }
+.diagram .cdc-x2 { opacity: 0; animation: cdc-x2 var(--T) linear infinite; }
+.diagram .cdc-x3 { opacity: 0; animation: cdc-x3 var(--T) linear infinite; }
+.diagram .cdc-l1 { opacity: 0; animation: cdc-l1 var(--T) linear infinite; }
+.diagram .cdc-l2 { opacity: 0; animation: cdc-l2 var(--T) linear infinite; }
+.diagram .cdc-l3 { opacity: 0; animation: cdc-l3 var(--T) linear infinite; }
+.diagram .cdc-l0 { opacity: 0; animation: cdc-l0 var(--T) linear infinite; }
+.diagram .cdc-rd2 { opacity: 0; animation: cdc-rd2 var(--T) linear infinite; }
+.diagram .cdc-rd3 { opacity: 0; animation: cdc-rd3 var(--T) linear infinite; }
+.diagram .cdc-d43 { opacity: 0; animation: cdc-d43 var(--T) linear infinite; }
+.diagram .cdc-e44 { opacity: 0; animation: cdc-e44 var(--T) linear infinite; }
+.diagram .cdc-e45 { opacity: 0; animation: cdc-e45 var(--T) linear infinite; }
+.diagram .cdc-twice { opacity: 0; animation: cdc-twice var(--T) linear infinite; }
+.diagram .cdc-s2 { opacity: 0; animation: cdc-s2 var(--T) linear infinite; }
+.diagram .cdc-c2 { opacity: 0; animation: cdc-c2 var(--T) linear infinite; }
+.diagram .cdc-w2 { opacity: 0; animation: cdc-w2 var(--T) linear infinite; }
+.diagram .cdc-s3 { opacity: 0; animation: cdc-s3 var(--T) linear infinite; }
+.diagram .cdc-c3 { opacity: 0; animation: cdc-c3 var(--T) linear infinite; }
+.diagram .cdc-w3 { opacity: 0; animation: cdc-w3 var(--T) linear infinite; }
+.diagram .cdc-sdo { animation: cdc-sdo var(--T) linear infinite; }
+.diagram .cdc-sdn { opacity: 0; animation: cdc-sdn var(--T) linear infinite; }
+.diagram .cdc-sfl { opacity: 0; animation: cdc-sfl var(--T) linear infinite; }
+.diagram .cdc-sa42 { animation: cdc-sa42 var(--T) linear infinite; }
+.diagram .cdc-sa43 { opacity: 0; animation: cdc-sa43 var(--T) linear infinite; }
+.diagram .cdc-sa45 { opacity: 0; animation: cdc-sa45 var(--T) linear infinite; }
+.diagram .cdc-sok { opacity: 0; animation: cdc-sok var(--T) linear infinite; }
+.diagram .cdc-ssk { opacity: 0; animation: cdc-ssk var(--T) linear infinite; }
+.diagram .cdc-sam { opacity: 0; animation: cdc-sam var(--T) linear infinite; }
+.diagram .cdc-cdo { animation: cdc-cdo var(--T) linear infinite; }
+.diagram .cdc-cdn { opacity: 0; animation: cdc-cdn var(--T) linear infinite; }
+.diagram .cdc-cfl { opacity: 0; animation: cdc-cfl var(--T) linear infinite; }
+.diagram .cdc-ca42 { animation: cdc-ca42 var(--T) linear infinite; }
+.diagram .cdc-ca43 { opacity: 0; animation: cdc-ca43 var(--T) linear infinite; }
+.diagram .cdc-ca45 { opacity: 0; animation: cdc-ca45 var(--T) linear infinite; }
+.diagram .cdc-cok { opacity: 0; animation: cdc-cok var(--T) linear infinite; }
+.diagram .cdc-csk { opacity: 0; animation: cdc-csk var(--T) linear infinite; }
+.diagram .cdc-cam { opacity: 0; animation: cdc-cam var(--T) linear infinite; }
+.diagram .cdc-wdo { animation: cdc-wdo var(--T) linear infinite; }
+.diagram .cdc-wdn { opacity: 0; animation: cdc-wdn var(--T) linear infinite; }
+.diagram .cdc-wfl { opacity: 0; animation: cdc-wfl var(--T) linear infinite; }
+.diagram .cdc-wa42 { animation: cdc-wa42 var(--T) linear infinite; }
+.diagram .cdc-wa43 { opacity: 0; animation: cdc-wa43 var(--T) linear infinite; }
+.diagram .cdc-wa45 { opacity: 0; animation: cdc-wa45 var(--T) linear infinite; }
+.diagram .cdc-wok { opacity: 0; animation: cdc-wok var(--T) linear infinite; }
+.diagram .cdc-wsk { opacity: 0; animation: cdc-wsk var(--T) linear infinite; }
+.diagram .cdc-wam { opacity: 0; animation: cdc-wam var(--T) linear infinite; }
+.diagram .cdc-wwait { opacity: 0; animation: cdc-wwait var(--T) linear infinite; }
+@keyframes cdc-w {
+  0% { transform: translate(111px, 143px); opacity: 0; }
+  4% { transform: translate(111px, 143px); opacity: 0; }
+  4.25% { opacity: 1; }
+  7.5% { transform: translate(111px, 184px); opacity: 1; }
+  7.75% { transform: translate(111px, 184px); opacity: 0; }
+  76% { transform: translate(111px, 143px); opacity: 0; }
+  76.25% { opacity: 1; }
+  78% { transform: translate(111px, 184px); opacity: 1; }
+  78.25% { transform: translate(111px, 184px); opacity: 0; }
+  78.75% { transform: translate(111px, 143px); opacity: 0; }
+  79% { opacity: 1; }
+  80.75% { transform: translate(111px, 184px); opacity: 1; }
+  81% { transform: translate(111px, 184px); opacity: 0; }
+  100% { transform: translate(111px, 184px); opacity: 0; }
+}
+@keyframes cdc-ack {
+  0% { transform: translate(111px, 184px); opacity: 0; }
+  15% { transform: translate(111px, 184px); opacity: 0; }
+  15.25% { opacity: 1; }
+  18% { transform: translate(111px, 143px); opacity: 1; }
+  18.25% { transform: translate(111px, 143px); opacity: 0; }
+  100% { transform: translate(111px, 143px); opacity: 0; }
+}
+@keyframes cdc-c43 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-c43n {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9.5% { opacity: 1; }
+  42% { opacity: 1; }
+  43% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-n1 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-n2 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-eold {
+  0% { opacity: 1; }
+  11.9% { opacity: 1; }
+  12.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-enew {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-ehl {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-efl {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.5% { opacity: 1; }
+  17% { opacity: 1; }
+  18% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-okc {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  19% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-rd {
+  0% { transform: translate(165px, 406px); opacity: 0; }
+  27% { transform: translate(165px, 406px); opacity: 0; }
+  27.25% { opacity: 1; }
+  32% { transform: translate(372px, 406px); opacity: 1; }
+  32.25% { transform: translate(372px, 406px); opacity: 0; }
+  82.5% { transform: translate(165px, 406px); opacity: 0; }
+  82.75% { opacity: 1; }
+  85.1% { transform: translate(372px, 406px); opacity: 1; }
+  85.35% { transform: translate(372px, 406px); opacity: 0; }
+  100% { transform: translate(372px, 406px); opacity: 0; }
+}
+@keyframes cdc-rng {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  42.5% { opacity: 1; }
+  43.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-r42 {
+  0% { opacity: 1; }
+  31.4% { opacity: 1; }
+  32% { opacity: 0; }
+  82% { opacity: 0; }
+  82.6% { opacity: 1; }
+  85.85% { opacity: 1; }
+  86.45% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-r43 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.6% { opacity: 1; }
+  74.65% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-rx {
+  0% { opacity: 0; }
+  75.25% { opacity: 0; }
+  75.85% { opacity: 1; }
+  81.4% { opacity: 1; }
+  82% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-r45 {
+  0% { opacity: 0; }
+  86.45% { opacity: 0; }
+  87.05% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-rfl {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  33% { opacity: 1; }
+  36.5% { opacity: 1; }
+  37.5% { opacity: 0; }
+  86.45% { opacity: 0; }
+  87.45% { opacity: 1; }
+  90.5% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-card {
+  0% { opacity: 0; }
+  32.5% { opacity: 0; }
+  33.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-e43 {
+  0% { transform: translate(620px, 352px); opacity: 0; }
+  34.5% { transform: translate(620px, 352px); opacity: 0; }
+  35.5% { opacity: 1; }
+  38.346% { transform: translate(620px, 152px); }
+  41.308% { transform: translate(466px, 152px); }
+  97.5% { transform: translate(466px, 152px); opacity: 1; }
+  98.5% { transform: translate(466px, 152px); opacity: 0; }
+  100% { transform: translate(466px, 152px); opacity: 0; }
+}
+@keyframes cdc-cap {
+  0% { opacity: 0; }
+  41.308% { opacity: 0; }
+  42.308% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-s1 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  52.5% { transform: translate(640px, 152px); opacity: 0; }
+  52.75% { opacity: 1; }
+  54% { transform: translate(700px, 152px); opacity: 1; }
+  54.25% { transform: translate(700px, 152px); opacity: 0; }
+  100% { transform: translate(700px, 152px); opacity: 0; }
+}
+@keyframes cdc-c1 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  56% { transform: translate(640px, 152px); opacity: 0; }
+  56.25% { opacity: 1; }
+  56.727% { transform: translate(672px, 152px); }
+  59.636% { transform: translate(672px, 280px); }
+  60.273% { transform: translate(700px, 280px); opacity: 1; }
+  60.523% { transform: translate(700px, 280px); opacity: 0; }
+  100% { transform: translate(700px, 280px); opacity: 0; }
+}
+@keyframes cdc-w1 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  62% { transform: translate(640px, 152px); opacity: 0; }
+  62.25% { opacity: 1; }
+  62.571% { transform: translate(672px, 152px); }
+  67.143% { transform: translate(672px, 408px); }
+  67.643% { transform: translate(700px, 408px); opacity: 1; }
+  67.893% { transform: translate(700px, 408px); opacity: 0; }
+  100% { transform: translate(700px, 408px); opacity: 0; }
+}
+@keyframes cdc-cx {
+  0% { opacity: 0; }
+  75.25% { opacity: 0; }
+  76.25% { opacity: 1; }
+  82% { opacity: 1; }
+  83% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-cre {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-st0 {
+  0% { opacity: 1; }
+  74.65% { opacity: 1; }
+  75.25% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-st1 {
+  0% { opacity: 0; }
+  75.25% { opacity: 0; }
+  75.85% { opacity: 1; }
+  81.4% { opacity: 1; }
+  82% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-st2 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  82.6% { opacity: 1; }
+  91.9% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-st3 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-c44 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-c45 {
+  0% { opacity: 0; }
+  80.75% { opacity: 0; }
+  81.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-unread {
+  0% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.75% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-keep {
+  0% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.35% { opacity: 1; }
+  91.9% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-free {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-p42 {
+  0% { opacity: 1; }
+  91.9% { opacity: 1; }
+  92.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-p45 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-v42 {
+  0% { opacity: 1; }
+  91.9% { opacity: 1; }
+  92.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-v45 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-vfl {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-cov {
+  0% { transform: scaleX(1); }
+  75% { transform: scaleX(1); }
+  97% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes cdc-x1 {
+  0% { opacity: 0; }
+  75.25% { opacity: 0; }
+  76.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-x2 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-x3 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-l1 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.6% { opacity: 1; }
+  77.4% { opacity: 1; }
+  78% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-l2 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  78.6% { opacity: 1; }
+  80.15% { opacity: 1; }
+  80.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-l3 {
+  0% { opacity: 0; }
+  80.75% { opacity: 0; }
+  81.35% { opacity: 1; }
+  91.9% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-l0 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.1% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-rd2 {
+  0% { transform: translate(211px, 406px); opacity: 0; }
+  83.75% { transform: translate(211px, 406px); opacity: 0; }
+  84% { opacity: 1; }
+  85.75% { transform: translate(372px, 406px); opacity: 1; }
+  86% { transform: translate(372px, 406px); opacity: 0; }
+  100% { transform: translate(372px, 406px); opacity: 0; }
+}
+@keyframes cdc-rd3 {
+  0% { transform: translate(257px, 406px); opacity: 0; }
+  85% { transform: translate(257px, 406px); opacity: 0; }
+  85.25% { opacity: 1; }
+  86.45% { transform: translate(372px, 406px); opacity: 1; }
+  86.7% { transform: translate(372px, 406px); opacity: 0; }
+  100% { transform: translate(372px, 406px); opacity: 0; }
+}
+@keyframes cdc-d43 {
+  0% { transform: translate(620px, 352px); opacity: 0; }
+  85.5% { transform: translate(620px, 352px); opacity: 0; }
+  86.5% { opacity: 1; }
+  87.881% { transform: translate(620px, 152px); }
+  89.286% { transform: translate(502px, 152px); }
+  97.5% { transform: translate(502px, 152px); opacity: 1; }
+  98.5% { transform: translate(502px, 152px); opacity: 0; }
+  100% { transform: translate(502px, 152px); opacity: 0; }
+}
+@keyframes cdc-e44 {
+  0% { transform: translate(620px, 352px); opacity: 0; }
+  86.5% { transform: translate(620px, 352px); opacity: 0; }
+  87.5% { opacity: 1; }
+  88.881% { transform: translate(620px, 152px); }
+  89.857% { transform: translate(538px, 152px); }
+  97.5% { transform: translate(538px, 152px); opacity: 1; }
+  98.5% { transform: translate(538px, 152px); opacity: 0; }
+  100% { transform: translate(538px, 152px); opacity: 0; }
+}
+@keyframes cdc-e45 {
+  0% { transform: translate(620px, 352px); opacity: 0; }
+  87.5% { transform: translate(620px, 352px); opacity: 0; }
+  88.5% { opacity: 1; }
+  89.881% { transform: translate(620px, 152px); }
+  90.429% { transform: translate(574px, 152px); }
+  97.5% { transform: translate(574px, 152px); opacity: 1; }
+  98.5% { transform: translate(574px, 152px); opacity: 0; }
+  100% { transform: translate(574px, 152px); opacity: 0; }
+}
+@keyframes cdc-twice {
+  0% { opacity: 0; }
+  89.286% { opacity: 0; }
+  90.286% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-s2 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  89.75% { transform: translate(640px, 152px); opacity: 0; }
+  90% { opacity: 1; }
+  90.131% { transform: translate(672px, 152px); }
+  91.064% { transform: translate(700px, 152px); opacity: 1; }
+  91.314% { transform: translate(700px, 152px); opacity: 0; }
+  100% { transform: translate(700px, 152px); opacity: 0; }
+}
+@keyframes cdc-c2 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  89.75% { transform: translate(640px, 152px); opacity: 0; }
+  90% { opacity: 1; }
+  90.131% { transform: translate(672px, 152px); }
+  91.655% { transform: translate(672px, 280px); }
+  91.988% { transform: translate(700px, 280px); opacity: 1; }
+  92.238% { transform: translate(700px, 280px); opacity: 0; }
+  100% { transform: translate(700px, 280px); opacity: 0; }
+}
+@keyframes cdc-w2 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  89.75% { transform: translate(640px, 152px); opacity: 0; }
+  90% { opacity: 1; }
+  90.131% { transform: translate(672px, 152px); }
+  93.179% { transform: translate(672px, 408px); }
+  93.512% { transform: translate(700px, 408px); opacity: 1; }
+  93.762% { transform: translate(700px, 408px); opacity: 0; }
+  100% { transform: translate(700px, 408px); opacity: 0; }
+}
+@keyframes cdc-s3 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  92.25% { transform: translate(640px, 152px); opacity: 0; }
+  92.5% { opacity: 1; }
+  92.583% { transform: translate(672px, 152px); }
+  93.516% { transform: translate(700px, 152px); opacity: 1; }
+  93.766% { transform: translate(700px, 152px); opacity: 0; }
+  100% { transform: translate(700px, 152px); opacity: 0; }
+}
+@keyframes cdc-c3 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  92.25% { transform: translate(640px, 152px); opacity: 0; }
+  92.5% { opacity: 1; }
+  92.583% { transform: translate(672px, 152px); }
+  93.917% { transform: translate(672px, 280px); }
+  94.208% { transform: translate(700px, 280px); opacity: 1; }
+  94.458% { transform: translate(700px, 280px); opacity: 0; }
+  100% { transform: translate(700px, 280px); opacity: 0; }
+}
+@keyframes cdc-w3 {
+  0% { transform: translate(640px, 152px); opacity: 0; }
+  92.25% { transform: translate(640px, 152px); opacity: 0; }
+  92.5% { opacity: 1; }
+  92.583% { transform: translate(672px, 152px); }
+  95.25% { transform: translate(672px, 408px); }
+  95.542% { transform: translate(700px, 408px); opacity: 1; }
+  95.792% { transform: translate(700px, 408px); opacity: 0; }
+  100% { transform: translate(700px, 408px); opacity: 0; }
+}
+@keyframes cdc-sdo {
+  0% { opacity: 1; }
+  53.4% { opacity: 1; }
+  54% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-sdn {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  54.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-sfl {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  55% { opacity: 1; }
+  57% { opacity: 1; }
+  58% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-sa42 {
+  0% { opacity: 1; }
+  53.4% { opacity: 1; }
+  54% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-sa43 {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  54.6% { opacity: 1; }
+  92.916% { opacity: 1; }
+  93.516% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-sa45 {
+  0% { opacity: 0; }
+  93.516% { opacity: 0; }
+  94.116% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-sok {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  55% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-ssk {
+  0% { opacity: 0; }
+  91.064% { opacity: 0; }
+  91.664% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-sam {
+  0% { opacity: 0; }
+  91.064% { opacity: 0; }
+  92.064% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-cdo {
+  0% { opacity: 1; }
+  59.673% { opacity: 1; }
+  60.273% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-cdn {
+  0% { opacity: 0; }
+  60.273% { opacity: 0; }
+  60.873% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-cfl {
+  0% { opacity: 0; }
+  60.273% { opacity: 0; }
+  61.273% { opacity: 1; }
+  63.273% { opacity: 1; }
+  64.273% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-ca42 {
+  0% { opacity: 1; }
+  59.673% { opacity: 1; }
+  60.273% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-ca43 {
+  0% { opacity: 0; }
+  60.273% { opacity: 0; }
+  60.873% { opacity: 1; }
+  93.608% { opacity: 1; }
+  94.208% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-ca45 {
+  0% { opacity: 0; }
+  94.208% { opacity: 0; }
+  94.808% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-cok {
+  0% { opacity: 0; }
+  60.273% { opacity: 0; }
+  61.273% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-csk {
+  0% { opacity: 0; }
+  91.988% { opacity: 0; }
+  92.588% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-cam {
+  0% { opacity: 0; }
+  91.988% { opacity: 0; }
+  92.988% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wdo {
+  0% { opacity: 1; }
+  67.043% { opacity: 1; }
+  67.643% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-wdn {
+  0% { opacity: 0; }
+  67.643% { opacity: 0; }
+  68.243% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wfl {
+  0% { opacity: 0; }
+  67.643% { opacity: 0; }
+  68.643% { opacity: 1; }
+  70.643% { opacity: 1; }
+  71.643% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wa42 {
+  0% { opacity: 1; }
+  67.043% { opacity: 1; }
+  67.643% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cdc-wa43 {
+  0% { opacity: 0; }
+  67.643% { opacity: 0; }
+  68.243% { opacity: 1; }
+  94.942% { opacity: 1; }
+  95.542% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wa45 {
+  0% { opacity: 0; }
+  95.542% { opacity: 0; }
+  96.142% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wok {
+  0% { opacity: 0; }
+  67.643% { opacity: 0; }
+  68.643% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wsk {
+  0% { opacity: 0; }
+  93.512% { opacity: 0; }
+  94.112% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wam {
+  0% { opacity: 0; }
+  93.512% { opacity: 0; }
+  94.512% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cdc-wwait {
+  0% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52.5% { opacity: 1; }
+  67.043% { opacity: 1; }
+  67.643% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- application: writes to its own database and to nothing else -->
+  <rect class="box" x="36" y="96" width="150" height="46" rx="12"/>
+  <text class="label mid" x="111" y="116">Application</text>
+  <text class="sub mid" x="111" y="133">writes as usual</text>
+  <text class="tiny sb f-ink" x="198" y="113">The app is not modified</text>
+  <text class="tiny" x="198" y="129">and writes to nothing else</text>
+  <line class="wire" x1="111" y1="142" x2="111" y2="185" marker-end="url(#ah)"/>
+  <g class="p1"><text class="sm mono b f-blue" x="123" y="160">UPDATE customers SET email = …</text></g>
+  <text class="tiny sb f-green cdc-okc" x="123" y="176">✓ committed</text>
+
+  <!-- source database: one table and, underneath, the transaction log -->
+  <rect class="box" x="36" y="186" width="290" height="278" rx="14"/>
+  <path class="f-teal-soft s-teal" d="M50 199v13a8 3 0 0 0 16 0v-13" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="58" cy="199" rx="8" ry="3" stroke-width="1.5"/>
+  <text class="label" x="74" y="212">Source database</text>
+
+  <text class="tname mono" x="50" y="231">customers</text>
+  <rect class="f-panel-2" x="50" y="236" width="262" height="17" rx="4"/>
+  <text class="th" x="60" y="248">id</text>
+  <text class="th" x="96" y="248">name</text>
+  <text class="th" x="164" y="248">email</text>
+  <rect class="f-bg s-line" x="50" y="255" width="262" height="20" rx="4" stroke-width="1"/>
+  <rect class="f-teal-soft cdc-ehl" x="158" y="257.5" width="150" height="15" rx="3"/>
+  <text class="cell mono" x="60" y="269">7</text>
+  <text class="cell mono" x="96" y="269">Ada L.</text>
+  <text class="cell mono cdc-eold" x="164" y="269">ada@old.example</text>
+  <text class="cell mono cdc-enew" x="164" y="269">ada@new.example</text>
+  <rect class="none s-teal cdc-efl" x="158" y="257.5" width="150" height="15" rx="3" stroke-width="2"/>
+  <rect class="f-bg s-line" x="50" y="277" width="262" height="20" rx="4" stroke-width="1"/>
+  <text class="cell mono" x="60" y="291">9</text>
+  <text class="cell mono" x="96" y="291">Lin W.</text>
+  <text class="cell mono" x="164" y="291">lin@mail.example</text>
+
+  <!-- step 1: the order of the write -->
+  <g class="cdc-n1">
+    <circle class="f-panel-2" cx="58" cy="322" r="7.5"/>
+    <text class="num mid" x="58" y="326">1</text>
+    <text class="tiny f-ink" x="72" y="326">the change is appended to the log: entry 43</text>
+  </g>
+  <g class="cdc-n2">
+    <circle class="f-panel-2" cx="58" cy="344" r="7.5"/>
+    <text class="num mid" x="58" y="348">2</text>
+    <text class="tiny f-ink" x="72" y="348">only then does the commit return</text>
+  </g>
+
+  <!-- steps 2-3: why the connector reads the log and not the table -->
+  <g class="p23">
+    <text class="tiny sb f-ink" x="50" y="320">Why the log, not the table?</text>
+    <text class="tiny" x="50" y="337">The table holds only the current state;</text>
+    <text class="tiny" x="50" y="353">the log has every change, deletes included.</text>
+  </g>
+
+  <!-- step 4: the log the database has to keep while the connector has not confirmed it -->
+  <g class="p4">
+    <text class="tiny" x="50" y="310"><tspan class="sb f-ink">lag:</tspan> log kept for the connector</text>
+    <text class="tiny end b f-amber-ink cdc-l1" x="312" y="310">1 entry</text>
+    <text class="tiny end b f-amber-ink cdc-l2" x="312" y="310">2 entries</text>
+    <text class="tiny end b f-amber-ink cdc-l3" x="312" y="310">3 entries</text>
+    <text class="tiny end b f-green cdc-l0" x="312" y="310">0 entries</text>
+    <rect class="f-red-soft" x="50" y="318" width="83.3" height="34"/>
+    <path class="f-amber-soft" d="M50 352V342H85.7V332H118.4V322H258.3V352Z"/>
+    <path class="none s-amber" d="M50 342H85.7V332H118.4V322H258.3V352H312" stroke-width="2" stroke-linejoin="round"/>
+    <line class="s-line" x1="50" y1="352.5" x2="312" y2="352.5" stroke-width="1"/>
+    <rect class="f-panel cdc-cov" x="49" y="314" width="264" height="41"/>
+    <text class="tiny f-red cdc-x1" x="52" y="366">connector down</text>
+    <text class="tiny mid cdc-x2" x="200" y="366">catching up</text>
+    <text class="tiny mid sb f-green cdc-x3" x="285" y="366">saved</text>
+  </g>
+
+  <text class="tname mono" x="50" y="386">transaction log</text>
+  <text class="tiny end" x="312" y="386">append-only</text>
+  <rect class="none s-line dash" x="50" y="392" width="262" height="28" rx="5" stroke-width="1.5"/>
+  <path class="none s-muted" d="M291 406h10M297 402l4 4-4 4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="f-bg s-line" x="50" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+  <text class="cell mono mid f-muted" x="73" y="410">41</text>
+  <rect class="f-bg s-line" x="96" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+  <text class="cell mono mid f-muted" x="119" y="410">42</text>
+  <g class="cdc-c43">
+    <rect class="f-bg s-line" x="142" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+    <rect class="f-teal-soft s-teal cdc-c43n" x="142" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber cdc-unread" x="142" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+    <text class="cell mono mid b" x="165" y="410">43</text>
+  </g>
+  <g class="cdc-c44">
+    <rect class="f-bg s-line" x="188" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber cdc-unread" x="188" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+    <text class="cell mono mid b" x="211" y="410">44</text>
+  </g>
+  <g class="cdc-c45">
+    <rect class="f-bg s-line" x="234" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber cdc-unread" x="234" y="392" width="46" height="28" rx="5" stroke-width="1.5"/>
+    <text class="cell mono mid b" x="257" y="410">45</text>
+  </g>
+  <g class="cdc-p42">
+    <path class="f-ink" d="M142 423l5 8h-10z"/>
+    <text class="tiny" x="152" y="433">connector’s saved position</text>
+  </g>
+  <g class="cdc-p45">
+    <path class="f-green" d="M280 423l5 8h-10z"/>
+    <text class="tiny end sb f-green" x="270" y="433">saved position</text>
+  </g>
+  <text class="tiny sb f-amber-ink cdc-keep" x="50" y="453">kept until the connector confirms it</text>
+  <text class="tiny sb f-green cdc-free" x="50" y="453">✓ confirmed up to 45: space is reusable</text>
+
+  <!-- CDC connector: reads the log, remembers its position -->
+  <line class="wire" x1="326" y1="406" x2="371" y2="406" marker-end="url(#ah)"/>
+  <rect class="box" x="372" y="352" width="268" height="108" rx="12"/>
+  <rect class="f-red-soft s-red cdc-cx" x="372" y="352" width="268" height="108" rx="12" stroke-width="1.5"/>
+  <rect class="none s-teal cdc-rng" x="372" y="352" width="268" height="108" rx="12" stroke-width="2"/>
+  <rect class="none s-amber cdc-cre" x="372" y="352" width="268" height="108" rx="12" stroke-width="2"/>
+  <text class="label mid" x="506" y="374">CDC connector</text>
+  <text class="sub mid cdc-st0" x="506" y="392">reads the log, not the tables</text>
+  <text class="tiny mid sb f-red cdc-st1" x="506" y="392">✕ crashed: position 43 was not saved</text>
+  <text class="tiny mid sb f-amber-ink cdc-st2" x="506" y="392">↻&#xFE0E; restarted: resumes after 42</text>
+  <text class="tiny mid sb f-green cdc-st3" x="506" y="392">✓ caught up: position 45 saved</text>
+  <rect class="f-panel-2" x="388" y="402" width="236" height="24" rx="12"/>
+  <text class="tiny f-ink" x="402" y="418">read up to</text>
+  <rect class="f-bg s-line" x="460" y="405" width="38" height="18" rx="9" stroke-width="1"/>
+  <rect class="f-teal-soft s-teal cdc-rfl" x="460" y="405" width="38" height="18" rx="9" stroke-width="1.5"/>
+  <text class="cell mono mid b cdc-r42" x="479" y="418">42</text>
+  <text class="cell mono mid b cdc-r43" x="479" y="418">43</text>
+  <text class="cell mono mid b f-red cdc-rx" x="479" y="418">–</text>
+  <text class="cell mono mid b cdc-r45" x="479" y="418">45</text>
+  <text class="tiny end f-ink" x="566" y="418">saved</text>
+  <rect class="f-bg s-line" x="574" y="405" width="38" height="18" rx="9" stroke-width="1"/>
+  <rect class="f-green-soft s-green cdc-vfl" x="574" y="405" width="38" height="18" rx="9" stroke-width="1.5"/>
+  <text class="cell mono mid b cdc-v42" x="593" y="418">42</text>
+  <text class="cell mono mid b f-green cdc-v45" x="593" y="418">45</text>
+  <text class="tiny mid" x="506" y="446">position saved periodically, not per event</text>
+
+  <!-- event stream: one topic for the table -->
+  <line class="wire" x1="620" y1="352" x2="620" y2="171" marker-end="url(#ah)"/>
+  <rect class="zone" x="356" y="96" width="300" height="110" rx="14"/>
+  <text class="tiny sb" x="372" y="116">event stream</text>
+  <text class="tiny end sb f-amber-ink cdc-twice" x="640" y="116">43 is in the stream twice</text>
+  <rect class="box" x="372" y="134" width="268" height="36" rx="8"/>
+  <text class="tiny mono" x="372" y="190">topic: customers</text>
+  <text class="tiny" x="486" y="190">· in commit order</text>
+  <g class="old">
+    <rect class="ev" x="381" y="142" width="26" height="20" rx="5"/>
+    <text class="evt mid mono" x="394" y="156">41</text>
+    <rect class="ev" x="417" y="142" width="26" height="20" rx="5"/>
+    <text class="evt mid mono" x="430" y="156">42</text>
+  </g>
+
+  <!-- step 1 note -->
+  <g class="p1">
+    <text class="tiny sb f-ink" x="372" y="236">The log already exists</text>
+    <text class="tiny" x="372" y="254">It is kept for crash recovery and</text>
+    <text class="tiny" x="372" y="270">replication. CDC is one more reader.</text>
+  </g>
+
+  <!-- step 2: what one change event carries -->
+  <g class="cdc-card">
+    <rect class="f-purple-soft s-purple" x="372" y="212" width="226" height="98" rx="10" stroke-width="1.2"/>
+    <text class="tiny sb f-purple" x="384" y="229">change event</text>
+    <text class="sm mono end f-muted" x="586" y="229">key: 7</text>
+    <line class="s-purple" x1="384" y1="236" x2="586" y2="236" stroke-width="1" opacity="0.35"/>
+    <text class="sm mono f-muted" x="384" y="252">op</text>
+    <text class="sm mono" x="436" y="252">u <tspan class="f-muted">(update)</tspan></text>
+    <text class="sm mono f-muted" x="384" y="267">before</text>
+    <text class="sm mono" x="436" y="267">email: ada@old.example</text>
+    <text class="sm mono f-muted" x="384" y="282">after</text>
+    <text class="sm mono" x="436" y="282">email: ada@new.example</text>
+    <text class="sm mono f-muted" x="384" y="297">source</text>
+    <text class="sm mono" x="436" y="297">customers, position 43</text>
+  </g>
+  <g class="cdc-cap">
+    <text class="tiny" x="372" y="325">one event per committed row change,</text>
+    <text class="tiny" x="372" y="339">in commit order, on the table’s topic</text>
+  </g>
+
+  <!-- step 3 note -->
+  <g class="p3">
+    <text class="tiny sb f-ink" x="372" y="236">No dual write</text>
+    <text class="tiny" x="372" y="254">The app wrote once, to its own database.</text>
+    <text class="tiny" x="372" y="270">Every copy derives from that commit.</text>
+    <text class="tiny sb f-ink" x="372" y="296">A new consumer</text>
+    <text class="tiny" x="372" y="314">loads a snapshot of the existing rows,</text>
+    <text class="tiny" x="372" y="330">then continues from the stream.</text>
+  </g>
+
+  <!-- step 4 note -->
+  <g class="p4">
+    <text class="tiny sb f-amber-ink" x="372" y="236">At-least-once delivery</text>
+    <text class="tiny" x="372" y="254">After a restart, events since the last</text>
+    <text class="tiny" x="372" y="270">saved position are sent again.</text>
+    <text class="tiny sb f-ink" x="372" y="296">Idempotent consumers</text>
+    <text class="tiny" x="372" y="314">upsert by key and skip positions</text>
+    <text class="tiny" x="372" y="330">they have already applied.</text>
+  </g>
+
+  <!-- consumers keep their own copies -->
+  <path class="wire" d="M640 152H705" marker-end="url(#ah)"/>
+  <path class="wire" d="M640 152H672V280H705" marker-end="url(#ah)"/>
+  <path class="wire" d="M640 152H672V408H705" marker-end="url(#ah)"/>
+
+  <rect class="box" x="706" y="96" width="218" height="112" rx="12"/>
+  <rect class="f-amber-soft s-amber cdc-sam" x="706" y="96" width="218" height="112" rx="12" stroke-width="2"/>
+  <text class="label mid" x="815" y="118">Search index</text>
+  <text class="sub mid" x="815" y="134">full-text search</text>
+  <rect class="f-panel-2" x="718" y="142" width="194" height="20" rx="10"/>
+  <rect class="f-teal-soft s-teal cdc-sfl" x="718" y="142" width="194" height="20" rx="10" stroke-width="1"/>
+  <text class="sm mono mid cdc-sdo" x="815" y="156"><tspan class="f-muted">doc 7 ·</tspan> ada@old.example</text>
+  <text class="sm mono mid cdc-sdn" x="815" y="156"><tspan class="f-muted">doc 7 ·</tspan> ada@new.example</text>
+  <text class="tiny mid cdc-sa42" x="815" y="180">applied up to position <tspan class="mono b f-ink">42</tspan></text>
+  <text class="tiny mid cdc-sa43" x="815" y="180">applied up to position <tspan class="mono b f-ink">43</tspan></text>
+  <text class="tiny mid cdc-sa45" x="815" y="180">applied up to position <tspan class="mono b f-ink">45</tspan></text>
+  <text class="tiny mid sb f-green cdc-sok" x="815" y="198">✓ upserted doc 7</text>
+  <text class="tiny mid sb f-amber-ink cdc-ssk" x="815" y="198">duplicate 43 skipped</text>
+
+  <rect class="box" x="706" y="224" width="218" height="112" rx="12"/>
+  <rect class="f-amber-soft s-amber cdc-cam" x="706" y="224" width="218" height="112" rx="12" stroke-width="2"/>
+  <text class="label mid" x="815" y="246">Cache</text>
+  <text class="sub mid" x="815" y="262">fast key lookups</text>
+  <rect class="f-panel-2" x="718" y="270" width="194" height="20" rx="10"/>
+  <rect class="f-teal-soft s-teal cdc-cfl" x="718" y="270" width="194" height="20" rx="10" stroke-width="1"/>
+  <text class="sm mono mid cdc-cdo" x="815" y="284"><tspan class="f-muted">customer:7 ·</tspan> ada@old.example</text>
+  <text class="sm mono mid cdc-cdn" x="815" y="284"><tspan class="f-muted">customer:7 ·</tspan> ada@new.example</text>
+  <text class="tiny mid cdc-ca42" x="815" y="308">applied up to position <tspan class="mono b f-ink">42</tspan></text>
+  <text class="tiny mid cdc-ca43" x="815" y="308">applied up to position <tspan class="mono b f-ink">43</tspan></text>
+  <text class="tiny mid cdc-ca45" x="815" y="308">applied up to position <tspan class="mono b f-ink">45</tspan></text>
+  <text class="tiny mid sb f-green cdc-cok" x="815" y="326">✓ set key customer:7</text>
+  <text class="tiny mid sb f-amber-ink cdc-csk" x="815" y="326">duplicate 43 skipped</text>
+
+  <rect class="box" x="706" y="352" width="218" height="112" rx="12"/>
+  <rect class="f-amber-soft s-amber cdc-wam" x="706" y="352" width="218" height="112" rx="12" stroke-width="2"/>
+  <text class="label mid" x="815" y="374">Data warehouse</text>
+  <text class="sub mid" x="815" y="390">analytics, loads in batches</text>
+  <g class="cdc-wwait">
+    <circle class="none s-line" cx="904" cy="370" r="7" stroke-width="2.5"/>
+    <circle class="none s-amber spin" cx="904" cy="370" r="7" stroke-width="2.5" stroke-dasharray="11 33" stroke-linecap="round"/>
+    <text class="tiny mid sb f-amber-ink" x="815" y="454">waits for its next batch load</text>
+  </g>
+  <rect class="f-panel-2" x="718" y="398" width="194" height="20" rx="10"/>
+  <rect class="f-teal-soft s-teal cdc-wfl" x="718" y="398" width="194" height="20" rx="10" stroke-width="1"/>
+  <text class="sm mono mid cdc-wdo" x="815" y="412"><tspan class="f-muted">row 7 ·</tspan> ada@old.example</text>
+  <text class="sm mono mid cdc-wdn" x="815" y="412"><tspan class="f-muted">row 7 ·</tspan> ada@new.example</text>
+  <text class="tiny mid cdc-wa42" x="815" y="436">applied up to position <tspan class="mono b f-ink">42</tspan></text>
+  <text class="tiny mid cdc-wa43" x="815" y="436">applied up to position <tspan class="mono b f-ink">43</tspan></text>
+  <text class="tiny mid cdc-wa45" x="815" y="436">applied up to position <tspan class="mono b f-ink">45</tspan></text>
+  <text class="tiny mid sb f-green cdc-wok" x="815" y="454">✓ merged row 7</text>
+  <text class="tiny mid sb f-amber-ink cdc-wsk" x="815" y="454">duplicate 43 skipped</text>
+
+  <!-- tokens: blue write, green ack, teal log reads, purple change events -->
+  <circle class="pkt f-blue cdc-w" r="7"/>
+  <circle class="pkt f-green cdc-ack" r="7"/>
+  <circle class="pkt f-teal cdc-rd" r="6"/>
+  <circle class="pkt f-teal cdc-rd2" r="6"/>
+  <circle class="pkt f-teal cdc-rd3" r="6"/>
+  <g class="cdc-e43"><rect class="ev" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-d43"><rect class="ev dup" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-e44"><rect class="ev" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">44</text></g>
+  <g class="cdc-e45"><rect class="ev" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">45</text></g>
+  <g class="cdc-s1"><rect class="ev" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-c1"><rect class="ev" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-w1"><rect class="ev" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-s2"><rect class="ev dup" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-c2"><rect class="ev dup" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-w2"><rect class="ev dup" x="-13" y="-10" width="26" height="20" rx="5"/><text class="evt mid mono" y="4">43</text></g>
+  <g class="cdc-s3"><rect class="ev" x="-22" y="-10" width="44" height="20" rx="5"/><text class="evt mid mono" y="4">44–45</text></g>
+  <g class="cdc-c3"><rect class="ev" x="-22" y="-10" width="44" height="20" rx="5"/><text class="evt mid mono" y="4">44–45</text></g>
+  <g class="cdc-w3"><rect class="ev" x="-22" y="-10" width="44" height="20" rx="5"/><text class="evt mid mono" y="4">44–45</text></g>
+</g>
+</svg>

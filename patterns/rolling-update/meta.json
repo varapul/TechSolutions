@@ -1,0 +1,38 @@
+{
+  "aka": ["Rolling Deployment", "Rolling Upgrade"],
+  "steps": [
+    {
+      "title": "Surge one new instance",
+      "caption": "Four instances run v1. A v2 instance starts in the surge slot and gets no traffic until it is ready.",
+      "body": "The service runs four `v1` instances and the load balancer spreads requests across them. A new revision arrives, and the controller starts one `v2` instance in the **surge** slot, the single extra instance that *max surge 1* allows. Until its **readiness check** passes it is not in rotation and receives no traffic."
+    },
+    {
+      "title": "Swap one at a time",
+      "caption": "When a v2 is ready, one v1 drains and leaves, then the next v2 starts: at least 4 ready, at most 5.",
+      "body": "Once the new instance is ready it joins the load balancer, and only then does the controller **drain** one old instance: no new requests, the ones in flight finish, then it is removed and the next `v2` starts. With *max unavailable 0* the service never has fewer than four ready instances, and with *max surge 1* never more than five in total. Meanwhile `v1` and `v2` answer users side by side, so the two versions have to be compatible with each other."
+    },
+    {
+      "title": "A bad instance stalls it",
+      "caption": "The last v2 fails its readiness check: it gets no traffic and the rollout stalls, not the service.",
+      "body": "A third swap goes through, then the fourth `v2` instance never passes its readiness check, here because the configuration for the zone it landed in is wrong. It gets no traffic, the surge slot stays occupied and the last `v1` may not be removed without a ready replacement, so the controller can do nothing: the **rollout** is stuck, while four ready instances keep serving. When its progress deadline passes the controller reports the stall, and someone (or an automated policy) has to **roll back** to the previous revision or **fix forward**."
+    },
+    {
+      "title": "Fix and finish",
+      "caption": "After the fix it turns ready and the rollout finishes with four v2. Revision 1 is kept for rollback.",
+      "body": "The configuration is corrected, the instance restarts with it and passes its check, and the controller continues where it stopped: the last `v1` drains and leaves, four `v2` instances serve and the surge slot is empty. (A fix that needs a new build is a third revision: the controller would then replace every instance again, the three healthy `v2` ones included.) The previous revision is kept, so rolling back is one command, although it runs as another rolling update and not as a switch."
+    }
+  ],
+  "related": ["blue-green-deployment", "canary-release", "feature-flags", "expand-and-contract", "load-balancing", "health-endpoint-monitoring", "autoscaling", "immutable-infrastructure"],
+  "references": [
+    { "title": "Kubernetes — Deployments (rolling update strategy, rollback, progress deadline)", "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" },
+    { "title": "Kubernetes — Pod Lifecycle (termination of Pods)", "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
+    { "title": "Kubernetes — Liveness, Readiness, and Startup Probes", "url": "https://kubernetes.io/docs/concepts/workloads/pods/probes/" },
+    { "title": "Kubernetes — StatefulSets (update strategies)", "url": "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/" },
+    { "title": "Amazon ECS — Deploy Amazon ECS services by replacing tasks (rolling update)", "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html" },
+    { "title": "Amazon ECS — How the Amazon ECS deployment circuit breaker detects failures", "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-circuit-breaker.html" },
+    { "title": "Amazon EC2 Auto Scaling — How an instance refresh works in an Auto Scaling group", "url": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/instance-refresh-overview.html" },
+    { "title": "Azure — Upgrade policy modes for Virtual Machine Scale Sets", "url": "https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-upgrade-policy" },
+    { "title": "Google Cloud — Automatically apply VM configuration updates in a MIG", "url": "https://docs.cloud.google.com/compute/docs/instance-groups/rolling-out-updates-to-managed-instance-groups" },
+    { "title": "Google SRE Book — Reliable Product Launches at Scale (chapter 27, gradual and staged rollouts)", "url": "https://sre.google/sre-book/reliable-product-launches/" }
+  ]
+}

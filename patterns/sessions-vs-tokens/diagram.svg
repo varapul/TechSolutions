@@ -1,0 +1,1067 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Sessions vs Tokens</title>
+<desc id="dg-desc">Sessions vs Tokens. Server-side sessions versus self-contained tokens: where the state lives and how you revoke it. Step 1, Sign-in: Sign-in: a session keeps state in a store and hands out a random ID; a token carries signed claims. Step 2, Every request: Every request: the session ID is looked up in the store; the token is verified locally, no lookup. Step 3, Scale out: Scale out: every app server must reach the same store; any API server verifies the token by itself. Step 4, Revoke: Revoke: delete the session row and the next request is refused; the token stays valid until exp.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">IDENTITY &amp; ACCESS (AUTH)</text>
+  <text class="title" x="40" y="64">Sessions vs Tokens</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Sign-in</text>
+  <text class="step on p1" x="40" y="518">1 · Sign-in</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Every request</text>
+  <text class="step on p2" x="262" y="518">2 · Every request</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Scale out</text>
+  <text class="step on p3" x="484" y="518">3 · Scale out</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Revoke</text>
+  <text class="step on p4" x="706" y="518">4 · Revoke</text>
+  <text class="caption p1" x="40" y="552">Sign-in: a session keeps state in a store and hands out a random ID; a token carries signed claims.</text>
+  <text class="caption p2" x="40" y="552">Every request: the session ID is looked up in the store; the token is verified locally, no lookup.</text>
+  <text class="caption p3" x="40" y="552">Scale out: every app server must reach the same store; any API server verifies the token by itself.</text>
+  <text class="caption p4" x="40" y="552">Revoke: delete the session row and the next request is refused; the token stays valid until exp.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Sessions vs Tokens. Two lanes share one timeline (20s loop, 1s = 5%):
+   0-25%   sign-in. Session: app server 1 writes a row to the store, the browser gets Set-Cookie with a random ID.
+           Token: the client signs in at the issuer, which signs a JWT and hands it over; the API servers keep nothing
+   25-50%  every request. Session: cookie -> app server -> store lookup -> 200. Token: JWT -> API server, verified locally -> 200
+   50-75%  scale out: one request to each server in both lanes at once. Session: both lookups meet at the one store.
+           Token: each API server verifies on its own
+   75-100% revoke at 12:05. Session: the row is deleted, the lookup finds nothing, 401. Token: still verifies until exp, 200;
+           then the fixes appear (short exp + refresh, or a lookup again). Cookie and token fade in the last half-second,
+           so the loop restarts signed out
+   Generated from a timeline with scripts/lib/motion.mjs (track, windows, route). */
+.diagram .svt-t, .diagram .svt-w { opacity: 0; }
+.diagram .svt-cap { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .svt-key { font-size: 16px; font-weight: 700; }
+.diagram .svt-cmp { font-size: 12px; font-weight: 700; fill: var(--blue); }
+.diagram .svt-seg { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; }
+.diagram .svt-signin { animation: svt-signin var(--T) linear infinite; }
+.diagram .svt-rd { animation: svt-rd var(--T) linear infinite; }
+.diagram .svt-rd2 { animation: svt-rd2 var(--T) linear infinite; }
+.diagram .svt-nf { animation: svt-nf var(--T) linear infinite; }
+.diagram .svt-sid { animation: svt-sid var(--T) linear infinite; }
+.diagram .svt-sid2 { animation: svt-sid2 var(--T) linear infinite; }
+.diagram .svt-jwt { animation: svt-jwt var(--T) linear infinite; }
+.diagram .svt-jwt2 { animation: svt-jwt2 var(--T) linear infinite; }
+.diagram .svt-ok { animation: svt-ok var(--T) linear infinite; }
+.diagram .svt-ok2 { animation: svt-ok2 var(--T) linear infinite; }
+.diagram .svt-okb { animation: svt-okb var(--T) linear infinite; }
+.diagram .svt-okb2 { animation: svt-okb2 var(--T) linear infinite; }
+.diagram .svt-401 { animation: svt-401 var(--T) linear infinite; }
+.diagram .svt-chk { animation: svt-chk var(--T) linear infinite; }
+.diagram .svt-nocookie { animation: svt-nocookie var(--T) linear infinite; }
+.diagram .svt-cookie-ring { animation: svt-cookie-ring var(--T) linear infinite; }
+.diagram .svt-notoken { animation: svt-notoken var(--T) linear infinite; }
+.diagram .svt-token-ring { animation: svt-token-ring var(--T) linear infinite; }
+.diagram .svt-exp { animation: svt-exp var(--T) linear infinite; }
+.diagram .svt-l-login { animation: svt-l-login var(--T) linear infinite; }
+.diagram .svt-empty { animation: svt-empty var(--T) linear infinite; }
+.diagram .svt-row-new { animation: svt-row-new var(--T) linear infinite; }
+.diagram .svt-row-hit { animation: svt-row-hit var(--T) linear infinite; }
+.diagram .svt-row-del { animation: svt-row-del var(--T) linear infinite; }
+.diagram .svt-gone { animation: svt-gone var(--T) linear infinite; }
+.diagram .svt-miss { animation: svt-miss var(--T) linear infinite; }
+.diagram .svt-hot { animation: svt-hot var(--T) linear infinite; }
+.diagram .svt-n1 { animation: svt-n1 var(--T) linear infinite; }
+.diagram .svt-n2 { animation: svt-n2 var(--T) linear infinite; }
+.diagram .svt-n3 { animation: svt-n3 var(--T) linear infinite; }
+.diagram .svt-n4 { animation: svt-n4 var(--T) linear infinite; }
+.diagram .svt-sign { animation: svt-sign var(--T) linear infinite; }
+.diagram .svt-revoked { animation: svt-revoked var(--T) linear infinite; }
+.diagram .svt-v1 { animation: svt-v1 var(--T) linear infinite; }
+.diagram .svt-v2 { animation: svt-v2 var(--T) linear infinite; }
+.diagram .svt-a1 { animation: svt-a1 var(--T) linear infinite; }
+.diagram .svt-a2 { animation: svt-a2 var(--T) linear infinite; }
+.diagram .svt-b1 { animation: svt-b1 var(--T) linear infinite; }
+.diagram .svt-b2 { animation: svt-b2 var(--T) linear infinite; }
+.diagram .svt-fix { animation: svt-fix var(--T) linear infinite; }
+.diagram .svt-fix0 { animation: svt-fix0 var(--T) linear infinite; }
+.diagram .svt-fix1 { animation: svt-fix1 var(--T) linear infinite; }
+.diagram .svt-r200t { animation: svt-r200t var(--T) linear infinite; }
+.diagram .svt-r200b { animation: svt-r200b var(--T) linear infinite; }
+.diagram .svt-r401 { animation: svt-r401 var(--T) linear infinite; }
+.diagram .svt-rstill { animation: svt-rstill var(--T) linear infinite; }
+.diagram .svt-cookie { animation: svt-cookie var(--T) linear infinite; }
+.diagram .svt-token { animation: svt-token var(--T) linear infinite; }
+.diagram .svt-l-setck { animation: svt-l-setck var(--T) linear infinite; }
+.diagram .svt-row { animation: svt-row var(--T) linear infinite; }
+.diagram .svt-n0 { animation: svt-n0 var(--T) linear infinite; }
+.diagram .svt-keychip { animation: svt-keychip var(--T) linear infinite; }
+.diagram .svt-slot { animation: svt-slot var(--T) linear infinite; }
+@keyframes svt-signin {
+  0% { transform: translate(340px, 183px); opacity: 0; }
+  2.5% { transform: translate(340px, 183px); opacity: 0; }
+  2.75% { opacity: 1; }
+  3.394% { transform: translate(384px, 183px); }
+  4.106% { transform: translate(384px, 148px); }
+  5% { transform: translate(428px, 148px); opacity: 1; }
+  5.25% { transform: translate(428px, 148px); opacity: 0; }
+  12% { transform: translate(340px, 398px); opacity: 0; }
+  12.25% { opacity: 1; }
+  12.851% { transform: translate(384px, 398px); }
+  14.399% { transform: translate(384px, 318px); }
+  15.25% { transform: translate(428px, 318px); opacity: 1; }
+  15.5% { transform: translate(428px, 318px); opacity: 0; }
+  100% { transform: translate(428px, 318px); opacity: 0; }
+}
+@keyframes svt-rd {
+  0% { transform: translate(588px, 148px); opacity: 0; }
+  5.5% { transform: translate(588px, 148px); opacity: 0; }
+  5.75% { opacity: 1; }
+  6.406% { transform: translate(634px, 148px); }
+  7.094% { transform: translate(634px, 183px); }
+  8% { transform: translate(680px, 183px); opacity: 1; }
+  8.25% { transform: translate(680px, 183px); opacity: 0; }
+  29.5% { transform: translate(588px, 148px); opacity: 0; }
+  29.75% { opacity: 1; }
+  30.406% { transform: translate(634px, 148px); }
+  31.094% { transform: translate(634px, 183px); }
+  32% { transform: translate(680px, 183px); opacity: 1; }
+  32.25% { transform: translate(680px, 183px); opacity: 0; }
+  33.5% { transform: translate(680px, 183px); opacity: 0; }
+  33.75% { opacity: 1; }
+  34.406% { transform: translate(634px, 183px); }
+  35.094% { transform: translate(634px, 148px); }
+  36% { transform: translate(588px, 148px); opacity: 1; }
+  36.25% { transform: translate(588px, 148px); opacity: 0; }
+  55% { transform: translate(588px, 148px); opacity: 0; }
+  55.25% { opacity: 1; }
+  55.906% { transform: translate(634px, 148px); }
+  56.594% { transform: translate(634px, 183px); }
+  57.5% { transform: translate(680px, 183px); opacity: 1; }
+  57.75% { transform: translate(680px, 183px); opacity: 0; }
+  59% { transform: translate(680px, 183px); opacity: 0; }
+  59.25% { opacity: 1; }
+  59.906% { transform: translate(634px, 183px); }
+  60.594% { transform: translate(634px, 148px); }
+  61.5% { transform: translate(588px, 148px); opacity: 1; }
+  61.75% { transform: translate(588px, 148px); opacity: 0; }
+  84% { transform: translate(588px, 148px); opacity: 0; }
+  84.25% { opacity: 1; }
+  84.906% { transform: translate(634px, 148px); }
+  85.594% { transform: translate(634px, 183px); }
+  86.5% { transform: translate(680px, 183px); opacity: 1; }
+  86.75% { transform: translate(680px, 183px); opacity: 0; }
+  100% { transform: translate(680px, 183px); opacity: 0; }
+}
+@keyframes svt-rd2 {
+  0% { transform: translate(588px, 218px); opacity: 0; }
+  56.25% { transform: translate(588px, 218px); opacity: 0; }
+  56.5% { opacity: 1; }
+  57.156% { transform: translate(634px, 218px); }
+  57.844% { transform: translate(634px, 183px); }
+  58.75% { transform: translate(680px, 183px); opacity: 1; }
+  59% { transform: translate(680px, 183px); opacity: 0; }
+  60.25% { transform: translate(680px, 183px); opacity: 0; }
+  60.5% { opacity: 1; }
+  61.156% { transform: translate(634px, 183px); }
+  61.844% { transform: translate(634px, 218px); }
+  62.75% { transform: translate(588px, 218px); opacity: 1; }
+  63% { transform: translate(588px, 218px); opacity: 0; }
+  100% { transform: translate(588px, 218px); opacity: 0; }
+}
+@keyframes svt-nf {
+  0% { transform: translate(680px, 183px); opacity: 0; }
+  87.5% { transform: translate(680px, 183px); opacity: 0; }
+  87.75% { opacity: 1; }
+  88.406% { transform: translate(634px, 183px); }
+  89.094% { transform: translate(634px, 148px); }
+  90% { transform: translate(588px, 148px); opacity: 1; }
+  90.25% { transform: translate(588px, 148px); opacity: 0; }
+  100% { transform: translate(588px, 148px); opacity: 0; }
+}
+@keyframes svt-sid {
+  0% { transform: translate(428px, 148px); opacity: 0; }
+  9% { transform: translate(428px, 148px); opacity: 0; }
+  9.25% { opacity: 1; }
+  9.894% { transform: translate(384px, 148px); }
+  10.606% { transform: translate(384px, 183px); }
+  11.5% { transform: translate(340px, 183px); opacity: 1; }
+  11.75% { transform: translate(340px, 183px); opacity: 0; }
+  27% { transform: translate(340px, 183px); opacity: 0; }
+  27.25% { opacity: 1; }
+  27.894% { transform: translate(384px, 183px); }
+  28.606% { transform: translate(384px, 148px); }
+  29.5% { transform: translate(428px, 148px); opacity: 1; }
+  29.75% { transform: translate(428px, 148px); opacity: 0; }
+  52.5% { transform: translate(340px, 183px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.394% { transform: translate(384px, 183px); }
+  54.106% { transform: translate(384px, 148px); }
+  55% { transform: translate(428px, 148px); opacity: 1; }
+  55.25% { transform: translate(428px, 148px); opacity: 0; }
+  81.5% { transform: translate(340px, 183px); opacity: 0; }
+  81.75% { opacity: 1; }
+  82.394% { transform: translate(384px, 183px); }
+  83.106% { transform: translate(384px, 148px); }
+  84% { transform: translate(428px, 148px); opacity: 1; }
+  84.25% { transform: translate(428px, 148px); opacity: 0; }
+  100% { transform: translate(428px, 148px); opacity: 0; }
+}
+@keyframes svt-sid2 {
+  0% { transform: translate(340px, 183px); opacity: 0; }
+  53.75% { transform: translate(340px, 183px); opacity: 0; }
+  54% { opacity: 1; }
+  54.644% { transform: translate(384px, 183px); }
+  55.356% { transform: translate(384px, 218px); }
+  56.25% { transform: translate(428px, 218px); opacity: 1; }
+  56.5% { transform: translate(428px, 218px); opacity: 0; }
+  100% { transform: translate(428px, 218px); opacity: 0; }
+}
+@keyframes svt-jwt {
+  0% { transform: translate(428px, 318px); opacity: 0; }
+  16.25% { transform: translate(428px, 318px); opacity: 0; }
+  16.5% { opacity: 1; }
+  17.101% { transform: translate(384px, 318px); }
+  18.649% { transform: translate(384px, 398px); }
+  19.5% { transform: translate(340px, 398px); opacity: 1; }
+  19.75% { transform: translate(340px, 398px); opacity: 0; }
+  38% { transform: translate(340px, 398px); opacity: 0; }
+  38.25% { opacity: 1; }
+  38.948% { transform: translate(384px, 398px); }
+  39.552% { transform: translate(384px, 370px); }
+  40.5% { transform: translate(428px, 370px); opacity: 1; }
+  40.75% { transform: translate(428px, 370px); opacity: 0; }
+  52.5% { transform: translate(340px, 398px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.448% { transform: translate(384px, 398px); }
+  54.052% { transform: translate(384px, 370px); }
+  55% { transform: translate(428px, 370px); opacity: 1; }
+  55.25% { transform: translate(428px, 370px); opacity: 0; }
+  81.5% { transform: translate(340px, 398px); opacity: 0; }
+  81.75% { opacity: 1; }
+  82.448% { transform: translate(384px, 398px); }
+  83.052% { transform: translate(384px, 370px); }
+  84% { transform: translate(428px, 370px); opacity: 1; }
+  84.25% { transform: translate(428px, 370px); opacity: 0; }
+  100% { transform: translate(428px, 370px); opacity: 0; }
+}
+@keyframes svt-jwt2 {
+  0% { transform: translate(340px, 398px); opacity: 0; }
+  53.75% { transform: translate(340px, 398px); opacity: 0; }
+  54% { opacity: 1; }
+  54.698% { transform: translate(384px, 398px); }
+  55.302% { transform: translate(384px, 426px); }
+  56.25% { transform: translate(428px, 426px); opacity: 1; }
+  56.5% { transform: translate(428px, 426px); opacity: 0; }
+  100% { transform: translate(428px, 426px); opacity: 0; }
+}
+@keyframes svt-ok {
+  0% { transform: translate(428px, 148px); opacity: 0; }
+  36% { transform: translate(428px, 148px); opacity: 0; }
+  36.25% { opacity: 1; }
+  36.894% { transform: translate(384px, 148px); }
+  37.606% { transform: translate(384px, 183px); }
+  38.5% { transform: translate(340px, 183px); opacity: 1; }
+  38.75% { transform: translate(340px, 183px); opacity: 0; }
+  61.5% { transform: translate(428px, 148px); opacity: 0; }
+  61.75% { opacity: 1; }
+  62.394% { transform: translate(384px, 148px); }
+  63.106% { transform: translate(384px, 183px); }
+  64% { transform: translate(340px, 183px); opacity: 1; }
+  64.25% { transform: translate(340px, 183px); opacity: 0; }
+  100% { transform: translate(340px, 183px); opacity: 0; }
+}
+@keyframes svt-ok2 {
+  0% { transform: translate(428px, 218px); opacity: 0; }
+  62.75% { transform: translate(428px, 218px); opacity: 0; }
+  63% { opacity: 1; }
+  63.644% { transform: translate(384px, 218px); }
+  64.356% { transform: translate(384px, 183px); }
+  65.25% { transform: translate(340px, 183px); opacity: 1; }
+  65.5% { transform: translate(340px, 183px); opacity: 0; }
+  100% { transform: translate(340px, 183px); opacity: 0; }
+}
+@keyframes svt-okb {
+  0% { transform: translate(428px, 370px); opacity: 0; }
+  43% { transform: translate(428px, 370px); opacity: 0; }
+  43.25% { opacity: 1; }
+  43.948% { transform: translate(384px, 370px); }
+  44.552% { transform: translate(384px, 398px); }
+  45.5% { transform: translate(340px, 398px); opacity: 1; }
+  45.75% { transform: translate(340px, 398px); opacity: 0; }
+  58% { transform: translate(428px, 370px); opacity: 0; }
+  58.25% { opacity: 1; }
+  58.948% { transform: translate(384px, 370px); }
+  59.552% { transform: translate(384px, 398px); }
+  60.5% { transform: translate(340px, 398px); opacity: 1; }
+  60.75% { transform: translate(340px, 398px); opacity: 0; }
+  86.5% { transform: translate(428px, 370px); opacity: 0; }
+  86.75% { opacity: 1; }
+  87.448% { transform: translate(384px, 370px); }
+  88.052% { transform: translate(384px, 398px); }
+  89% { transform: translate(340px, 398px); opacity: 1; }
+  89.25% { transform: translate(340px, 398px); opacity: 0; }
+  100% { transform: translate(340px, 398px); opacity: 0; }
+}
+@keyframes svt-okb2 {
+  0% { transform: translate(428px, 426px); opacity: 0; }
+  59.25% { transform: translate(428px, 426px); opacity: 0; }
+  59.5% { opacity: 1; }
+  60.198% { transform: translate(384px, 426px); }
+  60.802% { transform: translate(384px, 398px); }
+  61.75% { transform: translate(340px, 398px); opacity: 1; }
+  62% { transform: translate(340px, 398px); opacity: 0; }
+  100% { transform: translate(340px, 398px); opacity: 0; }
+}
+@keyframes svt-401 {
+  0% { transform: translate(428px, 148px); opacity: 0; }
+  90% { transform: translate(428px, 148px); opacity: 0; }
+  90.25% { opacity: 1; }
+  90.894% { transform: translate(384px, 148px); }
+  91.606% { transform: translate(384px, 183px); }
+  92.5% { transform: translate(340px, 183px); opacity: 1; }
+  92.75% { transform: translate(340px, 183px); opacity: 0; }
+  100% { transform: translate(340px, 183px); opacity: 0; }
+}
+@keyframes svt-chk {
+  0% { transform: translate(588px, 370px); opacity: 0; }
+  93% { transform: translate(588px, 370px); opacity: 0; }
+  93.25% { opacity: 1; }
+  93.958% { transform: translate(634px, 370px); }
+  94.542% { transform: translate(634px, 398px); }
+  95.5% { transform: translate(680px, 398px); opacity: 1; }
+  95.75% { transform: translate(680px, 398px); opacity: 0; }
+  100% { transform: translate(680px, 398px); opacity: 0; }
+}
+@keyframes svt-nocookie {
+  0% { opacity: 1; }
+  10.75% { opacity: 1; }
+  11.5% { opacity: 0; }
+  98.9% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes svt-cookie {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-cookie-ring {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.5% { opacity: 1; }
+  15.5% { opacity: 1; }
+  17% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-notoken {
+  0% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.5% { opacity: 0; }
+  98.9% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes svt-token {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-token-ring {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20.5% { opacity: 1; }
+  20.75% { opacity: 1; }
+  22% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-exp {
+  0% { opacity: 0; }
+  85.75% { opacity: 0; }
+  86.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-l-login {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.5% { opacity: 1; }
+  8% { opacity: 1; }
+  8.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-l-setck {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  9.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-empty {
+  0% { opacity: 1; }
+  7.25% { opacity: 1; }
+  8% { opacity: 0; }
+  81% { opacity: 0; }
+  82% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes svt-row {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  9% { opacity: 1; }
+  79.5% { opacity: 1; }
+  81% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-row-new {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  9% { opacity: 1; }
+  12% { opacity: 1; }
+  13.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-row-hit {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  33% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-row-del {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78% { opacity: 1; }
+  79.75% { opacity: 1; }
+  81% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-gone {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-miss {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-hot {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-n0 {
+  0% { opacity: 1; }
+  32% { opacity: 1; }
+  32.5% { opacity: 0; }
+  99% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes svt-n1 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.5% { opacity: 1; }
+  57.5% { opacity: 1; }
+  58% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-n2 {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58% { opacity: 1; }
+  58.75% { opacity: 1; }
+  59.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-n3 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.25% { opacity: 1; }
+  86.5% { opacity: 1; }
+  87% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-n4 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-sign {
+  0% { opacity: 0; }
+  15.25% { opacity: 0; }
+  16.25% { opacity: 1; }
+  17.5% { opacity: 1; }
+  19% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-keychip {
+  0% { opacity: 1; }
+  76.5% { opacity: 1; }
+  78% { opacity: 0; }
+  99% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+@keyframes svt-revoked {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78% { opacity: 1; }
+  97.75% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-v1 {
+  0% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  55% { opacity: 0; }
+  56% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  84% { opacity: 0; }
+  85% { opacity: 1; }
+  90% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-v2 {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  57.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-a1 {
+  0% { opacity: 0; }
+  41% { opacity: 0; }
+  42% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.5% { opacity: 1; }
+  90% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-a2 {
+  0% { opacity: 0; }
+  42.25% { opacity: 0; }
+  43.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  85.75% { opacity: 0; }
+  86.75% { opacity: 1; }
+  90% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-b1 {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-b2 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-slot {
+  0% { opacity: 1; }
+  90% { opacity: 1; }
+  91.5% { opacity: 0; }
+  99% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+@keyframes svt-fix {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  92% { opacity: 1; }
+  97.75% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-fix0 {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  92% { opacity: 1; }
+  95.5% { opacity: 1; }
+  96% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-fix1 {
+  0% { opacity: 0; }
+  95.5% { opacity: 0; }
+  96% { opacity: 1; }
+  97.75% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-r200t {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  64% { opacity: 0; }
+  65% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-r200b {
+  0% { opacity: 0; }
+  45.5% { opacity: 0; }
+  46.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  60.5% { opacity: 0; }
+  61.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-r401 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes svt-rstill {
+  0% { opacity: 0; }
+  89% { opacity: 0; }
+  90% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- left column: what each step compares, and the verdict for each lane -->
+  <rect class="f-panel" x="30" y="94" width="132" height="374" rx="12"/>
+  <path class="none s-line" d="M42 262H150M42 300H150" stroke-width="1.2"/>
+  <text class="svt-cap" x="42" y="116">SESSION</text>
+  <text class="tiny" x="42" y="131">server-side</text>
+  <text class="svt-cap" x="42" y="322">TOKEN</text>
+  <text class="tiny" x="42" y="337">self-contained</text>
+  <text class="svt-cmp mid p1" x="96" y="285">Where state lives</text>
+  <text class="svt-cmp mid p2" x="96" y="285">Cost per request</text>
+  <text class="svt-cmp mid p3" x="96" y="285">What is shared</text>
+  <text class="svt-cmp mid p4" x="96" y="285">Time to revoke</text>
+  <g class="p1">
+    <text class="svt-key" x="42" y="168">On the</text>
+    <text class="svt-key" x="42" y="187">server</text>
+    <text class="tiny" x="42" y="208">the cookie is only</text>
+    <text class="tiny" x="42" y="222">a random ID</text>
+    <text class="svt-key" x="42" y="374">In the</text>
+    <text class="svt-key" x="42" y="393">token</text>
+    <text class="tiny" x="42" y="414">signed claims that</text>
+    <text class="tiny" x="42" y="428">the client carries</text>
+  </g>
+  <g class="p2">
+    <text class="svt-key f-amber-ink" x="42" y="168">Look it up</text>
+    <text class="tiny" x="42" y="189">one store round trip</text>
+    <text class="tiny" x="42" y="203">on every request</text>
+    <text class="svt-key f-green" x="42" y="374">Verify it</text>
+    <text class="tiny" x="42" y="395">checked locally,</text>
+    <text class="tiny" x="42" y="409">no lookup</text>
+  </g>
+  <g class="p3">
+    <text class="svt-key f-amber-ink" x="42" y="168">One shared</text>
+    <text class="svt-key f-amber-ink" x="42" y="187">store</text>
+    <text class="tiny" x="42" y="208">or sticky sessions</text>
+    <text class="tiny" x="42" y="222">at the load balancer</text>
+    <text class="svt-key f-green" x="42" y="374">Nothing</text>
+    <text class="svt-key f-green" x="42" y="393">shared</text>
+    <text class="tiny" x="42" y="414">but the issuer’s</text>
+    <text class="tiny" x="42" y="428">public keys</text>
+  </g>
+  <g class="p4">
+    <text class="svt-key f-green" x="42" y="168">Gone</text>
+    <text class="svt-key f-green" x="42" y="187">at once</text>
+    <text class="tiny" x="42" y="208">delete the row: the</text>
+    <text class="tiny" x="42" y="222">next request fails</text>
+    <text class="svt-key f-amber-ink" x="42" y="374">Valid</text>
+    <text class="svt-key f-amber-ink" x="42" y="393">until exp</text>
+    <text class="tiny" x="42" y="414">unless every request</text>
+    <text class="tiny" x="42" y="428">is looked up again</text>
+  </g>
+
+  <!-- the two lanes share a timeline; a dotted rule separates them -->
+  <path class="none s-line" d="M176 281H930" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round"/>
+
+  <!-- wires. top: browser to app servers to session store. bottom: client to issuer (sign-in only) and to the API servers -->
+  <path class="wire" d="M340 183H384M384 148V218M384 148H428M384 218H428"/>
+  <path class="wire" d="M588 148H634M588 218H634M634 148V218M634 183H680"/>
+  <path class="wire" d="M340 398H384M384 370V426M384 370H428M384 426H428"/>
+  <path class="wire dash" d="M384 370V318H428"/>
+  <text class="tiny mid" x="406" y="309">sign-in</text>
+  <text class="tiny mono mid svt-w svt-l-login" x="384" y="240">POST /login</text>
+  <text class="tiny mono mid svt-l-setck" x="384" y="240">Set-Cookie</text>
+  <text class="tiny mid p234" x="384" y="240">session cookie</text>
+  <text class="tiny mid p234" x="384" y="446">bearer token</text>
+
+  <!-- top lane: browser with its cookie jar -->
+  <rect class="box" x="176" y="102" width="164" height="160" rx="12"/>
+  <rect class="none s-muted" x="188" y="113" width="20" height="16" rx="3" stroke-width="1.5"/>
+  <path class="none s-muted" d="M188 118h20" stroke-width="1.5"/>
+  <text class="label" x="216" y="127">Browser</text>
+  <g class="svt-w svt-nocookie">
+    <rect class="f-bg s-wire" x="186" y="142" width="144" height="22" rx="11" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <text class="tiny mid f-faint" x="258" y="157">no cookie yet</text>
+  </g>
+  <g class="svt-cookie">
+    <rect class="f-orange-soft s-orange" x="186" y="142" width="144" height="22" rx="11" stroke-width="1.5"/>
+    <circle class="f-orange-soft s-orange" cx="199" cy="153" r="6" stroke-width="1.5"/><circle class="f-orange" cx="196.6" cy="151.2" r="1.3"/><circle class="f-orange" cx="201.2" cy="153.6" r="1.3"/><circle class="f-orange" cx="198.2" cy="156" r="1.3"/>
+    <text class="tiny mono b f-orange" x="210" y="157">__Host-sid=7f3a…</text>
+    <text class="tiny" x="188" y="184">HttpOnly · Secure</text>
+    <text class="tiny" x="188" y="198">SameSite=Strict</text>
+    <text class="tiny f-faint" x="188" y="216">opaque: no user data</text>
+  </g>
+  <rect class="none s-orange svt-w svt-cookie-ring" x="183" y="139" width="150" height="28" rx="14" stroke-width="2.5"/>
+  <g class="svt-w svt-r200t"><rect class="f-green" x="188" y="233" width="34" height="16" rx="8"/><text class="tiny mid b f-bg" x="205" y="245">200</text><text class="tiny sb f-green" x="228" y="245">OK</text></g>
+  <g class="svt-w svt-r401"><rect class="f-red" x="188" y="233" width="34" height="16" rx="8"/><text class="tiny mid b f-bg" x="205" y="245">401</text><text class="tiny sb f-red" x="228" y="245">signed out</text></g>
+
+  <!-- top lane: two app servers -->
+  <rect class="box" x="428" y="126" width="160" height="44" rx="10"/>
+  <text class="label mid" x="508" y="145">App server 1</text>
+  <text class="tiny mid" x="508" y="161">needs the session store</text>
+  <rect class="box" x="428" y="196" width="160" height="44" rx="10"/>
+  <text class="label mid" x="508" y="215">App server 2</text>
+  <text class="tiny mid" x="508" y="231">needs the session store</text>
+
+  <!-- top lane: the session store and its one row -->
+  <rect class="box" x="680" y="102" width="250" height="160" rx="12"/>
+  <text class="label" x="694" y="126">Session store</text>
+  <text class="tiny" x="694" y="142">in-memory store or database</text>
+  <rect class="f-bg s-line" x="846" y="113" width="74" height="18" rx="9" stroke-width="1.2"/>
+  <text class="tiny" x="855" y="126">lookups</text>
+  <text class="tiny mono end b f-faint svt-n0" x="912" y="126">0</text>
+  <text class="tiny mono end b f-amber-ink svt-w svt-n1" x="912" y="126">1</text>
+  <text class="tiny mono end b f-amber-ink svt-w svt-n2" x="912" y="126">2</text>
+  <text class="tiny mono end b f-amber-ink svt-w svt-n3" x="912" y="126">3</text>
+  <text class="tiny mono end b f-amber-ink svt-w svt-n4" x="912" y="126">4</text>
+  <text class="tiny" x="694" y="162">session ID</text>
+  <text class="tiny" x="770" y="162">user</text>
+  <text class="tiny" x="814" y="162">roles</text>
+  <text class="tiny" x="868" y="162">expires</text>
+  <path class="none s-line" d="M692 168H918" stroke-width="1"/>
+  <g class="svt-w svt-empty">
+    <rect class="f-bg s-wire" x="688" y="172" width="234" height="22" rx="5" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <text class="tiny f-faint" x="694" y="187">no session</text>
+  </g>
+  <g class="svt-row">
+    <rect class="f-teal-soft" x="688" y="172" width="234" height="22" rx="5"/>
+    <text class="tiny mono f-ink" x="694" y="187">7f3a…c9</text>
+    <text class="tiny mono f-ink" x="770" y="187">ana</text>
+    <text class="tiny mono f-ink" x="814" y="187">editor</text>
+    <text class="tiny mono f-ink" x="868" y="187">20:00</text>
+  </g>
+  <rect class="none s-green svt-w svt-row-new" x="686" y="170" width="238" height="26" rx="7" stroke-width="2.5"/>
+  <rect class="none s-teal svt-w svt-row-hit" x="686" y="170" width="238" height="26" rx="7" stroke-width="2.5"/>
+  <g class="svt-w svt-row-del">
+    <rect class="f-red-soft s-red" x="686" y="170" width="238" height="26" rx="7" stroke-width="2.5"/>
+    <path class="none s-red" d="M692 183H918" stroke-width="1.5"/>
+  </g>
+  <g class="svt-w svt-miss">
+    <text class="tiny end sb f-red" x="896" y="187">not found</text>
+    <circle class="f-red" cx="908" cy="183" r="6.5"/><path class="none s-bg" d="M905.4 180.4l5.2 5.2M910.6 180.4l-5.2 5.2" stroke-width="1.7" stroke-linecap="round"/>
+  </g>
+  <g class="p1">
+    <text class="tiny" x="694" y="218">The session state lives here.</text>
+    <text class="tiny" x="694" y="232">The cookie only points to it.</text>
+  </g>
+  <g class="p2">
+    <text class="tiny" x="694" y="218">Read by ID on every request:</text>
+    <text class="tiny" x="694" y="232">one more network round trip.</text>
+  </g>
+  <g class="p3">
+    <text class="tiny" x="694" y="218">Shared by every app server, and</text>
+    <text class="tiny" x="694" y="232">on the hot path of every request.</text>
+  </g>
+  <g class="svt-w svt-gone">
+    <text class="tiny sb f-red" x="694" y="218">Row deleted at 12:05.</text>
+    <text class="tiny" x="694" y="232">The ID now points to nothing.</text>
+  </g>
+  <g class="svt-w svt-hot">
+    <path class="none s-amber" d="M588 148H634M588 218H634M634 148V218M634 183H680" stroke-width="3"/>
+    <rect class="none s-amber" x="680" y="102" width="250" height="160" rx="12" stroke-width="2.5"/>
+  </g>
+
+  <!-- bottom lane: client with its token -->
+  <rect class="box" x="176" y="300" width="164" height="160" rx="12"/>
+  <rect class="none s-muted" x="191" y="308" width="13" height="19" rx="3" stroke-width="1.5"/>
+  <path class="none s-muted" d="M195.5 323h4" stroke-width="1.5" stroke-linecap="round"/>
+  <text class="label" x="216" y="323">Client</text>
+  <g class="svt-w svt-notoken">
+    <rect class="f-bg s-wire" x="186" y="332" width="144" height="92" rx="8" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <text class="tiny mid f-faint" x="258" y="382">no token yet</text>
+  </g>
+  <g class="svt-token">
+    <rect class="f-bg s-orange" x="186" y="332" width="144" height="92" rx="8" stroke-width="1.5"/>
+    <rect class="f-amber-soft svt-w svt-exp" x="190" y="380" width="136" height="14" rx="3"/>
+    <text class="svt-seg f-orange" x="194" y="347">ACCESS TOKEN</text>
+    <text class="tiny mono end" x="322" y="347">JWT</text>
+    <text class="tiny mono" x="194" y="363">sub</text><text class="tiny mono f-ink" x="238" y="363">ana</text>
+    <text class="tiny mono" x="194" y="377">roles</text><text class="tiny mono f-ink" x="238" y="377">editor</text>
+    <text class="tiny mono" x="194" y="391">exp</text><text class="tiny mono f-ink" x="238" y="391">12:15</text>
+    <path class="none s-line" d="M194 399H322" stroke-width="1"/>
+    <circle class="none s-orange" cx="197" cy="410" r="2.6" stroke-width="1.4"/><path class="none s-orange" d="M199.6 410h5.4M203.4 410v2.6" stroke-width="1.4" stroke-linecap="round"/>
+    <text class="tiny" x="210" y="414">signed by the issuer</text>
+  </g>
+  <rect class="none s-orange svt-w svt-token-ring" x="183" y="329" width="150" height="98" rx="11" stroke-width="2.5"/>
+  <g class="svt-w svt-r200b"><rect class="f-green" x="188" y="433" width="34" height="16" rx="8"/><text class="tiny mid b f-bg" x="205" y="445">200</text><text class="tiny sb f-green" x="228" y="445">OK</text></g>
+  <g class="svt-w svt-rstill"><rect class="f-amber" x="188" y="433" width="34" height="16" rx="8"/><text class="tiny mid b f-bg" x="205" y="445">200</text><text class="tiny sb f-amber-ink" x="228" y="445">still accepted</text></g>
+
+  <!-- bottom lane: the issuer signs; two API servers hold only its public key -->
+  <rect class="f-panel s-orange" x="428" y="300" width="160" height="36" rx="10" stroke-width="1.5"/>
+  <text class="label" x="436" y="323">Issuer</text>
+  <g class="svt-keychip">
+    <rect class="f-orange-soft s-orange" x="493" y="309" width="90" height="18" rx="9" stroke-width="1.2"/>
+    <circle class="none s-orange" cx="502" cy="318" r="2.6" stroke-width="1.4"/><path class="none s-orange" d="M504.6 318h5.4M508.4 318v2.6" stroke-width="1.4" stroke-linecap="round"/>
+    <text class="tiny sb f-orange" x="514" y="322">private key</text>
+  </g>
+  <rect class="none s-orange svt-w svt-sign" x="490" y="306" width="96" height="24" rx="12" stroke-width="2.5"/>
+  <g class="svt-w svt-revoked">
+    <rect class="f-red-soft s-red" x="493" y="309" width="90" height="18" rx="9" stroke-width="1.2"/>
+    <text class="tiny mid sb f-red" x="538" y="322">revoked 12:05</text>
+  </g>
+  <rect class="box" x="428" y="348" width="160" height="44" rx="10"/>
+  <text class="label mid" x="508" y="367">API server 1</text>
+  <circle class="none s-teal" cx="451" cy="379" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M453.6 379h5.4M457.4 379v2.6" stroke-width="1.4" stroke-linecap="round"/>
+  <text class="tiny f-teal" x="464" y="383">issuer’s public key</text>
+  <rect class="box" x="428" y="404" width="160" height="44" rx="10"/>
+  <text class="label mid" x="508" y="423">API server 2</text>
+  <circle class="none s-teal" cx="451" cy="435" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M453.6 435h5.4M457.4 435v2.6" stroke-width="1.4" stroke-linecap="round"/>
+  <text class="tiny f-teal" x="464" y="439">issuer’s public key</text>
+  <rect class="none s-teal svt-w svt-v1" x="428" y="348" width="160" height="44" rx="10" stroke-width="2.5"/>
+  <rect class="none s-teal svt-w svt-v2" x="428" y="404" width="160" height="44" rx="10" stroke-width="2.5"/>
+  <g class="svt-w svt-a1"><circle class="f-green" cx="599" cy="363" r="5.5"/><path class="none s-bg" d="M596.3 363l1.9 1.9 3.5-3.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="609" y="367">signature</text></g>
+  <g class="svt-w svt-a2"><circle class="f-green" cx="599" cy="378" r="5.5"/><path class="none s-bg" d="M596.3 378l1.9 1.9 3.5-3.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="609" y="382">exp, roles</text></g>
+  <g class="svt-w svt-b1"><circle class="f-green" cx="599" cy="419" r="5.5"/><path class="none s-bg" d="M596.3 419l1.9 1.9 3.5-3.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="609" y="423">signature</text></g>
+  <g class="svt-w svt-b2"><circle class="f-green" cx="599" cy="434" r="5.5"/><path class="none s-bg" d="M596.3 434l1.9 1.9 3.5-3.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="609" y="438">exp, roles</text></g>
+
+  <!-- bottom lane: where the store would be -->
+  <g class="svt-slot">
+    <rect class="zone" x="680" y="300" width="250" height="160" rx="12"/>
+    <text class="label mid f-faint" x="805" y="366">no session store</text>
+    <rect class="f-bg s-line" x="846" y="311" width="74" height="18" rx="9" stroke-width="1.2"/>
+    <text class="tiny" x="855" y="324">lookups</text>
+    <text class="tiny mono end b f-green" x="912" y="324">0</text>
+    <g class="p1">
+      <text class="tiny mid" x="805" y="390">The claims travel in the token.</text>
+      <text class="tiny mid" x="805" y="404">The API servers keep nothing.</text>
+    </g>
+    <g class="p2">
+      <text class="tiny mid" x="805" y="390">Nothing to look up: the token and</text>
+      <text class="tiny mid" x="805" y="404">the public key are enough.</text>
+    </g>
+    <g class="p3">
+      <text class="tiny mid" x="805" y="390">Any server, or any other service</text>
+      <text class="tiny mid" x="805" y="404">with the public key, verifies alone.</text>
+    </g>
+    <g class="p4">
+      <text class="tiny mid" x="805" y="390">The API servers never hear</text>
+      <text class="tiny mid" x="805" y="404">about the sign-out.</text>
+    </g>
+  </g>
+  <g class="svt-w svt-fix">
+    <path class="none s-amber dash" d="M588 370H634M588 426H634M634 370V426M634 398H680" stroke-width="2"/>
+    <rect class="f-amber-soft s-amber dash" x="680" y="300" width="250" height="160" rx="12" stroke-width="1.5"/>
+    <text class="svt-cap f-amber-ink" x="694" y="324">TO REVOKE SOONER</text>
+    <rect class="f-bg s-amber" x="846" y="311" width="74" height="18" rx="9" stroke-width="1.2"/>
+    <text class="tiny" x="855" y="324">lookups</text>
+    <text class="tiny mono end b f-faint svt-w svt-fix0" x="912" y="324">0</text>
+    <text class="tiny mono end b f-amber-ink svt-w svt-fix1" x="912" y="324">1</text>
+    <text class="tiny sb f-ink" x="694" y="348">1 · Short exp + refresh tokens</text>
+    <text class="tiny" x="694" y="362">the issuer refuses the next refresh</text>
+    <text class="tiny sb f-ink" x="694" y="386">2 · Denylist or introspection</text>
+    <text class="tiny" x="694" y="400">checked on every request:</text>
+    <text class="tiny" x="694" y="414">the lookup is back</text>
+  </g>
+
+  <!-- traffic: sign-in (blue), credentials (orange), store reads (teal), results (green, red) -->
+  <circle class="pkt f-blue svt-t svt-signin" r="7"/>
+  <circle class="pkt f-teal svt-t svt-rd" r="6"/>
+  <circle class="pkt f-teal svt-t svt-rd2" r="6"/>
+  <circle class="pkt f-red svt-t svt-nf" r="6"/>
+  <circle class="pkt f-amber svt-t svt-chk" r="6"/>
+  <g class="svt-t svt-sid"><rect class="pkt f-orange" x="-16" y="-8" width="32" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">sid</text></g>
+  <g class="svt-t svt-sid2"><rect class="pkt f-orange" x="-16" y="-8" width="32" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">sid</text></g>
+  <g class="svt-t svt-jwt"><rect class="pkt f-orange" x="-17" y="-8" width="34" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">JWT</text></g>
+  <g class="svt-t svt-jwt2"><rect class="pkt f-orange" x="-17" y="-8" width="34" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">JWT</text></g>
+  <g class="svt-t svt-ok"><rect class="pkt f-green" x="-17" y="-8" width="34" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">200</text></g>
+  <g class="svt-t svt-ok2"><rect class="pkt f-green" x="-17" y="-8" width="34" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">200</text></g>
+  <g class="svt-t svt-okb"><rect class="pkt f-green" x="-17" y="-8" width="34" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">200</text></g>
+  <g class="svt-t svt-okb2"><rect class="pkt f-green" x="-17" y="-8" width="34" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">200</text></g>
+  <g class="svt-t svt-401"><rect class="pkt f-red" x="-17" y="-8" width="34" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">401</text></g>
+</g>
+</svg>

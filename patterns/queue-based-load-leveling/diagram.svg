@@ -1,0 +1,1274 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Queue-Based Load Leveling</title>
+<desc id="dg-desc">Queue-Based Load Leveling. A queue absorbs traffic spikes so the backend can work at a steady pace. Step 1, Without a queue: No queue: a spike of 15 requests/s hits a service that can do 5/s, so most calls time out. Step 2, Put a queue in between: The API puts each request on a queue and answers 202 at once; the worker pulls at its own pace. Step 3, The spike is absorbed: The spike is absorbed: the queue fills to 20 while the worker stays at 5/s. Nothing is dropped. Step 4, Drain, and know the limits: The queue drains in 10 s. It only moves load in time: cap it, watch depth and age, scale workers.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">MESSAGING &amp; INTEGRATION</text>
+  <text class="title" x="40" y="64">Queue-Based Load Leveling</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Without a queue</text>
+  <text class="step on p1" x="40" y="518">1 · Without a queue</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Put a queue in between</text>
+  <text class="step on p2" x="262" y="518">2 · Put a queue in between</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · The spike is absorbed</text>
+  <text class="step on p3" x="484" y="518">3 · The spike is absorbed</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Drain, and know the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Drain, and know the limits</text>
+  <text class="caption p1" x="40" y="552">No queue: a spike of 15 requests/s hits a service that can do 5/s, so most calls time out.</text>
+  <text class="caption p2" x="40" y="552">The API puts each request on a queue and answers 202 at once; the worker pulls at its own pace.</text>
+  <text class="caption p3" x="40" y="552">The spike is absorbed: the queue fills to 20 while the worker stays at 5/s. Nothing is dropped.</text>
+  <text class="caption p4" x="40" y="552">The queue drains in 10 s. It only moves load in time: cap it, watch depth and age, scale workers.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Queue-Based Load Leveling. Timeline (20s loop, 1s = 5%). One set of numbers throughout:
+   the backend finishes 5 per second, normal load is 3/s, the spike is 15/s for 2 s.
+   Tokens move in slow motion (about half speed): 3/s = one every 0.6 s, 15/s = one every 0.14 s,
+   5/s = one every 0.36 s. The model's 2-second spike therefore takes about 3.6 s on screen.
+   0-25%   no queue: the spike goes straight to the service (0.9-4.3s); 1 call in 3 is answered,
+           the rest time out (counter 0 -> 20 by 4.45s), the database is overloaded
+   25-50%  the queue takes the place of the direct path; 8 messages pass through an empty queue,
+           each acknowledged at once (202); the worker has idle gaps (3 of its 5 per second)
+   50-75%  30 messages arrive (launched 10.1-14.2s) while the worker takes 10: depth 0 -> 20 at 14.4s,
+           oldest message 0 -> 1.3 s; the next pull comes just after the hold frame (14.66s)
+   75-100% arrivals back to 3/s; from 15.2s the clock runs fast: depth 20 -> 0 by 18s (10 s of model
+           time), the age peaks at 4.0 s when the last spike message is pulled (16.25s); the limits
+           appear from 16s (cap), 16.6s (alerts), 17.2s (scale out), 17.8s (what if it never ends)
+   How it is built (generated by a scratch script that simulates the queue; the opacity windows
+   come from scripts/lib/motion.mjs):
+   - Tokens ride "trains": a group that moves at constant speed for the whole loop behind a clip
+     that shows only its stretch of track. A token that must enter the clip at time t (seconds)
+     sits at local x = -speed * t (+speed * t for the two trains that run right to left).
+     Speeds in px/s: messages 520, tube to worker 414, to the database 490, step-1 lanes 750.
+   - The queue is one strip of squares (qll-q) whose left end is the tail: translateX = -15.5px
+     per waiting message. A landing jumps it one slot to the left, a pull slides it one slot to
+     the right in 0.06s, so the head square leaves through the exit. Arriving messages (qll-in)
+     are drawn underneath and disappear below it.
+   - The counters are strips of numbers 30px apart behind a window (step-end keyframes).
+   - The chart is drawn in full; qll-veil hides everything to the right of the cursor. */
+.diagram .qll-big { font-size: 22px; font-weight: 700; }
+.diagram .qll-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .qll-rq { animation: qll-rq var(--T) linear infinite; }
+@keyframes qll-rq {
+  0% { transform: translateX(176px); }
+  100% { transform: translateX(15176px); }
+}
+.diagram .qll-rs { animation: qll-rs var(--T) linear infinite; }
+@keyframes qll-rs {
+  0% { transform: translateX(650px); }
+  100% { transform: translateX(-14350px); }
+}
+.diagram .qll-in { animation: qll-in var(--T) linear infinite; }
+@keyframes qll-in {
+  0% { transform: translateX(176px); }
+  100% { transform: translateX(10576px); }
+}
+.diagram .qll-th { animation: qll-th var(--T) linear infinite; }
+@keyframes qll-th {
+  0% { transform: translateX(176px); }
+  100% { transform: translateX(10576px); }
+}
+.diagram .qll-ack { animation: qll-ack var(--T) linear infinite; }
+@keyframes qll-ack {
+  0% { transform: translateX(258px); }
+  100% { transform: translateX(-10142px); }
+}
+.diagram .qll-pull { animation: qll-pull var(--T) linear infinite; }
+@keyframes qll-pull {
+  0% { transform: translateX(596px); }
+  100% { transform: translateX(8876px); }
+}
+.diagram .qll-db { animation: qll-db var(--T) linear infinite; }
+@keyframes qll-db {
+  0% { transform: translateX(796px); }
+  100% { transform: translateX(10596px); }
+}
+.diagram .qll-q { animation: qll-q var(--T) step-end infinite; }
+@keyframes qll-q {
+  0% { transform: translateX(0px); }
+  54.5% { transform: translateX(-15.5px); }
+  55.05% { transform: translateX(-31px); }
+  55.3% { transform: translateX(-31px); animation-timing-function: linear; }
+  55.6% { transform: translateX(-15.5px); }
+  55.75% { transform: translateX(-31px); }
+  56.3% { transform: translateX(-46.5px); }
+  56.855% { transform: translateX(-62px); }
+  57.1% { transform: translateX(-62px); animation-timing-function: linear; }
+  57.4% { transform: translateX(-46.5px); }
+  57.555% { transform: translateX(-62px); }
+  58.105% { transform: translateX(-77.5px); }
+  58.655% { transform: translateX(-93px); }
+  58.9% { transform: translateX(-93px); animation-timing-function: linear; }
+  59.2% { transform: translateX(-77.5px); }
+  59.355% { transform: translateX(-93px); }
+  59.905% { transform: translateX(-108.5px); }
+  60.455% { transform: translateX(-124px); }
+  60.7% { transform: translateX(-124px); animation-timing-function: linear; }
+  61% { transform: translateX(-108.5px); }
+  61.155% { transform: translateX(-124px); }
+  61.705% { transform: translateX(-139.5px); }
+  62.26% { transform: translateX(-155px); }
+  62.5% { transform: translateX(-155px); animation-timing-function: linear; }
+  62.8% { transform: translateX(-139.5px); }
+  62.96% { transform: translateX(-155px); }
+  63.51% { transform: translateX(-170.5px); }
+  64.06% { transform: translateX(-186px); }
+  64.3% { transform: translateX(-186px); animation-timing-function: linear; }
+  64.6% { transform: translateX(-170.5px); }
+  64.76% { transform: translateX(-186px); }
+  65.31% { transform: translateX(-201.5px); }
+  65.86% { transform: translateX(-217px); }
+  66.1% { transform: translateX(-217px); animation-timing-function: linear; }
+  66.4% { transform: translateX(-201.5px); }
+  66.56% { transform: translateX(-217px); }
+  67.115% { transform: translateX(-232.5px); }
+  67.665% { transform: translateX(-248px); }
+  67.9% { transform: translateX(-248px); animation-timing-function: linear; }
+  68.2% { transform: translateX(-232.5px); }
+  68.365% { transform: translateX(-248px); }
+  68.915% { transform: translateX(-263.5px); }
+  69.465% { transform: translateX(-279px); }
+  69.7% { transform: translateX(-279px); animation-timing-function: linear; }
+  70% { transform: translateX(-263.5px); }
+  70.165% { transform: translateX(-279px); }
+  70.715% { transform: translateX(-294.5px); }
+  71.27% { transform: translateX(-310px); }
+  71.5% { transform: translateX(-310px); animation-timing-function: linear; }
+  71.8% { transform: translateX(-294.5px); }
+  71.97% { transform: translateX(-310px); }
+  73.3% { transform: translateX(-310px); animation-timing-function: linear; }
+  73.325% { transform: translateX(-308.19px); }
+  73.335% { transform: translateX(-323.69px); animation-timing-function: linear; }
+  73.6% { transform: translateX(-310px); }
+  75.1% { transform: translateX(-310px); animation-timing-function: linear; }
+  75.4% { transform: translateX(-294.5px); }
+  76.47% { transform: translateX(-310px); }
+  76.775% { transform: translateX(-294.5px); }
+  76.9% { transform: translateX(-294.5px); animation-timing-function: linear; }
+  77.2% { transform: translateX(-279px); }
+  77.535% { transform: translateX(-263.5px); }
+  78.265% { transform: translateX(-248px); }
+  78.7% { transform: translateX(-248px); animation-timing-function: linear; }
+  79% { transform: translateX(-232.5px); }
+  79.72% { transform: translateX(-217px); }
+  80.215% { transform: translateX(-232.5px); }
+  80.5% { transform: translateX(-232.5px); animation-timing-function: linear; }
+  80.8% { transform: translateX(-217px); transform: translateX(-201.5px); }
+  81.18% { transform: translateX(-186px); }
+  81.91% { transform: translateX(-170.5px); }
+  82.3% { transform: translateX(-170.5px); animation-timing-function: linear; }
+  82.6% { transform: translateX(-155px); }
+  83.365% { transform: translateX(-139.5px); }
+  83.96% { transform: translateX(-155px); }
+  84.1% { transform: translateX(-155px); animation-timing-function: linear; }
+  84.4% { transform: translateX(-139.5px); transform: translateX(-124px); }
+  84.825% { transform: translateX(-108.5px); }
+  85.555% { transform: translateX(-93px); }
+  85.9% { transform: translateX(-93px); animation-timing-function: linear; }
+  86.2% { transform: translateX(-77.5px); }
+  87.015% { transform: translateX(-62px); }
+  87.695% { transform: translateX(-61.74px); }
+  87.7% { transform: translateX(-62px); animation-timing-function: linear; }
+  87.705% { transform: translateX(-77.24px); animation-timing-function: linear; }
+  88% { transform: translateX(-62px); }
+  88.01% { transform: translateX(-46.5px); }
+  88.47% { transform: translateX(-31px); }
+  89.2% { transform: translateX(-15.5px); }
+  89.5% { transform: translateX(-15.5px); animation-timing-function: linear; }
+  89.8% { transform: translateX(0px); }
+  100% { transform: translateX(0px); }
+}
+.diagram .qll-depth { animation: qll-depth var(--T) step-end infinite; }
+@keyframes qll-depth {
+  0% { transform: translateY(0px); }
+  54.5% { transform: translateY(-30px); }
+  55.42% { transform: translateY(-60px); }
+  56.34% { transform: translateY(-90px); }
+  57.26% { transform: translateY(-120px); }
+  58.18% { transform: translateY(-150px); }
+  59.095% { transform: translateY(-180px); }
+  60.015% { transform: translateY(-210px); }
+  60.935% { transform: translateY(-240px); }
+  61.855% { transform: translateY(-270px); }
+  62.775% { transform: translateY(-300px); }
+  63.695% { transform: translateY(-330px); }
+  64.615% { transform: translateY(-360px); }
+  65.535% { transform: translateY(-390px); }
+  66.455% { transform: translateY(-420px); }
+  67.375% { transform: translateY(-450px); }
+  68.29% { transform: translateY(-480px); }
+  69.21% { transform: translateY(-510px); }
+  70.13% { transform: translateY(-540px); }
+  71.05% { transform: translateY(-570px); }
+  71.97% { transform: translateY(-600px); }
+  76.7% { transform: translateY(-570px); }
+  77.4% { transform: translateY(-540px); }
+  78.1% { transform: translateY(-510px); }
+  78.8% { transform: translateY(-480px); }
+  79.5% { transform: translateY(-450px); }
+  80.2% { transform: translateY(-420px); }
+  80.9% { transform: translateY(-390px); }
+  81.6% { transform: translateY(-360px); }
+  82.3% { transform: translateY(-330px); }
+  83% { transform: translateY(-300px); }
+  83.7% { transform: translateY(-270px); }
+  84.4% { transform: translateY(-240px); }
+  85.1% { transform: translateY(-210px); }
+  85.8% { transform: translateY(-180px); }
+  86.5% { transform: translateY(-150px); }
+  87.2% { transform: translateY(-120px); }
+  87.9% { transform: translateY(-90px); }
+  88.6% { transform: translateY(-60px); }
+  89.3% { transform: translateY(-30px); }
+  90% { transform: translateY(0px); }
+  100% { transform: translateY(0px); }
+}
+.diagram .qll-age { animation: qll-age var(--T) step-end infinite; }
+@keyframes qll-age {
+  0% { transform: translateY(0px); }
+  55.545% { transform: translateY(-30px); }
+  56.895% { transform: translateY(-60px); }
+  58.245% { transform: translateY(-90px); }
+  59.595% { transform: translateY(-120px); }
+  60.945% { transform: translateY(-150px); }
+  62.295% { transform: translateY(-180px); }
+  63.645% { transform: translateY(-210px); }
+  64.995% { transform: translateY(-240px); }
+  66.345% { transform: translateY(-270px); }
+  67.695% { transform: translateY(-300px); }
+  69.045% { transform: translateY(-330px); }
+  70.395% { transform: translateY(-360px); }
+  71.745% { transform: translateY(-390px); }
+  73.095% { transform: translateY(-420px); }
+  74.445% { transform: translateY(-450px); }
+  76.855% { transform: translateY(-480px); }
+  78.315% { transform: translateY(-510px); }
+  79.775% { transform: translateY(-540px); }
+  81.235% { transform: translateY(-570px); }
+  82.695% { transform: translateY(-600px); }
+  84.16% { transform: translateY(-630px); }
+  85.62% { transform: translateY(-660px); }
+  87.08% { transform: translateY(-690px); }
+  88.54% { transform: translateY(-720px); }
+  90% { transform: translateY(-750px); }
+  100% { transform: translateY(-750px); }
+}
+.diagram .qll-lost { transform: translateY(-600px); animation: qll-lost var(--T) step-end infinite; }
+@keyframes qll-lost {
+  0% { transform: translateY(0px); }
+  14.095% { transform: translateY(-30px); }
+  14.525% { transform: translateY(-60px); }
+  14.955% { transform: translateY(-90px); }
+  15.385% { transform: translateY(-120px); }
+  15.81% { transform: translateY(-150px); }
+  16.24% { transform: translateY(-180px); }
+  16.67% { transform: translateY(-210px); }
+  17.1% { transform: translateY(-240px); }
+  17.53% { transform: translateY(-270px); }
+  17.96% { transform: translateY(-300px); }
+  18.385% { transform: translateY(-330px); }
+  18.815% { transform: translateY(-360px); }
+  19.245% { transform: translateY(-390px); }
+  19.675% { transform: translateY(-420px); }
+  20.105% { transform: translateY(-450px); }
+  20.535% { transform: translateY(-480px); }
+  20.96% { transform: translateY(-510px); }
+  21.39% { transform: translateY(-540px); }
+  21.82% { transform: translateY(-570px); }
+  22.25% { transform: translateY(-600px); }
+  100% { transform: translateY(-600px); }
+}
+.diagram .qll-veil { transform: translateX(258px); animation: qll-veil var(--T) linear infinite; }
+@keyframes qll-veil {
+  0% { transform: translateX(84px); }
+  1.5% { transform: translateX(84px); }
+  4.5% { transform: translateX(144px); }
+  21.5% { transform: translateX(224px); }
+  24.995% { transform: translateX(224px); }
+  25% { transform: translateX(272px); }
+  26% { transform: translateX(272px); }
+  54.195% { transform: translateX(352px); }
+  72.27% { transform: translateX(432px); }
+  76% { transform: translateX(448.58px); }
+  90% { transform: translateX(832px); }
+  95% { transform: translateX(892px); }
+  100% { transform: translateX(892px); }
+}
+.diagram .qll-cur { animation: qll-cur var(--T) linear infinite; }
+@keyframes qll-cur {
+  0% { transform: translateX(84px); }
+  1.5% { transform: translateX(84px); }
+  4.5% { transform: translateX(144px); }
+  21.5% { transform: translateX(224px); }
+  24.995% { transform: translateX(224px); }
+  25% { transform: translateX(272px); }
+  26% { transform: translateX(272px); }
+  54.195% { transform: translateX(352px); }
+  72.27% { transform: translateX(432px); }
+  76% { transform: translateX(448.58px); }
+  90% { transform: translateX(832px); }
+  95% { transform: translateX(892px); }
+  100% { transform: translateX(892px); }
+}
+.diagram .qll-curw { opacity: 0; animation: qll-curw var(--T) linear infinite; }
+@keyframes qll-curw {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.25% { opacity: 1; }
+  24% { opacity: 1; }
+  24.75% { opacity: 0; }
+  25.25% { opacity: 0; }
+  26% { opacity: 1; }
+  98% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-data { animation: qll-data var(--T) linear infinite; }
+@keyframes qll-data {
+  0% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-hot1 { animation: qll-hot1 var(--T) linear infinite; }
+@keyframes qll-hot1 {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  10.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-hot2 { animation: qll-hot2 var(--T) linear infinite; }
+@keyframes qll-hot2 {
+  0% { opacity: 0; }
+  10% { opacity: 0; }
+  11.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-r200 { opacity: 0; animation: qll-r200 var(--T) linear infinite; }
+@keyframes qll-r200 {
+  0% { opacity: 0; }
+  1% { opacity: 0; }
+  1.6% { opacity: 1; }
+  14.095% { opacity: 1; }
+  14.595% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-rto { animation: qll-rto var(--T) linear infinite; }
+@keyframes qll-rto {
+  0% { opacity: 0; }
+  14.095% { opacity: 0; }
+  14.695% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-a3 { opacity: 0; animation: qll-a3 var(--T) linear infinite; }
+@keyframes qll-a3 {
+  0% { opacity: 1; }
+  4.5% { opacity: 1; }
+  5% { opacity: 0; }
+  25% { opacity: 0; }
+  25.5% { opacity: 1; }
+  50.55% { opacity: 1; }
+  51.05% { opacity: 0; }
+  72.27% { opacity: 0; }
+  72.77% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .qll-a15 { animation: qll-a15 var(--T) linear infinite; }
+@keyframes qll-a15 {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25% { opacity: 0; }
+  50.55% { opacity: 0; }
+  51.05% { opacity: 1; }
+  71.77% { opacity: 1; }
+  72.27% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-p3 { opacity: 0; animation: qll-p3 var(--T) linear infinite; }
+@keyframes qll-p3 {
+  0% { opacity: 1; }
+  8% { opacity: 1; }
+  8.5% { opacity: 0; }
+  25% { opacity: 0; }
+  25.5% { opacity: 1; }
+  56.112% { opacity: 1; }
+  56.612% { opacity: 0; }
+  90.5% { opacity: 0; }
+  91% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .qll-p5a { animation: qll-p5a var(--T) linear infinite; }
+@keyframes qll-p5a {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  8.5% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-p5b { opacity: 0; animation: qll-p5b var(--T) linear infinite; }
+@keyframes qll-p5b {
+  0% { opacity: 0; }
+  56.112% { opacity: 0; }
+  56.612% { opacity: 1; }
+  90% { opacity: 1; }
+  90.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-backlog { opacity: 0; animation: qll-backlog var(--T) linear infinite; }
+@keyframes qll-backlog {
+  0% { opacity: 0; }
+  56.3% { opacity: 0; }
+  57.8% { opacity: 1; }
+  89.5% { opacity: 1; }
+  91% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-busy { opacity: 0; animation: qll-busy var(--T) linear infinite; }
+@keyframes qll-busy {
+  0% { opacity: 0; }
+  33.09% { opacity: 0; }
+  33.39% { opacity: 1; }
+  34.59% { opacity: 1; }
+  34.89% { opacity: 0; }
+  36.09% { opacity: 0; }
+  36.39% { opacity: 1; }
+  37.59% { opacity: 1; }
+  37.89% { opacity: 0; }
+  39.09% { opacity: 0; }
+  39.39% { opacity: 1; }
+  40.59% { opacity: 1; }
+  40.89% { opacity: 0; }
+  42.09% { opacity: 0; }
+  42.39% { opacity: 1; }
+  43.59% { opacity: 1; }
+  43.89% { opacity: 0; }
+  45.09% { opacity: 0; }
+  45.39% { opacity: 1; }
+  46.59% { opacity: 1; }
+  46.89% { opacity: 0; }
+  48.09% { opacity: 0; }
+  48.39% { opacity: 1; }
+  49.59% { opacity: 1; }
+  49.89% { opacity: 0; }
+  51.09% { opacity: 0; }
+  51.39% { opacity: 1; }
+  52.59% { opacity: 1; }
+  52.89% { opacity: 0; }
+  54.09% { opacity: 0; }
+  54.39% { opacity: 1; }
+  55.59% { opacity: 1; }
+  55.89% { opacity: 0; }
+  56.11% { opacity: 0; }
+  56.41% { opacity: 1; }
+  93.39% { opacity: 1; }
+  93.69% { opacity: 0; }
+  94.89% { opacity: 0; }
+  95.19% { opacity: 1; }
+  96.39% { opacity: 1; }
+  96.69% { opacity: 0; }
+  97.89% { opacity: 0; }
+  98.19% { opacity: 1; }
+  99.2% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-l2 { opacity: 0; animation: qll-l2 var(--T) linear infinite; }
+@keyframes qll-l2 {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  33% { opacity: 1; }
+  49% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-l3 { opacity: 0; animation: qll-l3 var(--T) linear infinite; }
+@keyframes qll-l3 {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  71.75% { opacity: 1; }
+  81.75% { opacity: 1; }
+  83.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-l4 { opacity: 0; animation: qll-l4 var(--T) linear infinite; }
+@keyframes qll-l4 {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-cap { opacity: 0; animation: qll-cap var(--T) linear infinite; }
+@keyframes qll-cap {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-scale { opacity: 0; animation: qll-scale var(--T) linear infinite; }
+@keyframes qll-scale {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-b1 { animation: qll-b1 var(--T) linear infinite; }
+@keyframes qll-b1 {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  22% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-b2 { opacity: 0; animation: qll-b2 var(--T) linear infinite; }
+@keyframes qll-b2 {
+  0% { opacity: 0; }
+  70.77% { opacity: 0; }
+  72.27% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-f4 { opacity: 0; animation: qll-f4 var(--T) linear infinite; }
+@keyframes qll-f4 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  80% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-d1 { animation: qll-d1 var(--T) linear infinite; }
+@keyframes qll-d1 {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  6% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-d2 { opacity: 0; animation: qll-d2 var(--T) linear infinite; }
+@keyframes qll-d2 {
+  0% { opacity: 0; }
+  54.195% { opacity: 0; }
+  55.695% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-d3 { opacity: 0; animation: qll-d3 var(--T) linear infinite; }
+@keyframes qll-d3 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-ff { opacity: 0; animation: qll-ff var(--T) linear infinite; }
+@keyframes qll-ff {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  89.5% { opacity: 1; }
+  90.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-slow { opacity: 0; animation: qll-slow var(--T) linear infinite; }
+@keyframes qll-slow {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.5% { opacity: 1; }
+  21% { opacity: 1; }
+  22% { opacity: 0; }
+  54.195% { opacity: 0; }
+  55.195% { opacity: 1; }
+  70.27% { opacity: 1; }
+  71.27% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .qll-if { opacity: 0; animation: qll-if var(--T) linear infinite; }
+@keyframes qll-if {
+  0% { opacity: 0; }
+  89% { opacity: 0; }
+  90.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <defs>
+    <clipPath id="qll-tube"><rect x="253" y="135" width="342" height="42" rx="21"/></clipPath>
+    <clipPath id="qll-w1"><rect x="260" y="239" width="100" height="27"/></clipPath>
+    <clipPath id="qll-w2"><rect x="374" y="239" width="100" height="27"/></clipPath>
+    <clipPath id="qll-plot"><rect x="80" y="362" width="813" height="92"/></clipPath>
+    <clipPath id="qll-c1"><rect x="176" y="136" width="472" height="40"/></clipPath>
+    <clipPath id="qll-c2"><rect x="176" y="140" width="419" height="32"/></clipPath>
+    <clipPath id="qll-c3"><rect x="596" y="140" width="52" height="32"/></clipPath>
+    <clipPath id="qll-c4"><rect x="796" y="146" width="52" height="20"/></clipPath>
+    <clipPath id="qll-c5"><rect x="178" y="165" width="80" height="16"/></clipPath>
+  </defs>
+
+  <!-- web / API tier: the producers -->
+  <rect class="box" x="36" y="108" width="140" height="96" rx="12"/>
+  <text class="label mid" x="106" y="134">Web / API tier</text>
+  <text class="sub mid" x="106" y="151">producers</text>
+  <text class="tiny mid" x="106" y="169">replies with</text>
+  <g class="qll-r200">
+    <rect class="f-green-soft s-green" x="50" y="175" width="112" height="21" rx="10.5" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-green" x="106" y="189.5">200 OK</text>
+  </g>
+  <g class="qll-rto">
+    <rect class="f-red-soft s-red" x="50" y="175" width="112" height="21" rx="10.5" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-red" x="106" y="189.5">timeout</text>
+  </g>
+  <g class="p234">
+    <rect class="f-green-soft s-green" x="50" y="175" width="112" height="21" rx="10.5" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-green" x="106" y="189.5">202 Accepted</text>
+  </g>
+
+  <!-- database -->
+  <path class="box" d="M850 126V186A38 9 0 0 0 926 186V126"/>
+  <ellipse class="box" cx="888" cy="126" rx="38" ry="9"/>
+  <g class="qll-hot2">
+    <path class="f-red-soft s-red" d="M850 126V186A38 9 0 0 0 926 186V126" stroke-width="1.5"/>
+    <ellipse class="f-red-soft s-red" cx="888" cy="126" rx="38" ry="9" stroke-width="1.5"/>
+  </g>
+  <text class="sub sb f-ink mid" x="888" y="166">Database</text>
+  <text class="tiny mid sb f-red qll-hot2" x="888" y="216">● overloaded</text>
+  <text class="tiny mid sb f-green p234" x="888" y="216">● steady load</text>
+
+  <!-- backend service: called directly in step 1, a worker on the queue afterwards -->
+  <g class="qll-scale">
+    <rect class="none s-muted dash" x="662" y="120" width="146" height="96" rx="12" stroke-width="1.5"/>
+    <rect class="none s-muted dash" x="656" y="114" width="146" height="96" rx="12" stroke-width="1.5"/>
+    <text class="tiny mid sb f-ink" x="723" y="102">scale out when depth or age stays high</text>
+  </g>
+  <line class="wire" x1="796" y1="156" x2="848" y2="156" marker-end="url(#ah)"/>
+  <rect class="box" x="650" y="108" width="146" height="96" rx="12"/>
+  <rect class="f-red-soft s-red qll-hot1" x="650" y="108" width="146" height="96" rx="12" stroke-width="1.5"/>
+  <rect class="none s-purple qll-busy" x="650" y="108" width="146" height="96" rx="12" stroke-width="2.5"/>
+  <text class="label mid" x="723" y="140">Backend service</text>
+  <text class="sub mid p1" x="723" y="158">handles 5 requests/s</text>
+  <text class="sub mid p234" x="723" y="158">worker · 5/s at most</text>
+  <text class="tiny mid sb f-red qll-hot1" x="723" y="184">● overloaded</text>
+  <text class="tiny mid sb f-green p234" x="723" y="184">● steady pace</text>
+
+  <!-- step 1: the direct, synchronous path -->
+  <g class="p1">
+    <text class="tiny mid" x="415" y="128">direct call: every caller waits for the answer</text>
+    <line class="wire" x1="176" y1="146" x2="648" y2="146" marker-end="url(#ah)"/>
+    <line class="wire" x1="650" y1="166" x2="178" y2="166" marker-end="url(#ah)"/>
+    <text class="tiny mid" x="424" y="234">timed out</text>
+    <g clip-path="url(#qll-w2)">
+      <g class="qll-lost">
+        <text class="qll-big mid f-muted" x="424" y="260">0</text>
+        <text class="qll-big mid f-red" x="424" y="290">1</text>
+        <text class="qll-big mid f-red" x="424" y="320">2</text>
+        <text class="qll-big mid f-red" x="424" y="350">3</text>
+        <text class="qll-big mid f-red" x="424" y="380">4</text>
+        <text class="qll-big mid f-red" x="424" y="410">5</text>
+        <text class="qll-big mid f-red" x="424" y="440">6</text>
+        <text class="qll-big mid f-red" x="424" y="470">7</text>
+        <text class="qll-big mid f-red" x="424" y="500">8</text>
+        <text class="qll-big mid f-red" x="424" y="530">9</text>
+        <text class="qll-big mid f-red" x="424" y="560">10</text>
+        <text class="qll-big mid f-red" x="424" y="590">11</text>
+        <text class="qll-big mid f-red" x="424" y="620">12</text>
+        <text class="qll-big mid f-red" x="424" y="650">13</text>
+        <text class="qll-big mid f-red" x="424" y="680">14</text>
+        <text class="qll-big mid f-red" x="424" y="710">15</text>
+        <text class="qll-big mid f-red" x="424" y="740">16</text>
+        <text class="qll-big mid f-red" x="424" y="770">17</text>
+        <text class="qll-big mid f-red" x="424" y="800">18</text>
+        <text class="qll-big mid f-red" x="424" y="830">19</text>
+        <text class="qll-big mid f-red" x="424" y="860">20</text>
+      </g>
+    </g>
+    <text class="tiny mid" x="424" y="280">of the 30 calls in the spike</text>
+  </g>
+
+  <!-- steps 2-4: the queue in its place -->
+  <g class="p234">
+    <text class="label mid" x="424" y="126">Queue</text>
+    <line class="wire" x1="176" y1="156" x2="250" y2="156" marker-end="url(#ah)"/>
+    <line class="wire" x1="596" y1="156" x2="648" y2="156" marker-end="url(#ah)"/>
+    <line class="s-green dash" x1="257" y1="173" x2="179" y2="173" stroke-width="1.5" marker-end="url(#ah-green)"/>
+    <text class="tiny mid" x="213" y="145">send</text>
+    <text class="tiny mid f-green" x="213" y="190">ack</text>
+    <text class="tiny mid" x="622" y="145">pull</text>
+    <rect class="f-panel" x="252" y="134" width="344" height="44" rx="22"/>
+    <!-- messages on their way to the back of the queue; they disappear under the waiting ones -->
+    <g clip-path="url(#qll-c2)">
+      <g class="f-purple qll-in">
+      <rect x="-5263.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5336.5" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5409.3" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5482.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5554.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5627.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5700.5" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5773.3" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5846.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5918.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5991.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6064.5" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6137.3" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6210.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6282.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6355.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6428.5" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6501.3" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6574.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6646.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6719.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6792.5" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6865.3" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6938.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7010.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7083.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7156.5" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7229.3" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7302.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7374.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7530.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7842.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-8154.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-8466.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-8778.9" y="149.5" width="13" height="13" rx="3"/>
+      </g>
+    </g>
+    <!-- the waiting messages: a strip whose left end is the tail of the queue -->
+    <g clip-path="url(#qll-tube)">
+      <g class="qll-q">
+        <rect class="f-panel" x="595.25" y="134" width="341" height="44"/>
+        <rect class="f-purple-soft" x="595.25" y="134" width="341" height="44"/>
+        <g class="f-purple">
+        <rect x="595.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="611" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="626.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="642" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="657.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="673" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="688.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="704" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="719.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="735" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="750.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="766" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="781.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="797" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="812.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="828" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="843.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="859" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="874.5" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="890" y="149.5" width="13" height="13" rx="3"/>
+        <rect x="905.5" y="149.5" width="13" height="13" rx="3"/>
+        </g>
+      </g>
+    </g>
+    <rect class="none s-line" x="252" y="134" width="344" height="44" rx="22" stroke-width="1.5"/>
+    <rect class="none s-amber qll-backlog" x="252" y="134" width="344" height="44" rx="22" stroke-width="2"/>
+    <g class="qll-cap">
+      <line class="s-ink" x1="266" y1="128" x2="266" y2="184" stroke-width="2" stroke-dasharray="4 3"/>
+      <text class="tiny sb f-ink" x="273" y="198">cap the queue: when full, reject or shed</text>
+    </g>
+    <text class="tiny mid" x="310" y="234">queue depth</text>
+    <g clip-path="url(#qll-w1)">
+      <g class="qll-depth">
+        <text class="qll-big mid f-green" x="310" y="260">0</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="290">1</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="320">2</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="350">3</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="380">4</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="410">5</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="440">6</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="470">7</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="500">8</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="530">9</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="560">10</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="590">11</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="620">12</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="650">13</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="680">14</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="710">15</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="740">16</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="770">17</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="800">18</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="830">19</text>
+        <text class="qll-big mid f-amber-ink" x="310" y="860">20</text>
+      </g>
+    </g>
+    <text class="tiny mid" x="424" y="234">oldest message</text>
+    <g clip-path="url(#qll-w2)">
+      <g class="qll-age">
+        <text class="qll-big mid f-green" x="424" y="260">0.0 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="290">0.1 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="320">0.2 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="350">0.3 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="380">0.4 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="410">0.5 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="440">0.6 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="470">0.7 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="500">0.8 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="530">0.9 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="560">1.0 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="590">1.1 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="620">1.2 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="650">1.3 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="680">1.4 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="710">1.5 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="740">2.0 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="770">2.7 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="800">3.3 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="830">4.0 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="860">3.3 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="890">2.7 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="920">2.0 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="950">1.3 s</text>
+        <text class="qll-big mid f-amber-ink" x="424" y="980">0.7 s</text>
+        <text class="qll-big mid f-green" x="424" y="1010">0.0 s</text>
+      </g>
+    </g>
+    <text class="tiny mid" x="538" y="234">dropped</text>
+    <text class="qll-big mid f-green" x="538" y="260">0</text>
+    <text class="tiny mid qll-l2" x="424" y="289">3 in, up to 5 out per second: the queue stays empty</text>
+    <text class="tiny mid sb f-amber-ink qll-l3" x="424" y="289">a message arriving now waits 20 ÷ 5 = 4 s</text>
+    <text class="tiny mid sb f-ink qll-l4" x="424" y="289">alert on depth and on the age of the oldest message</text>
+  </g>
+
+  <!-- rate in (left) and rate out (right) -->
+  <line class="s-blue" x1="76" y1="230" x2="88" y2="230" stroke-width="2.5"/>
+  <text class="tiny" x="93" y="234">arrivals</text>
+  <g class="qll-a3">
+    <text class="qll-big mid" x="106" y="260">3/s</text>
+    <text class="tiny mid" x="106" y="280">normal load</text>
+  </g>
+  <g class="qll-a15">
+    <text class="qll-big mid" x="106" y="260">15/s</text>
+    <text class="tiny mid sb f-amber-ink" x="106" y="280">spike: 5 × normal</text>
+  </g>
+  <line class="s-green" x1="689" y1="230" x2="701" y2="230" stroke-width="2.5"/>
+  <text class="tiny" x="706" y="234">processed</text>
+  <g class="qll-p3">
+    <text class="qll-big mid" x="723" y="260">3/s</text>
+    <text class="tiny mid" x="723" y="280">capacity to spare</text>
+  </g>
+  <g class="qll-p5a">
+    <text class="qll-big mid f-red" x="723" y="260">5/s</text>
+    <text class="tiny mid sb f-red" x="723" y="280">at its limit</text>
+  </g>
+  <g class="qll-p5b">
+    <text class="qll-big mid" x="723" y="260">5/s</text>
+    <text class="tiny mid sb f-ink" x="723" y="280">its steady maximum</text>
+  </g>
+
+  <!-- arrivals and processing over time: the same spike without and with the queue -->
+  <rect class="box" x="30" y="314" width="900" height="156" rx="12"/>
+  <text class="tiny sb f-ink" x="46" y="334">Rate in vs rate out</text>
+  <line class="s-blue" x1="630" y1="330" x2="646" y2="330" stroke-width="3.5"/>
+  <text class="tiny" x="651" y="334">arrivals/s</text>
+  <line class="s-green" x1="720" y1="330" x2="736" y2="330" stroke-width="2"/>
+  <text class="tiny" x="741" y="334">processed/s</text>
+  <line class="s-muted" x1="818" y1="330" x2="834" y2="330" stroke-width="1"/>
+  <text class="tiny" x="839" y="334">capacity 5/s</text>
+  <text class="qll-hd" x="84" y="353">WITHOUT A QUEUE</text>
+  <text class="qll-hd" x="272" y="353">WITH A QUEUE</text>
+  <path class="none s-line" d="M84 371H892M84 452H892" stroke-width="1"/>
+  <line class="s-muted" x1="84" y1="425" x2="892" y2="425" stroke-width="1"/>
+  <g clip-path="url(#qll-plot)">
+    <g class="qll-data">
+      <rect class="f-red-soft" x="144" y="371" width="80" height="54"/>
+      <rect class="f-amber-soft" x="352" y="371" width="80" height="54"/>
+      <rect class="f-green" x="432" y="425" width="400" height="10.8" fill-opacity="0.22"/>
+      <polyline class="none s-blue" points="84 435.8 144 435.8 144 371 224 371 224 435.8 244 435.8" stroke-width="3.5" stroke-linejoin="round"/>
+      <polyline class="none s-blue" points="272 435.8 352 435.8 352 371 432 371 432 435.8 892 435.8" stroke-width="3.5" stroke-linejoin="round"/>
+      <polyline class="none s-green" points="84 435.8 144 435.8 144 425 224 425 224 435.8 244 435.8" stroke-width="2" stroke-linejoin="round"/>
+      <polyline class="none s-green" points="272 435.8 352 435.8 352 425 832 425 832 435.8 892 435.8" stroke-width="2" stroke-linejoin="round"/>
+    </g>
+    <g class="qll-veil">
+      <rect class="f-panel" x="0" y="360" width="850" height="96"/>
+      <path class="none s-line" d="M0 371H850M0 452H850" stroke-width="1"/>
+      <line class="s-muted" x1="0" y1="425" x2="850" y2="425" stroke-width="1"/>
+    </g>
+  </g>
+  <line class="s-line" x1="258" y1="342" x2="258" y2="460" stroke-width="1" stroke-dasharray="3 3"/>
+  <text class="tiny end" x="78" y="375">15/s</text>
+  <text class="tiny end" x="78" y="440">3/s</text>
+  <text class="tiny" x="897" y="429">5/s</text>
+  <g class="qll-d1">
+    <path class="none s-muted" d="M144 455V460M144 457.5H224M224 455V460" stroke-width="1"/>
+    <text class="tiny mid" x="184" y="468">2 s</text>
+  </g>
+  <g class="qll-d2">
+    <path class="none s-muted" d="M352 455V460M352 457.5H432M432 455V460" stroke-width="1"/>
+    <text class="tiny mid" x="392" y="468">2 s</text>
+  </g>
+  <g class="qll-d3">
+    <path class="none s-muted" d="M432 455V460M432 457.5H832M832 455V460" stroke-width="1"/>
+    <text class="tiny mid" x="632" y="468">10 s</text>
+  </g>
+  <text class="tiny end" x="914" y="468">time →</text>
+  <g class="qll-b1">
+    <text class="label b mid f-red" x="184" y="397">20</text>
+    <text class="tiny mid sb f-red" x="184" y="412">time out</text>
+  </g>
+  <g class="qll-b2">
+    <text class="label b mid f-amber-ink" x="392" y="397">20</text>
+    <text class="tiny mid sb f-amber-ink" x="392" y="412">wait</text>
+  </g>
+  <g class="qll-if">
+    <line class="s-blue" x1="432" y1="371" x2="892" y2="371" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="tiny sb f-ink" x="442" y="389">if arrivals stay above 5/s, the backlog grows without end</text>
+  </g>
+  <text class="tiny qll-f4" x="442" y="414">spare capacity 5 − 3 = 2/s, so the 20 drain in 10 s</text>
+  <g class="qll-slow">
+    <path class="f-muted" d="M176 326l7 4.5-7 4.5z"/>
+    <text class="tiny" x="189" y="334">slow motion: the spike lasts 2 s</text>
+  </g>
+  <g class="qll-ff">
+    <path class="f-amber" d="M172 326l7 4.5-7 4.5zM180 326l7 4.5-7 4.5z"/>
+    <text class="tiny sb f-amber-ink" x="193" y="334">fast-forward: the drain takes 10 s</text>
+  </g>
+  <g class="qll-curw">
+    <g class="qll-cur">
+      <line class="s-ink" x1="0" y1="360" x2="0" y2="452" stroke-width="1.5"/>
+      <circle class="f-ink" cx="0" cy="360" r="2.5"/>
+    </g>
+  </g>
+
+  <!-- traffic: every token rides a group that moves at constant speed behind a clip -->
+  <g clip-path="url(#qll-c1)">
+    <g class="pkt qll-rq">
+      <circle class="f-blue" cx="-262.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-675" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-772.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-870" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-967.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1065" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1162.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1260" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1357.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1455" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1552.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1650" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1747.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1845" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-1942.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2040" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2137.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2235" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2332.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2430" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2527.5" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2625" cy="146" r="5.5"/>
+      <circle class="f-blue" cx="-2722.5" cy="146" r="5.5"/>
+    </g>
+    <g class="pkt qll-rs">
+      <circle class="f-green" cx="975" cy="166" r="5.5"/>
+      <circle class="f-green" cx="1462.5" cy="166" r="5.5"/>
+      <g transform="translate(1642.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="f-green" cx="1732.5" cy="166" r="5.5"/>
+      <g transform="translate(1822.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <g transform="translate(1912.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="f-green" cx="2002.5" cy="166" r="5.5"/>
+      <g transform="translate(2092.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <g transform="translate(2182.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="f-green" cx="2272.5" cy="166" r="5.5"/>
+      <g transform="translate(2362.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <g transform="translate(2452.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="f-green" cx="2542.5" cy="166" r="5.5"/>
+      <g transform="translate(2632.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <g transform="translate(2722.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="f-green" cx="2812.5" cy="166" r="5.5"/>
+      <g transform="translate(2902.5 166)"><circle class="f-red" r="5.5"/><path class="s-bg" d="M-2-2l4 4M2-2l-4 4" stroke-width="1.6" stroke-linecap="round"/></g>
+    </g>
+    <g class="f-purple qll-th">
+      <rect x="-2975.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-3287.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-3599.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-3911.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-4223.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-4535.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-4847.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5159.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-9090.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-9402.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-9714.9" y="149.5" width="13" height="13" rx="3"/>
+    </g>
+  </g>
+  <g clip-path="url(#qll-c5)">
+    <g class="pkt qll-ack">
+      <circle class="f-green" cx="3057.6" cy="173" r="4"/>
+      <circle class="f-green" cx="3369.6" cy="173" r="4"/>
+      <circle class="f-green" cx="3681.6" cy="173" r="4"/>
+      <circle class="f-green" cx="3993.6" cy="173" r="4"/>
+      <circle class="f-green" cx="4305.6" cy="173" r="4"/>
+      <circle class="f-green" cx="4617.6" cy="173" r="4"/>
+      <circle class="f-green" cx="4929.6" cy="173" r="4"/>
+      <circle class="f-green" cx="5241.6" cy="173" r="4"/>
+      <circle class="f-green" cx="5345.6" cy="173" r="4"/>
+      <circle class="f-green" cx="5418.4" cy="173" r="4"/>
+      <circle class="f-green" cx="5491.2" cy="173" r="4"/>
+      <circle class="f-green" cx="5564" cy="173" r="4"/>
+      <circle class="f-green" cx="5636.8" cy="173" r="4"/>
+      <circle class="f-green" cx="5709.6" cy="173" r="4"/>
+      <circle class="f-green" cx="5782.4" cy="173" r="4"/>
+      <circle class="f-green" cx="5855.2" cy="173" r="4"/>
+      <circle class="f-green" cx="5928" cy="173" r="4"/>
+      <circle class="f-green" cx="6000.8" cy="173" r="4"/>
+      <circle class="f-green" cx="6073.6" cy="173" r="4"/>
+      <circle class="f-green" cx="6146.4" cy="173" r="4"/>
+      <circle class="f-green" cx="6219.2" cy="173" r="4"/>
+      <circle class="f-green" cx="6292" cy="173" r="4"/>
+      <circle class="f-green" cx="6364.8" cy="173" r="4"/>
+      <circle class="f-green" cx="6437.6" cy="173" r="4"/>
+      <circle class="f-green" cx="6510.4" cy="173" r="4"/>
+      <circle class="f-green" cx="6583.2" cy="173" r="4"/>
+      <circle class="f-green" cx="6656" cy="173" r="4"/>
+      <circle class="f-green" cx="6728.8" cy="173" r="4"/>
+      <circle class="f-green" cx="6801.6" cy="173" r="4"/>
+      <circle class="f-green" cx="6874.4" cy="173" r="4"/>
+      <circle class="f-green" cx="6947.2" cy="173" r="4"/>
+      <circle class="f-green" cx="7020" cy="173" r="4"/>
+      <circle class="f-green" cx="7092.8" cy="173" r="4"/>
+      <circle class="f-green" cx="7165.6" cy="173" r="4"/>
+      <circle class="f-green" cx="7238.4" cy="173" r="4"/>
+      <circle class="f-green" cx="7311.2" cy="173" r="4"/>
+      <circle class="f-green" cx="7384" cy="173" r="4"/>
+      <circle class="f-green" cx="7456.8" cy="173" r="4"/>
+      <circle class="f-green" cx="7612.8" cy="173" r="4"/>
+      <circle class="f-green" cx="7924.8" cy="173" r="4"/>
+      <circle class="f-green" cx="8236.8" cy="173" r="4"/>
+      <circle class="f-green" cx="8548.8" cy="173" r="4"/>
+      <circle class="f-green" cx="8860.8" cy="173" r="4"/>
+      <circle class="f-green" cx="9172.8" cy="173" r="4"/>
+      <circle class="f-green" cx="9484.8" cy="173" r="4"/>
+      <circle class="f-green" cx="9796.8" cy="173" r="4"/>
+    </g>
+  </g>
+  <g clip-path="url(#qll-c3)">
+    <g class="f-purple qll-pull">
+      <rect x="-4600.6" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-4749.6" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-4898.6" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5047.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5196.7" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5345.8" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5494.8" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5643.8" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5792.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-5941.9" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6091" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6240" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6389" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6538.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6687.1" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6836.2" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-6985.2" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7134.2" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7283.3" y="149.5" width="13" height="13" rx="3"/>
+      <rect x="-7432.3" y="149.5" width="13" height="13" rx="3"/>
+    </g>
+  </g>
+  <g clip-path="url(#qll-c4)">
+    <g class="pkt qll-db">
+      <circle class="f-teal" cx="-490" cy="156" r="5"/>
+      <circle class="f-teal" cx="-784" cy="156" r="5"/>
+      <circle class="f-teal" cx="-877.1" cy="156" r="5"/>
+      <circle class="f-teal" cx="-970.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1063.3" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1156.4" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1249.5" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1342.6" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1435.7" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1528.8" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1621.9" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1715" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1808.1" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1901.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-1994.3" cy="156" r="5"/>
+      <circle class="f-teal" cx="-2087.4" cy="156" r="5"/>
+      <circle class="f-teal" cx="-3419.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-3713.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-4007.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-4301.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-4595.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-4889.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-5183.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-5477.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-5675.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-5851.6" cy="156" r="5"/>
+      <circle class="f-teal" cx="-6028" cy="156" r="5"/>
+      <circle class="f-teal" cx="-6204.4" cy="156" r="5"/>
+      <circle class="f-teal" cx="-6380.8" cy="156" r="5"/>
+      <circle class="f-teal" cx="-6557.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-6733.6" cy="156" r="5"/>
+      <circle class="f-teal" cx="-6910" cy="156" r="5"/>
+      <circle class="f-teal" cx="-7086.4" cy="156" r="5"/>
+      <circle class="f-teal" cx="-7262.8" cy="156" r="5"/>
+      <circle class="f-teal" cx="-7439.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-7615.6" cy="156" r="5"/>
+      <circle class="f-teal" cx="-7792" cy="156" r="5"/>
+      <circle class="f-teal" cx="-7968.4" cy="156" r="5"/>
+      <circle class="f-teal" cx="-8144.8" cy="156" r="5"/>
+      <circle class="f-teal" cx="-8321.2" cy="156" r="5"/>
+      <circle class="f-teal" cx="-8497.6" cy="156" r="5"/>
+      <circle class="f-teal" cx="-8674" cy="156" r="5"/>
+      <circle class="f-teal" cx="-8850.4" cy="156" r="5"/>
+      <circle class="f-teal" cx="-9026.8" cy="156" r="5"/>
+      <circle class="f-teal" cx="-9181.6" cy="156" r="5"/>
+      <circle class="f-teal" cx="-9475.6" cy="156" r="5"/>
+    </g>
+  </g>
+</g>
+</svg>

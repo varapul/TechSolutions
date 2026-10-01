@@ -1,0 +1,49 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Without a queue",
+      "caption": "No queue: a spike of 15 requests/s hits a service that can do 5/s, so most calls time out.",
+      "body": "The API tier calls the backend directly and every caller waits for its answer. A 2-second spike of 15 requests per second meets a service that can finish 5 per second. Of the 30 calls only 10 can be answered in time. The other 20 time out, and the database behind the service is overloaded as well."
+    },
+    {
+      "title": "Put a queue in between",
+      "caption": "The API puts each request on a queue and answers 202 at once; the worker pulls at its own pace.",
+      "body": "The API tier now writes each request to a durable queue and replies **202 Accepted** as soon as the queue has acknowledged the message. A worker pulls from the queue at its own pace. At the normal 3 per second it has capacity to spare (it can do 5), so messages pass straight through and the queue stays empty."
+    },
+    {
+      "title": "The spike is absorbed",
+      "caption": "The spike is absorbed: the queue fills to 20 while the worker stays at 5/s. Nothing is dropped.",
+      "body": "The same spike arrives: 15 messages per second for 2 seconds. The worker keeps to 5 per second, so the backlog grows by 10 every second and peaks at 20. Nothing is dropped and the database sees no spike. The price is **waiting time**: the oldest message in the queue gets older, and a message that arrives now waits 20 ÷ 5 = 4 seconds."
+    },
+    {
+      "title": "Drain, and know the limits",
+      "caption": "The queue drains in 10 s. It only moves load in time: cap it, watch depth and age, scale workers.",
+      "body": "Arrivals fall back to 3 per second, which leaves the worker 2 per second to spare, so the 20 queued messages clear in 10 seconds (shown fast-forwarded). A queue only **moves load in time**: if arrivals stay above capacity it grows without end. So cap the queue and reject or shed when it is full, alert on its depth and on the age of the oldest message, and scale the workers on those two signals."
+    }
+  ],
+  "related": ["competing-consumers", "autoscaling", "rate-limiting", "asynchronous-request-reply", "web-queue-worker", "dead-letter-queue", "priority-queue", "idempotent-consumer"],
+  "references": [
+    { "title": "Azure Architecture Center — Queue-Based Load Leveling pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling" },
+    { "title": "AWS Builder Center — Avoiding insurmountable queue backlogs (first published in the Amazon Builders' Library)", "url": "https://builder.aws.com/content/3EuRcgkTP1MI0c7zM8W6HL3WIqA/avoiding-insurmountable-queue-backlogs" },
+    { "title": "Google SRE Book — Addressing Cascading Failures (queue management, load shedding)", "url": "https://sre.google/sre-book/addressing-cascading-failures/" },
+    { "title": "Enterprise Integration Patterns — Competing Consumers", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html" },
+    { "title": "RFC 9110 — HTTP Semantics: 202 Accepted", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.3" },
+    { "title": "Azure Architecture Center — Asynchronous Request-Reply pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/asynchronous-request-reply" },
+    { "title": "Amazon EC2 Auto Scaling — Scaling policy based on Amazon SQS", "url": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-using-sqs-queue.html" },
+    { "title": "KEDA — Scalers", "url": "https://keda.sh/docs/latest/scalers/" },
+    { "title": "Azure Functions — Target-based scaling", "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-target-based-scaling" },
+    { "title": "AWS Lambda — Configuring scaling behavior for SQS event source mappings", "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-scaling.html" },
+    { "title": "Amazon SQS — At-least-once delivery", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html" },
+    { "title": "Amazon SQS — Visibility timeout", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html" },
+    { "title": "Amazon SQS — Using dead-letter queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html" },
+    { "title": "Amazon SQS — Available CloudWatch metrics", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-available-cloudwatch-metrics.html" },
+    { "title": "Amazon SQS — Message quotas", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html" },
+    { "title": "Azure Service Bus — Message transfers, locks, and settlement", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-transfers-locks-settlement" },
+    { "title": "Azure Service Bus — Dead-letter queues", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dead-letter-queues" },
+    { "title": "Azure Service Bus — Quotas and limits", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quotas" },
+    { "title": "RabbitMQ — Queue Length Limit", "url": "https://www.rabbitmq.com/docs/maxlength" },
+    { "title": "RabbitMQ — Quorum Queues", "url": "https://www.rabbitmq.com/docs/quorum-queues" },
+    { "title": "Google Cloud — Monitor Pub/Sub in Cloud Monitoring", "url": "https://docs.cloud.google.com/pubsub/docs/monitoring" }
+  ]
+}

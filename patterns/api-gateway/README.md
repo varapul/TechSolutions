@@ -71,7 +71,7 @@ Authenticating first lets quotas and cache keys depend on a *verified* identity;
 - Gateway Offloading *(planned)* — Move TLS termination, authentication and compression out of every service into the gateway.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
-- Service Mesh *(planned)* — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
+- [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 

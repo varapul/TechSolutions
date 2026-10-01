@@ -1,0 +1,49 @@
+{
+  "aka": ["Stateful vs stateless authentication", "Session cookies vs JWTs"],
+  "steps": [
+    {
+      "title": "Sign-in",
+      "caption": "Sign-in: a session keeps state in a store and hands out a random ID; a token carries signed claims.",
+      "body": "**Session:** the app server checks Ana's credentials, writes a record to the session store (session ID, user, roles, expiry) and sends the browser only a random session ID, in a cookie marked `HttpOnly`, `Secure` and `SameSite`. **Token:** the client signs in at the issuer, which signs a token that carries the same facts as claims (`sub`, `roles`, `exp`) and hands it to the client; the API servers keep nothing."
+    },
+    {
+      "title": "Every request",
+      "caption": "Every request: the session ID is looked up in the store; the token is verified locally, no lookup.",
+      "body": "**Session:** the browser sends the cookie with every request, and the app server reads the session row by its ID before it does anything else: one round trip to the store per request. **Token:** the client sends the token with every request, and the API server checks the signature with the issuer's public key and then the claims, all locally and with no lookup."
+    },
+    {
+      "title": "Scale out",
+      "caption": "Scale out: every app server must reach the same store; any API server verifies the token by itself.",
+      "body": "**Session:** requests can land on any app server, so every one of them must reach the same store (or the load balancer must pin each user to one server), and that store sits on the hot path of every request. **Token:** any API server, or any other service the token is meant for, can verify it on its own; nothing is shared but the issuer's public keys."
+    },
+    {
+      "title": "Revoke",
+      "caption": "Revoke: delete the session row and the next request is refused; the token stays valid until exp.",
+      "body": "Ana signs out, her credential is stolen or her role changes, and access has to end now. **Session:** delete the row and the very next request is refused. **Token:** it keeps passing every check until `exp`; the fixes are short lifetimes renewed with refresh tokens, or a denylist or introspection call on each request, which brings the lookup back."
+    }
+  ],
+  "related": ["jwt-validation", "backends-for-frontends", "refresh-token-rotation", "openid-connect", "oauth2-authorization-code-pkce", "token-exchange", "api-gateway"],
+  "references": [
+    { "title": "OWASP Cheat Sheet Series — Session Management Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html" },
+    { "title": "RFC 6265 — HTTP State Management Mechanism", "url": "https://www.rfc-editor.org/rfc/rfc6265" },
+    { "title": "IETF HTTP WG — Cookies: HTTP State Management Mechanism (draft-ietf-httpbis-rfc6265bis, to replace RFC 6265)", "url": "https://datatracker.ietf.org/doc/draft-ietf-httpbis-rfc6265bis/" },
+    { "title": "MDN — Set-Cookie header", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie" },
+    { "title": "OWASP Cheat Sheet Series — Cross-Site Request Forgery Prevention Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html" },
+    { "title": "RFC 7519 — JSON Web Token (JWT)", "url": "https://www.rfc-editor.org/rfc/rfc7519" },
+    { "title": "RFC 9068 — JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc9068" },
+    { "title": "RFC 7662 — OAuth 2.0 Token Introspection", "url": "https://www.rfc-editor.org/rfc/rfc7662" },
+    { "title": "RFC 7009 — OAuth 2.0 Token Revocation", "url": "https://www.rfc-editor.org/rfc/rfc7009" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "RFC 10017 — OAuth 2.0 for Browser-Based Applications", "url": "https://www.rfc-editor.org/rfc/rfc10017.html" },
+    { "title": "OWASP Cheat Sheet Series — JSON Web Token Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html" },
+    { "title": "IETF OAuth WG — Token Status List (TSL) (draft-ietf-oauth-status-list)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-status-list/" },
+    { "title": "OpenID Continuous Access Evaluation Profile 1.0", "url": "https://openid.net/specs/openid-caep-1_0-final.html" },
+    { "title": "Microsoft Learn — Continuous access evaluation in Microsoft Entra", "url": "https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-continuous-access-evaluation" },
+    { "title": "Microsoft Learn — Configurable token lifetimes in the Microsoft identity platform", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/configurable-token-lifetimes" },
+    { "title": "Microsoft Learn — Configure group claims and app roles in tokens", "url": "https://learn.microsoft.com/en-us/security/zero-trust/develop/configure-tokens-group-claims-app-roles" },
+    { "title": "Django documentation — How to use sessions", "url": "https://docs.djangoproject.com/en/stable/topics/http/sessions/" },
+    { "title": "Microsoft Learn — Use cookie authentication without ASP.NET Core Identity", "url": "https://learn.microsoft.com/en-us/aspnet/core/security/authentication/cookie" },
+    { "title": "Ruby on Rails Guides — Securing Rails Applications", "url": "https://guides.rubyonrails.org/security.html" },
+    { "title": "Curity — Securing APIs with the Phantom Token Approach", "url": "https://curity.io/resources/learn/phantom-token-pattern/" }
+  ]
+}

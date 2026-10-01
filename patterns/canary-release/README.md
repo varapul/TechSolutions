@@ -73,11 +73,11 @@ They combine well: a canary build usually ships new features dark behind flags, 
 
 - [Blue-Green Deployment](../blue-green-deployment/) — Run the new version beside the old one and switch all traffic in one step.
 - [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
-- Rolling Update *(planned)* — Replace instances batch by batch while the service stays up.
+- [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
 - Shadow Traffic *(planned)* — Mirror live requests to the new version and compare results without affecting users.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
-- Expand and Contract *(planned)* — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
-- Service Mesh *(planned)* — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
+- [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
+- [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - Cell-Based Architecture *(planned)* — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
 
 ## References

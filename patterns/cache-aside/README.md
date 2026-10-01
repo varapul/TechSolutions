@@ -86,7 +86,7 @@ If the whole data set is small and rarely changes, skip lazy loading: load it al
 ## Related patterns
 
 - Read Replicas *(planned)* — Send writes to the primary and spread reads across asynchronously updated replicas.
-- Change Data Capture (CDC) *(planned)* — Stream every committed change from the database log to other systems.
+- [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - CDN & Edge Caching *(planned)* — Serve static content from edge locations close to users; only cache misses reach the origin.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.

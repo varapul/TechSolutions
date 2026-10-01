@@ -1,0 +1,42 @@
+{
+  "aka": ["Rotating refresh tokens", "One-time-use refresh tokens", "Refresh token reuse detection"],
+  "steps": [
+    {
+      "title": "Short-lived access token",
+      "caption": "The app calls the API with a 10-minute access token. Once it expires, the API answers 401.",
+      "body": "After sign-in the app holds two tokens: an **access token** that lives for minutes (10 here) and a **refresh token**, RT1, the first of a new **token family** on the authorization server. API calls carry only the access token; the refresh token is never sent to the API. When the access token has expired, the API answers `401` with `error=\"invalid_token\"`, and that is the app's cue to refresh."
+    },
+    {
+      "title": "Refresh and rotate",
+      "caption": "The app sends RT1 to the token endpoint and gets a new access token plus RT2. RT1 is now used.",
+      "body": "The app posts `grant_type=refresh_token` with RT1 to the token endpoint. The server finds RT1 **active**, marks it **used**, and returns a new access token together with a *new* refresh token, RT2, in the same family: every refresh token works exactly once. The app replaces both tokens and calls the API again."
+    },
+    {
+      "title": "Reuse is detected",
+      "caption": "An attacker replays a stolen copy of RT1. Already used: the server revokes the whole family.",
+      "body": "An attacker who copied RT1 earlier now replays it. The server sees a refresh token that was already used: the sign that two parties hold tokens from this family, and it cannot tell which of them is the thief. So it revokes the **whole family**, RT2 included, and answers `invalid_grant`."
+    },
+    {
+      "title": "Sign in again",
+      "caption": "RT2 was revoked too, so the app gets invalid_grant. The user signs in again: a new family starts.",
+      "body": "When its access token expires, the app sends RT2 and gets `invalid_grant` as well, so it drops its tokens and sends the user through sign-in again, which starts a new family with a new RT1. The theft has cost the user one extra sign-in. The damage is bounded: the thief has no working refresh token and holds, at most, an access token that expires within minutes."
+    }
+  ],
+  "related": ["oauth2-authorization-code-pkce", "openid-connect", "jwt-validation", "sessions-vs-tokens", "backends-for-frontends", "token-exchange", "oauth2-client-credentials"],
+  "references": [
+    { "title": "RFC 6749 — The OAuth 2.0 Authorization Framework (§6 Refreshing an Access Token; also §1.5 and §10.4)", "url": "https://www.rfc-editor.org/rfc/rfc6749#section-6" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security (§4.14 Refresh Token Protection)", "url": "https://www.rfc-editor.org/rfc/rfc9700#section-4.14" },
+    { "title": "RFC 10017 — OAuth 2.0 for Browser-Based Applications (§6.3.2.3 Refresh Tokens)", "url": "https://www.rfc-editor.org/rfc/rfc10017#section-6.3.2.3" },
+    { "title": "IETF OAuth WG — The OAuth 2.1 Authorization Framework (draft-ietf-oauth-v2-1, Internet-Draft)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/" },
+    { "title": "RFC 6819 — OAuth 2.0 Threat Model and Security Considerations (§5.2.2.3 Refresh Token Rotation)", "url": "https://www.rfc-editor.org/rfc/rfc6819#section-5.2.2.3" },
+    { "title": "RFC 6750 — The OAuth 2.0 Authorization Framework: Bearer Token Usage (§3.1 Error Codes)", "url": "https://www.rfc-editor.org/rfc/rfc6750#section-3.1" },
+    { "title": "RFC 9449 — OAuth 2.0 Demonstrating Proof of Possession (DPoP)", "url": "https://www.rfc-editor.org/rfc/rfc9449" },
+    { "title": "RFC 8705 — OAuth 2.0 Mutual-TLS Client Authentication and Certificate-Bound Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc8705" },
+    { "title": "RFC 7009 — OAuth 2.0 Token Revocation", "url": "https://www.rfc-editor.org/rfc/rfc7009" },
+    { "title": "OpenID Connect Core 1.0 incorporating errata set 2 — §11 Offline Access", "url": "https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess" },
+    { "title": "Auth0 Docs — Refresh Token Rotation", "url": "https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation" },
+    { "title": "Okta Developer — Refresh access tokens and rotate refresh tokens", "url": "https://developer.okta.com/docs/guides/refresh-tokens/main/" },
+    { "title": "Microsoft Learn — Refresh tokens in the Microsoft identity platform", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens" },
+    { "title": "Amazon Cognito Developer Guide — Refresh tokens", "url": "https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-the-refresh-token.html" }
+  ]
+}

@@ -1,0 +1,1222 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Idempotent Consumer</title>
+<desc id="dg-desc">Idempotent Consumer. Remember processed message IDs so a redelivered message has no extra effect. Step 1, Why duplicates arrive: At-least-once: the ack for m-7f3 is lost, the broker delivers it again, and $40 is charged twice. Step 2, Save the ID with the work: One transaction inserts the message ID and applies the charge: both commit, or neither does. Step 3, Redelivery changes nothing: m-7f3 arrives again: the insert hits the unique key, so the handler skips the work and just acks. Step 4, Beyond your own database: The provider gets the message ID as an idempotency key, so a repeated call returns the first result.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">MESSAGING &amp; INTEGRATION</text>
+  <text class="title" x="40" y="64">Idempotent Consumer</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Why duplicates arrive</text>
+  <text class="step on p1" x="40" y="518">1 · Why duplicates arrive</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Save the ID with the work</text>
+  <text class="step on p2" x="262" y="518">2 · Save the ID with the work</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Redelivery changes nothing</text>
+  <text class="step on p3" x="484" y="518">3 · Redelivery changes nothing</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Beyond your own database</text>
+  <text class="step on p4" x="706" y="518">4 · Beyond your own database</text>
+  <text class="caption p1" x="40" y="552">At-least-once: the ack for m-7f3 is lost, the broker delivers it again, and $40 is charged twice.</text>
+  <text class="caption p2" x="40" y="552">One transaction inserts the message ID and applies the charge: both commit, or neither does.</text>
+  <text class="caption p3" x="40" y="552">m-7f3 arrives again: the insert hits the unique key, so the handler skips the work and just acks.</text>
+  <text class="caption p4" x="40" y="552">The provider gets the message ID as an idempotency key, so a repeated call returns the first result.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Idempotent Consumer. Timeline (20s loop, 1s = 5%):
+   0-25%   no protection: m-7f3 is delivered (0.4s), the charge commits (1.55s), the ack is lost (2.4s),
+           the broker delivers m-7f3 again (3.0s) and the charge is applied a second time (4.1s): total $80.
+   25-50%  one transaction: m-7f3 is delivered (5.3s), its ID is inserted (6.5s) and the charge applied (7.1s),
+           both still pending; one commit saves both (7.7s). The ack is lost again (8.6s).
+   50-75%  m-7f3 is redelivered (10.3s); the insert hits the unique key (11.4s), the work is skipped (11.9s),
+           the ack arrives and the message leaves the queue (13.0s). The panel shows a race ending the same way.
+   75-100% the charge goes to a payment provider with the message ID as the idempotency key (15.4s); the
+           response is lost (16.55s), the call is repeated (17.4s) and the provider returns the first result
+           (18.9s); the local transaction commits (19.0s). Step 4 fades out in the last 0.3s. */
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .ev.dup { stroke: var(--amber); stroke-width: 2.5; }
+.diagram .evt { font-size: 11px; font-weight: 700; fill: var(--bg); }
+.diagram .tname { font-size: 11px; font-weight: 700; fill: var(--teal); }
+.diagram .th { font-size: 10.5px; font-weight: 600; fill: var(--muted); }
+.diagram .cell { font-size: 11px; }
+.diagram .legend { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .big { font-size: 18px; font-weight: 700; }
+.diagram .badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; }
+.diagram .ic-hq { opacity: 0; animation: ic-hq var(--T) linear infinite; }
+.diagram .ic-hf { animation: ic-hf var(--T) linear infinite; }
+.diagram .ic-hw { animation: ic-hw var(--T) linear infinite; }
+.diagram .ic-bsa { opacity: 0; animation: ic-bsa var(--T) linear infinite; }
+.diagram .ic-bsb { animation: ic-bsb var(--T) linear infinite; }
+.diagram .ic-bsc { opacity: 0; animation: ic-bsc var(--T) linear infinite; }
+.diagram .ic-m1 { opacity: 0; animation: ic-m1 var(--T) linear infinite; }
+.diagram .ic-m2 { opacity: 0; animation: ic-m2 var(--T) linear infinite; }
+.diagram .ic-again { animation: ic-again var(--T) linear infinite; }
+.diagram .ic-rx { opacity: 0; animation: ic-rx var(--T) linear infinite; }
+.diagram .ic-rxd { opacity: 0; animation: ic-rxd var(--T) linear infinite; }
+.diagram .ic-ack { opacity: 0; animation: ic-ack var(--T) linear infinite; }
+.diagram .ic-ackx { animation: ic-ackx var(--T) linear infinite; }
+.diagram .ic-ackok { opacity: 0; animation: ic-ackok var(--T) linear infinite; }
+.diagram .ic-h1 { opacity: 0; animation: ic-h1 var(--T) linear infinite; }
+.diagram .ic-h2 { opacity: 0; animation: ic-h2 var(--T) linear infinite; }
+.diagram .ic-h3 { opacity: 0; animation: ic-h3 var(--T) linear infinite; }
+.diagram .ic-h4 { opacity: 0; animation: ic-h4 var(--T) linear infinite; }
+.diagram .ic-k2a { opacity: 0; animation: ic-k2a var(--T) linear infinite; }
+.diagram .ic-k3a { opacity: 0; animation: ic-k3a var(--T) linear infinite; }
+.diagram .ic-k2b { animation: ic-k2b var(--T) linear infinite; }
+.diagram .ic-k3b { animation: ic-k3b var(--T) linear infinite; }
+.diagram .ic-kc { opacity: 0; animation: ic-kc var(--T) linear infinite; }
+.diagram .ic-k1x { opacity: 0; animation: ic-k1x var(--T) linear infinite; }
+.diagram .ic-skip { opacity: 0; animation: ic-skip var(--T) linear infinite; }
+.diagram .ic-k4 { opacity: 0; animation: ic-k4 var(--T) linear infinite; }
+.diagram .ic-s1 { animation: ic-s1 var(--T) linear infinite; }
+.diagram .ic-s2 { opacity: 0; animation: ic-s2 var(--T) linear infinite; }
+.diagram .ic-s4a { opacity: 0; animation: ic-s4a var(--T) linear infinite; }
+.diagram .ic-s4b { opacity: 0; animation: ic-s4b var(--T) linear infinite; }
+.diagram .ic-w { opacity: 0; animation: ic-w var(--T) linear infinite; }
+.diagram .ic-pay1 { animation: ic-pay1 var(--T) linear infinite; }
+.diagram .ic-pay1p { opacity: 0; animation: ic-pay1p var(--T) linear infinite; }
+.diagram .ic-pay2 { animation: ic-pay2 var(--T) linear infinite; }
+.diagram .ic-fpay1 { opacity: 0; animation: ic-fpay1 var(--T) linear infinite; }
+.diagram .ic-fpay2 { opacity: 0; animation: ic-fpay2 var(--T) linear infinite; }
+.diagram .ic-pm1 { opacity: 0; animation: ic-pm1 var(--T) linear infinite; }
+.diagram .ic-pm1p { opacity: 0; animation: ic-pm1p var(--T) linear infinite; }
+.diagram .ic-pm2 { opacity: 0; animation: ic-pm2 var(--T) linear infinite; }
+.diagram .ic-fdup { opacity: 0; animation: ic-fdup var(--T) linear infinite; }
+.diagram .ic-dupn { opacity: 0; animation: ic-dupn var(--T) linear infinite; }
+.diagram .ic-fcommit { opacity: 0; animation: ic-fcommit var(--T) linear infinite; }
+.diagram .ic-txa { opacity: 0; animation: ic-txa var(--T) linear infinite; }
+.diagram .ic-txl2 { opacity: 0; animation: ic-txl2 var(--T) linear infinite; }
+.diagram .ic-txl4 { opacity: 0; animation: ic-txl4 var(--T) linear infinite; }
+.diagram .ic-txb { opacity: 0; animation: ic-txb var(--T) linear infinite; }
+.diagram .ic-t0 { opacity: 0; animation: ic-t0 var(--T) linear infinite; }
+.diagram .ic-t40 { opacity: 0; animation: ic-t40 var(--T) linear infinite; }
+.diagram .ic-t80 { animation: ic-t80 var(--T) linear infinite; }
+.diagram .ic-twice { animation: ic-twice var(--T) linear infinite; }
+.diagram .ic-still { opacity: 0; animation: ic-still var(--T) linear infinite; }
+.diagram .ic-p1b { animation: ic-p1b var(--T) linear infinite; }
+.diagram .ic-p2c { opacity: 0; animation: ic-p2c var(--T) linear infinite; }
+.diagram .ic-p3a { opacity: 0; animation: ic-p3a var(--T) linear infinite; }
+.diagram .ic-p3b { opacity: 0; animation: ic-p3b var(--T) linear infinite; }
+.diagram .ic-p3c { opacity: 0; animation: ic-p3c var(--T) linear infinite; }
+.diagram .ic-c1 { opacity: 0; animation: ic-c1 var(--T) linear infinite; }
+.diagram .ic-c2 { opacity: 0; animation: ic-c2 var(--T) linear infinite; }
+.diagram .ic-r1 { opacity: 0; animation: ic-r1 var(--T) linear infinite; }
+.diagram .ic-r2 { opacity: 0; animation: ic-r2 var(--T) linear infinite; }
+.diagram .ic-rx1 { opacity: 0; animation: ic-rx1 var(--T) linear infinite; }
+.diagram .ic-lost { opacity: 0; animation: ic-lost var(--T) linear infinite; }
+.diagram .ic-retry { opacity: 0; animation: ic-retry var(--T) linear infinite; }
+.diagram .ic-same { opacity: 0; animation: ic-same var(--T) linear infinite; }
+.diagram .ic-pk { opacity: 0; animation: ic-pk var(--T) linear infinite; }
+.diagram .ic-fpk { opacity: 0; animation: ic-fpk var(--T) linear infinite; }
+.diagram .ic-fseen { opacity: 0; animation: ic-fseen var(--T) linear infinite; }
+.diagram .ic-c0 { opacity: 0; animation: ic-c0 var(--T) linear infinite; }
+.diagram .ic-c1n { opacity: 0; animation: ic-c1n var(--T) linear infinite; }
+.diagram .ic-seen { opacity: 0; animation: ic-seen var(--T) linear infinite; }
+@keyframes ic-hq {
+  0% { opacity: 1; }
+  2.25% { opacity: 1; }
+  3% { opacity: 0; }
+  98.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ic-hf {
+  0% { opacity: 0; }
+  2.25% { opacity: 0; }
+  3% { opacity: 1; }
+  65% { opacity: 1; }
+  66% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-hw {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  45% { opacity: 0; }
+  45.75% { opacity: 1; }
+  65% { opacity: 1; }
+  66% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-bsa {
+  0% { opacity: 0; }
+  5.5% { opacity: 0; }
+  6% { opacity: 1; }
+  14% { opacity: 1; }
+  14.5% { opacity: 0; }
+  30% { opacity: 0; }
+  30.5% { opacity: 1; }
+  44.75% { opacity: 1; }
+  45.25% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52% { opacity: 1; }
+  64.75% { opacity: 1; }
+  65.25% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-bsb {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  45.25% { opacity: 0; }
+  46% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-bsc {
+  0% { opacity: 0; }
+  65.25% { opacity: 0; }
+  66% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-m1 {
+  0% { transform: translate(172px, 166px); opacity: 0; }
+  2% { transform: translate(172px, 166px); opacity: 0; }
+  2.25% { opacity: 1; }
+  5.5% { transform: translate(263px, 166px); opacity: 1; }
+  5.75% { transform: translate(263px, 166px); opacity: 0; }
+  26.5% { transform: translate(172px, 166px); opacity: 0; }
+  26.75% { opacity: 1; }
+  30% { transform: translate(263px, 166px); opacity: 1; }
+  30.25% { transform: translate(263px, 166px); opacity: 0; }
+  100% { transform: translate(263px, 166px); opacity: 0; }
+}
+@keyframes ic-m2 {
+  0% { transform: translate(172px, 166px); opacity: 0; }
+  15% { transform: translate(172px, 166px); opacity: 0; }
+  15.25% { opacity: 1; }
+  18.5% { transform: translate(263px, 166px); opacity: 1; }
+  18.75% { transform: translate(263px, 166px); opacity: 0; }
+  51.5% { transform: translate(172px, 166px); opacity: 0; }
+  51.75% { opacity: 1; }
+  55% { transform: translate(263px, 166px); opacity: 1; }
+  55.25% { transform: translate(263px, 166px); opacity: 0; }
+  100% { transform: translate(263px, 166px); opacity: 0; }
+}
+@keyframes ic-again {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  15.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-rx {
+  0% { opacity: 0; }
+  5.5% { opacity: 0; }
+  6% { opacity: 1; }
+  7.25% { opacity: 1; }
+  8.5% { opacity: 0; }
+  30% { opacity: 0; }
+  30.5% { opacity: 1; }
+  31.75% { opacity: 1; }
+  33% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-rxd {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  19% { opacity: 1; }
+  20.25% { opacity: 1; }
+  21.5% { opacity: 0; }
+  55% { opacity: 0; }
+  55.5% { opacity: 1; }
+  56.75% { opacity: 1; }
+  58% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-ack {
+  0% { transform: translate(280px, 238px); opacity: 0; }
+  10.25% { transform: translate(280px, 238px); opacity: 0; }
+  10.5% { opacity: 1; }
+  12% { transform: translate(247px, 238px); opacity: 1; }
+  12.25% { transform: translate(247px, 238px); opacity: 0; }
+  41.25% { transform: translate(280px, 238px); opacity: 0; }
+  41.5% { opacity: 1; }
+  43% { transform: translate(247px, 238px); opacity: 1; }
+  43.25% { transform: translate(247px, 238px); opacity: 0; }
+  61.75% { transform: translate(280px, 238px); opacity: 0; }
+  62% { opacity: 1; }
+  64.75% { transform: translate(214px, 238px); opacity: 1; }
+  65% { transform: translate(214px, 238px); opacity: 0; }
+  100% { transform: translate(214px, 238px); opacity: 0; }
+}
+@keyframes ic-ackx {
+  0% { opacity: 0; }
+  12% { opacity: 0; }
+  12.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  43% { opacity: 0; }
+  43.5% { opacity: 1; }
+  51% { opacity: 1; }
+  51.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-ackok {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  65.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-h1 {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.5% { opacity: 1; }
+  33.25% { opacity: 1; }
+  33.75% { opacity: 0; }
+  55% { opacity: 0; }
+  55.5% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-h2 {
+  0% { opacity: 0; }
+  5.5% { opacity: 0; }
+  6% { opacity: 1; }
+  8.5% { opacity: 1; }
+  9% { opacity: 0; }
+  18.5% { opacity: 0; }
+  19% { opacity: 1; }
+  20.75% { opacity: 1; }
+  21.25% { opacity: 0; }
+  33.25% { opacity: 0; }
+  33.75% { opacity: 1; }
+  36.5% { opacity: 1; }
+  37% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77% { opacity: 1; }
+  94.75% { opacity: 1; }
+  95.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-h3 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9% { opacity: 1; }
+  10% { opacity: 1; }
+  10.5% { opacity: 0; }
+  20.75% { opacity: 0; }
+  21.25% { opacity: 1; }
+  22% { opacity: 1; }
+  22.5% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  39.5% { opacity: 1; }
+  40% { opacity: 0; }
+  94.75% { opacity: 0; }
+  95.25% { opacity: 1; }
+  96% { opacity: 1; }
+  96.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-h4 {
+  0% { opacity: 0; }
+  10% { opacity: 0; }
+  10.5% { opacity: 1; }
+  12.25% { opacity: 1; }
+  12.75% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41% { opacity: 1; }
+  43.25% { opacity: 1; }
+  43.75% { opacity: 0; }
+  61% { opacity: 0; }
+  61.5% { opacity: 1; }
+  64.75% { opacity: 1; }
+  65.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-k2a {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  8.5% { opacity: 1; }
+  20.25% { opacity: 1; }
+  20.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-k3a {
+  0% { opacity: 0; }
+  9.75% { opacity: 0; }
+  10.25% { opacity: 1; }
+  21.5% { opacity: 1; }
+  22% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-k2b {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  21% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-k3b {
+  0% { opacity: 0; }
+  21.75% { opacity: 0; }
+  22.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-kc {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  95% { opacity: 0; }
+  95.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-k1x {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-skip {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-k4 {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  65.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-s1 {
+  0% { opacity: 0; }
+  21.5% { opacity: 0; }
+  22% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-s2 {
+  0% { opacity: 0; }
+  39% { opacity: 0; }
+  39.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-s4a {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.25% { opacity: 1; }
+  94.75% { opacity: 1; }
+  95.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-s4b {
+  0% { opacity: 0; }
+  95.25% { opacity: 0; }
+  96% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-w {
+  0% { transform: translate(498px, 190px); opacity: 0; }
+  6% { transform: translate(498px, 190px); opacity: 0; }
+  6.25% { opacity: 1; }
+  7.75% { transform: translate(546px, 190px); opacity: 1; }
+  8% { transform: translate(546px, 190px); opacity: 0; }
+  18.75% { transform: translate(498px, 190px); opacity: 0; }
+  19% { opacity: 1; }
+  20.5% { transform: translate(546px, 190px); opacity: 1; }
+  20.75% { transform: translate(546px, 190px); opacity: 0; }
+  30.75% { transform: translate(498px, 190px); opacity: 0; }
+  31% { opacity: 1; }
+  32.5% { transform: translate(546px, 190px); opacity: 1; }
+  32.75% { transform: translate(546px, 190px); opacity: 0; }
+  33.75% { transform: translate(498px, 190px); opacity: 0; }
+  34% { opacity: 1; }
+  35.5% { transform: translate(546px, 190px); opacity: 1; }
+  35.75% { transform: translate(546px, 190px); opacity: 0; }
+  55.25% { transform: translate(498px, 190px); opacity: 0; }
+  55.5% { opacity: 1; }
+  57% { transform: translate(546px, 190px); opacity: 1; }
+  57.25% { transform: translate(546px, 190px); opacity: 0; }
+  100% { transform: translate(546px, 190px); opacity: 0; }
+}
+@keyframes ic-pay1 {
+  0% { opacity: 0; }
+  7.75% { opacity: 0; }
+  8.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  95% { opacity: 0; }
+  95.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-pay1p {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-pay2 {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  21% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-fpay1 {
+  0% { opacity: 0; }
+  7.75% { opacity: 0; }
+  8% { opacity: 1; }
+  10% { opacity: 1; }
+  11.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-fpay2 {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  20.75% { opacity: 1; }
+  21.75% { opacity: 1; }
+  22.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-pm1 {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  95% { opacity: 0; }
+  95.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-pm1p {
+  0% { opacity: 0; }
+  32.5% { opacity: 0; }
+  33% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  95% { opacity: 1; }
+  95.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-pm2 {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  57.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-fdup {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  57.25% { opacity: 1; }
+  61% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-dupn {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-fcommit {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  38.75% { opacity: 1; }
+  41% { opacity: 1; }
+  42.5% { opacity: 0; }
+  95% { opacity: 0; }
+  95.25% { opacity: 1; }
+  95.75% { opacity: 1; }
+  96.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-txa {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.75% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  95% { opacity: 1; }
+  95.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-txl2 {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.75% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-txl4 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  95% { opacity: 1; }
+  95.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-txb {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  95% { opacity: 0; }
+  95.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-t0 {
+  0% { opacity: 1; }
+  7.75% { opacity: 1; }
+  8.25% { opacity: 0; }
+  23.5% { opacity: 0; }
+  25% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  95% { opacity: 1; }
+  95.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes ic-t40 {
+  0% { opacity: 0; }
+  7.75% { opacity: 0; }
+  8.25% { opacity: 1; }
+  20.5% { opacity: 1; }
+  21% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  95% { opacity: 0; }
+  95.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-t80 {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  21% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-twice {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  21.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-still {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  66.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-p1b {
+  0% { opacity: 0; }
+  12% { opacity: 0; }
+  13% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-p2c {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-p3a {
+  0% { opacity: 0; }
+  67% { opacity: 0; }
+  68% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-p3b {
+  0% { opacity: 0; }
+  69% { opacity: 0; }
+  70% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-p3c {
+  0% { opacity: 0; }
+  70.5% { opacity: 0; }
+  71.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-c1 {
+  0% { transform: translate(389px, 310px); opacity: 0; }
+  77% { transform: translate(389px, 310px); opacity: 0; }
+  77.25% { opacity: 1; }
+  77.918% { transform: translate(389px, 392px); }
+  80% { transform: translate(575px, 392px); opacity: 1; }
+  80.25% { transform: translate(575px, 392px); opacity: 0; }
+  100% { transform: translate(575px, 392px); opacity: 0; }
+}
+@keyframes ic-c2 {
+  0% { transform: translate(389px, 310px); opacity: 0; }
+  87% { transform: translate(389px, 310px); opacity: 0; }
+  87.25% { opacity: 1; }
+  87.918% { transform: translate(389px, 392px); }
+  90% { transform: translate(575px, 392px); opacity: 1; }
+  90.25% { transform: translate(575px, 392px); opacity: 0; }
+  100% { transform: translate(575px, 392px); opacity: 0; }
+}
+@keyframes ic-r1 {
+  0% { transform: translate(575px, 392px); opacity: 0; }
+  81.25% { transform: translate(575px, 392px); opacity: 0; }
+  81.5% { opacity: 1; }
+  82.75% { transform: translate(497px, 392px); opacity: 1; }
+  83% { transform: translate(497px, 392px); opacity: 0; }
+  100% { transform: translate(497px, 392px); opacity: 0; }
+}
+@keyframes ic-r2 {
+  0% { transform: translate(575px, 392px); opacity: 0; }
+  91.5% { transform: translate(575px, 392px); opacity: 0; }
+  91.75% { opacity: 1; }
+  93.582% { transform: translate(389px, 392px); }
+  94.5% { transform: translate(389px, 310px); opacity: 1; }
+  94.75% { transform: translate(389px, 310px); opacity: 0; }
+  100% { transform: translate(389px, 310px); opacity: 0; }
+}
+@keyframes ic-rx1 {
+  0% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.25% { opacity: 1; }
+  86.5% { opacity: 1; }
+  87% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-lost {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  83.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-retry {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  86.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-same {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-pk {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  80.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-fpk {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  80.25% { opacity: 1; }
+  82% { opacity: 1; }
+  83.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-fseen {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  90.25% { opacity: 1; }
+  92.5% { opacity: 1; }
+  94% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-c0 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  80% { opacity: 1; }
+  80.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ic-c1n {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  80.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ic-seen {
+  0% { opacity: 0; }
+  90.5% { opacity: 0; }
+  91.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- message broker: a queue that delivers at least once -->
+  <rect class="zone" x="40" y="100" width="166" height="200" rx="14"/>
+  <text class="tiny sb" x="54" y="120">message broker</text>
+  <rect class="box" x="48" y="144" width="150" height="44" rx="8"/>
+  <rect class="ev" x="52" y="155" width="44" height="22" rx="6"/><text class="evt mid mono" x="74" y="170">m-9c2</text>
+  <rect class="ev" x="101" y="155" width="44" height="22" rx="6"/><text class="evt mid mono" x="123" y="170">m-8a1</text>
+  <!-- the head of the queue, m-7f3: waiting, then delivered and unacknowledged, then gone -->
+  <g class="ic-hq"><rect class="ev" x="150" y="155" width="44" height="22" rx="6"/><text class="evt mid mono" x="172" y="170">m-7f3</text></g>
+  <g class="ic-hf"><rect class="f-purple-soft s-purple dash" x="151" y="156" width="42" height="20" rx="5" stroke-width="1.5"/><text class="cell mid mono b f-purple" x="172" y="170">m-7f3</text></g>
+  <rect class="none s-amber ic-hw" x="147.5" y="152.5" width="49" height="27" rx="8" stroke-width="2"/>
+  <text class="tiny mid mono" x="123" y="206">queue: payments</text>
+  <text class="tiny mid ic-bsa" x="123" y="236">waiting for the ack…</text>
+  <text class="tiny mid sb f-amber-ink ic-bsb" x="123" y="236">no ack: deliver again</text>
+  <text class="tiny mid sb f-green ic-bsc" x="123" y="236">✓ acked: removed</text>
+  <text class="tiny mid" x="123" y="284">delivers at least once</text>
+
+  <!-- broker to consumer: delivery, and the acknowledgement on its way back -->
+  <line class="wire" x1="198" y1="166" x2="285" y2="166" marker-end="url(#ah)"/>
+  <line class="wire dash" x1="286" y1="238" x2="208" y2="238" marker-end="url(#ah)"/>
+  <text class="tiny mid" x="246" y="186">charge $40</text>
+  <text class="tiny mid" x="247" y="226">ack</text>
+  <text class="tiny mid sb f-amber-ink ic-again" x="246" y="150">redelivery</text>
+  <g class="ic-ackx">
+    <circle class="f-red" cx="247" cy="238" r="8"/>
+    <path class="none s-bg" d="M243.5 234.5l7 7M250.5 234.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+    <text class="tiny mid sb f-red" x="247" y="262">ack lost</text>
+  </g>
+  <g class="ic-ackok">
+    <circle class="f-green" cx="232" cy="238" r="8"/>
+    <path class="none s-bg" d="M228 238l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- the consumer: Payments service and its message handler -->
+  <rect class="box" x="286" y="100" width="206" height="200" rx="12"/>
+  <rect class="none s-purple ic-rx" x="286" y="100" width="206" height="200" rx="12" stroke-width="2.5"/>
+  <rect class="none s-amber ic-rxd" x="286" y="100" width="206" height="200" rx="12" stroke-width="2.5"/>
+  <text class="label mid" x="389" y="124">Payments service</text>
+  <text class="sub mid" x="389" y="140">consumer</text>
+  <line class="s-line" x1="300" y1="150" x2="478" y2="150" stroke-width="1"/>
+  <rect class="f-blue-soft ic-h1" x="294" y="156" width="190" height="20" rx="6"/>
+  <rect class="f-blue-soft ic-h2" x="294" y="180" width="190" height="20" rx="6"/>
+  <rect class="f-blue-soft ic-h3" x="294" y="204" width="190" height="20" rx="6"/>
+  <rect class="f-blue-soft ic-h4" x="294" y="228" width="190" height="20" rx="6"/>
+  <g class="p1">
+    <rect class="none s-red dash" x="294.75" y="156.75" width="188.5" height="18.5" rx="6" stroke-width="1"/>
+    <text class="tiny f-red" x="306" y="170">no check for duplicates</text>
+  </g>
+  <g class="p234"><text class="tiny f-ink" x="306" y="170">insert message ID</text></g>
+  <g class="p2"><rect class="f-green" x="424" y="159" width="32" height="14" rx="7"/><text class="badge mid f-bg" x="440" y="169.3">NEW</text></g>
+  <g class="p123"><text class="tiny f-ink" x="306" y="194">apply the charge</text></g>
+  <g class="p4"><text class="tiny f-ink" x="306" y="194">charge via the provider</text></g>
+  <text class="tiny f-ink" x="306" y="218">commit</text>
+  <text class="tiny f-ink" x="306" y="242">acknowledge</text>
+  <!-- marks at the end of each line -->
+  <text class="tiny mid b f-green ic-k2a" x="472" y="194">✓</text>
+  <text class="tiny mid b f-green ic-k3a" x="472" y="218">✓</text>
+  <text class="tiny end b f-red ic-k2b" x="480" y="194">×2</text>
+  <text class="tiny end b f-red ic-k3b" x="480" y="218">×2</text>
+  <g class="ic-kc">
+    <text class="tiny mid b f-green" x="472" y="170">✓</text>
+    <text class="tiny mid b f-green" x="472" y="194">✓</text>
+    <text class="tiny mid b f-green" x="472" y="218">✓</text>
+  </g>
+  <text class="tiny end sb f-amber-ink ic-k1x" x="480" y="170">duplicate</text>
+  <g class="ic-skip">
+    <rect class="f-panel" x="294" y="180" width="190" height="44" opacity="0.72"/>
+    <text class="tiny end sb f-amber-ink" x="480" y="194">skipped</text>
+    <text class="tiny end sb f-amber-ink" x="480" y="218">skipped</text>
+  </g>
+  <text class="tiny mid b f-green ic-k4" x="472" y="242">✓</text>
+  <text class="tiny mid sb f-red ic-s1" x="389" y="278">✕ m-7f3 handled twice</text>
+  <text class="tiny mid sb f-green ic-s2" x="389" y="278">✓ m-7f3 handled once</text>
+  <text class="tiny mid sb f-amber-ink ic-s4a" x="389" y="278">no response: call again</text>
+  <text class="tiny mid sb f-green ic-s4b" x="389" y="278">✓ charged once, committed</text>
+
+  <!-- the consumer's own database: payments (the effect) and processed_messages (the memory) -->
+  <line class="wire" x1="492" y1="190" x2="551" y2="190" marker-end="url(#ah)"/>
+  <rect class="box" x="552" y="100" width="374" height="200" rx="14"/>
+  <path class="f-teal-soft s-teal" d="M566 112v13a8 3 0 0 0 16 0v-13" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="574" cy="112" rx="8" ry="3" stroke-width="1.5"/>
+  <text class="label" x="590" y="125">Payments database</text>
+
+  <text class="tname mono" x="568" y="156">payments</text>
+  <rect class="f-panel-2" x="568" y="162" width="161" height="20" rx="4"/>
+  <text class="th" x="578" y="176">order</text>
+  <text class="th" x="640" y="176">amount</text>
+  <g class="ic-pay1p">
+    <rect class="f-bg s-line dash" x="568" y="184" width="161" height="24" rx="4" stroke-width="1.5"/>
+    <text class="cell mono f-faint" x="578" y="200">1042</text>
+    <text class="cell mono f-faint" x="640" y="200">$40</text>
+  </g>
+  <g class="ic-pay1">
+    <rect class="f-teal-soft s-teal" x="568" y="184" width="161" height="24" rx="4" stroke-width="1"/>
+    <text class="cell mono" x="578" y="200">1042</text>
+    <text class="cell mono" x="640" y="200">$40</text>
+  </g>
+  <g class="ic-pay2">
+    <rect class="f-red-soft s-red" x="568" y="210" width="161" height="24" rx="4" stroke-width="1"/>
+    <text class="cell mono" x="578" y="226">1042</text>
+    <text class="cell mono" x="640" y="226">$40</text>
+    <text class="tiny end sb f-red" x="721" y="226">again</text>
+  </g>
+  <rect class="none s-teal ic-fpay1" x="568" y="184" width="161" height="24" rx="4" stroke-width="2.5"/>
+  <rect class="none s-red ic-fpay2" x="568" y="210" width="161" height="24" rx="4" stroke-width="2.5"/>
+  <text class="tiny" x="568" y="266">total charged</text>
+  <text class="big mono end f-faint ic-t0" x="729" y="269">$0</text>
+  <text class="big mono end ic-t40" x="729" y="269">$40</text>
+  <text class="big mono end f-red ic-t80" x="729" y="269">$80</text>
+  <text class="tiny sb f-red ic-twice" x="568" y="286">✕ charged twice</text>
+  <text class="tiny sb f-green ic-still" x="568" y="286">✓ still $40</text>
+
+  <g class="p1">
+    <rect class="none s-line dash" x="749.75" y="150.75" width="159.5" height="82.5" rx="6" stroke-width="1.5"/>
+    <text class="tiny mid f-red" x="829.5" y="188">no record of the</text>
+    <text class="tiny mid f-red" x="829.5" y="204">messages it handled</text>
+  </g>
+  <g class="p234">
+    <text class="tname mono" x="749" y="156">processed_messages</text>
+    <rect class="f-panel-2" x="749" y="162" width="161" height="20" rx="4"/>
+    <text class="th" x="759" y="176">message_id</text>
+    <rect class="f-bg s-teal" x="857" y="166" width="46" height="12" rx="6" stroke-width="1"/>
+    <text class="badge mid f-teal" x="880" y="175.3">UNIQUE</text>
+  </g>
+  <g class="ic-pm1p">
+    <rect class="f-bg s-line dash" x="749" y="184" width="161" height="24" rx="4" stroke-width="1.5"/>
+    <text class="cell mono f-faint" x="759" y="200">m-7f3</text>
+  </g>
+  <g class="ic-pm1">
+    <rect class="f-teal-soft s-teal" x="749" y="184" width="161" height="24" rx="4" stroke-width="1"/>
+    <text class="cell mono" x="759" y="200">m-7f3</text>
+  </g>
+  <g class="ic-pm2">
+    <rect class="f-red-soft s-red dash" x="749" y="210" width="161" height="24" rx="4" stroke-width="1.5"/>
+    <text class="cell mono" x="759" y="226">m-7f3</text>
+    <text class="tiny end sb f-red" x="902" y="226">✕ duplicate key</text>
+  </g>
+  <rect class="none s-amber ic-fdup" x="749" y="184" width="161" height="24" rx="4" stroke-width="2.5"/>
+  <g class="p24">
+    <text class="tiny" x="749" y="266">one row for each message</text>
+    <text class="tiny" x="749" y="282">that has been handled</text>
+  </g>
+  <g class="ic-dupn">
+    <text class="tiny sb f-amber-ink" x="749" y="266">already handled:</text>
+    <text class="tiny sb f-amber-ink" x="749" y="282">skip the work</text>
+  </g>
+  <g class="ic-fcommit">
+    <rect class="none s-teal" x="568" y="184" width="161" height="24" rx="4" stroke-width="2.5"/>
+    <rect class="none s-teal" x="749" y="184" width="161" height="24" rx="4" stroke-width="2.5"/>
+  </g>
+
+  <!-- one local transaction around both tables -->
+  <rect class="none s-blue dash ic-txa" x="560" y="140" width="358" height="102" rx="10" stroke-width="1.5"/>
+  <rect class="none s-green ic-txb" x="560" y="140" width="358" height="102" rx="10" stroke-width="2"/>
+  <g class="ic-txl2"><rect class="f-panel" x="806" y="133" width="106" height="14" rx="3"/><text class="tiny end sb f-blue" x="908" y="144">one transaction</text></g>
+  <g class="ic-txl4"><rect class="f-panel" x="770" y="133" width="142" height="14" rx="3"/><text class="tiny end sb f-blue" x="908" y="144">local transaction, open</text></g>
+  <g class="ic-txb"><rect class="f-panel" x="764" y="133" width="148" height="14" rx="3"/><text class="tiny end sb f-green" x="908" y="144">✓ committed together</text></g>
+
+  <!-- step 1: why the broker repeats itself -->
+  <g class="p1">
+    <rect class="f-panel s-line" x="40" y="322" width="886" height="140" rx="12" stroke-width="1"/>
+    <text class="legend" x="56" y="345">AT-LEAST-ONCE DELIVERY</text>
+    <text class="sub sb f-ink" x="56" y="372">The broker removes a message only when it gets the ack.</text>
+    <text class="tiny" x="56" y="392">No ack in time (a crash, a timeout) and it delivers the message again.</text>
+    <text class="tiny" x="56" y="420">It would rather repeat a message than lose one,</text>
+    <text class="tiny" x="56" y="436">so every consumer has to expect duplicates.</text>
+    <text class="legend" x="490" y="345">WHAT THE BROKER SEES</text>
+    <rect class="f-bg s-line" x="490" y="356" width="420" height="24" rx="6" stroke-width="1"/>
+    <text class="tiny f-ink" x="502" y="372">the handler crashed before it could commit</text>
+    <text class="tiny end mono sb f-amber-ink" x="898" y="372">no ack</text>
+    <rect class="f-bg s-line" x="490" y="384" width="420" height="24" rx="6" stroke-width="1"/>
+  </g>
+  <rect class="f-red-soft s-red ic-p1b" x="490" y="384" width="420" height="24" rx="6" stroke-width="1.5"/>
+  <g class="p1">
+    <text class="tiny f-ink" x="502" y="400">the handler committed, but its ack was lost</text>
+    <text class="tiny end mono sb f-amber-ink" x="898" y="400">no ack</text>
+    <text class="tiny" x="490" y="430">Both look the same from the broker's side,</text>
+    <text class="tiny" x="490" y="446">so it has to deliver the message again.</text>
+  </g>
+  <text class="tiny end sb f-red ic-p1b" x="842" y="400">this time</text>
+
+  <!-- step 2: why the ID and the charge must share one transaction -->
+  <g class="p2">
+    <rect class="f-panel s-line" x="40" y="322" width="886" height="140" rx="12" stroke-width="1"/>
+    <text class="legend" x="56" y="345">WHY THE ID AND THE CHARGE SHARE ONE TRANSACTION</text>
+    <rect class="f-bg s-line" x="56" y="354" width="854" height="24" rx="6" stroke-width="1"/>
+    <rect class="f-bg s-line" x="56" y="382" width="854" height="24" rx="6" stroke-width="1"/>
+    <rect class="f-bg s-line" x="56" y="410" width="854" height="24" rx="6" stroke-width="1"/>
+  </g>
+  <rect class="f-green-soft s-green ic-p2c" x="56" y="410" width="854" height="24" rx="6" stroke-width="1.5"/>
+  <g class="p2">
+    <text class="tiny sb f-ink" x="68" y="370">ID saved first, charge second</text>
+    <text class="tiny" x="270" y="370">a crash in between: the redelivery is skipped, and the charge never happens</text>
+    <text class="tiny mid b f-red" x="892" y="370">✕</text>
+    <text class="tiny sb f-ink" x="68" y="398">charge saved first, ID second</text>
+    <text class="tiny" x="270" y="398">a crash in between: the redelivery finds no ID and charges a second time</text>
+    <text class="tiny mid b f-red" x="892" y="398">✕</text>
+    <text class="tiny sb f-ink" x="68" y="426">both in one transaction</text>
+    <text class="tiny" x="270" y="426">a crash leaves both saved or neither, so a redelivery is always handled correctly</text>
+    <text class="tiny" x="56" y="452">The acknowledgement is not part of the transaction: it can still be lost after the commit.</text>
+  </g>
+  <text class="tiny mid b f-green ic-p2c" x="892" y="426">✓</text>
+
+  <!-- step 3: two consumers racing on the same message -->
+  <g class="p3">
+    <rect class="f-panel s-line" x="40" y="322" width="886" height="140" rx="12" stroke-width="1"/>
+    <text class="legend" x="56" y="345">A RACE IS SETTLED THE SAME WAY</text>
+    <text class="tiny" x="56" y="366">A slow consumer still holds m-7f3 when the broker times out and hands it to a second one.</text>
+    <rect class="f-bg s-line" x="56" y="376" width="854" height="24" rx="6" stroke-width="1"/>
+    <rect class="f-bg s-line" x="56" y="404" width="854" height="24" rx="6" stroke-width="1"/>
+  </g>
+  <rect class="f-green-soft s-green ic-p3a" x="56" y="376" width="854" height="24" rx="6" stroke-width="1.5"/>
+  <rect class="f-amber-soft s-amber ic-p3b" x="56" y="404" width="854" height="24" rx="6" stroke-width="1.5"/>
+  <g class="p3">
+    <text class="tiny sb f-ink" x="68" y="392">consumer A</text>
+    <text class="cell mono" x="150" y="392">INSERT m-7f3</text>
+    <text class="tiny sb f-ink" x="68" y="420">consumer B</text>
+    <text class="cell mono" x="150" y="420">INSERT m-7f3</text>
+  </g>
+  <text class="tiny ic-p3a" x="262" y="392"><tspan class="b f-green">✓ first:</tspan> it applies the charge and commits</text>
+  <text class="tiny ic-p3b" x="262" y="420">waits for A's commit, then <tspan class="b f-red">✕ duplicate key:</tspan> it skips the work and acknowledges</text>
+  <text class="tiny sb f-ink ic-p3c" x="56" y="448">The unique key is the arbiter: exactly one insert wins.</text>
+
+  <!-- step 4: a payment provider, outside the local transaction -->
+  <g class="p4">
+    <rect class="f-panel s-line" x="40" y="322" width="320" height="140" rx="12" stroke-width="1"/>
+    <text class="legend" x="56" y="345">OUTSIDE THE LOCAL TRANSACTION</text>
+    <text class="tiny" x="56" y="370">A rollback undoes the ID and the payment row.</text>
+    <text class="tiny" x="56" y="388">It cannot undo the provider's charge.</text>
+    <text class="tiny" x="56" y="414">So the call can happen twice, and must be</text>
+    <text class="tiny" x="56" y="430">safe to repeat: same key, same result.</text>
+    <path class="wire" d="M389 300V392H599" marker-end="url(#ah)"/>
+    <text class="tiny mid mono" x="497" y="360">POST /charges</text>
+    <text class="tiny mid mono f-ink" x="497" y="376">Idempotency-Key: m-7f3</text>
+    <rect class="box" x="600" y="322" width="326" height="140" rx="12"/>
+    <text class="label" x="616" y="346">Payment provider</text>
+    <text class="sub end" x="910" y="346">external API</text>
+    <rect class="f-panel-2" x="616" y="356" width="294" height="20" rx="4"/>
+    <text class="th" x="626" y="370">Idempotency-Key</text>
+    <text class="th" x="760" y="370">first result, stored</text>
+    <text class="tiny" x="616" y="424">charges made</text>
+  </g>
+  <g class="ic-pk">
+    <rect class="f-teal-soft s-teal" x="616" y="378" width="294" height="24" rx="4" stroke-width="1"/>
+    <text class="cell mono" x="626" y="394">m-7f3</text>
+    <text class="cell mono" x="760" y="394">charge ch_81 · $40</text>
+  </g>
+  <rect class="none s-teal ic-fpk" x="616" y="378" width="294" height="24" rx="4" stroke-width="2.5"/>
+  <rect class="none s-amber ic-fseen" x="616" y="378" width="294" height="24" rx="4" stroke-width="2.5"/>
+  <text class="cell mono b f-faint ic-c0" x="702" y="424">0</text>
+  <text class="cell mono b ic-c1n" x="702" y="424">1</text>
+  <g class="ic-seen">
+    <text class="tiny sb f-green" x="724" y="424">✓ still 1</text>
+    <text class="tiny sb f-amber-ink" x="616" y="446">key seen before: returns the stored result</text>
+  </g>
+  <g class="ic-rx1">
+    <circle class="f-red" cx="497" cy="392" r="8"/>
+    <path class="none s-bg" d="M493.5 388.5l7 7M500.5 388.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <text class="tiny mid sb f-red ic-lost" x="497" y="414">✕ response lost</text>
+  <text class="tiny mid sb f-amber-ink ic-retry" x="497" y="430">retry with the same key</text>
+  <text class="tiny mid sb f-green ic-same" x="497" y="446">✓ first result returned</text>
+
+  <!-- tokens -->
+  <circle class="pkt f-teal ic-w" r="6"/>
+  <circle class="pkt f-green ic-ack" r="6"/>
+  <g class="ic-m1"><rect class="ev" x="-22" y="-10" width="44" height="20" rx="6"/><text class="evt mid mono" y="4">m-7f3</text></g>
+  <g class="ic-m2"><rect class="ev dup" x="-22" y="-10" width="44" height="20" rx="6"/><text class="evt mid mono" y="4">m-7f3</text></g>
+  <g class="ic-c1"><rect class="pkt f-blue" x="-22" y="-9" width="44" height="18" rx="9"/><text class="evt mid mono" y="4">m-7f3</text></g>
+  <g class="ic-c2"><rect class="f-blue s-amber" x="-22" y="-9" width="44" height="18" rx="9" stroke-width="2.5"/><text class="evt mid mono" y="4">m-7f3</text></g>
+  <g class="ic-r1"><rect class="pkt f-green" x="-22" y="-9" width="44" height="18" rx="9"/><text class="evt mid mono" y="4">ch_81</text></g>
+  <g class="ic-r2"><rect class="pkt f-green" x="-22" y="-9" width="44" height="18" rx="9"/><text class="evt mid mono" y="4">ch_81</text></g>
+</g>
+</svg>

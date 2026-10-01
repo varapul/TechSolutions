@@ -1,0 +1,39 @@
+{
+  "aka": ["Idempotent Receiver", "Inbox pattern", "Message deduplication"],
+  "steps": [
+    {
+      "title": "Why duplicates arrive",
+      "caption": "At-least-once: the ack for m-7f3 is lost, the broker delivers it again, and $40 is charged twice.",
+      "body": "The broker removes a message only when the consumer acknowledges it. Payments handles `m-7f3` (charge $40) and commits, but the acknowledgement is lost (a crash or a timeout before it reaches the broker), so the broker delivers `m-7f3` again: delivery is **at-least-once**. Nothing tells the handler that it has seen this message before, so the customer is charged twice: $80 instead of $40."
+    },
+    {
+      "title": "Save the ID with the work",
+      "caption": "One transaction inserts the message ID and applies the charge: both commit, or neither does.",
+      "body": "The handler opens a transaction, inserts `m-7f3` into `processed_messages` (a table with a single unique column, `message_id`), applies the charge and commits; only then does it acknowledge. The marker and the charge are saved together or not at all: saved separately, a crash between the two writes would either skip the charge for good or repeat it. The acknowledgement is not part of the transaction, so it can still be lost, as it is here."
+    },
+    {
+      "title": "Redelivery changes nothing",
+      "caption": "m-7f3 arrives again: the insert hits the unique key, so the handler skips the work and just acks.",
+      "body": "With the acknowledgement lost, the broker delivers `m-7f3` again. This time the insert violates the unique key, which tells the handler that the work is already committed: it skips the charge and just acknowledges, so the total stays at $40. Two consumers racing on the same message are settled the same way: the database lets one insert win, and the other gets the duplicate-key error and skips."
+    },
+    {
+      "title": "Beyond your own database",
+      "caption": "The provider gets the message ID as an idempotency key, so a repeated call returns the first result.",
+      "body": "The handler also calls a payment provider, and no local transaction covers that call: if the response is lost or the handler crashes before it commits, the call is made again. So the handler sends the message ID as an **idempotency key**, and the provider recognises the repeat and returns the result of the first call instead of charging again. Where you can, prefer operations that are naturally idempotent (set a value, upsert) to ones that are not (add $40), and expire stored IDs once the broker can no longer redeliver the message."
+    }
+  ],
+  "related": ["transactional-outbox", "dead-letter-queue", "retry-with-backoff", "saga-orchestration", "event-driven-architecture", "competing-consumers", "event-sourcing", "serverless"],
+  "references": [
+    { "title": "Enterprise Integration Patterns — Idempotent Receiver", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html" },
+    { "title": "Chris Richardson — Pattern: Idempotent Consumer (microservices.io)", "url": "https://microservices.io/patterns/communication-style/idempotent-consumer.html" },
+    { "title": "Amazon Builders' Library — Making retries safe with idempotent APIs", "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/" },
+    { "title": "Amazon SQS Developer Guide — Exactly-once processing in Amazon SQS (FIFO queues)", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html" },
+    { "title": "Microsoft Learn — Azure Service Bus duplicate message detection", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/duplicate-detection" },
+    { "title": "Google Cloud — Pub/Sub exactly-once delivery", "url": "https://docs.cloud.google.com/pubsub/docs/exactly-once-delivery" },
+    { "title": "Apache Kafka 4.3 documentation — Design: Message Delivery Semantics", "url": "https://kafka.apache.org/43/design/design/#message-delivery-semantics" },
+    { "title": "Stripe API reference — Idempotent requests", "url": "https://docs.stripe.com/api/idempotent_requests" },
+    { "title": "IETF HTTPAPI WG — The Idempotency-Key HTTP Header Field (draft-ietf-httpapi-idempotency-key-header, an expired Internet-Draft)", "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" },
+    { "title": "PostgreSQL documentation — INSERT (ON CONFLICT clause)", "url": "https://www.postgresql.org/docs/current/sql-insert.html" },
+    { "title": "Powertools for AWS Lambda (Python) — Idempotency", "url": "https://docs.aws.amazon.com/powertools/python/latest/utilities/idempotency/" }
+  ]
+}

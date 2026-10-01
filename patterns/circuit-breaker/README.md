@@ -54,7 +54,7 @@ A circuit breaker wraps calls to a dependency and watches their outcomes. It is 
 - Timeout & Fallback *(planned)* — Bound every remote call and degrade gracefully when the time runs out.
 - Bulkhead *(planned)* — Give each dependency its own pool of resources so one failure can't sink the whole ship.
 - Health Endpoint Monitoring *(planned)* — Expose liveness and readiness checks that load balancers and monitors probe.
-- Service Mesh *(planned)* — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
+- [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 
 ## References
 

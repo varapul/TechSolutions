@@ -1,0 +1,38 @@
+{
+  "aka": ["Parallel Change"],
+  "steps": [
+    {
+      "title": "One-step rename breaks",
+      "caption": "Rename phone in one step: every v1 instance still running fails, and redeploying v1 cannot fix it.",
+      "body": "One release renames `phone` to `phone_number` and ships v2, which uses the new name. The rename takes effect at once, but instances are replaced one at a time, so every instance still on v1 asks for a column that no longer exists and its queries fail with an unknown-column error. Rolling the application back does not help: v1 needs the old column, and the schema has already moved on. The same happens to anything else that reads the table, such as reports, batch jobs and other services."
+    },
+    {
+      "title": "Expand",
+      "caption": "Expand: add phone_number beside phone, then roll out v1.1, which writes both. v1 keeps working.",
+      "body": "Start again from the original table. First add `phone_number` as a nullable column beside `phone`: a quick, additive change that v1 simply ignores. Then roll out v1.1, which writes every value to **both** columns and still reads `phone`. v1 and v1.1 run side by side on this schema, and the way back is to redeploy v1. New rows now carry both values, while the older rows still hold `NULL` in the new column."
+    },
+    {
+      "title": "Migrate",
+      "caption": "Migrate: backfill the old rows in batches, compare the columns, then switch reads to phone_number.",
+      "body": "A backfill copies `phone` into `phone_number` for the existing rows, in small batches with pauses between them, so that no single statement locks every row at once. Once a comparison shows that the two columns agree on every row, v1.2 switches the reads to `phone_number` (a small release or, better, a [feature flag](../feature-flags/)) and keeps writing both. Because the old column is still kept up to date, going back is just switching the reads back."
+    },
+    {
+      "title": "Contract",
+      "caption": "Contract: v2 stops writing phone, then a later release drops it. Only the drop cannot be undone.",
+      "body": "Once nothing reads `phone`, v2 stops writing it, and once nothing reads or writes it, a later release drops the column. Every earlier step kept the previous version working and could be undone; the drop is the only destructive step, so it comes last and on its own. v2 is the same version that broke in step 1: the destination has not changed, only the route to it."
+    }
+  ],
+  "related": ["blue-green-deployment", "canary-release", "rolling-update", "feature-flags", "strangler-fig", "branch-by-abstraction", "parallel-run", "anti-corruption-layer"],
+  "references": [
+    { "title": "Danilo Sato — Parallel Change (martinfowler.com)", "url": "https://martinfowler.com/bliki/ParallelChange.html" },
+    { "title": "Pramod Sadalage and Martin Fowler — Evolutionary Database Design", "url": "https://martinfowler.com/articles/evodb.html" },
+    { "title": "Scott Ambler and Pramod Sadalage — Refactoring Databases (book site and catalog)", "url": "https://databaserefactoring.com/" },
+    { "title": "PostgreSQL documentation — ALTER TABLE", "url": "https://www.postgresql.org/docs/current/sql-altertable.html" },
+    { "title": "PostgreSQL documentation — CREATE INDEX (building indexes concurrently)", "url": "https://www.postgresql.org/docs/current/sql-createindex.html" },
+    { "title": "gh-ost — GitHub's online schema migration tool for MySQL", "url": "https://github.com/github/gh-ost" },
+    { "title": "pgroll — PostgreSQL zero-downtime migrations made easy", "url": "https://github.com/xataio/pgroll" },
+    { "title": "Stripe — Online migrations at scale", "url": "https://stripe.com/blog/online-migrations" },
+    { "title": "RFC 8594 — The Sunset HTTP Header Field", "url": "https://www.rfc-editor.org/rfc/rfc8594.html" },
+    { "title": "RFC 9745 — The Deprecation HTTP Response Header Field", "url": "https://www.rfc-editor.org/rfc/rfc9745.html" }
+  ]
+}
