@@ -1,0 +1,38 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Append, don't overwrite",
+      "caption": "Withdraw 30: the handler checks balance 70, then appends event #4. Nothing is updated or deleted.",
+      "body": "A `Withdraw 30` **command** arrives for one aggregate, bank account 42. The handler loads the account's stream, checks the rule against the current state (balance 70 covers 30) and **appends** a new event, `#4 Withdrew 30`, with the version it expects the stream to be at (3): if another writer appended first, the store rejects the append and the command is retried. Nothing is updated or deleted, whereas the CRUD way, `UPDATE accounts SET balance = 40`, keeps only the latest value and loses the story."
+    },
+    {
+      "title": "Replay to rebuild state",
+      "caption": "Replay #1 to #4 and the balance goes 0, 100, 70, 40. A snapshot at version 4 shortens later loads.",
+      "body": "Current state is **derived**, a fold over the events: replaying #1 to #4 takes the balance through 0, 100, 70 and 40. A **snapshot** (balance 40 at version 4) shortens the next load to the latest snapshot plus the events after it. Snapshots are an optimisation: throw one away and the replay still gives the same answer."
+    },
+    {
+      "title": "Project and subscribe",
+      "caption": "The same events feed read models and other subscribers; a view added later replays from #1.",
+      "body": "The same events feed **read models** (an account summary, a monthly statement) and other subscribers, such as fraud checks and notifications. A brand-new read model added later replays from event #1 and gets the whole history. Projections are disposable and the log is the source of truth, but they lag a little behind the stream (eventual consistency): this is the read side of [CQRS](../cqrs/)."
+    },
+    {
+      "title": "Correct by appending",
+      "caption": "A mistaken deposit is reversed by appending #6, not edited. History still answers: 70 as of #3.",
+      "body": "A mistaken deposit, `#5 Deposited 500`, is not edited or deleted. A **compensating event**, `#6 DepositReversed 500`, is appended instead, so the audit trail shows both the error and the fix, and the balance is 40 again. Because history is kept, you can also ask about the past: replaying only #1 to #3 gives the balance as of event #3, which was 70."
+    }
+  ],
+  "related": ["cqrs", "materialized-view", "change-data-capture", "transactional-outbox", "event-driven-architecture", "compensating-transaction", "idempotent-consumer"],
+  "references": [
+    { "title": "Martin Fowler — Event Sourcing (2005)", "url": "https://martinfowler.com/eaaDev/EventSourcing.html" },
+    { "title": "Martin Fowler — What do you mean by \"Event-Driven\"?", "url": "https://martinfowler.com/articles/201701-event-driven.html" },
+    { "title": "Greg Young — CQRS Documents (2010, PDF)", "url": "https://cqrs.wordpress.com/wp-content/uploads/2010/11/cqrs_documents.pdf" },
+    { "title": "Greg Young — Versioning in an Event Sourced System", "url": "https://leanpub.com/read/esversioning" },
+    { "title": "Azure Architecture Center — Event Sourcing pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing" },
+    { "title": "microservices.io — Pattern: Event sourcing", "url": "https://microservices.io/patterns/data/event-sourcing.html" },
+    { "title": "AWS Prescriptive Guidance — Event sourcing pattern", "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/event-sourcing-pattern.html" },
+    { "title": "Kurrent Docs — KurrentDB concepts: events, streams and optimistic concurrency", "url": "https://docs.kurrent.io/getting-started/concepts" },
+    { "title": "Marten — Appending Events", "url": "https://martendb.io/events/appending.html" },
+    { "title": "Martin Kleppmann — Designing Data-Intensive Applications", "url": "https://dataintensive.net/" }
+  ]
+}

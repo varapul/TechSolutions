@@ -1,0 +1,41 @@
+{
+  "aka": ["FaaS", "Functions as a Service"],
+  "steps": [
+    {
+      "title": "An event starts a function",
+      "caption": "Nothing runs until an event arrives: the platform cold-starts an instance and runs the handler.",
+      "body": "With no traffic there are **0 instances** and no compute is billed. When an event arrives, the platform creates an execution environment, which is a **cold start**: it fetches the code, starts the runtime and runs your initialisation code. Then it runs the handler and returns the result, and you pay for the request and for the time the code ran."
+    },
+    {
+      "title": "Warm reuse, then scale out",
+      "caption": "The next event reuses the warm instance. A burst gets one instance per event, up to a limit.",
+      "body": "The next event finds that instance **warm** and goes straight to the handler. When six events arrive at once, the platform starts more instances in parallel: in the classic model one instance handles one request at a time, so six concurrent events need six instances. Scaling stops at a **concurrency limit**, and invocations beyond it are throttled."
+    },
+    {
+      "title": "State lives outside",
+      "caption": "Instances keep no state: they use managed services. A failed async event is retried, then parked.",
+      "body": "Instances are ephemeral: memory and local disk may not survive between invocations, so anything worth keeping goes to a database, object storage or a queue. For asynchronous sources the platform **retries** a failed invocation and then routes the event to a **dead-letter queue** or failure destination. Because of those retries the same event can be delivered more than once, so handlers must be **idempotent**."
+    },
+    {
+      "title": "Scale to zero",
+      "caption": "Traffic stops and idle instances are reclaimed: zero instances and zero compute cost.",
+      "body": "When the traffic stops, idle instances stay warm for a while and are then reclaimed: back to **0 instances** and no compute cost. The price is that the next event pays a cold start again. Keeping instances provisioned (minimum instances, provisioned concurrency) removes that delay for a fee."
+    }
+  ],
+  "related": ["event-driven-architecture", "autoscaling", "microservices", "web-queue-worker", "api-gateway", "queue-based-load-leveling", "dead-letter-queue", "idempotent-consumer"],
+  "references": [
+    { "title": "Mike Roberts — Serverless Architectures (martinfowler.com)", "url": "https://martinfowler.com/articles/serverless.html" },
+    { "title": "AWS Lambda — Understanding the Lambda execution environment lifecycle", "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html" },
+    { "title": "AWS Lambda — Understanding Lambda function scaling", "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html" },
+    { "title": "AWS Lambda — Understanding retry behavior in Lambda", "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-retries.html" },
+    { "title": "Azure Functions — Hosting options", "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale" },
+    { "title": "Azure Functions — Error handling and retries", "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-error-pages" },
+    { "title": "Google Cloud — About instance autoscaling in Cloud Run services", "url": "https://docs.cloud.google.com/run/docs/about-instance-autoscaling" },
+    { "title": "Google Cloud — Compare Cloud Run functions", "url": "https://docs.cloud.google.com/run/docs/functions/comparison" },
+    { "title": "Knative — Configuring scale to zero", "url": "https://knative.dev/docs/serving/autoscaling/scale-to-zero/" },
+    { "title": "KEDA — KEDA Concepts", "url": "https://keda.sh/docs/latest/concepts/" },
+    { "title": "Jonas et al. — Cloud Programming Simplified: A Berkeley View on Serverless Computing (2019)", "url": "https://arxiv.org/abs/1902.03383" },
+    { "title": "CNCF Serverless Working Group — Serverless Whitepaper v1.0", "url": "https://github.com/cncf/wg-serverless/tree/master/whitepapers/serverless-overview" },
+    { "title": "AWS Well-Architected Framework — Serverless Applications Lens", "url": "https://docs.aws.amazon.com/wellarchitected/latest/serverless-applications-lens/welcome.html" }
+  ]
+}

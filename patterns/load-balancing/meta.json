@@ -1,0 +1,43 @@
+{
+  "aka": ["Load balancer", "Server load balancing"],
+  "steps": [
+    {
+      "title": "Spread the requests",
+      "caption": "Round robin deals requests to A, B and C in turn. Clients see one address, never an instance.",
+      "body": "Clients send every request to **one address**, and the load balancer picks an instance for each one. **Round robin** hands them to A, B and C in turn, so each of the three identical, stateless instances gets a third. Instances can be added, replaced or removed behind that address without clients noticing."
+    },
+    {
+      "title": "Pick the least busy",
+      "caption": "Slow requests pile up on B. Least connections sends each new request to the fewest in flight.",
+      "body": "Requests are not equal. A few slow ones land on B, and round robin keeps giving B every third request, so its in-flight count climbs. **Least connections** (for HTTP, *least outstanding requests*) sends each new request to the instance with the fewest in flight, and the counts even out. **The power of two choices** gets most of that benefit by comparing just two randomly picked instances."
+    },
+    {
+      "title": "Skip unhealthy instances",
+      "caption": "C stops answering /healthz. After 3 failed probes it is marked unhealthy and gets no new requests.",
+      "body": "The load balancer probes `/healthz` on every instance all the time. C stops answering; after **3 failed probes in a row** it is marked **unhealthy** and gets no new requests, while A and B take its share. The requests C was holding time out, and detection takes about *interval × threshold*. The numbers here are illustrative; each product has its own defaults."
+    },
+    {
+      "title": "Recover and rejoin",
+      "caption": "C is fixed and passes 2 probes in a row, so it rejoins. Slow start ramps its share up gradually.",
+      "body": "C is fixed or replaced and passes **2 probes in a row**, so it rejoins. A **slow start** ramps its share up, so a cold instance isn't flooded the moment it returns. Taking an instance out on purpose (a deployment, a scale-in) works the other way round: it is **drained** first, which means no new requests while the in-flight ones finish."
+    }
+  ],
+  "related": ["autoscaling", "health-endpoint-monitoring", "multi-region-active-active", "active-passive-failover", "api-gateway", "service-mesh", "rolling-update", "circuit-breaker"],
+  "references": [
+    { "title": "Google SRE Book — Load Balancing at the Frontend (chapter 19)", "url": "https://sre.google/sre-book/load-balancing-frontend/" },
+    { "title": "Google SRE Book — Load Balancing in the Datacenter (chapter 20)", "url": "https://sre.google/sre-book/load-balancing-datacenter/" },
+    { "title": "AWS — How Elastic Load Balancing works", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html" },
+    { "title": "AWS — Health checks for Application Load Balancer target groups", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html" },
+    { "title": "AWS — Edit target group attributes for your Application Load Balancer (routing algorithm, slow start, deregistration delay)", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html" },
+    { "title": "nginx — Module ngx_http_upstream_module", "url": "https://nginx.org/en/docs/http/ngx_http_upstream_module.html" },
+    { "title": "HAProxy 3.4 — Configuration Manual (balance, health checks, slowstart)", "url": "https://docs.haproxy.org/3.4/configuration.html" },
+    { "title": "Envoy — Load balancing (supported load balancers, panic threshold, slow start)", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/load_balancing" },
+    { "title": "Envoy — Outlier detection", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier" },
+    { "title": "Michael Mitzenmacher — The Power of Two Choices in Randomized Load Balancing (IEEE TPDS, 2001)", "url": "https://www.eecs.harvard.edu/~michaelm/postscripts/tpds2001.pdf" },
+    { "title": "Eisenbud et al. — Maglev: A Fast and Reliable Software Network Load Balancer (NSDI 2016)", "url": "https://www.usenix.org/conference/nsdi16/technical-sessions/presentation/eisenbud" },
+    { "title": "AWS Builder Center — Implementing health checks (first published in the Amazon Builders' Library)", "url": "https://builder.aws.com/content/3Ev53O39izHCtWLzp4XU6t8PC1O/implementing-health-checks" },
+    { "title": "gRPC — gRPC Load Balancing", "url": "https://grpc.io/blog/grpc-load-balancing/" },
+    { "title": "Azure Architecture Center — Load balancing options", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/load-balancing-overview" },
+    { "title": "Google Cloud — Cloud Load Balancing overview", "url": "https://docs.cloud.google.com/load-balancing/docs/load-balancing-overview" }
+  ]
+}

@@ -1,0 +1,1250 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Event Sourcing</title>
+<desc id="dg-desc">Event Sourcing. Store every change as an immutable event and rebuild state by replaying them. Step 1, Append, don't overwrite: Withdraw 30: the handler checks balance 70, then appends event #4. Nothing is updated or deleted. Step 2, Replay to rebuild state: Replay #1 to #4 and the balance goes 0, 100, 70, 40. A snapshot at version 4 shortens later loads. Step 3, Project and subscribe: The same events feed read models and other subscribers; a view added later replays from #1. Step 4, Correct by appending: A mistaken deposit is reversed by appending #6, not edited. History still answers: 70 as of #3.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATA MANAGEMENT</text>
+  <text class="title" x="40" y="64">Event Sourcing</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Append, don't overwrite</text>
+  <text class="step on p1" x="40" y="518">1 · Append, don't overwrite</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Replay to rebuild state</text>
+  <text class="step on p2" x="262" y="518">2 · Replay to rebuild state</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Project and subscribe</text>
+  <text class="step on p3" x="484" y="518">3 · Project and subscribe</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Correct by appending</text>
+  <text class="step on p4" x="706" y="518">4 · Correct by appending</text>
+  <text class="caption p1" x="40" y="552">Withdraw 30: the handler checks balance 70, then appends event #4. Nothing is updated or deleted.</text>
+  <text class="caption p2" x="40" y="552">Replay #1 to #4 and the balance goes 0, 100, 70, 40. A snapshot at version 4 shortens later loads.</text>
+  <text class="caption p3" x="40" y="552">The same events feed read models and other subscribers; a view added later replays from #1.</text>
+  <text class="caption p4" x="40" y="552">A mistaken deposit is reversed by appending #6, not edited. History still answers: 70 as of #3.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Event Sourcing. Timeline (20s loop, 1s = 5%):
+   0-25%   Withdraw 30 reaches the handler (0.5-1.1s); it loads #1-#3 (1.15s), checks balance 70 (1.9s) and
+           appends #4 Withdrew 30 expecting version 3 (2.1-2.9s): stream version 4, balance 40.
+           For contrast, the CRUD row is overwritten 70 to 40 (3.8s).
+   25-50%  replay: a cursor walks #1-#4 (5.5-8.6s) and the balance goes 0, 100, 70, 40;
+           a snapshot of version 4 is taken (8.7s) and loading from it is shown (8.9s).
+   50-75%  #4 is delivered to the account summary, the monthly statement and the subscribers (10.5-11.4s);
+           a new read model appears (11.8s) and replays #1-#4 from the start of the stream (12.3-14.3s).
+   75-100% Deposit 500 by mistake becomes #5 (16.4s), balance 540; ReverseDeposit becomes #6 DepositReversed
+           (17.95s), balance 40 again; then the balance as of event #3 is read back: 70 (18.3-18.9s).
+           19.5-20s: #4, #5, #6 and everything derived from them fade out, back to the three-event stream. */
+.diagram .legend { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .cell { font-size: 11px; }
+.diagram .hdr { font-size: 10.5px; fill: var(--faint); }
+.diagram .num { font-size: 13px; font-weight: 700; }
+.diagram .etype { font-size: 12.5px; font-weight: 600; }
+.diagram .big { font-size: 30px; font-weight: 700; }
+.diagram .rm { font-size: 14px; font-weight: 600; }
+.diagram .val { font-size: 15px; font-weight: 700; }
+.diagram .badge { font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--bg); }
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .es-cmd { opacity: 0; animation: es-cmd var(--T) linear infinite; }
+.diagram .es-hhl { opacity: 0; animation: es-hhl var(--T) linear infinite; }
+.diagram .es-ld { opacity: 0; animation: es-ld var(--T) linear infinite; }
+.diagram .es-sthl { opacity: 0; animation: es-sthl var(--T) linear infinite; }
+.diagram .es-t1 { opacity: 0; animation: es-t1 var(--T) linear infinite; }
+.diagram .es-t2 { opacity: 0; animation: es-t2 var(--T) linear infinite; }
+.diagram .es-ev4 { opacity: 0; animation: es-ev4 var(--T) linear infinite; }
+.diagram .es-ev5 { opacity: 0; animation: es-ev5 var(--T) linear infinite; }
+.diagram .es-ev6 { opacity: 0; animation: es-ev6 var(--T) linear infinite; }
+.diagram .es-aphl { opacity: 0; animation: es-aphl var(--T) linear infinite; }
+.diagram .es-e4 { opacity: 0; animation: es-e4 var(--T) linear infinite; }
+.diagram .es-e5 { opacity: 0; animation: es-e5 var(--T) linear infinite; }
+.diagram .es-e6 { opacity: 0; animation: es-e6 var(--T) linear infinite; }
+.diagram .es-new4 { opacity: 0; animation: es-new4 var(--T) linear infinite; }
+.diagram .es-bad5 { opacity: 0; animation: es-bad5 var(--T) linear infinite; }
+.diagram .es-fix6 { opacity: 0; animation: es-fix6 var(--T) linear infinite; }
+.diagram .es-caret { transform: translate(474px, 0px); animation: es-caret var(--T) linear infinite; }
+.diagram .es-caretv { animation: es-caretv var(--T) linear infinite; }
+.diagram .es-caretl { animation: es-caretl var(--T) linear infinite; }
+.diagram .es-hv3 { animation: es-hv3 var(--T) linear infinite; }
+.diagram .es-hv4 { opacity: 0; animation: es-hv4 var(--T) linear infinite; }
+.diagram .es-hv5 { opacity: 0; animation: es-hv5 var(--T) linear infinite; }
+.diagram .es-hv6 { opacity: 0; animation: es-hv6 var(--T) linear infinite; }
+.diagram .es-sqlhl { opacity: 0; animation: es-sqlhl var(--T) linear infinite; }
+.diagram .es-ow { opacity: 0; animation: es-ow var(--T) linear infinite; }
+.diagram .es-crud70 { animation: es-crud70 var(--T) linear infinite; }
+.diagram .es-crud40 { opacity: 0; animation: es-crud40 var(--T) linear infinite; }
+.diagram .es-s70 { animation: es-s70 var(--T) linear infinite; }
+.diagram .es-s40a { opacity: 0; animation: es-s40a var(--T) linear infinite; }
+.diagram .es-s0 { opacity: 0; animation: es-s0 var(--T) linear infinite; }
+.diagram .es-s100 { opacity: 0; animation: es-s100 var(--T) linear infinite; }
+.diagram .es-s540 { opacity: 0; animation: es-s540 var(--T) linear infinite; }
+.diagram .es-s40b { opacity: 0; animation: es-s40b var(--T) linear infinite; }
+.diagram .es-cur { opacity: 0; animation: es-cur var(--T) linear infinite; }
+.diagram .es-v1 { opacity: 0; animation: es-v1 var(--T) linear infinite; }
+.diagram .es-v2 { opacity: 0; animation: es-v2 var(--T) linear infinite; }
+.diagram .es-v3 { opacity: 0; animation: es-v3 var(--T) linear infinite; }
+.diagram .es-v4 { opacity: 0; animation: es-v4 var(--T) linear infinite; }
+.diagram .es-v5 { opacity: 0; animation: es-v5 var(--T) linear infinite; }
+.diagram .es-v6 { opacity: 0; animation: es-v6 var(--T) linear infinite; }
+.diagram .es-snap { opacity: 0; animation: es-snap var(--T) linear infinite; }
+.diagram .es-snapchip { opacity: 0; animation: es-snapchip var(--T) linear infinite; }
+.diagram .es-snaprow { opacity: 0; animation: es-snaprow var(--T) linear infinite; }
+.diagram .es-f4a { opacity: 0; animation: es-f4a var(--T) linear infinite; }
+.diagram .es-f4b { opacity: 0; animation: es-f4b var(--T) linear infinite; }
+.diagram .es-f4c { opacity: 0; animation: es-f4c var(--T) linear infinite; }
+.diagram .es-pub4 { opacity: 0; animation: es-pub4 var(--T) linear infinite; }
+.diagram .es-a70 { opacity: 0; animation: es-a70 var(--T) linear infinite; }
+.diagram .es-a40 { opacity: 0; animation: es-a40 var(--T) linear infinite; }
+.diagram .es-afl { opacity: 0; animation: es-afl var(--T) linear infinite; }
+.diagram .es-b4 { opacity: 0; animation: es-b4 var(--T) linear infinite; }
+.diagram .es-bfl { opacity: 0; animation: es-bfl var(--T) linear infinite; }
+.diagram .es-cfl { opacity: 0; animation: es-cfl var(--T) linear infinite; }
+.diagram .es-d { opacity: 0; animation: es-d var(--T) linear infinite; }
+.diagram .es-r1 { opacity: 0; animation: es-r1 var(--T) linear infinite; }
+.diagram .es-d1 { opacity: 0; animation: es-d1 var(--T) linear infinite; }
+.diagram .es-r2 { opacity: 0; animation: es-r2 var(--T) linear infinite; }
+.diagram .es-d2 { opacity: 0; animation: es-d2 var(--T) linear infinite; }
+.diagram .es-r3 { opacity: 0; animation: es-r3 var(--T) linear infinite; }
+.diagram .es-d3 { opacity: 0; animation: es-d3 var(--T) linear infinite; }
+.diagram .es-r4 { opacity: 0; animation: es-r4 var(--T) linear infinite; }
+.diagram .es-d4 { opacity: 0; animation: es-d4 var(--T) linear infinite; }
+.diagram .es-dres { opacity: 0; animation: es-dres var(--T) linear infinite; }
+.diagram .es-c5 { opacity: 0; animation: es-c5 var(--T) linear infinite; }
+.diagram .es-c6 { opacity: 0; animation: es-c6 var(--T) linear infinite; }
+.diagram .es-h5 { opacity: 0; animation: es-h5 var(--T) linear infinite; }
+.diagram .es-h6 { opacity: 0; animation: es-h6 var(--T) linear infinite; }
+.diagram .es-t5 { opacity: 0; animation: es-t5 var(--T) linear infinite; }
+.diagram .es-t6 { opacity: 0; animation: es-t6 var(--T) linear infinite; }
+.diagram .es-fixp { opacity: 0; animation: es-fixp var(--T) linear infinite; }
+.diagram .es-fixl2 { opacity: 0; animation: es-fixl2 var(--T) linear infinite; }
+.diagram .es-asofp { opacity: 0; animation: es-asofp var(--T) linear infinite; }
+.diagram .es-asof { opacity: 0; animation: es-asof var(--T) linear infinite; }
+.diagram .es-exp { opacity: 0; animation: es-exp var(--T) linear infinite; }
+.diagram .es-ans { opacity: 0; animation: es-ans var(--T) linear infinite; }
+@keyframes es-cmd {
+  0% { transform: translate(136px, 135px); opacity: 0; }
+  2.5% { transform: translate(136px, 135px); opacity: 0; }
+  2.75% { opacity: 1; }
+  5.5% { transform: translate(258px, 135px); opacity: 1; }
+  5.75% { transform: translate(258px, 135px); opacity: 0; }
+  76% { transform: translate(136px, 135px); opacity: 0; }
+  76.25% { opacity: 1; }
+  78.5% { transform: translate(258px, 135px); opacity: 1; }
+  78.75% { transform: translate(258px, 135px); opacity: 0; }
+  83.75% { transform: translate(136px, 135px); opacity: 0; }
+  84% { opacity: 1; }
+  86% { transform: translate(258px, 135px); opacity: 1; }
+  86.25% { transform: translate(258px, 135px); opacity: 0; }
+  100% { transform: translate(258px, 135px); opacity: 0; }
+}
+@keyframes es-hhl {
+  0% { opacity: 0; }
+  5.5% { opacity: 0; }
+  6.5% { opacity: 1; }
+  14.75% { opacity: 1; }
+  15.75% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79.5% { opacity: 1; }
+  82% { opacity: 1; }
+  83% { opacity: 0; }
+  86% { opacity: 0; }
+  87% { opacity: 1; }
+  89.75% { opacity: 1; }
+  90.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-ld {
+  0% { opacity: 0; }
+  5.75% { opacity: 0; }
+  6.75% { opacity: 1; }
+  8.75% { opacity: 1; }
+  9.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-sthl {
+  0% { opacity: 0; }
+  7% { opacity: 0; }
+  7.5% { opacity: 1; }
+  10.5% { opacity: 1; }
+  11.5% { opacity: 0; }
+  28% { opacity: 0; }
+  28.5% { opacity: 1; }
+  29% { opacity: 1; }
+  30% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  33.25% { opacity: 1; }
+  34.25% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  37.5% { opacity: 1; }
+  38.5% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.25% { opacity: 1; }
+  42% { opacity: 1; }
+  43% { opacity: 0; }
+  82.25% { opacity: 0; }
+  82.75% { opacity: 1; }
+  83.75% { opacity: 1; }
+  84.75% { opacity: 0; }
+  90% { opacity: 0; }
+  90.5% { opacity: 1; }
+  91.5% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-t1 {
+  0% { opacity: 0; }
+  9.5% { opacity: 0; }
+  10.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-t2 {
+  0% { opacity: 0; }
+  14.75% { opacity: 0; }
+  15.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-ev4 {
+  0% { transform: translate(422px, 176px); opacity: 0; }
+  10.5% { transform: translate(422px, 176px); opacity: 0; }
+  11.25% { opacity: 1; }
+  11.543% { transform: translate(422px, 212px); }
+  13.659% { transform: translate(495px, 212px); }
+  14.5% { transform: translate(495px, 241px); }
+  15% { transform: translate(495px, 241px); opacity: 1; }
+  15.75% { transform: translate(495px, 241px); opacity: 0; }
+  100% { transform: translate(495px, 241px); opacity: 0; }
+}
+@keyframes es-ev5 {
+  0% { transform: translate(422px, 176px); opacity: 0; }
+  78.75% { transform: translate(422px, 176px); opacity: 0; }
+  79.165% { transform: translate(422px, 212px); }
+  79.5% { opacity: 1; }
+  81.666% { transform: translate(639px, 212px); }
+  82% { transform: translate(639px, 241px); }
+  82.5% { transform: translate(639px, 241px); opacity: 1; }
+  83.25% { transform: translate(639px, 241px); opacity: 0; }
+  100% { transform: translate(639px, 241px); opacity: 0; }
+}
+@keyframes es-ev6 {
+  0% { transform: translate(422px, 176px); opacity: 0; }
+  86.25% { transform: translate(422px, 176px); opacity: 0; }
+  86.546% { transform: translate(422px, 212px); }
+  87% { opacity: 1; }
+  89.512% { transform: translate(783px, 212px); }
+  89.75% { transform: translate(783px, 241px); }
+  90.25% { transform: translate(783px, 241px); opacity: 1; }
+  91% { transform: translate(783px, 241px); opacity: 0; }
+  100% { transform: translate(783px, 241px); opacity: 0; }
+}
+@keyframes es-aphl {
+  0% { opacity: 0; }
+  10.25% { opacity: 0; }
+  10.75% { opacity: 1; }
+  13% { opacity: 1; }
+  13.75% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79% { opacity: 1; }
+  80.5% { opacity: 1; }
+  81.25% { opacity: 0; }
+  86% { opacity: 0; }
+  86.5% { opacity: 1; }
+  88% { opacity: 1; }
+  88.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-e4 {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-e5 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-e6 {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  90.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-new4 {
+  0% { opacity: 0; }
+  14.75% { opacity: 0; }
+  15.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-bad5 {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-fix6 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-caret {
+  0% { transform: translate(474px, 0px); }
+  14.75% { transform: translate(474px, 0px); }
+  15% { transform: translate(618px, 0px); }
+  82.25% { transform: translate(618px, 0px); }
+  82.5% { transform: translate(762px, 0px); }
+  90% { transform: translate(762px, 0px); }
+  90.25% { transform: translate(906px, 0px); }
+  97.8% { transform: translate(906px, 0px); }
+  98% { transform: translate(474px, 0px); }
+  100% { transform: translate(474px, 0px); }
+}
+@keyframes es-caretv {
+  0% { opacity: 1; }
+  14% { opacity: 1; }
+  14.5% { opacity: 0; }
+  15.75% { opacity: 0; }
+  16.75% { opacity: 1; }
+  81.5% { opacity: 1; }
+  82% { opacity: 0; }
+  83.25% { opacity: 0; }
+  84.25% { opacity: 1; }
+  89.25% { opacity: 1; }
+  89.75% { opacity: 0; }
+  91% { opacity: 0; }
+  92% { opacity: 1; }
+  97.25% { opacity: 1; }
+  97.75% { opacity: 0; }
+  98.75% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-caretl {
+  0% { opacity: 1; }
+  13% { opacity: 1; }
+  13.75% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17.5% { opacity: 1; }
+  80.5% { opacity: 1; }
+  81.25% { opacity: 0; }
+  84% { opacity: 0; }
+  85% { opacity: 1; }
+  88.25% { opacity: 1; }
+  89% { opacity: 0; }
+  99.4% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes es-hv3 {
+  0% { opacity: 1; }
+  14% { opacity: 1; }
+  14.75% { opacity: 0; }
+  98.6% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-hv4 {
+  0% { opacity: 0; }
+  14.75% { opacity: 0; }
+  15.5% { opacity: 1; }
+  81.5% { opacity: 1; }
+  82.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-hv5 {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  83% { opacity: 1; }
+  89.25% { opacity: 1; }
+  90% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-hv6 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  90.75% { opacity: 1; }
+  98% { opacity: 1; }
+  98.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-sqlhl {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-ow {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  19% { opacity: 1; }
+  21.5% { opacity: 1; }
+  22.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-crud70 {
+  0% { opacity: 1; }
+  18.5% { opacity: 1; }
+  19% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-crud40 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  19.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-s70 {
+  0% { opacity: 1; }
+  14.5% { opacity: 1; }
+  15% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  40.25% { opacity: 1; }
+  40.75% { opacity: 0; }
+  98.6% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-s40a {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  15.5% { opacity: 1; }
+  27.25% { opacity: 1; }
+  27.75% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.25% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-s0 {
+  0% { opacity: 0; }
+  28% { opacity: 0; }
+  28.5% { opacity: 1; }
+  31.75% { opacity: 1; }
+  32.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-s100 {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  36% { opacity: 1; }
+  36.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-s540 {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  82.75% { opacity: 1; }
+  89.5% { opacity: 1; }
+  90% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-s40b {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  90.5% { opacity: 1; }
+  98.1% { opacity: 1; }
+  98.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-cur {
+  0% { transform: translate(48px, 226px); opacity: 0; }
+  27.5% { transform: translate(48px, 226px); opacity: 0; }
+  28.5% { opacity: 1; }
+  31.25% { transform: translate(48px, 226px); }
+  32% { transform: translate(192px, 226px); }
+  35.5% { transform: translate(192px, 226px); }
+  36.25% { transform: translate(336px, 226px); }
+  39.75% { transform: translate(336px, 226px); }
+  40.5% { transform: translate(480px, 226px); }
+  43% { transform: translate(480px, 226px); opacity: 1; }
+  44% { transform: translate(480px, 226px); opacity: 0; }
+  61% { transform: translate(48px, 226px); opacity: 0; }
+  62% { opacity: 1; }
+  63% { transform: translate(48px, 226px); }
+  63.5% { transform: translate(192px, 226px); }
+  65.25% { transform: translate(192px, 226px); }
+  65.75% { transform: translate(336px, 226px); }
+  67.5% { transform: translate(336px, 226px); }
+  68% { transform: translate(480px, 226px); }
+  70% { transform: translate(480px, 226px); opacity: 1; }
+  71% { transform: translate(480px, 226px); opacity: 0; }
+  100% { transform: translate(480px, 226px); opacity: 0; }
+}
+@keyframes es-v1 {
+  0% { opacity: 0; }
+  28% { opacity: 0; }
+  29% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-v2 {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  33.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-v3 {
+  0% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-v4 {
+  0% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-v5 {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  83.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-v6 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-snap {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  44.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-snapchip {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  44.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-snaprow {
+  0% { opacity: 0; }
+  44.5% { opacity: 0; }
+  45.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-f4a {
+  0% { transform: translate(590px, 304px); opacity: 0; }
+  52.5% { transform: translate(590px, 304px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.157% { transform: translate(590px, 350px); }
+  56.886% { transform: translate(329px, 350px); }
+  57.1% { transform: translate(329px, 365px); opacity: 1; }
+  57.35% { transform: translate(329px, 365px); opacity: 0; }
+  100% { transform: translate(329px, 365px); opacity: 0; }
+}
+@keyframes es-f4b {
+  0% { transform: translate(590px, 304px); opacity: 0; }
+  52.5% { transform: translate(590px, 304px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.158% { transform: translate(590px, 350px); }
+  54.316% { transform: translate(509px, 350px); }
+  54.53% { transform: translate(509px, 365px); opacity: 1; }
+  54.78% { transform: translate(509px, 365px); opacity: 0; }
+  100% { transform: translate(509px, 365px); opacity: 0; }
+}
+@keyframes es-f4c {
+  0% { transform: translate(590px, 304px); opacity: 0; }
+  52.5% { transform: translate(590px, 304px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.157% { transform: translate(590px, 350px); }
+  54.386% { transform: translate(676px, 350px); }
+  54.6% { transform: translate(676px, 365px); opacity: 1; }
+  54.85% { transform: translate(676px, 365px); opacity: 0; }
+  100% { transform: translate(676px, 365px); opacity: 0; }
+}
+@keyframes es-pub4 {
+  0% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52.5% { opacity: 1; }
+  54.5% { opacity: 1; }
+  55.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-a70 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.5% { opacity: 1; }
+  57.1% { opacity: 1; }
+  57.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-a40 {
+  0% { opacity: 0; }
+  57.6% { opacity: 0; }
+  58.1% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-afl {
+  0% { opacity: 0; }
+  57.1% { opacity: 0; }
+  57.6% { opacity: 1; }
+  60.6% { opacity: 1; }
+  61.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-b4 {
+  0% { opacity: 0; }
+  54.53% { opacity: 0; }
+  55.28% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-bfl {
+  0% { opacity: 0; }
+  54.53% { opacity: 0; }
+  55.03% { opacity: 1; }
+  58.03% { opacity: 1; }
+  59.03% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-cfl {
+  0% { opacity: 0; }
+  54.6% { opacity: 0; }
+  55.1% { opacity: 1; }
+  58.1% { opacity: 1; }
+  59.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-d {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-r1 {
+  0% { transform: translate(590px, 304px); opacity: 0; }
+  61.5% { transform: translate(590px, 304px); opacity: 0; }
+  61.75% { opacity: 1; }
+  61.942% { transform: translate(590px, 350px); }
+  64.346% { transform: translate(840px, 350px); }
+  64.49% { transform: translate(840px, 365px); opacity: 1; }
+  64.74% { transform: translate(840px, 365px); opacity: 0; }
+  100% { transform: translate(840px, 365px); opacity: 0; }
+}
+@keyframes es-d1 {
+  0% { opacity: 0; }
+  64.49% { opacity: 0; }
+  64.99% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-r2 {
+  0% { transform: translate(590px, 304px); opacity: 0; }
+  63.75% { transform: translate(590px, 304px); opacity: 0; }
+  64% { opacity: 1; }
+  64.192% { transform: translate(590px, 350px); }
+  66.596% { transform: translate(840px, 350px); }
+  66.74% { transform: translate(840px, 365px); opacity: 1; }
+  66.99% { transform: translate(840px, 365px); opacity: 0; }
+  100% { transform: translate(840px, 365px); opacity: 0; }
+}
+@keyframes es-d2 {
+  0% { opacity: 0; }
+  66.74% { opacity: 0; }
+  67.24% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-r3 {
+  0% { transform: translate(590px, 304px); opacity: 0; }
+  66% { transform: translate(590px, 304px); opacity: 0; }
+  66.25% { opacity: 1; }
+  66.442% { transform: translate(590px, 350px); }
+  68.846% { transform: translate(840px, 350px); }
+  68.99% { transform: translate(840px, 365px); opacity: 1; }
+  69.24% { transform: translate(840px, 365px); opacity: 0; }
+  100% { transform: translate(840px, 365px); opacity: 0; }
+}
+@keyframes es-d3 {
+  0% { opacity: 0; }
+  68.99% { opacity: 0; }
+  69.49% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-r4 {
+  0% { transform: translate(590px, 304px); opacity: 0; }
+  68.25% { transform: translate(590px, 304px); opacity: 0; }
+  68.5% { opacity: 1; }
+  68.692% { transform: translate(590px, 350px); }
+  71.096% { transform: translate(840px, 350px); }
+  71.24% { transform: translate(840px, 365px); opacity: 1; }
+  71.49% { transform: translate(840px, 365px); opacity: 0; }
+  100% { transform: translate(840px, 365px); opacity: 0; }
+}
+@keyframes es-d4 {
+  0% { opacity: 0; }
+  71.24% { opacity: 0; }
+  71.74% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-dres {
+  0% { opacity: 0; }
+  71.49% { opacity: 0; }
+  72.24% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-c5 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  82.75% { opacity: 1; }
+  83.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-c6 {
+  0% { opacity: 0; }
+  83.5% { opacity: 0; }
+  84.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-h5 {
+  0% { opacity: 0; }
+  78.25% { opacity: 0; }
+  79.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-h6 {
+  0% { opacity: 0; }
+  85.75% { opacity: 0; }
+  86.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-t5 {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  83.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-t6 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-fixp {
+  0% { opacity: 0; }
+  83.5% { opacity: 0; }
+  84.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-fixl2 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-asofp {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-asof {
+  0% { opacity: 0; }
+  92% { opacity: 0; }
+  93% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes es-exp {
+  0% { opacity: 0; }
+  11.75% { opacity: 0; }
+  12.5% { opacity: 1; }
+  19% { opacity: 1; }
+  20% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.5% { opacity: 1; }
+  83.5% { opacity: 1; }
+  84.5% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-ans {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  94.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- write path: a command for one aggregate, bank account 42 -->
+  <rect class="box" x="36" y="104" width="100" height="62" rx="12"/>
+  <text class="label mid" x="86" y="132">Client</text>
+  <text class="sub mid" x="86" y="150">banking app</text>
+  <line class="wire" x1="136" y1="135" x2="257" y2="135" marker-end="url(#ah)"/>
+  <g class="p123"><text class="tiny mid b mono f-blue" x="197" y="124">Withdraw 30</text></g>
+  <g class="es-c5"><text class="tiny mid b mono f-blue" x="197" y="124">Deposit 500</text></g>
+  <g class="es-c6"><text class="tiny mid b mono f-blue" x="197" y="124">ReverseDeposit</text></g>
+  <text class="tiny mid" x="197" y="152">command</text>
+
+  <!-- command handler: load the stream, check the rule, append with the expected version -->
+  <rect class="box" x="258" y="98" width="212" height="78" rx="12"/>
+  <rect class="none s-blue es-hhl" x="258" y="98" width="212" height="78" rx="12" stroke-width="2"/>
+  <text class="label" x="270" y="120">Command handler</text>
+  <g class="p123">
+    <circle class="none s-line" cx="276" cy="138" r="5.5" stroke-width="1.5"/><text class="tiny" x="287" y="142">balance 70 covers 30</text>
+    <circle class="none s-line" cx="276" cy="158" r="5.5" stroke-width="1.5"/><text class="tiny" x="287" y="162">append #4, expected version 3</text>
+  </g>
+  <g class="es-h5"><circle class="none s-line" cx="276" cy="138" r="5.5" stroke-width="1.5"/><text class="tiny" x="287" y="142">append #5, expected version 4</text></g>
+  <g class="es-h6"><circle class="none s-line" cx="276" cy="158" r="5.5" stroke-width="1.5"/><text class="tiny" x="287" y="162">append #6, expected version 5</text></g>
+  <g class="es-t1"><circle class="f-green" cx="276" cy="138" r="5.5"/><path class="none s-bg" d="M273.4 138l1.8 1.8 3.2-3.6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="es-t2"><circle class="f-green" cx="276" cy="158" r="5.5"/><path class="none s-bg" d="M273.4 158l1.8 1.8 3.2-3.6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="es-t5"><circle class="f-green" cx="276" cy="138" r="5.5"/><path class="none s-bg" d="M273.4 138l1.8 1.8 3.2-3.6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="es-t6"><circle class="f-green" cx="276" cy="158" r="5.5"/><path class="none s-bg" d="M273.4 158l1.8 1.8 3.2-3.6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <path class="wire" d="M312 200V177" marker-end="url(#ah)"/>
+  <text class="tiny end" x="304" y="192">load</text>
+  <path class="wire" d="M422 176V206" marker-end="url(#ah)"/>
+  <text class="tiny end" x="414" y="192">append</text>
+  <path class="none s-teal es-ld" d="M312 200V177" stroke-width="2.5" marker-end="url(#ah-teal)"/>
+  <path class="none s-purple es-aphl" d="M422 176V206" stroke-width="2.5" marker-end="url(#ah-purple)"/>
+
+  <!-- one idea per step -->
+  <g class="p1">
+    <text class="sub mid" x="707" y="128"><tspan class="sb f-ink">Append only:</tspan> nothing is updated or deleted.</text>
+    <text class="tiny mid" x="707" y="147">Another writer appended first? Rejected: reload the stream and retry.</text>
+  </g>
+  <g class="p2">
+    <text class="sub mid sb f-ink" x="707" y="128">Current state is a fold over the events:</text>
+    <text class="tiny mid mono" x="707" y="147">state = events.reduce(apply, initialState)</text>
+  </g>
+  <g class="p3">
+    <text class="sub mid" x="707" y="128"><tspan class="sb f-ink">The log is the source of truth;</tspan> views are disposable.</text>
+    <text class="tiny mid" x="707" y="147">Subscribers lag slightly behind the stream: eventual consistency.</text>
+  </g>
+  <g class="p4">
+    <text class="sub mid" x="707" y="128"><tspan class="sb f-ink">History is never edited:</tspan> a compensating event corrects it.</text>
+    <text class="tiny mid" x="707" y="147">Both stay in the audit trail, and any past state can be replayed.</text>
+  </g>
+
+  <!-- event store: one append-only stream per aggregate -->
+  <rect class="zone" x="36" y="200" width="888" height="104" rx="14"/>
+  <rect class="f-bg" x="48" y="193" width="92" height="14"/>
+  <text class="legend" x="54" y="204">EVENT STORE</text>
+  <text class="tiny" x="52" y="220">stream <tspan class="mono sb f-ink">account-42</tspan></text>
+  <g class="es-hv3"><text class="tiny" x="164" y="220">· version <tspan class="mono sb f-ink">3</tspan></text></g>
+  <g class="es-hv4"><text class="tiny" x="164" y="220">· version <tspan class="mono sb f-ink">4</tspan></text></g>
+  <g class="es-hv5"><text class="tiny" x="164" y="220">· version <tspan class="mono sb f-ink">5</tspan></text></g>
+  <g class="es-hv6"><text class="tiny" x="164" y="220">· version <tspan class="mono sb f-ink">6</tspan></text></g>
+  <g class="es-exp"><text class="tiny sb f-green" x="244" y="220">✓ version check passed</text></g>
+
+  <!-- the end of the stream: the only place a write can go -->
+  <g class="es-caret">
+    <g class="es-caretv">
+      <rect class="f-purple pulse" x="-1.5" y="238" width="3" height="44" rx="1.5"/>
+      <text class="tiny es-caretl" x="9" y="264">append here</text>
+    </g>
+  </g>
+
+  <!-- events #1 to #3 are already in the stream; #4, #5 and #6 are appended during the loop -->
+  <g>
+    <rect class="box" x="48" y="226" width="132" height="68" rx="10"/>
+    <rect class="f-purple" x="58" y="236" width="10" height="10" rx="2.5"/>
+    <text class="num mono f-purple" x="73" y="246">#1</text>
+    <text class="etype" x="58" y="267">AccountOpened</text>
+    <text class="cell mono f-muted" x="58" y="284">owner: Ada L.</text>
+  </g>
+  <g>
+    <rect class="box" x="192" y="226" width="132" height="68" rx="10"/>
+    <rect class="f-purple" x="202" y="236" width="10" height="10" rx="2.5"/>
+    <text class="num mono f-purple" x="217" y="246">#2</text>
+    <text class="etype" x="202" y="267">Deposited</text>
+    <text class="cell mono f-muted" x="202" y="284">amount: 100</text>
+  </g>
+  <g>
+    <rect class="box" x="336" y="226" width="132" height="68" rx="10"/>
+    <rect class="f-purple" x="346" y="236" width="10" height="10" rx="2.5"/>
+    <text class="num mono f-purple" x="361" y="246">#3</text>
+    <text class="etype" x="346" y="267">Withdrew</text>
+    <text class="cell mono f-muted" x="346" y="284">amount: 30</text>
+  </g>
+  <g class="es-e4">
+    <rect class="box" x="480" y="226" width="132" height="68" rx="10"/>
+    <rect class="f-purple" x="490" y="236" width="10" height="10" rx="2.5"/>
+    <text class="num mono f-purple" x="505" y="246">#4</text>
+    <text class="etype" x="490" y="267">Withdrew</text>
+    <text class="cell mono f-muted" x="490" y="284">amount: 30</text>
+  </g>
+  <g class="es-e5">
+    <rect class="box" x="624" y="226" width="132" height="68" rx="10"/>
+    <rect class="f-purple" x="634" y="236" width="10" height="10" rx="2.5"/>
+    <text class="num mono f-purple" x="649" y="246">#5</text>
+    <text class="etype" x="634" y="267">Deposited</text>
+    <text class="cell mono f-muted" x="634" y="284">amount: 500</text>
+  </g>
+  <g class="es-e6">
+    <rect class="box" x="768" y="226" width="132" height="68" rx="10"/>
+    <rect class="f-purple" x="778" y="236" width="10" height="10" rx="2.5"/>
+    <text class="num mono f-purple" x="793" y="246">#6</text>
+    <text class="etype" x="778" y="267">DepositReversed</text>
+    <text class="cell mono f-muted" x="778" y="284">500, reverses #5</text>
+  </g>
+  <g class="es-new4"><rect class="f-green-soft s-green" x="480" y="226" width="132" height="68" rx="10" stroke-width="1.5"/><text class="tiny end sb f-green" x="602" y="246">new</text></g>
+  <g class="es-bad5"><rect class="f-red-soft s-red" x="624" y="226" width="132" height="68" rx="10" stroke-width="1.5"/><text class="tiny end sb f-red" x="746" y="246">mistake</text></g>
+  <g class="es-fix6"><rect class="f-green-soft s-green" x="768" y="226" width="132" height="68" rx="10" stroke-width="1.5"/><text class="tiny end sb f-green" x="890" y="246">the fix</text></g>
+  <g class="es-ld"><rect class="none s-teal" x="45" y="223" width="138" height="74" rx="12" stroke-width="2.5"/><rect class="none s-teal" x="189" y="223" width="138" height="74" rx="12" stroke-width="2.5"/><rect class="none s-teal" x="333" y="223" width="138" height="74" rx="12" stroke-width="2.5"/></g>
+  <rect class="none s-purple es-pub4" x="477" y="223" width="138" height="74" rx="12" stroke-width="2.5"/>
+  <g class="es-asof">
+    <rect class="f-teal-soft s-teal" x="48" y="226" width="132" height="68" rx="10" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="192" y="226" width="132" height="68" rx="10" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="336" y="226" width="132" height="68" rx="10" stroke-width="1.5"/>
+    <rect class="f-teal-soft s-teal" x="350" y="313" width="104" height="19" rx="9.5" stroke-width="1"/>
+    <path class="none s-teal" d="M402 335V349" stroke-width="2" marker-end="url(#ah-teal)"/>
+  </g>
+  <rect class="none s-teal es-cur" x="-3" y="-3" width="138" height="74" rx="12" stroke-width="2.5"/>
+
+  <!-- replay lane: the balance after each event (0, 100, 70, 40, 540, 40) -->
+  <g class="es-v1"><text class="cell mono mid f-muted" x="114" y="326">opened at <tspan class="b f-ink">0</tspan></text></g>
+  <g class="es-v2"><text class="cell mono mid f-muted" x="258" y="326">0 + 100 = <tspan class="b f-ink">100</tspan></text></g>
+  <g class="es-v3"><text class="cell mono mid f-muted" x="402" y="326">100 − 30 = <tspan class="b f-ink">70</tspan></text></g>
+  <g class="es-v4"><text class="cell mono mid f-muted" x="546" y="326">70 − 30 = <tspan class="b f-ink">40</tspan></text></g>
+  <g class="es-v5"><text class="cell mono mid f-muted" x="690" y="326">40 + 500 = <tspan class="b f-red">540</tspan></text></g>
+  <g class="es-v6"><text class="cell mono mid f-muted" x="834" y="326">540 − 500 = <tspan class="b f-ink">40</tspan></text></g>
+  <g class="es-snap">
+    <path class="none s-teal" d="M48 308V313H612V308" stroke-width="2" stroke-linejoin="round"/>
+    <rect class="f-teal-soft s-teal" x="622" y="311" width="160" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny mid sb f-teal" x="702" y="326">snapshot v4: balance 40</text>
+  </g>
+
+  <!-- current state: derived by folding the stream -->
+  <rect class="box" x="36" y="350" width="196" height="114" rx="12"/>
+  <rect class="none s-teal es-sthl" x="36" y="350" width="196" height="114" rx="12" stroke-width="2"/>
+  <text class="label" x="48" y="372">Current state</text>
+  <text class="tiny" x="48" y="388">derived from the events</text>
+  <text class="tiny" x="48" y="411">balance</text>
+  <g class="es-s70"><text class="big mono" x="48" y="445">70</text><text class="tiny mono end" x="220" y="411">version 3</text></g>
+  <g class="es-s40a"><text class="big mono" x="48" y="445">40</text><text class="tiny mono end" x="220" y="411">version 4</text></g>
+  <g class="es-s0"><text class="big mono" x="48" y="445">0</text><text class="tiny mono end" x="220" y="411">version 1</text></g>
+  <g class="es-s100"><text class="big mono" x="48" y="445">100</text><text class="tiny mono end" x="220" y="411">version 2</text></g>
+  <g class="es-s540"><text class="big mono f-red" x="48" y="445">540</text><text class="tiny mono end" x="220" y="411">version 5</text></g>
+  <g class="es-s40b"><text class="big mono" x="48" y="445">40</text><text class="tiny mono end" x="220" y="411">version 6</text></g>
+  <g class="es-snapchip">
+    <rect class="f-teal-soft s-teal" x="124" y="425" width="96" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny mid sb f-teal" x="172" y="440">snapshot v4</text>
+  </g>
+
+  <!-- step 1: the CRUD way, for contrast -->
+  <g class="p1">
+    <rect class="f-panel s-line" x="248" y="350" width="676" height="114" rx="12" stroke-width="1"/>
+    <text class="legend" x="264" y="373">THE CRUD WAY, FOR CONTRAST</text>
+    <rect class="f-blue-soft es-sqlhl" x="258" y="385" width="318" height="20" rx="5"/>
+    <text class="cell mono f-ink" x="264" y="399">UPDATE accounts SET balance = 40 WHERE id = 42</text>
+    <text class="tiny" x="264" y="426">One row holds only the latest value.</text>
+    <text class="tiny" x="264" y="444">What happened, and why, is lost.</text>
+    <text class="tiny mono sb f-ink" x="612" y="373">accounts</text>
+    <rect class="f-panel-2" x="612" y="381" width="296" height="20" rx="4"/>
+    <text class="hdr" x="622" y="395">id</text><text class="hdr" x="672" y="395">owner</text><text class="hdr" x="776" y="395">balance</text>
+    <rect class="f-bg s-line" x="612" y="403" width="296" height="26" rx="4" stroke-width="1"/>
+    <text class="cell mono" x="622" y="420">42</text><text class="cell mono" x="672" y="420">Ada L.</text>
+    <rect class="f-amber-soft s-amber es-ow" x="768" y="406" width="134" height="20" rx="4" stroke-width="1"/>
+    <g class="es-crud70"><text class="cell mono" x="776" y="420">70</text></g>
+    <g class="es-crud40"><text class="cell mono b" x="776" y="420">40</text><text class="tiny sb f-red" x="800" y="420">70 overwritten</text></g>
+    <text class="tiny" x="612" y="448">no history: the row is the only record</text>
+  </g>
+
+  <!-- step 2: loading from a snapshot -->
+  <g class="p2">
+    <rect class="f-panel s-line" x="248" y="350" width="676" height="114" rx="12" stroke-width="1"/>
+    <text class="legend" x="264" y="373">LOADING ACCOUNT-42</text>
+    <text class="tiny sb f-ink" x="264" y="400">by full replay</text>
+    <rect class="f-bg s-purple" x="372" y="387" width="30" height="18" rx="4" stroke-width="1"/><text class="cell mono mid f-purple" x="387" y="400">#1</text><rect class="f-bg s-purple" x="406" y="387" width="30" height="18" rx="4" stroke-width="1"/><text class="cell mono mid f-purple" x="421" y="400">#2</text><rect class="f-bg s-purple" x="440" y="387" width="30" height="18" rx="4" stroke-width="1"/><text class="cell mono mid f-purple" x="455" y="400">#3</text><rect class="f-bg s-purple" x="474" y="387" width="30" height="18" rx="4" stroke-width="1"/><text class="cell mono mid f-purple" x="489" y="400">#4</text>
+    <text class="tiny" x="520" y="400">every event, every time: slower as the stream grows</text>
+    <g class="es-snaprow">
+      <text class="tiny sb f-ink" x="264" y="429">from a snapshot</text>
+      <rect class="f-teal-soft s-teal" x="372" y="415" width="132" height="20" rx="10" stroke-width="1.5"/>
+      <text class="tiny mid sb f-teal" x="438" y="429">v4: balance 40</text>
+      <text class="tiny mid" x="514" y="429">+</text>
+      <rect class="f-bg s-purple dash" x="524" y="416" width="30" height="18" rx="4" stroke-width="1"/><text class="cell mono mid f-purple" x="539" y="429">#5</text><rect class="f-bg s-purple dash" x="558" y="416" width="30" height="18" rx="4" stroke-width="1"/><text class="cell mono mid f-purple" x="573" y="429">#6</text>
+      <text class="tiny" x="596" y="429">…  then only the events after version 4</text>
+      <text class="tiny" x="264" y="452">A snapshot is only a cache of the fold: delete it and the replay still gives 40.</text>
+    </g>
+  </g>
+
+  <!-- step 3: read models and subscribers fed from the same stream -->
+  <g class="p3">
+    <path class="wire" d="M590 304V350"/>
+    <path class="wire" d="M590 350H329V365" marker-end="url(#ah)"/>
+    <path class="wire" d="M509 350V365" marker-end="url(#ah)"/>
+    <path class="wire" d="M590 350H676V365" marker-end="url(#ah)"/>
+    <text class="tiny end" x="582" y="331">subscriptions</text>
+    <rect class="box" x="248" y="366" width="162" height="98" rx="12"/>
+    <text class="rm" x="260" y="387">Account summary</text>
+    <text class="tiny" x="260" y="403">read model</text>
+    <text class="tiny" x="260" y="428">balance</text>
+    <rect class="f-teal-soft es-afl" x="304" y="414" width="36" height="20" rx="4"/>
+    <g class="es-a70"><text class="val mono" x="310" y="429">70</text><text class="tiny" x="260" y="451"><tspan class="mono">at event #3</tspan><tspan class="sb f-amber-ink"> · 1 behind</tspan></text></g>
+    <g class="es-a40"><text class="val mono" x="310" y="429">40</text><text class="tiny" x="260" y="451"><tspan class="mono">at event #4</tspan><tspan class="sb f-green"> · in sync</tspan></text></g>
+    <rect class="box" x="422" y="366" width="174" height="98" rx="12"/>
+    <text class="rm" x="434" y="387">Monthly statement</text>
+    <text class="tiny" x="434" y="403">read model</text>
+    <text class="cell mono" x="434" y="422">#2 deposit</text><text class="cell mono end" x="584" y="422">+100</text>
+    <text class="cell mono" x="434" y="437">#3 withdrawal</text><text class="cell mono end" x="584" y="437">−30</text>
+    <rect class="f-teal-soft es-bfl" x="428" y="441" width="162" height="15" rx="3"/>
+    <g class="es-b4"><text class="cell mono" x="434" y="452">#4 withdrawal</text><text class="cell mono end" x="584" y="452">−30</text></g>
+    <rect class="box" x="608" y="366" width="136" height="98" rx="12"/>
+    <text class="rm" x="620" y="387">Subscribers</text>
+    <text class="tiny" x="620" y="403">react to each event</text>
+    <rect class="f-panel-2" x="620" y="412" width="112" height="20" rx="10"/><text class="tiny mid f-ink" x="676" y="426">fraud check</text>
+    <rect class="f-panel-2" x="620" y="436" width="112" height="20" rx="10"/><text class="tiny mid f-ink" x="676" y="450">notifications</text>
+    <g class="es-cfl">
+      <rect class="none s-purple" x="620" y="412" width="112" height="20" rx="10" stroke-width="2"/>
+      <rect class="none s-purple" x="620" y="436" width="112" height="20" rx="10" stroke-width="2"/>
+    </g>
+  </g>
+  <g class="es-d">
+    <path class="wire" d="M676 350H840V365" marker-end="url(#ah)"/>
+    <rect class="box" x="756" y="366" width="168" height="98" rx="12"/>
+    <rect class="f-green" x="876" y="358" width="40" height="16" rx="8"/>
+    <text class="badge mid" x="896" y="369.5">NEW</text>
+    <text class="rm" x="768" y="387">Spending view</text>
+    <text class="tiny" x="768" y="403">replays from event #1</text>
+    <g>
+      <rect class="f-bg s-line" x="768" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <rect class="f-purple-soft s-purple es-d1" x="768" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <text class="cell mono mid f-ink" x="781" y="424">#1</text>
+      <rect class="f-bg s-line" x="800" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <rect class="f-purple-soft s-purple es-d2" x="800" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <text class="cell mono mid f-ink" x="813" y="424">#2</text>
+      <rect class="f-bg s-line" x="832" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <rect class="f-purple-soft s-purple es-d3" x="832" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <text class="cell mono mid f-ink" x="845" y="424">#3</text>
+      <rect class="f-bg s-line" x="864" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <rect class="f-purple-soft s-purple es-d4" x="864" y="411" width="26" height="18" rx="4" stroke-width="1"/>
+      <text class="cell mono mid f-ink" x="877" y="424">#4</text>
+    </g>
+    <g class="es-dres"><text class="cell mono f-ink" x="768" y="450">2 withdrawals: 60</text></g>
+  </g>
+
+  <!-- step 4: correct by appending; ask about the past -->
+  <g class="es-asofp">
+    <rect class="f-panel s-line" x="248" y="350" width="344" height="114" rx="12" stroke-width="1"/>
+    <text class="legend" x="264" y="373">ASK ABOUT THE PAST</text>
+    <text class="cell mono f-ink" x="264" y="400">balance as of event #3?</text>
+    <text class="tiny" x="264" y="426">Replay #1 to #3 and stop there.</text>
+    <text class="tiny" x="264" y="444">The past was never overwritten.</text>
+    <g class="es-ans"><text class="big mono end f-teal" x="576" y="408">70</text></g>
+  </g>
+  <g class="p4">
+    <rect class="f-panel s-line" x="604" y="350" width="320" height="114" rx="12" stroke-width="1"/>
+    <text class="legend" x="620" y="373">FIXING A MISTAKE</text>
+    <circle class="f-amber" cx="626" cy="394" r="5.5"/><path class="none s-bg" d="M626 391v3.4M626 396.8v.1" stroke-width="1.7" stroke-linecap="round"/><text class="tiny f-ink" x="638" y="398">Deposit 500 went to the wrong account</text>
+    <g class="es-fixp">
+      <circle class="f-red" cx="626" cy="418" r="5.5"/><path class="none s-bg" d="M624 416l4 4M628 416l-4 4" stroke-width="1.6" stroke-linecap="round"/><text class="tiny f-ink" x="638" y="422">no UPDATE or DELETE of event #5</text>
+      <circle class="none s-line" cx="626" cy="442" r="5.5" stroke-width="1.5"/><text class="tiny f-ink" x="638" y="446">append #6 DepositReversed 500</text>
+    </g>
+    <g class="es-fixl2"><circle class="f-green" cx="626" cy="442" r="5.5"/><path class="none s-bg" d="M623.4 442l1.8 1.8 3.2-3.6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+
+  <!-- tokens: blue command, purple events -->
+  <circle class="pkt f-blue es-cmd" r="7"/>
+  <g class="es-ev4"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="num mono f-purple" x="10" y="5">#4</text></g>
+  <g class="es-ev5"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="num mono f-purple" x="10" y="5">#5</text></g>
+  <g class="es-ev6"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="num mono f-purple" x="10" y="5">#6</text></g>
+  <g class="es-f4a"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny b f-purple" x="13" y="-5">#4</text></g>
+  <g class="es-f4b"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny b f-purple" x="13" y="-5">#4</text></g>
+  <g class="es-f4c"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny b f-purple" x="13" y="-5">#4</text></g>
+  <g class="es-r1"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny b f-purple" x="13" y="-5">#1</text></g>
+  <g class="es-r2"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny b f-purple" x="13" y="-5">#2</text></g>
+  <g class="es-r3"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny b f-purple" x="13" y="-5">#3</text></g>
+  <g class="es-r4"><rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny b f-purple" x="13" y="-5">#4</text></g>
+</g>
+</svg>

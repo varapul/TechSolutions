@@ -1,0 +1,37 @@
+{
+  "aka": ["Feature Toggles"],
+  "steps": [
+    {
+      "title": "Deploy dark",
+      "caption": "Build 41 ships the new checkout path behind a flag that is off: deployed, but not released.",
+      "body": "Build 41 contains both checkout paths and one decision point, `if (flags.enabled(\"new-checkout\", user))`. The flag is **off**, so every user still gets the old path on every instance. Deploying the code and releasing the feature are now two separate decisions."
+    },
+    {
+      "title": "Target, then roll out",
+      "caption": "On for staff, then 10% and 50% of customers. Each SDK decides from its own copy of the rules.",
+      "body": "A targeting rule turns the flag on for staff first; a percentage rollout then adds 10% and later 50% of customers. The flag service pushes every change to the SDK inside each instance (streaming, or the SDK polls), and the SDK evaluates in memory: no network call per check and no redeploy. Bucketing is deterministic: a hash of the flag key and the user ID gives a bucket from 0 to 99, and a user is in when the bucket is below the percentage, so the same user always gets the same answer and raising the percentage only adds users."
+    },
+    {
+      "title": "Kill switch",
+      "caption": "Errors climb on the new path, so the flag goes off: every instance is back on the old path.",
+      "body": "The new path's error rate climbs past the alert threshold, so the flag is switched **off**. Within seconds (one polling interval at worst) every instance serves the old path again, with no rollback deployment: the build has not changed. If the flag service is unreachable, each SDK keeps serving the last rules it received, and falls back to the default coded in the app (off) if it never received any."
+    },
+    {
+      "title": "Finish and clean up",
+      "caption": "The fix ships and the flag goes to 100%. The next release deletes the flag and the old path.",
+      "body": "Build 42 fixes the bug and the flag goes to **100%**. The next release, build 43, deletes the flag check and the old code path, and the flag is archived in the flag service. A release flag is temporary: left in place it is dead code, a branch nobody tests and a switch somebody can flip by mistake."
+    }
+  ],
+  "related": ["canary-release", "blue-green-deployment", "rolling-update", "shadow-traffic", "external-configuration-store", "expand-and-contract", "branch-by-abstraction", "slo-error-budgets"],
+  "references": [
+    { "title": "Pete Hodgson — Feature Toggles (aka Feature Flags)", "url": "https://martinfowler.com/articles/feature-toggles.html" },
+    { "title": "Martin Fowler — Feature Flag", "url": "https://martinfowler.com/bliki/FeatureFlag.html" },
+    { "title": "OpenFeature — Specification", "url": "https://openfeature.dev/specification/" },
+    { "title": "Trunk Based Development — Feature flags", "url": "https://trunkbaseddevelopment.com/feature-flags/" },
+    { "title": "LaunchDarkly Docs — Choosing an SDK type", "url": "https://launchdarkly.com/docs/sdk/concepts/client-side-server-side" },
+    { "title": "Unleash Docs — Stickiness", "url": "https://docs.getunleash.io/concepts/stickiness" },
+    { "title": "AWS AppConfig — What is AWS AppConfig Agent?", "url": "https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-agent.html" },
+    { "title": "Azure App Configuration — Understand feature management", "url": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/concept-feature-management" },
+    { "title": "SEC — In the Matter of Knight Capital Americas LLC (Exchange Act Release No. 70694, 2013)", "url": "https://www.sec.gov/files/litigation/admin/2013/34-70694.pdf" }
+  ]
+}

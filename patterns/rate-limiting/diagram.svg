@@ -1,0 +1,1380 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Rate Limiting &amp; Throttling</title>
+<desc id="dg-desc">Rate Limiting &amp; Throttling. Cap how fast each client may call (token bucket) and shed the excess with 429s. Step 1, Token bucket: Each API key has a bucket of 5 tokens, refilled at 2 per second. Every request spends one. Step 2, Burst, then 429: A sends 8 at once: 5 spend the stored tokens, 3 find the bucket empty and get 429 + Retry-After. Step 3, One limit, many instances: Three gateways check one shared store, so A's 6 calls are counted once: 5 pass, the 6th gets 429. Step 4, Shed load by priority: Everyone is within quota, yet the service is full: it sheds a report with 503 and admits checkout.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">RESILIENCE &amp; RELIABILITY</text>
+  <text class="title" x="40" y="64">Rate Limiting &amp; Throttling</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Token bucket</text>
+  <text class="step on p1" x="40" y="518">1 · Token bucket</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Burst, then 429</text>
+  <text class="step on p2" x="262" y="518">2 · Burst, then 429</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · One limit, many instances</text>
+  <text class="step on p3" x="484" y="518">3 · One limit, many instances</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Shed load by priority</text>
+  <text class="step on p4" x="706" y="518">4 · Shed load by priority</text>
+  <text class="caption p1" x="40" y="552">Each API key has a bucket of 5 tokens, refilled at 2 per second. Every request spends one.</text>
+  <text class="caption p2" x="40" y="552">A sends 8 at once: 5 spend the stored tokens, 3 find the bucket empty and get 429 + Retry-After.</text>
+  <text class="caption p3" x="40" y="552">Three gateways check one shared store, so A's 6 calls are counted once: 5 pass, the 6th gets 429.</text>
+  <text class="caption p4" x="40" y="552">Everyone is within quota, yet the service is full: it sheds a report with 503 and admits checkout.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Rate Limiting and Throttling. Timeline (20s loop, 1s = 5%):
+   0-25%   steady traffic: each request takes one token from its client's bucket (5 tokens, +1 every 0.5s)
+   25-50%  A sends 8 at once: 5 spend the stored tokens, 3 get 429; B is unaffected; the bucket refills, A retries
+   50-75%  three gateways share one store: A's 6 calls are spread 2-2-2, yet only 5 pass and the 6th gets 429
+   75-100% both clients are within quota but the service fills up: a report is shed with 503, checkout still passes
+   Generated from one request timeline with scripts/lib/motion.mjs (track, windows): the bucket levels,
+   the refill drips and the in-flight meter are simulated from the same events. */
+.diagram .rl-t, .diagram .rl-w { opacity: 0; }
+.diagram .rl-lbl { paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
+.diagram .rl-tok { fill: var(--green); }
+.diagram .rl-hollow { fill: var(--bg); stroke: var(--blue); stroke-width: 3; }
+.diagram .rl-num { font-size: 22px; font-weight: 700; }
+.diagram .rl-ka { animation: rl-ka var(--T) linear infinite; }
+.diagram .rl-kb { animation: rl-kb var(--T) linear infinite; }
+.diagram .rl-q0 { animation: rl-q0 var(--T) linear infinite; }
+.diagram .rl-q1 { animation: rl-q1 var(--T) linear infinite; }
+.diagram .rl-q2 { animation: rl-q2 var(--T) linear infinite; }
+.diagram .rl-q5 { animation: rl-q5 var(--T) linear infinite; }
+.diagram .rl-kr { animation: rl-kr var(--T) linear infinite; }
+.diagram .rl-q3 { animation: rl-q3 var(--T) linear infinite; }
+.diagram .rl-q4 { animation: rl-q4 var(--T) linear infinite; }
+.diagram .rl-r0 { animation: rl-r0 var(--T) linear infinite; }
+.diagram .rl-q6 { animation: rl-q6 var(--T) linear infinite; }
+.diagram .rl-r1 { animation: rl-r1 var(--T) linear infinite; }
+.diagram .rl-q7 { animation: rl-q7 var(--T) linear infinite; }
+.diagram .rl-r2 { animation: rl-r2 var(--T) linear infinite; }
+.diagram .rl-dz0 { animation: rl-dz0 var(--T) linear infinite; }
+.diagram .rl-dz1 { animation: rl-dz1 var(--T) linear infinite; }
+.diagram .rl-dz2 { animation: rl-dz2 var(--T) linear infinite; }
+.diagram .rl-dz3 { animation: rl-dz3 var(--T) linear infinite; }
+.diagram .rl-t0 { animation: rl-t0 var(--T) linear infinite; }
+.diagram .rl-t1 { animation: rl-t1 var(--T) linear infinite; }
+.diagram .rl-t2 { animation: rl-t2 var(--T) linear infinite; }
+.diagram .rl-t3 { animation: rl-t3 var(--T) linear infinite; }
+.diagram .rl-t4 { animation: rl-t4 var(--T) linear infinite; }
+.diagram .rl-t5 { animation: rl-t5 var(--T) linear infinite; }
+.diagram .rl-lc { animation: rl-lc var(--T) linear infinite; }
+.diagram .rl-lr { animation: rl-lr var(--T) linear infinite; }
+.diagram .rl-h0 { animation: rl-h0 var(--T) linear infinite; }
+.diagram .rl-h1 { animation: rl-h1 var(--T) linear infinite; }
+.diagram .rl-h2 { animation: rl-h2 var(--T) linear infinite; }
+.diagram .rl-s503 { animation: rl-s503 var(--T) linear infinite; }
+.diagram .rl-drip { animation: rl-drip var(--T) linear infinite; }
+.diagram .rl-c429 { animation: rl-c429 var(--T) linear infinite; }
+.diagram .rl-glow { animation: rl-glow var(--T) linear infinite; }
+.diagram .rl-c503 { animation: rl-c503 var(--T) linear infinite; }
+.diagram .rl-a1 { animation: rl-a1 var(--T) linear infinite; }
+.diagram .rl-a2 { animation: rl-a2 var(--T) linear infinite; }
+.diagram .rl-a3 { animation: rl-a3 var(--T) linear infinite; }
+.diagram .rl-a4 { animation: rl-a4 var(--T) linear infinite; }
+.diagram .rl-b4 { animation: rl-b4 var(--T) linear infinite; }
+.diagram .rl-a5 { animation: rl-a5 var(--T) linear infinite; }
+.diagram .rl-b5 { animation: rl-b5 var(--T) linear infinite; }
+.diagram .rl-n0 { animation: rl-n0 var(--T) linear infinite; }
+.diagram .rl-n1 { animation: rl-n1 var(--T) linear infinite; }
+.diagram .rl-n2 { animation: rl-n2 var(--T) linear infinite; }
+.diagram .rl-n3 { animation: rl-n3 var(--T) linear infinite; }
+.diagram .rl-n4 { animation: rl-n4 var(--T) linear infinite; }
+.diagram .rl-n5 { animation: rl-n5 var(--T) linear infinite; }
+.diagram .rl-empty { animation: rl-empty var(--T) linear infinite; }
+.diagram .rl-m1 { animation: rl-m1 var(--T) linear infinite; }
+.diagram .rl-m2 { animation: rl-m2 var(--T) linear infinite; }
+.diagram .rl-m3 { animation: rl-m3 var(--T) linear infinite; }
+.diagram .rl-m4 { animation: rl-m4 var(--T) linear infinite; }
+.diagram .rl-m5 { animation: rl-m5 var(--T) linear infinite; }
+.diagram .rl-m6 { animation: rl-m6 var(--T) linear infinite; }
+.diagram .rl-m7 { animation: rl-m7 var(--T) linear infinite; }
+@keyframes rl-ka {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  2% { transform: translate(176px, 304px); opacity: 0; }
+  2.25% { opacity: 1; }
+  4.233% { transform: translate(310px, 304px); }
+  9.308% { transform: translate(716px, 304px); opacity: 1; }
+  9.558% { transform: translate(716px, 304px); opacity: 0; }
+  100% { transform: translate(716px, 304px); opacity: 0; }
+}
+@keyframes rl-kb {
+  0% { transform: translate(176px, 420px); opacity: 0; }
+  4.5% { transform: translate(176px, 420px); opacity: 0; }
+  4.75% { opacity: 1; }
+  9.4% { transform: translate(470px, 420px); }
+  12.475% { transform: translate(716px, 420px); opacity: 1; }
+  12.725% { transform: translate(716px, 420px); opacity: 0; }
+  100% { transform: translate(716px, 420px); opacity: 0; }
+}
+@keyframes rl-q0 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  8.75% { transform: translate(176px, 304px); opacity: 0; }
+  9% { opacity: 1; }
+  10.983% { transform: translate(310px, 304px); }
+  16.058% { transform: translate(716px, 304px); opacity: 1; }
+  16.308% { transform: translate(716px, 304px); opacity: 0; }
+  27% { transform: translate(176px, 304px); opacity: 0; }
+  27.25% { opacity: 1; }
+  29.233% { transform: translate(310px, 304px); }
+  34.308% { transform: translate(716px, 304px); opacity: 1; }
+  34.558% { transform: translate(716px, 304px); opacity: 0; }
+  56% { transform: translate(176px, 304px); opacity: 0; }
+  56.25% { opacity: 1; }
+  56.325% { transform: translate(202px, 304px); }
+  57.775% { transform: translate(202px, 420px); }
+  58.75% { transform: translate(280px, 420px); }
+  60.875% { transform: translate(280px, 420px); }
+  62.5% { transform: translate(410px, 420px); }
+  66.325% { transform: translate(716px, 420px); opacity: 1; }
+  66.575% { transform: translate(716px, 420px); opacity: 0; }
+  76% { transform: translate(176px, 420px); opacity: 0; }
+  76.232% { transform: translate(202px, 420px); }
+  76.25% { opacity: 1; }
+  76.75% { transform: translate(202px, 362px); }
+  77.446% { transform: translate(280px, 362px); }
+  78.607% { transform: translate(410px, 362px); }
+  81.339% { transform: translate(716px, 362px); opacity: 1; }
+  81.589% { transform: translate(716px, 362px); opacity: 0; }
+  100% { transform: translate(716px, 362px); opacity: 0; }
+}
+@keyframes rl-q1 {
+  0% { transform: translate(176px, 420px); opacity: 0; }
+  13% { transform: translate(176px, 420px); opacity: 0; }
+  13.25% { opacity: 1; }
+  17.9% { transform: translate(470px, 420px); }
+  20.975% { transform: translate(716px, 420px); opacity: 1; }
+  21.225% { transform: translate(716px, 420px); opacity: 0; }
+  27.25% { transform: translate(176px, 304px); opacity: 0; }
+  27.5% { opacity: 1; }
+  29.483% { transform: translate(310px, 304px); }
+  34.558% { transform: translate(716px, 304px); opacity: 1; }
+  34.808% { transform: translate(716px, 304px); opacity: 0; }
+  56.55% { transform: translate(176px, 304px); opacity: 0; }
+  56.8% { opacity: 1; }
+  56.875% { transform: translate(202px, 304px); }
+  58.325% { transform: translate(202px, 420px); }
+  59.075% { transform: translate(262px, 420px); }
+  61.2% { transform: translate(262px, 420px); opacity: 1; }
+  61.45% { transform: translate(262px, 420px); opacity: 0; }
+  79% { transform: translate(176px, 420px); opacity: 0; }
+  79.232% { transform: translate(202px, 420px); }
+  79.25% { opacity: 1; }
+  79.928% { transform: translate(280px, 420px); }
+  81.089% { transform: translate(410px, 420px); }
+  83.821% { transform: translate(716px, 420px); opacity: 1; }
+  84.071% { transform: translate(716px, 420px); opacity: 0; }
+  100% { transform: translate(716px, 420px); opacity: 0; }
+}
+@keyframes rl-q2 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  14% { transform: translate(176px, 304px); opacity: 0; }
+  14.25% { opacity: 1; }
+  16.233% { transform: translate(310px, 304px); }
+  21.308% { transform: translate(716px, 304px); opacity: 1; }
+  21.558% { transform: translate(716px, 304px); opacity: 0; }
+  27.5% { transform: translate(176px, 304px); opacity: 0; }
+  27.75% { opacity: 1; }
+  29.733% { transform: translate(310px, 304px); }
+  34.808% { transform: translate(716px, 304px); opacity: 1; }
+  35.058% { transform: translate(716px, 304px); opacity: 0; }
+  56.65% { transform: translate(176px, 304px); opacity: 0; }
+  56.9% { opacity: 1; }
+  56.975% { transform: translate(202px, 304px); }
+  57.7% { transform: translate(202px, 362px); }
+  58.675% { transform: translate(280px, 362px); }
+  60.075% { transform: translate(280px, 362px); }
+  61.7% { transform: translate(410px, 362px); }
+  65.525% { transform: translate(716px, 362px); opacity: 1; }
+  65.775% { transform: translate(716px, 362px); opacity: 0; }
+  84% { transform: translate(176px, 420px); opacity: 0; }
+  84.232% { transform: translate(202px, 420px); }
+  84.25% { opacity: 1; }
+  84.928% { transform: translate(280px, 420px); }
+  86.089% { transform: translate(410px, 420px); }
+  88.821% { transform: translate(716px, 420px); opacity: 1; }
+  89.071% { transform: translate(716px, 420px); opacity: 0; }
+  100% { transform: translate(716px, 420px); opacity: 0; }
+}
+@keyframes rl-q5 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  28.25% { transform: translate(176px, 304px); opacity: 0; }
+  28.5% { opacity: 1; }
+  30.483% { transform: translate(310px, 304px); opacity: 1; }
+  30.733% { transform: translate(310px, 304px); opacity: 0; }
+  33.5% { transform: translate(176px, 420px); opacity: 0; }
+  33.75% { opacity: 1; }
+  38.4% { transform: translate(470px, 420px); }
+  41.475% { transform: translate(716px, 420px); opacity: 1; }
+  41.725% { transform: translate(716px, 420px); opacity: 0; }
+  57.85% { transform: translate(176px, 304px); opacity: 0; }
+  58.1% { opacity: 1; }
+  58.175% { transform: translate(202px, 304px); }
+  58.925% { transform: translate(262px, 304px); }
+  59.6% { transform: translate(262px, 304px); }
+  61.45% { transform: translate(410px, 304px); }
+  65.275% { transform: translate(716px, 304px); opacity: 1; }
+  65.525% { transform: translate(716px, 304px); opacity: 0; }
+  100% { transform: translate(716px, 304px); opacity: 0; }
+}
+@keyframes rl-kr {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  38.5% { transform: translate(176px, 304px); opacity: 0; }
+  38.75% { opacity: 1; }
+  40.733% { transform: translate(310px, 304px); }
+  45.808% { transform: translate(716px, 304px); opacity: 1; }
+  46.058% { transform: translate(716px, 304px); opacity: 0; }
+  100% { transform: translate(716px, 304px); opacity: 0; }
+}
+@keyframes rl-q3 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  27.75% { transform: translate(176px, 304px); opacity: 0; }
+  28% { opacity: 1; }
+  29.983% { transform: translate(310px, 304px); }
+  35.058% { transform: translate(716px, 304px); opacity: 1; }
+  35.308% { transform: translate(716px, 304px); opacity: 0; }
+  57.2% { transform: translate(176px, 304px); opacity: 0; }
+  57.45% { opacity: 1; }
+  57.525% { transform: translate(202px, 304px); }
+  58.25% { transform: translate(202px, 362px); }
+  59% { transform: translate(262px, 362px); }
+  60.4% { transform: translate(262px, 362px); }
+  62.25% { transform: translate(410px, 362px); }
+  66.075% { transform: translate(716px, 362px); opacity: 1; }
+  66.325% { transform: translate(716px, 362px); opacity: 0; }
+  100% { transform: translate(716px, 362px); opacity: 0; }
+}
+@keyframes rl-q4 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  28% { transform: translate(176px, 304px); opacity: 0; }
+  28.25% { opacity: 1; }
+  30.233% { transform: translate(310px, 304px); }
+  35.308% { transform: translate(716px, 304px); opacity: 1; }
+  35.558% { transform: translate(716px, 304px); opacity: 0; }
+  57.3% { transform: translate(176px, 304px); opacity: 0; }
+  57.55% { opacity: 1; }
+  57.625% { transform: translate(202px, 304px); }
+  58.6% { transform: translate(280px, 304px); }
+  59.275% { transform: translate(280px, 304px); }
+  60.9% { transform: translate(410px, 304px); }
+  64.725% { transform: translate(716px, 304px); opacity: 1; }
+  64.975% { transform: translate(716px, 304px); opacity: 0; }
+  100% { transform: translate(716px, 304px); opacity: 0; }
+}
+@keyframes rl-r0 {
+  0% { transform: translate(310px, 304px); opacity: 0; }
+  30.483% { transform: translate(310px, 304px); opacity: 0; }
+  30.733% { opacity: 1; }
+  32.716% { transform: translate(176px, 304px); opacity: 1; }
+  32.966% { transform: translate(176px, 304px); opacity: 0; }
+  61.2% { transform: translate(262px, 420px); opacity: 0; }
+  61.45% { opacity: 1; }
+  61.95% { transform: translate(202px, 420px); }
+  63.4% { transform: translate(202px, 304px); }
+  63.725% { transform: translate(176px, 304px); opacity: 1; }
+  63.975% { transform: translate(176px, 304px); opacity: 0; }
+  100% { transform: translate(176px, 304px); opacity: 0; }
+}
+@keyframes rl-q6 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  28.5% { transform: translate(176px, 304px); opacity: 0; }
+  28.75% { opacity: 1; }
+  30.733% { transform: translate(310px, 304px); opacity: 1; }
+  30.983% { transform: translate(310px, 304px); opacity: 0; }
+  63% { transform: translate(176px, 420px); opacity: 0; }
+  63.25% { opacity: 1; }
+  63.325% { transform: translate(202px, 420px); }
+  64.05% { transform: translate(202px, 362px); }
+  65.025% { transform: translate(280px, 362px); }
+  66.425% { transform: translate(280px, 362px); }
+  68.05% { transform: translate(410px, 362px); }
+  71.875% { transform: translate(716px, 362px); opacity: 1; }
+  72.125% { transform: translate(716px, 362px); opacity: 0; }
+  100% { transform: translate(716px, 362px); opacity: 0; }
+}
+@keyframes rl-r1 {
+  0% { transform: translate(310px, 304px); opacity: 0; }
+  30.733% { transform: translate(310px, 304px); opacity: 0; }
+  30.983% { opacity: 1; }
+  32.966% { transform: translate(176px, 304px); opacity: 1; }
+  33.216% { transform: translate(176px, 304px); opacity: 0; }
+  100% { transform: translate(176px, 304px); opacity: 0; }
+}
+@keyframes rl-q7 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  28.75% { transform: translate(176px, 304px); opacity: 0; }
+  29% { opacity: 1; }
+  30.983% { transform: translate(310px, 304px); opacity: 1; }
+  31.233% { transform: translate(310px, 304px); opacity: 0; }
+  100% { transform: translate(310px, 304px); opacity: 0; }
+}
+@keyframes rl-r2 {
+  0% { transform: translate(310px, 304px); opacity: 0; }
+  30.983% { transform: translate(310px, 304px); opacity: 0; }
+  31.233% { opacity: 1; }
+  33.216% { transform: translate(176px, 304px); opacity: 1; }
+  33.466% { transform: translate(176px, 304px); opacity: 0; }
+  100% { transform: translate(176px, 304px); opacity: 0; }
+}
+@keyframes rl-dz0 {
+  0% { transform: translate(310px, 264px); opacity: 0; }
+  3.733% { transform: translate(310px, 264px); opacity: 0; }
+  3.983% { opacity: 1; }
+  4.233% { transform: translate(310px, 298px); opacity: 1; }
+  4.483% { transform: translate(310px, 298px); opacity: 0; }
+  10.483% { transform: translate(310px, 264px); opacity: 0; }
+  10.733% { opacity: 1; }
+  10.983% { transform: translate(310px, 298px); opacity: 1; }
+  11.233% { transform: translate(310px, 298px); opacity: 0; }
+  15.733% { transform: translate(310px, 264px); opacity: 0; }
+  15.983% { opacity: 1; }
+  16.233% { transform: translate(310px, 298px); opacity: 1; }
+  16.483% { transform: translate(310px, 298px); opacity: 0; }
+  28.733% { transform: translate(310px, 264px); opacity: 0; }
+  28.983% { opacity: 1; }
+  29.233% { transform: translate(310px, 298px); opacity: 1; }
+  29.483% { transform: translate(310px, 298px); opacity: 0; }
+  29.733% { transform: translate(310px, 264px); opacity: 0; }
+  29.983% { opacity: 1; }
+  30.233% { transform: translate(310px, 298px); opacity: 1; }
+  30.483% { transform: translate(310px, 298px); opacity: 0; }
+  40.233% { transform: translate(310px, 264px); opacity: 0; }
+  40.483% { opacity: 1; }
+  40.733% { transform: translate(310px, 298px); opacity: 1; }
+  40.983% { transform: translate(310px, 298px); opacity: 0; }
+  100% { transform: translate(310px, 298px); opacity: 0; }
+}
+@keyframes rl-dz1 {
+  0% { transform: translate(310px, 264px); opacity: 0; }
+  28.983% { transform: translate(310px, 264px); opacity: 0; }
+  29.233% { opacity: 1; }
+  29.483% { transform: translate(310px, 298px); opacity: 1; }
+  29.733% { transform: translate(310px, 298px); opacity: 0; }
+  100% { transform: translate(310px, 298px); opacity: 0; }
+}
+@keyframes rl-dz2 {
+  0% { transform: translate(310px, 264px); opacity: 0; }
+  29.233% { transform: translate(310px, 264px); opacity: 0; }
+  29.483% { opacity: 1; }
+  29.733% { transform: translate(310px, 298px); opacity: 1; }
+  29.983% { transform: translate(310px, 298px); opacity: 0; }
+  100% { transform: translate(310px, 298px); opacity: 0; }
+}
+@keyframes rl-dz3 {
+  0% { transform: translate(310px, 264px); opacity: 0; }
+  29.483% { transform: translate(310px, 264px); opacity: 0; }
+  29.733% { opacity: 1; }
+  29.983% { transform: translate(310px, 298px); opacity: 1; }
+  30.233% { transform: translate(310px, 298px); opacity: 0; }
+  100% { transform: translate(310px, 298px); opacity: 0; }
+}
+@keyframes rl-t0 {
+  0% { transform: translate(280px, 420px); opacity: 0; }
+  58.75% { transform: translate(280px, 420px); opacity: 0; }
+  59% { opacity: 1; }
+  60.675% { transform: translate(280px, 266px); opacity: 1; }
+  60.925% { transform: translate(280px, 266px); opacity: 0; }
+  65.025% { transform: translate(280px, 362px); opacity: 0; }
+  65.275% { opacity: 1; }
+  66.225% { transform: translate(280px, 266px); opacity: 1; }
+  66.475% { transform: translate(280px, 266px); opacity: 0; }
+  100% { transform: translate(280px, 266px); opacity: 0; }
+}
+@keyframes rl-t1 {
+  0% { transform: translate(280px, 420px); opacity: 0; }
+  59.075% { transform: translate(280px, 420px); opacity: 0; }
+  59.325% { opacity: 1; }
+  61% { transform: translate(280px, 266px); opacity: 1; }
+  61.25% { transform: translate(280px, 266px); opacity: 0; }
+  100% { transform: translate(280px, 266px); opacity: 0; }
+}
+@keyframes rl-t2 {
+  0% { transform: translate(280px, 362px); opacity: 0; }
+  58.675% { transform: translate(280px, 362px); opacity: 0; }
+  58.925% { opacity: 1; }
+  59.875% { transform: translate(280px, 266px); opacity: 1; }
+  60.125% { transform: translate(280px, 266px); opacity: 0; }
+  100% { transform: translate(280px, 266px); opacity: 0; }
+}
+@keyframes rl-t3 {
+  0% { transform: translate(280px, 362px); opacity: 0; }
+  59% { transform: translate(280px, 362px); opacity: 0; }
+  59.25% { opacity: 1; }
+  60.2% { transform: translate(280px, 266px); opacity: 1; }
+  60.45% { transform: translate(280px, 266px); opacity: 0; }
+  100% { transform: translate(280px, 266px); opacity: 0; }
+}
+@keyframes rl-t4 {
+  0% { transform: translate(280px, 304px); opacity: 0; }
+  58.6% { transform: translate(280px, 304px); opacity: 0; }
+  58.85% { opacity: 1; }
+  59.075% { transform: translate(280px, 266px); opacity: 1; }
+  59.325% { transform: translate(280px, 266px); opacity: 0; }
+  100% { transform: translate(280px, 266px); opacity: 0; }
+}
+@keyframes rl-t5 {
+  0% { transform: translate(280px, 304px); opacity: 0; }
+  58.925% { transform: translate(280px, 304px); opacity: 0; }
+  59.175% { opacity: 1; }
+  59.4% { transform: translate(280px, 266px); opacity: 1; }
+  59.65% { transform: translate(280px, 266px); opacity: 0; }
+  100% { transform: translate(280px, 266px); opacity: 0; }
+}
+@keyframes rl-lc {
+  0% { transform: translate(176px, 420px); opacity: 0; }
+  75.25% { transform: translate(176px, 420px); opacity: 0; }
+  75.482% { transform: translate(202px, 420px); }
+  75.5% { opacity: 1; }
+  76.178% { transform: translate(280px, 420px); }
+  77.339% { transform: translate(410px, 420px); }
+  80.071% { transform: translate(716px, 420px); opacity: 1; }
+  80.321% { transform: translate(716px, 420px); opacity: 0; }
+  100% { transform: translate(716px, 420px); opacity: 0; }
+}
+@keyframes rl-lr {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  75.95% { transform: translate(176px, 304px); opacity: 0; }
+  76.182% { transform: translate(202px, 304px); }
+  76.2% { opacity: 1; }
+  76.878% { transform: translate(280px, 304px); }
+  78.039% { transform: translate(410px, 304px); }
+  80.771% { transform: translate(716px, 304px); opacity: 1; }
+  81.021% { transform: translate(716px, 304px); opacity: 0; }
+  100% { transform: translate(716px, 304px); opacity: 0; }
+}
+@keyframes rl-h0 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  76.7% { transform: translate(176px, 304px); opacity: 0; }
+  76.932% { transform: translate(202px, 304px); }
+  76.95% { opacity: 1; }
+  77.45% { transform: translate(202px, 362px); }
+  78.146% { transform: translate(280px, 362px); }
+  79.307% { transform: translate(410px, 362px); }
+  82.039% { transform: translate(716px, 362px); opacity: 1; }
+  82.289% { transform: translate(716px, 362px); opacity: 0; }
+  100% { transform: translate(716px, 362px); opacity: 0; }
+}
+@keyframes rl-h1 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  79.7% { transform: translate(176px, 304px); opacity: 0; }
+  79.932% { transform: translate(202px, 304px); }
+  79.95% { opacity: 1; }
+  80.628% { transform: translate(280px, 304px); }
+  81.789% { transform: translate(410px, 304px); }
+  84.521% { transform: translate(716px, 304px); opacity: 1; }
+  84.771% { transform: translate(716px, 304px); opacity: 0; }
+  100% { transform: translate(716px, 304px); opacity: 0; }
+}
+@keyframes rl-h2 {
+  0% { transform: translate(176px, 304px); opacity: 0; }
+  82.2% { transform: translate(176px, 304px); opacity: 0; }
+  82.432% { transform: translate(202px, 304px); }
+  82.45% { opacity: 1; }
+  83.128% { transform: translate(280px, 304px); }
+  84.289% { transform: translate(410px, 304px); }
+  87.021% { transform: translate(716px, 304px); opacity: 1; }
+  87.271% { transform: translate(716px, 304px); opacity: 0; }
+  100% { transform: translate(716px, 304px); opacity: 0; }
+}
+@keyframes rl-s503 {
+  0% { transform: translate(716px, 304px); opacity: 0; }
+  87.021% { transform: translate(716px, 304px); opacity: 0; }
+  87.271% { opacity: 1; }
+  91.842% { transform: translate(176px, 304px); opacity: 1; }
+  92.092% { transform: translate(176px, 304px); opacity: 0; }
+  100% { transform: translate(176px, 304px); opacity: 0; }
+}
+@keyframes rl-drip {
+  0% { transform: translate(310px, 127px); opacity: 0; }
+  5.733% { transform: translate(310px, 127px); opacity: 0; }
+  5.983% { opacity: 1; }
+  6.733% { transform: translate(310px, 148px); opacity: 1; }
+  6.983% { transform: translate(310px, 148px); opacity: 0; }
+  12.483% { transform: translate(310px, 127px); opacity: 0; }
+  12.733% { opacity: 1; }
+  13.483% { transform: translate(310px, 148px); opacity: 1; }
+  13.733% { transform: translate(310px, 148px); opacity: 0; }
+  17.733% { transform: translate(310px, 127px); opacity: 0; }
+  17.983% { opacity: 1; }
+  18.733% { transform: translate(310px, 148px); opacity: 1; }
+  18.983% { transform: translate(310px, 148px); opacity: 0; }
+  30.733% { transform: translate(310px, 127px); opacity: 0; }
+  30.983% { opacity: 1; }
+  31.733% { transform: translate(310px, 244px); opacity: 1; }
+  31.983% { transform: translate(310px, 244px); opacity: 0; }
+  33.233% { transform: translate(310px, 127px); opacity: 0; }
+  33.483% { opacity: 1; }
+  34.233% { transform: translate(310px, 220px); opacity: 1; }
+  34.483% { transform: translate(310px, 220px); opacity: 0; }
+  35.733% { transform: translate(310px, 127px); opacity: 0; }
+  35.983% { opacity: 1; }
+  36.733% { transform: translate(310px, 196px); opacity: 1; }
+  36.983% { transform: translate(310px, 196px); opacity: 0; }
+  38.233% { transform: translate(310px, 127px); opacity: 0; }
+  38.483% { opacity: 1; }
+  39.233% { transform: translate(310px, 172px); opacity: 1; }
+  39.483% { transform: translate(310px, 172px); opacity: 0; }
+  40.733% { transform: translate(310px, 127px); opacity: 0; }
+  40.983% { opacity: 1; }
+  41.733% { transform: translate(310px, 172px); opacity: 1; }
+  41.983% { transform: translate(310px, 172px); opacity: 0; }
+  43.233% { transform: translate(310px, 127px); opacity: 0; }
+  43.483% { opacity: 1; }
+  44.233% { transform: translate(310px, 148px); opacity: 1; }
+  44.483% { transform: translate(310px, 148px); opacity: 0; }
+  60.575% { transform: translate(310px, 127px); opacity: 0; }
+  60.825% { opacity: 1; }
+  61.575% { transform: translate(310px, 244px); opacity: 1; }
+  61.825% { transform: translate(310px, 244px); opacity: 0; }
+  63.075% { transform: translate(310px, 127px); opacity: 0; }
+  63.325% { opacity: 1; }
+  64.075% { transform: translate(310px, 220px); opacity: 1; }
+  64.325% { transform: translate(310px, 220px); opacity: 0; }
+  65.575% { transform: translate(310px, 127px); opacity: 0; }
+  65.825% { opacity: 1; }
+  66.575% { transform: translate(310px, 196px); opacity: 1; }
+  66.825% { transform: translate(310px, 196px); opacity: 0; }
+  68.075% { transform: translate(310px, 127px); opacity: 0; }
+  68.325% { opacity: 1; }
+  69.075% { transform: translate(310px, 172px); opacity: 1; }
+  69.325% { transform: translate(310px, 172px); opacity: 0; }
+  70.575% { transform: translate(310px, 127px); opacity: 0; }
+  70.825% { opacity: 1; }
+  71.575% { transform: translate(310px, 148px); opacity: 1; }
+  71.825% { transform: translate(310px, 148px); opacity: 0; }
+  78.378% { transform: translate(310px, 127px); opacity: 0; }
+  78.628% { opacity: 1; }
+  79.378% { transform: translate(310px, 172px); opacity: 1; }
+  79.628% { transform: translate(310px, 172px); opacity: 0; }
+  80.878% { transform: translate(310px, 127px); opacity: 0; }
+  81.128% { opacity: 1; }
+  81.878% { transform: translate(310px, 172px); opacity: 1; }
+  82.128% { transform: translate(310px, 172px); opacity: 0; }
+  83.378% { transform: translate(310px, 127px); opacity: 0; }
+  83.628% { opacity: 1; }
+  84.378% { transform: translate(310px, 172px); opacity: 1; }
+  84.628% { transform: translate(310px, 172px); opacity: 0; }
+  85.878% { transform: translate(310px, 127px); opacity: 0; }
+  86.128% { opacity: 1; }
+  86.878% { transform: translate(310px, 148px); opacity: 1; }
+  87.128% { transform: translate(310px, 148px); opacity: 0; }
+  100% { transform: translate(310px, 148px); opacity: 0; }
+}
+@keyframes rl-c429 {
+  0% { opacity: 0; }
+  30.983% { opacity: 0; }
+  32.483% { opacity: 1; }
+  49.9% { opacity: 1; }
+  51.4% { opacity: 0; }
+  61.5% { opacity: 0; }
+  63% { opacity: 1; }
+  74.9% { opacity: 1; }
+  76.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-glow {
+  0% { opacity: 0; }
+  58.35% { opacity: 0; }
+  58.85% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 0; }
+  64.775% { opacity: 0; }
+  65.275% { opacity: 1; }
+  66.725% { opacity: 1; }
+  67.725% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-c503 {
+  0% { opacity: 0; }
+  87.771% { opacity: 0; }
+  89.271% { opacity: 1; }
+  97.75% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-a1 {
+  0% { opacity: 1; }
+  30.233% { opacity: 1; }
+  30.483% { opacity: 0; }
+  31.733% { opacity: 0; }
+  31.983% { opacity: 1; }
+  60.675% { opacity: 1; }
+  60.925% { opacity: 0; }
+  61.575% { opacity: 0; }
+  61.825% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-a2 {
+  0% { opacity: 1; }
+  29.983% { opacity: 1; }
+  30.233% { opacity: 0; }
+  34.233% { opacity: 0; }
+  34.483% { opacity: 1; }
+  60.2% { opacity: 1; }
+  60.45% { opacity: 0; }
+  64.075% { opacity: 0; }
+  64.325% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-a3 {
+  0% { opacity: 1; }
+  29.733% { opacity: 1; }
+  29.983% { opacity: 0; }
+  36.733% { opacity: 0; }
+  36.983% { opacity: 1; }
+  59.875% { opacity: 1; }
+  60.125% { opacity: 0; }
+  66.575% { opacity: 0; }
+  66.825% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-a4 {
+  0% { opacity: 1; }
+  29.483% { opacity: 1; }
+  29.733% { opacity: 0; }
+  39.233% { opacity: 0; }
+  39.483% { opacity: 1; }
+  40.733% { opacity: 1; }
+  40.983% { opacity: 0; }
+  41.733% { opacity: 0; }
+  41.983% { opacity: 1; }
+  59.4% { opacity: 1; }
+  59.65% { opacity: 0; }
+  69.075% { opacity: 0; }
+  69.325% { opacity: 1; }
+  78.146% { opacity: 1; }
+  78.396% { opacity: 0; }
+  79.378% { opacity: 0; }
+  79.628% { opacity: 1; }
+  80.628% { opacity: 1; }
+  80.878% { opacity: 0; }
+  81.878% { opacity: 0; }
+  82.128% { opacity: 1; }
+  83.128% { opacity: 1; }
+  83.378% { opacity: 0; }
+  84.378% { opacity: 0; }
+  84.628% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-b4 {
+  0% { opacity: 1; }
+  77.446% { opacity: 1; }
+  77.696% { opacity: 0; }
+  78.678% { opacity: 0; }
+  78.928% { opacity: 1; }
+  79.928% { opacity: 1; }
+  80.178% { opacity: 0; }
+  81.178% { opacity: 0; }
+  81.428% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-a5 {
+  0% { opacity: 1; }
+  4.233% { opacity: 1; }
+  4.483% { opacity: 0; }
+  6.733% { opacity: 0; }
+  6.983% { opacity: 1; }
+  10.983% { opacity: 1; }
+  11.233% { opacity: 0; }
+  13.483% { opacity: 0; }
+  13.733% { opacity: 1; }
+  16.233% { opacity: 1; }
+  16.483% { opacity: 0; }
+  18.733% { opacity: 0; }
+  18.983% { opacity: 1; }
+  29.233% { opacity: 1; }
+  29.483% { opacity: 0; }
+  44.233% { opacity: 0; }
+  44.483% { opacity: 1; }
+  59.075% { opacity: 1; }
+  59.325% { opacity: 0; }
+  71.575% { opacity: 0; }
+  71.825% { opacity: 1; }
+  76.878% { opacity: 1; }
+  77.128% { opacity: 0; }
+  86.878% { opacity: 0; }
+  87.128% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-b5 {
+  0% { opacity: 1; }
+  9.4% { opacity: 1; }
+  9.65% { opacity: 0; }
+  11.9% { opacity: 0; }
+  12.15% { opacity: 1; }
+  17.9% { opacity: 1; }
+  18.15% { opacity: 0; }
+  20.4% { opacity: 0; }
+  20.65% { opacity: 1; }
+  38.4% { opacity: 1; }
+  38.65% { opacity: 0; }
+  40.9% { opacity: 0; }
+  41.15% { opacity: 1; }
+  66.225% { opacity: 1; }
+  66.475% { opacity: 0; }
+  68.725% { opacity: 0; }
+  68.975% { opacity: 1; }
+  76.178% { opacity: 1; }
+  76.428% { opacity: 0; }
+  83.678% { opacity: 0; }
+  83.928% { opacity: 1; }
+  84.928% { opacity: 1; }
+  85.178% { opacity: 0; }
+  87.428% { opacity: 0; }
+  87.678% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-n0 {
+  0% { opacity: 0; }
+  30.233% { opacity: 0; }
+  30.483% { opacity: 1; }
+  31.733% { opacity: 1; }
+  31.983% { opacity: 0; }
+  60.675% { opacity: 0; }
+  60.925% { opacity: 1; }
+  61.575% { opacity: 1; }
+  61.825% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-n1 {
+  0% { opacity: 0; }
+  29.983% { opacity: 0; }
+  30.233% { opacity: 1; opacity: 1; }
+  30.483% { opacity: 0; }
+  31.733% { opacity: 0; }
+  31.983% { opacity: 1; }
+  34.233% { opacity: 1; }
+  34.483% { opacity: 0; }
+  60.2% { opacity: 0; }
+  60.45% { opacity: 1; }
+  60.675% { opacity: 1; }
+  60.925% { opacity: 0; }
+  61.575% { opacity: 0; }
+  61.825% { opacity: 1; }
+  64.075% { opacity: 1; }
+  64.325% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-n2 {
+  0% { opacity: 0; }
+  29.733% { opacity: 0; }
+  29.983% { opacity: 1; opacity: 1; }
+  30.233% { opacity: 0; }
+  34.233% { opacity: 0; }
+  34.483% { opacity: 1; }
+  36.733% { opacity: 1; }
+  36.983% { opacity: 0; }
+  59.875% { opacity: 0; }
+  60.125% { opacity: 1; }
+  60.2% { opacity: 1; }
+  60.45% { opacity: 0; }
+  64.075% { opacity: 0; }
+  64.325% { opacity: 1; }
+  66.575% { opacity: 1; }
+  66.825% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-n3 {
+  0% { opacity: 0; }
+  29.483% { opacity: 0; }
+  29.733% { opacity: 1; opacity: 1; }
+  29.983% { opacity: 0; }
+  36.733% { opacity: 0; }
+  36.983% { opacity: 1; }
+  39.233% { opacity: 1; }
+  39.483% { opacity: 0; }
+  40.733% { opacity: 0; }
+  40.983% { opacity: 1; }
+  41.733% { opacity: 1; }
+  41.983% { opacity: 0; }
+  59.4% { opacity: 0; }
+  59.65% { opacity: 1; }
+  59.875% { opacity: 1; }
+  60.125% { opacity: 0; }
+  66.575% { opacity: 0; }
+  66.825% { opacity: 1; }
+  69.075% { opacity: 1; }
+  69.325% { opacity: 0; }
+  78.146% { opacity: 0; }
+  78.396% { opacity: 1; }
+  79.378% { opacity: 1; }
+  79.628% { opacity: 0; }
+  80.628% { opacity: 0; }
+  80.878% { opacity: 1; }
+  81.878% { opacity: 1; }
+  82.128% { opacity: 0; }
+  83.128% { opacity: 0; }
+  83.378% { opacity: 1; }
+  84.378% { opacity: 1; }
+  84.628% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-n4 {
+  0% { opacity: 0; }
+  4.233% { opacity: 0; }
+  4.483% { opacity: 1; }
+  6.733% { opacity: 1; }
+  6.983% { opacity: 0; }
+  10.983% { opacity: 0; }
+  11.233% { opacity: 1; }
+  13.483% { opacity: 1; }
+  13.733% { opacity: 0; }
+  16.233% { opacity: 0; }
+  16.483% { opacity: 1; }
+  18.733% { opacity: 1; }
+  18.983% { opacity: 0; }
+  29.233% { opacity: 0; }
+  29.483% { opacity: 1; opacity: 1; }
+  29.733% { opacity: 0; }
+  39.233% { opacity: 0; }
+  39.483% { opacity: 1; }
+  40.733% { opacity: 1; }
+  40.983% { opacity: 0; }
+  41.733% { opacity: 0; }
+  41.983% { opacity: 1; }
+  44.233% { opacity: 1; }
+  44.483% { opacity: 0; }
+  59.075% { opacity: 0; }
+  59.325% { opacity: 1; }
+  59.4% { opacity: 1; }
+  59.65% { opacity: 0; }
+  69.075% { opacity: 0; }
+  69.325% { opacity: 1; }
+  71.575% { opacity: 1; }
+  71.825% { opacity: 0; }
+  76.878% { opacity: 0; }
+  77.128% { opacity: 1; }
+  78.146% { opacity: 1; }
+  78.396% { opacity: 0; }
+  79.378% { opacity: 0; }
+  79.628% { opacity: 1; }
+  80.628% { opacity: 1; }
+  80.878% { opacity: 0; }
+  81.878% { opacity: 0; }
+  82.128% { opacity: 1; }
+  83.128% { opacity: 1; }
+  83.378% { opacity: 0; }
+  84.378% { opacity: 0; }
+  84.628% { opacity: 1; }
+  86.878% { opacity: 1; }
+  87.128% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-n5 {
+  0% { opacity: 1; }
+  4.233% { opacity: 1; }
+  4.483% { opacity: 0; }
+  6.733% { opacity: 0; }
+  6.983% { opacity: 1; }
+  10.983% { opacity: 1; }
+  11.233% { opacity: 0; }
+  13.483% { opacity: 0; }
+  13.733% { opacity: 1; }
+  16.233% { opacity: 1; }
+  16.483% { opacity: 0; }
+  18.733% { opacity: 0; }
+  18.983% { opacity: 1; }
+  29.233% { opacity: 1; }
+  29.483% { opacity: 0; }
+  44.233% { opacity: 0; }
+  44.483% { opacity: 1; }
+  59.075% { opacity: 1; }
+  59.325% { opacity: 0; }
+  71.575% { opacity: 0; }
+  71.825% { opacity: 1; }
+  76.878% { opacity: 1; }
+  77.128% { opacity: 0; }
+  86.878% { opacity: 0; }
+  87.128% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rl-empty {
+  0% { opacity: 0; }
+  30.233% { opacity: 0; }
+  30.483% { opacity: 1; }
+  31.733% { opacity: 1; }
+  32.233% { opacity: 0; }
+  60.675% { opacity: 0; }
+  60.925% { opacity: 1; }
+  61.575% { opacity: 1; }
+  62.075% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-m1 {
+  0% { opacity: 0; }
+  9.308% { opacity: 0; }
+  9.558% { opacity: 1; }
+  11.808% { opacity: 1; }
+  12.058% { opacity: 0; }
+  12.475% { opacity: 0; }
+  12.725% { opacity: 1; }
+  14.975% { opacity: 1; }
+  15.225% { opacity: 0; }
+  16.058% { opacity: 0; }
+  16.308% { opacity: 1; }
+  18.558% { opacity: 1; }
+  18.808% { opacity: 0; }
+  20.975% { opacity: 0; }
+  21.225% { opacity: 1; }
+  23.808% { opacity: 1; }
+  24.058% { opacity: 0; }
+  34.308% { opacity: 0; }
+  34.558% { opacity: 1; }
+  37.808% { opacity: 1; }
+  38.058% { opacity: 0; }
+  41.475% { opacity: 0; }
+  41.725% { opacity: 1; }
+  43.975% { opacity: 1; }
+  44.225% { opacity: 0; }
+  45.808% { opacity: 0; }
+  46.058% { opacity: 1; }
+  48.308% { opacity: 1; }
+  48.558% { opacity: 0; }
+  64.725% { opacity: 0; }
+  64.975% { opacity: 1; }
+  68.825% { opacity: 1; }
+  69.075% { opacity: 0; }
+  71.875% { opacity: 0; }
+  72.125% { opacity: 1; }
+  74.375% { opacity: 1; }
+  74.625% { opacity: 0; }
+  80.071% { opacity: 0; }
+  80.321% { opacity: 1; }
+  93.821% { opacity: 1; }
+  94.071% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-m2 {
+  0% { opacity: 0; }
+  21.308% { opacity: 0; }
+  21.558% { opacity: 1; }
+  23.475% { opacity: 1; }
+  23.725% { opacity: 0; }
+  34.558% { opacity: 0; }
+  34.808% { opacity: 1; }
+  37.558% { opacity: 1; }
+  37.808% { opacity: 0; }
+  65.275% { opacity: 0; }
+  65.525% { opacity: 1; }
+  68.575% { opacity: 1; }
+  68.825% { opacity: 0; }
+  80.771% { opacity: 0; }
+  81.021% { opacity: 1; }
+  93.289% { opacity: 1; }
+  93.539% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-m3 {
+  0% { opacity: 0; }
+  34.808% { opacity: 0; }
+  35.058% { opacity: 1; }
+  37.308% { opacity: 1; }
+  37.558% { opacity: 0; }
+  65.525% { opacity: 0; }
+  65.775% { opacity: 1; }
+  68.025% { opacity: 1; }
+  68.275% { opacity: 0; }
+  81.339% { opacity: 0; }
+  81.589% { opacity: 1; }
+  92.589% { opacity: 1; }
+  92.839% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-m4 {
+  0% { opacity: 0; }
+  35.058% { opacity: 0; }
+  35.308% { opacity: 1; }
+  37.058% { opacity: 1; }
+  37.308% { opacity: 0; }
+  66.075% { opacity: 0; }
+  66.325% { opacity: 1; }
+  67.775% { opacity: 1; }
+  68.025% { opacity: 0; }
+  82.039% { opacity: 0; }
+  82.289% { opacity: 1; }
+  92.521% { opacity: 1; }
+  92.771% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-m5 {
+  0% { opacity: 0; }
+  35.308% { opacity: 0; }
+  35.558% { opacity: 1; }
+  36.808% { opacity: 1; }
+  37.058% { opacity: 0; }
+  66.325% { opacity: 0; }
+  66.575% { opacity: 1; }
+  67.225% { opacity: 1; }
+  67.475% { opacity: 0; }
+  83.821% { opacity: 0; }
+  84.071% { opacity: 1; }
+  92.021% { opacity: 1; }
+  92.271% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-m6 {
+  0% { opacity: 0; }
+  84.521% { opacity: 0; }
+  84.771% { opacity: 1; }
+  91.821% { opacity: 1; }
+  92.071% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rl-m7 {
+  0% { opacity: 0; }
+  88.821% { opacity: 0; }
+  89.071% { opacity: 1; }
+  91.321% { opacity: 1; }
+  91.571% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- clients, each identified by its API key -->
+  <rect class="box" x="36" y="278" width="140" height="52" rx="12"/>
+  <text class="label mid" x="106" y="300">Partner A</text>
+  <text class="sub mid mono f-orange" x="106" y="318">API key A</text>
+  <rect class="box" x="36" y="394" width="140" height="52" rx="12"/>
+  <text class="label mid" x="106" y="416">Partner B</text>
+  <text class="sub mid mono f-orange" x="106" y="434">API key B</text>
+  <text class="tiny mid sb f-amber-ink p2" x="106" y="349">sends 8 requests at once</text>
+  <text class="tiny mid sb f-amber-ink p3" x="106" y="349">sends 6 requests at once</text>
+  <text class="tiny mid sb p4" x="106" y="349">reports: low priority</text>
+  <text class="tiny mid sb p4" x="106" y="385">checkout: critical</text>
+
+  <!-- the buckets' container stays put: the limiter's memory in steps 1-2, a shared store in steps 3-4 -->
+  <rect class="box" x="236" y="96" width="414" height="170" rx="16"/>
+
+  <!-- steps 1-2: one limiter instance that keeps its buckets in memory -->
+  <g class="p12">
+    <rect class="box" x="236" y="96" width="414" height="356" rx="16"/>
+    <text class="label end" x="636" y="120">Rate limiter</text>
+    <text class="sub end" x="636" y="137">a token bucket per API key</text>
+    <rect class="f-bg s-line" x="480" y="150" width="160" height="66" rx="8" stroke-width="1.5"/>
+    <circle class="f-green" cx="493" cy="165" r="4"/>
+    <circle class="f-red" cx="493" cy="183" r="4"/>
+    <circle class="f-wire" cx="493" cy="201" r="4"/>
+    <text class="tiny" x="503" y="169">token left: take 1, pass</text>
+    <text class="tiny" x="503" y="187">empty: reject with 429</text>
+    <text class="tiny" x="503" y="205">full: extra tokens spill</text>
+    <line class="wire" x1="176" y1="304" x2="234" y2="304" marker-end="url(#ah)"/>
+    <line class="wire" x1="176" y1="420" x2="234" y2="420" marker-end="url(#ah)"/>
+    <line class="wire" x1="236" y1="304" x2="650" y2="304"/>
+    <line class="wire" x1="236" y1="420" x2="650" y2="420"/>
+    <line class="wire" x1="650" y1="304" x2="714" y2="304" marker-end="url(#ah)"/>
+    <line class="wire" x1="650" y1="420" x2="714" y2="420" marker-end="url(#ah)"/>
+    <line class="s-wire dash" x1="310" y1="258" x2="310" y2="298" stroke-width="1.5"/>
+    <circle class="f-bg s-wire" cx="310" cy="304" r="5" stroke-width="2"/>
+    <text class="tiny" x="322" y="274">1 token per request</text>
+    <path class="f-bg s-wire" d="M458 326V400Q458 408 466 408H474Q482 408 482 400V326" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="470" cy="398" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="470" cy="383" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="470" cy="368" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="470" cy="353" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="470" cy="338" r="6" stroke-width="1.5"/>
+    <circle class="rl-tok rl-b1" cx="470" cy="398" r="6"/>
+    <circle class="rl-tok rl-b2" cx="470" cy="383" r="6"/>
+    <circle class="rl-tok rl-b3" cx="470" cy="368" r="6"/>
+    <circle class="rl-tok rl-b4" cx="470" cy="353" r="6"/>
+    <circle class="rl-tok rl-b5" cx="470" cy="338" r="6"/>
+    <line class="s-wire dash" x1="470" y1="408" x2="470" y2="414" stroke-width="1.5"/>
+    <circle class="f-bg s-wire" cx="470" cy="420" r="5" stroke-width="2"/>
+    <text class="tiny sb" x="490" y="362">Partner B</text>
+    <text class="tiny" x="490" y="377">its own 5 tokens</text>
+  </g>
+
+  <!-- steps 3-4: three gateway instances, and the buckets moved to one shared store -->
+  <g class="p34">
+    <rect class="none s-teal" x="236" y="96" width="414" height="170" rx="16" stroke-width="1.5"/>
+    <text class="label end f-teal" x="636" y="120">Shared store</text>
+    <text class="sub end" x="636" y="137">e.g. Redis</text>
+    <path class="f-bg s-wire" d="M494 162V236Q494 244 502 244H510Q518 244 518 236V162" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="506" cy="234" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="506" cy="219" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="506" cy="204" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="506" cy="189" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="506" cy="174" r="6" stroke-width="1.5"/>
+    <circle class="rl-tok rl-b1" cx="506" cy="234" r="6"/>
+    <circle class="rl-tok rl-b2" cx="506" cy="219" r="6"/>
+    <circle class="rl-tok rl-b3" cx="506" cy="204" r="6"/>
+    <circle class="rl-tok rl-b4" cx="506" cy="189" r="6"/>
+    <circle class="rl-tok rl-b5" cx="506" cy="174" r="6"/>
+    <text class="tiny mid sb" x="506" y="259">Partner B</text>
+    <text class="tiny" x="532" y="176">one bucket per key</text>
+    <text class="tiny" x="532" y="190">for all instances</text>
+    <text class="tiny" x="532" y="216">check + take 1:</text>
+    <text class="tiny" x="532" y="230">one atomic step</text>
+    <rect class="box" x="196" y="290" width="12" height="144" rx="6"/>
+    <line class="wire" x1="176" y1="304" x2="194" y2="304" marker-end="url(#ah)"/>
+    <line class="wire" x1="176" y1="420" x2="194" y2="420" marker-end="url(#ah)"/>
+    <line class="wire" x1="208" y1="304" x2="248" y2="304" marker-end="url(#ah)"/>
+    <line class="wire" x1="208" y1="362" x2="248" y2="362" marker-end="url(#ah)"/>
+    <line class="wire" x1="208" y1="420" x2="248" y2="420" marker-end="url(#ah)"/>
+    <line class="wire" x1="410" y1="304" x2="714" y2="304" marker-end="url(#ah)"/>
+    <line class="wire" x1="410" y1="362" x2="714" y2="362" marker-end="url(#ah)"/>
+    <line class="wire" x1="410" y1="420" x2="714" y2="420" marker-end="url(#ah)"/>
+    <rect class="box" x="250" y="288" width="160" height="42" rx="10"/>
+    <text class="tiny sb" x="296" y="324">gateway 1</text>
+    <rect class="box" x="250" y="346" width="160" height="42" rx="10"/>
+    <text class="tiny sb" x="296" y="382">gateway 2</text>
+    <rect class="box" x="250" y="404" width="160" height="42" rx="10"/>
+    <text class="tiny sb" x="296" y="440">gateway 3</text>
+    <line class="s-teal" x1="280" y1="266" x2="280" y2="420" stroke-width="2"/>
+    <circle class="f-teal s-bg" cx="280" cy="304" r="4.5" stroke-width="1.5"/>
+    <circle class="f-teal s-bg" cx="280" cy="362" r="4.5" stroke-width="1.5"/>
+    <circle class="f-teal s-bg" cx="280" cy="420" r="4.5" stroke-width="1.5"/>
+    <text class="tiny" x="250" y="463">load-balanced gateway instances</text>
+  </g>
+  <line class="s-teal rl-w rl-glow" x1="280" y1="266" x2="280" y2="420" stroke-width="8" stroke-opacity="0.3" stroke-linecap="round"/>
+  <g class="p3">
+    <circle class="f-amber" cx="428" cy="327" r="4"/>
+    <text class="tiny f-amber-ink" x="438" y="331">local counters: 3 × 5 = 15 would pass</text>
+    <circle class="f-green" cx="428" cy="385" r="4"/>
+    <text class="tiny" x="438" y="389">one shared count: 5 pass, the 6th gets 429</text>
+  </g>
+  <g class="p4">
+    <text class="tiny" x="428" y="331">every client is within its own quota,</text>
+    <text class="tiny" x="428" y="389">yet together they fill the service</text>
+  </g>
+
+  <!-- Partner A's token bucket: capacity 5, refilled at 2 tokens per second -->
+  <path class="f-panel-2 s-wire" d="M302 96V116Q302 120 306 120H314Q318 120 318 116V96" stroke-width="1.5"/>
+  <text class="tiny sb" x="328" y="110">refill 2 tokens / s</text>
+  <text class="tiny" x="328" y="124">= sustained rate</text>
+  <path class="f-bg s-muted" d="M286 132V246Q286 258 298 258H322Q334 258 334 246V132" stroke-width="2"/>
+  <circle class="f-bg s-line" cx="310" cy="244" r="10" stroke-width="1.5"/>
+  <circle class="f-bg s-line" cx="310" cy="220" r="10" stroke-width="1.5"/>
+  <circle class="f-bg s-line" cx="310" cy="196" r="10" stroke-width="1.5"/>
+  <circle class="f-bg s-line" cx="310" cy="172" r="10" stroke-width="1.5"/>
+  <circle class="f-bg s-line" cx="310" cy="148" r="10" stroke-width="1.5"/>
+  <circle class="rl-tok rl-a1" cx="310" cy="244" r="10"/>
+  <circle class="rl-tok rl-a2" cx="310" cy="220" r="10"/>
+  <circle class="rl-tok rl-a3" cx="310" cy="196" r="10"/>
+  <circle class="rl-tok rl-a4" cx="310" cy="172" r="10"/>
+  <circle class="rl-tok rl-a5" cx="310" cy="148" r="10"/>
+  <path class="f-red-soft s-red rl-w rl-empty" d="M286 132V246Q286 258 298 258H322Q334 258 334 246V132" stroke-width="2"/>
+  <path class="none s-muted" d="M338 138H342V254H338M342 196H346" stroke-width="1.5"/>
+  <text class="tiny sb" x="352" y="150">Partner A</text>
+  <text class="rl-num f-red rl-w rl-n0" x="352" y="178">0</text>
+  <text class="rl-num f-green rl-w rl-n1" x="352" y="178">1</text>
+  <text class="rl-num f-green rl-w rl-n2" x="352" y="178">2</text>
+  <text class="rl-num f-green rl-w rl-n3" x="352" y="178">3</text>
+  <text class="rl-num f-green rl-w rl-n4" x="352" y="178">4</text>
+  <text class="rl-num f-green rl-n5" x="352" y="178">5</text>
+  <text class="tiny" x="372" y="178">of 5 tokens</text>
+  <text class="tiny sb" x="352" y="200">capacity 5</text>
+  <text class="tiny" x="352" y="214">= largest burst</text>
+
+  <!-- the protected service and how many requests it is serving right now -->
+  <rect class="box" x="728" y="192" width="190" height="258" rx="12"/>
+  <rect class="box" x="722" y="186" width="190" height="258" rx="12"/>
+  <rect class="box" x="716" y="180" width="190" height="258" rx="12"/>
+  <text class="label mid" x="811" y="207">Orders API</text>
+  <text class="sub mid" x="811" y="224">3 instances</text>
+  <text class="tiny" x="733" y="250">requests in flight</text>
+  <rect class="f-bg s-line" x="733" y="258" width="16" height="18" rx="3" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="753" y="258" width="16" height="18" rx="3" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="773" y="258" width="16" height="18" rx="3" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="793" y="258" width="16" height="18" rx="3" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="813" y="258" width="16" height="18" rx="3" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="833" y="258" width="16" height="18" rx="3" stroke-width="1.5"/>
+  <rect class="f-bg s-amber" x="853" y="258" width="16" height="18" rx="3" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <rect class="f-bg s-amber" x="873" y="258" width="16" height="18" rx="3" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <rect class="f-blue rl-w rl-m1" x="733" y="258" width="16" height="18" rx="3"/>
+  <rect class="f-blue rl-w rl-m2" x="753" y="258" width="16" height="18" rx="3"/>
+  <rect class="f-blue rl-w rl-m3" x="773" y="258" width="16" height="18" rx="3"/>
+  <rect class="f-blue rl-w rl-m4" x="793" y="258" width="16" height="18" rx="3"/>
+  <rect class="f-blue rl-w rl-m5" x="813" y="258" width="16" height="18" rx="3"/>
+  <rect class="f-blue rl-w rl-m6" x="833" y="258" width="16" height="18" rx="3"/>
+  <rect class="f-blue rl-w rl-m7" x="853" y="258" width="16" height="18" rx="3"/>
+  <path class="none s-amber" d="M853 281v4h36v-4" stroke-width="1.5"/>
+  <text class="tiny end f-amber-ink" x="889" y="298">critical only</text>
+  <g class="p4">
+    <circle class="pkt f-blue" cx="740" cy="330" r="6"/>
+    <text class="tiny" x="752" y="334">checkout: keeps flowing</text>
+    <circle class="rl-hollow" cx="740" cy="348" r="4.5"/>
+    <text class="tiny" x="752" y="352">reports: shed first</text>
+  </g>
+
+  <!-- what Partner A gets back -->
+  <g class="rl-w rl-c429">
+    <path class="none s-red" d="M106 252V277" stroke-width="1.5" stroke-dasharray="3 4"/>
+    <rect class="f-bg s-red" x="36" y="190" width="174" height="62" rx="10" stroke-width="1.5"/>
+    <text class="tiny mono b f-red" x="47" y="210">429 Too Many Requests</text>
+    <text class="tiny mono f-ink" x="47" y="226">Retry-After: 1</text>
+    <text class="tiny f-amber-ink" x="47" y="243">A waits 1 s, then retries</text>
+  </g>
+  <g class="rl-w rl-c503">
+    <path class="none s-red" d="M106 252V277" stroke-width="1.5" stroke-dasharray="3 4"/>
+    <rect class="f-bg s-red" x="36" y="190" width="174" height="62" rx="10" stroke-width="1.5"/>
+    <text class="tiny mono b f-red" x="47" y="210">503 Service Unavailable</text>
+    <text class="tiny mono f-ink" x="47" y="226">Retry-After: 2</text>
+    <text class="tiny f-amber-ink" x="47" y="243">A backs off, adds jitter</text>
+  </g>
+
+  <!-- tokens: the refill drip and the token each admitted request takes -->
+  <circle class="rl-tok pkt rl-t rl-drip" r="8"/>
+  <circle class="rl-tok pkt rl-t rl-dz0" r="6"/>
+  <circle class="rl-tok pkt rl-t rl-dz1" r="6"/>
+  <circle class="rl-tok pkt rl-t rl-dz2" r="6"/>
+  <circle class="rl-tok pkt rl-t rl-dz3" r="6"/>
+  <!-- store lookups (teal), requests (blue; hollow = low priority), rejections (red) -->
+  <circle class="pkt f-teal rl-t rl-t0" r="6"/>
+  <circle class="pkt f-teal rl-t rl-t1" r="6"/>
+  <circle class="pkt f-teal rl-t rl-t2" r="6"/>
+  <circle class="pkt f-teal rl-t rl-t3" r="6"/>
+  <circle class="pkt f-teal rl-t rl-t4" r="6"/>
+  <circle class="pkt f-teal rl-t rl-t5" r="6"/>
+  <g class="rl-t rl-ka"><circle class="pkt f-blue" r="7"/><text class="tiny mid sb mono f-orange rl-lbl" y="-13">key A</text></g>
+  <g class="rl-t rl-kb"><circle class="pkt f-blue" r="7"/><text class="tiny mid sb mono f-orange rl-lbl" y="-13">key B</text></g>
+  <g class="rl-t rl-kr"><circle class="pkt f-blue" r="7"/><text class="tiny mid sb f-ink rl-lbl" y="-13">retry</text></g>
+  <circle class="pkt f-blue rl-t rl-q0" r="7"/>
+  <circle class="pkt f-blue rl-t rl-q1" r="7"/>
+  <circle class="pkt f-blue rl-t rl-q2" r="7"/>
+  <circle class="pkt f-blue rl-t rl-q3" r="7"/>
+  <circle class="pkt f-blue rl-t rl-q4" r="7"/>
+  <circle class="pkt f-blue rl-t rl-q5" r="7"/>
+  <circle class="pkt f-blue rl-t rl-q6" r="7"/>
+  <circle class="pkt f-blue rl-t rl-q7" r="7"/>
+  <g class="rl-t rl-lc"><circle class="pkt f-blue" r="7"/><text class="tiny mid sb f-blue rl-lbl" y="-13">checkout</text></g>
+  <g class="rl-t rl-lr"><circle class="rl-hollow" r="5.5"/><text class="tiny mid sb f-blue rl-lbl" y="-13">report</text></g>
+  <circle class="rl-hollow rl-t rl-h0" r="5.5"/>
+  <circle class="rl-hollow rl-t rl-h1" r="5.5"/>
+  <circle class="rl-hollow rl-t rl-h2" r="5.5"/>
+  <g class="rl-t rl-r0"><circle class="pkt f-red" r="7"/><text class="tiny mid b f-red rl-lbl" y="-13">429</text></g>
+  <circle class="pkt f-red rl-t rl-r1" r="7"/>
+  <circle class="pkt f-red rl-t rl-r2" r="7"/>
+  <g class="rl-t rl-s503"><circle class="pkt f-red" r="7"/><text class="tiny mid b f-red rl-lbl" y="-13">503</text></g>
+</g>
+</svg>

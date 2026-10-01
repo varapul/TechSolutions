@@ -71,7 +71,7 @@ The colours are only names for the two slots. Each environment cycles through li
 ## Related patterns
 
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
-- Feature Flags *(planned)* — Deploy code dark, then turn features on per user or percentage at runtime.
+- [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
 - Rolling Update *(planned)* — Replace instances batch by batch while the service stays up.
 - Expand and Contract *(planned)* — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
 - Immutable Infrastructure *(planned)* — Never patch servers in place: bake a new image and replace them.

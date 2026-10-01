@@ -101,7 +101,7 @@ It is overkill when:
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Event Sourcing *(planned)* — Store every change as an immutable event and rebuild state by replaying them.
+- [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
 - Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - Change Data Capture (CDC) *(planned)* — Stream every committed change from the database log to other systems.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.

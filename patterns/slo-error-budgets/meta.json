@@ -1,0 +1,39 @@
+{
+  "aka": ["Service level objectives", "Burn-rate alerting"],
+  "steps": [
+    {
+      "title": "SLI and SLO",
+      "caption": "Each response counts as good or bad. SLI = good ÷ valid = 99.95%, above the 99.9% objective.",
+      "body": "The **SLI** is a ratio of good events to valid events: here, checkout requests answered without a 5xx, counted at the load balancer because that is closer to what users see than the server's own logs. (A latency SLI would count the requests answered within, say, 300 ms.) The **SLO** is a target for that ratio over a window: 99.9% over a rolling 30 days. At 99.95% the service is inside its objective."
+    },
+    {
+      "title": "The error budget",
+      "caption": "The 0.1% that may fail is the budget: 30,000 requests. A 5-minute blip burns 1.2%: no page.",
+      "body": "What the objective leaves over is the **error budget**: 100% − 99.9% = 0.1% of 30,000,000 requests, so 30,000 may fail in 30 days (as time, 43.2 minutes of total outage). Background errors spend it slowly, about 20 requests an hour here. Five minutes at 10% errors cost about 350 requests, 1.2% of the budget: the 5-minute window spikes to 100×, but the 1-hour window only reaches 8.8×, so nobody is paged."
+    },
+    {
+      "title": "Alert on burn rate",
+      "caption": "1.5% errors burn the budget at 15×. Once the 1 h and 5 min windows both pass 14.4×, it pages.",
+      "body": "**Burn rate** is the error rate divided by the budget (1 − SLO): 1.5% ÷ 0.1% = 15×, a pace that would empty the 30-day budget in 2 days. The page fires when the 1-hour *and* the 5-minute window are both above 14.4×. Here that takes 58 minutes and 2% of the budget; a total outage would trip it in under a minute. After the fix the 5-minute window clears within minutes and the page stops, even when the 1-hour average is still high."
+    },
+    {
+      "title": "Spend it on purpose",
+      "caption": "Budget left: keep shipping. Budget spent: freeze features until old errors age out of the window.",
+      "body": "The budget is there to be spent: while some is left, releases, experiments and planned maintenance go ahead (here risky launches burn it at a slow 2×, which opens a ticket rather than a page). When it is gone, the **error budget policy** closes the gate: feature releases stop and the team works on reliability until the service is back within its SLO. With a rolling window that happens as old errors age out and the budget refills."
+    }
+  ],
+  "related": ["distributed-tracing", "centralized-logging", "telemetry-pipeline", "canary-release", "health-endpoint-monitoring", "chaos-engineering", "feature-flags"],
+  "references": [
+    { "title": "Google SRE Book — Service Level Objectives (chapter 4)", "url": "https://sre.google/sre-book/service-level-objectives/" },
+    { "title": "Google SRE Book — Embracing Risk (chapter 3)", "url": "https://sre.google/sre-book/embracing-risk/" },
+    { "title": "Google SRE Workbook — Implementing SLOs (chapter 2)", "url": "https://sre.google/workbook/implementing-slos/" },
+    { "title": "Google SRE Workbook — Alerting on SLOs (chapter 5)", "url": "https://sre.google/workbook/alerting-on-slos/" },
+    { "title": "Google SRE Workbook — Example Error Budget Policy (appendix B)", "url": "https://sre.google/workbook/error-budget-policy/" },
+    { "title": "Google SRE — The Art of SLOs (workshop and participant handbook)", "url": "https://sre.google/resources/practices-and-processes/art-of-slos/" },
+    { "title": "Google Cloud — Concepts in service monitoring", "url": "https://docs.cloud.google.com/stackdriver/docs/solutions/slo-monitoring" },
+    { "title": "Google Cloud — Alerting on your burn rate", "url": "https://docs.cloud.google.com/stackdriver/docs/solutions/slo-monitoring/alerting-on-budget-burn-rate" },
+    { "title": "OpenSLO — Specification", "url": "https://openslo.com/specification/" },
+    { "title": "Prometheus — Defining recording rules", "url": "https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/" },
+    { "title": "Prometheus — Alerting rules", "url": "https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/" }
+  ]
+}

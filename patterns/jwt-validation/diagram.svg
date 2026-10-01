@@ -1,0 +1,901 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">JWT Validation</title>
+<desc id="dg-desc">JWT Validation. APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS). Step 1, Fetch the keys once: At startup the API reads the issuer's metadata, finds jwks_uri and caches its public keys (JWKS). Step 2, Verify locally: Each request: allowlisted alg, key by kid, signature, then iss, aud, exp and scope. No issuer call. Step 3, Reject what fails: Expired, tampered or meant for another API: 401 invalid_token. Valid but short of scope: 403. Step 4, Key rotation: The issuer signs with a new key, k3. Unknown kid: the API refetches the JWKS once, then verifies.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">IDENTITY &amp; ACCESS (AUTH)</text>
+  <text class="title" x="40" y="64">JWT Validation</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Fetch the keys once</text>
+  <text class="step on p1" x="40" y="518">1 · Fetch the keys once</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Verify locally</text>
+  <text class="step on p2" x="262" y="518">2 · Verify locally</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Reject what fails</text>
+  <text class="step on p3" x="484" y="518">3 · Reject what fails</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Key rotation</text>
+  <text class="step on p4" x="706" y="518">4 · Key rotation</text>
+  <text class="caption p1" x="40" y="552">At startup the API reads the issuer's metadata, finds jwks_uri and caches its public keys (JWKS).</text>
+  <text class="caption p2" x="40" y="552">Each request: allowlisted alg, key by kid, signature, then iss, aud, exp and scope. No issuer call.</text>
+  <text class="caption p3" x="40" y="552">Expired, tampered or meant for another API: 401 invalid_token. Valid but short of scope: 403.</text>
+  <text class="caption p4" x="40" y="552">The issuer signs with a new key, k3. Unknown kid: the API refetches the JWKS once, then verifies.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* JWT Validation. Timeline (20s loop, 1s = 5%):
+   0-25%   the API reads the issuer's metadata, follows jwks_uri and fills its JWKS cache with k1 and k2
+   25-50%  a request with a Bearer token arrives; the seven checks tick in order while the matching
+           fields light up in the token; 200 OK, and the issuer is not called
+   50-75%  four requests: expired (#1), payload edited (#2), wrong audience (#3) get 401;
+           a valid token without the needed scope (#4) gets 403
+   75-100% the issuer signs with a new key k3; kid k3 misses the cache, the API refetches the JWKS
+           and verifies. k3 and the cache contents fade in the last half-second so the loop restarts
+           with an empty cache
+   Generated from a timeline with scripts/lib/motion.mjs (track, windows). */
+.diagram .jv-t, .diagram .jv-w { opacity: 0; }
+.diagram .jv-seg { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .jv-getmeta { animation: jv-getmeta var(--T) linear infinite; }
+.diagram .jv-uri { animation: jv-uri var(--T) linear infinite; }
+.diagram .jv-getjwks { animation: jv-getjwks var(--T) linear infinite; }
+.diagram .jv-jwks { animation: jv-jwks var(--T) linear infinite; }
+.diagram .jv-meta-ring { animation: jv-meta-ring var(--T) linear infinite; }
+.diagram .jv-jwks-ring { animation: jv-jwks-ring var(--T) linear infinite; }
+.diagram .jv-empty { animation: jv-empty var(--T) linear infinite; }
+.diagram .jv-cache-ring { animation: jv-cache-ring var(--T) linear infinite; }
+.diagram .jv-req { animation: jv-req var(--T) linear infinite; }
+.diagram .jv-ok { animation: jv-ok var(--T) linear infinite; }
+.diagram .jv-401 { animation: jv-401 var(--T) linear infinite; }
+.diagram .jv-403 { animation: jv-403 var(--T) linear infinite; }
+.diagram .jv-get { animation: jv-get var(--T) linear infinite; }
+.diagram .jv-del { animation: jv-del var(--T) linear infinite; }
+.diagram .jv-hl-alg { animation: jv-hl-alg var(--T) linear infinite; }
+.diagram .jv-hl-kid { animation: jv-hl-kid var(--T) linear infinite; }
+.diagram .jv-hl-sig { animation: jv-hl-sig var(--T) linear infinite; }
+.diagram .jv-hl-iss { animation: jv-hl-iss var(--T) linear infinite; }
+.diagram .jv-hl-aud { animation: jv-hl-aud var(--T) linear infinite; }
+.diagram .jv-hl-exp { animation: jv-hl-exp var(--T) linear infinite; }
+.diagram .jv-hl-scope { animation: jv-hl-scope var(--T) linear infinite; }
+.diagram .jv-t1 { animation: jv-t1 var(--T) linear infinite; }
+.diagram .jv-t2 { animation: jv-t2 var(--T) linear infinite; }
+.diagram .jv-t3 { animation: jv-t3 var(--T) linear infinite; }
+.diagram .jv-t4 { animation: jv-t4 var(--T) linear infinite; }
+.diagram .jv-t5 { animation: jv-t5 var(--T) linear infinite; }
+.diagram .jv-t6 { animation: jv-t6 var(--T) linear infinite; }
+.diagram .jv-t7 { animation: jv-t7 var(--T) linear infinite; }
+.diagram .jv-k2-ring { animation: jv-k2-ring var(--T) linear infinite; }
+.diagram .jv-pass { animation: jv-pass var(--T) linear infinite; }
+.diagram .jv-exp-bad { animation: jv-exp-bad var(--T) linear infinite; }
+.diagram .jv-sub-bad { animation: jv-sub-bad var(--T) linear infinite; }
+.diagram .jv-aud-bad { animation: jv-aud-bad var(--T) linear infinite; }
+.diagram .jv-scope-hi { animation: jv-scope-hi var(--T) linear infinite; }
+.diagram .jv-x6 { animation: jv-x6 var(--T) linear infinite; }
+.diagram .jv-x3 { animation: jv-x3 var(--T) linear infinite; }
+.diagram .jv-x5 { animation: jv-x5 var(--T) linear infinite; }
+.diagram .jv-x7 { animation: jv-x7 var(--T) linear infinite; }
+.diagram .jv-kid3 { animation: jv-kid3 var(--T) linear infinite; }
+.diagram .jv-hl-kid4 { animation: jv-hl-kid4 var(--T) linear infinite; }
+.diagram .jv-is-k3 { animation: jv-is-k3 var(--T) linear infinite; }
+.diagram .jv-k2-old { animation: jv-k2-old var(--T) linear infinite; }
+.diagram .jv-q2 { animation: jv-q2 var(--T) linear infinite; }
+.diagram .jv-k3-chip { animation: jv-k3-chip var(--T) linear infinite; }
+.diagram .jv-k3-ring { animation: jv-k3-ring var(--T) linear infinite; }
+.diagram .jv-chips { animation: jv-chips var(--T) linear infinite; }
+.diagram .jv-exp-ok { animation: jv-exp-ok var(--T) linear infinite; }
+.diagram .jv-sub-ok { animation: jv-sub-ok var(--T) linear infinite; }
+.diagram .jv-aud-ok { animation: jv-aud-ok var(--T) linear infinite; }
+.diagram .jv-kid2 { animation: jv-kid2 var(--T) linear infinite; }
+.diagram .jv-k2-cur { animation: jv-k2-cur var(--T) linear infinite; }
+@keyframes jv-getmeta {
+  0% { transform: translate(596px, 134px); opacity: 0; }
+  2.5% { transform: translate(596px, 134px); opacity: 0; }
+  2.75% { opacity: 1; }
+  6.5% { transform: translate(698px, 134px); opacity: 1; }
+  6.75% { transform: translate(698px, 134px); opacity: 0; }
+  100% { transform: translate(698px, 134px); opacity: 0; }
+}
+@keyframes jv-uri {
+  0% { transform: translate(711px, 134px); opacity: 0; }
+  7.5% { transform: translate(711px, 134px); opacity: 0; }
+  7.75% { opacity: 1; }
+  11.5% { transform: translate(583px, 134px); opacity: 1; }
+  11.75% { transform: translate(583px, 134px); opacity: 0; }
+  100% { transform: translate(583px, 134px); opacity: 0; }
+}
+@keyframes jv-getjwks {
+  0% { transform: translate(594px, 134px); opacity: 0; }
+  12.5% { transform: translate(594px, 134px); opacity: 0; }
+  12.75% { opacity: 1; }
+  16.5% { transform: translate(700px, 134px); opacity: 1; }
+  16.75% { transform: translate(700px, 134px); opacity: 0; }
+  83% { transform: translate(594px, 134px); opacity: 0; }
+  83.25% { opacity: 1; }
+  86.5% { transform: translate(700px, 134px); opacity: 1; }
+  86.75% { transform: translate(700px, 134px); opacity: 0; }
+  100% { transform: translate(700px, 134px); opacity: 0; }
+}
+@keyframes jv-jwks {
+  0% { transform: translate(720px, 134px); opacity: 0; }
+  17% { transform: translate(720px, 134px); opacity: 0; }
+  17.25% { opacity: 1; }
+  21% { transform: translate(574px, 134px); opacity: 1; }
+  21.25% { transform: translate(574px, 134px); opacity: 0; }
+  87% { transform: translate(720px, 134px); opacity: 0; }
+  87.25% { opacity: 1; }
+  90.5% { transform: translate(574px, 134px); opacity: 1; }
+  90.75% { transform: translate(574px, 134px); opacity: 0; }
+  100% { transform: translate(574px, 134px); opacity: 0; }
+}
+@keyframes jv-meta-ring {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7% { opacity: 1; }
+  12% { opacity: 1; }
+  13% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-jwks-ring {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17% { opacity: 1; }
+  21.5% { opacity: 1; }
+  22.5% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76% { opacity: 1; }
+  79.5% { opacity: 1; }
+  80.5% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87% { opacity: 1; }
+  91% { opacity: 1; }
+  92% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-empty {
+  0% { opacity: 1; }
+  21% { opacity: 1; }
+  21.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jv-chips {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  21.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-cache-ring {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  21.5% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-req {
+  0% { transform: translate(253px, 134px); opacity: 0; }
+  26.5% { transform: translate(253px, 134px); opacity: 0; }
+  26.75% { opacity: 1; }
+  30.5% { transform: translate(373px, 134px); opacity: 1; }
+  30.75% { transform: translate(373px, 134px); opacity: 0; }
+  50.75% { transform: translate(253px, 134px); opacity: 0; }
+  51% { opacity: 1; }
+  52.75% { transform: translate(373px, 134px); opacity: 1; }
+  53% { transform: translate(373px, 134px); opacity: 0; }
+  56.25% { transform: translate(253px, 134px); opacity: 0; }
+  56.5% { opacity: 1; }
+  58.25% { transform: translate(373px, 134px); opacity: 1; }
+  58.5% { transform: translate(373px, 134px); opacity: 0; }
+  61.75% { transform: translate(253px, 134px); opacity: 0; }
+  62% { opacity: 1; }
+  63.75% { transform: translate(373px, 134px); opacity: 1; }
+  64% { transform: translate(373px, 134px); opacity: 0; }
+  67.25% { transform: translate(253px, 134px); opacity: 0; }
+  67.5% { opacity: 1; }
+  69.25% { transform: translate(373px, 134px); opacity: 1; }
+  69.5% { transform: translate(373px, 134px); opacity: 0; }
+  78% { transform: translate(253px, 134px); opacity: 0; }
+  78.25% { opacity: 1; }
+  81.5% { transform: translate(373px, 134px); opacity: 1; }
+  81.75% { transform: translate(373px, 134px); opacity: 0; }
+  100% { transform: translate(373px, 134px); opacity: 0; }
+}
+@keyframes jv-ok {
+  0% { transform: translate(382px, 134px); opacity: 0; }
+  44.5% { transform: translate(382px, 134px); opacity: 0; }
+  44.75% { opacity: 1; }
+  47.5% { transform: translate(244px, 134px); }
+  49.25% { transform: translate(244px, 134px); opacity: 1; }
+  49.5% { transform: translate(244px, 134px); opacity: 0; }
+  94.75% { transform: translate(382px, 134px); opacity: 0; }
+  95% { opacity: 1; }
+  96.5% { transform: translate(244px, 134px); }
+  97.75% { transform: translate(244px, 134px); opacity: 1; }
+  98% { transform: translate(244px, 134px); opacity: 0; }
+  100% { transform: translate(244px, 134px); opacity: 0; }
+}
+@keyframes jv-401 {
+  0% { transform: translate(391px, 134px); opacity: 0; }
+  53.5% { transform: translate(391px, 134px); opacity: 0; }
+  53.75% { opacity: 1; }
+  55.5% { transform: translate(235px, 134px); }
+  56% { transform: translate(235px, 134px); opacity: 1; }
+  56.25% { transform: translate(235px, 134px); opacity: 0; }
+  59% { transform: translate(391px, 134px); opacity: 0; }
+  59.25% { opacity: 1; }
+  61% { transform: translate(235px, 134px); }
+  61.5% { transform: translate(235px, 134px); opacity: 1; }
+  61.75% { transform: translate(235px, 134px); opacity: 0; }
+  64.5% { transform: translate(391px, 134px); opacity: 0; }
+  64.75% { opacity: 1; }
+  66.5% { transform: translate(235px, 134px); }
+  67% { transform: translate(235px, 134px); opacity: 1; }
+  67.25% { transform: translate(235px, 134px); opacity: 0; }
+  100% { transform: translate(235px, 134px); opacity: 0; }
+}
+@keyframes jv-403 {
+  0% { transform: translate(391px, 134px); opacity: 0; }
+  70% { transform: translate(391px, 134px); opacity: 0; }
+  70.25% { opacity: 1; }
+  72% { transform: translate(235px, 134px); }
+  74.25% { transform: translate(235px, 134px); opacity: 1; }
+  74.5% { transform: translate(235px, 134px); opacity: 0; }
+  100% { transform: translate(235px, 134px); opacity: 0; }
+}
+@keyframes jv-get {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.5% { opacity: 1; }
+  67% { opacity: 1; }
+  67.5% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-del {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  67.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-alg {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.5% { opacity: 1; }
+  32.5% { opacity: 1; }
+  33% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-kid {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.5% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-sig {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.5% { opacity: 1; }
+  36.5% { opacity: 1; }
+  37% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-iss {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  36.5% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-aud {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  38.5% { opacity: 1; }
+  40.5% { opacity: 1; }
+  41% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-exp {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  40.5% { opacity: 1; }
+  42.5% { opacity: 1; }
+  43% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-scope {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  44.5% { opacity: 1; }
+  45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-t1 {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  31.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  82% { opacity: 0; }
+  82.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-t2 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  33.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-t3 {
+  0% { opacity: 0; }
+  35% { opacity: 0; }
+  35.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  92.25% { opacity: 0; }
+  92.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-t4 {
+  0% { opacity: 0; }
+  37% { opacity: 0; }
+  37.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-t5 {
+  0% { opacity: 0; }
+  39% { opacity: 0; }
+  39.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  93.25% { opacity: 0; }
+  93.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-t6 {
+  0% { opacity: 0; }
+  41% { opacity: 0; }
+  41.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  93.75% { opacity: 0; }
+  94.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-t7 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  94.25% { opacity: 0; }
+  94.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-k2-ring {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  33.5% { opacity: 1; }
+  37% { opacity: 1; }
+  38% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-pass {
+  0% { opacity: 0; }
+  44% { opacity: 0; }
+  44.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-exp-ok {
+  0% { opacity: 1; }
+  50.75% { opacity: 1; }
+  51.25% { opacity: 0; }
+  56% { opacity: 0; }
+  56.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jv-exp-bad {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  56% { opacity: 1; }
+  56.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-sub-ok {
+  0% { opacity: 1; }
+  56.25% { opacity: 1; }
+  56.75% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jv-sub-bad {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  56.75% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-aud-ok {
+  0% { opacity: 1; }
+  61.75% { opacity: 1; }
+  62.25% { opacity: 0; }
+  67% { opacity: 0; }
+  67.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jv-aud-bad {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.25% { opacity: 1; }
+  67% { opacity: 1; }
+  67.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-scope-hi {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  67.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-x6 {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-x3 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-x5 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  64.5% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-x7 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-kid2 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  98% { opacity: 0; }
+  98.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jv-kid3 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-hl-kid4 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  91.5% { opacity: 1; }
+  92% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-is-k3 {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-k2-cur {
+  0% { opacity: 1; }
+  75.5% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  98.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jv-k2-old {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-q2 {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83% { opacity: 1; }
+  91% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-k3-chip {
+  0% { opacity: 0; }
+  90.5% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jv-k3-ring {
+  0% { opacity: 0; }
+  90.5% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- top lane: the three parties and the two wires that messages travel on -->
+  <line class="wire" x1="216" y1="134" x2="410" y2="134"/>
+  <line class="wire" x1="550" y1="134" x2="744" y2="134"/>
+  <path class="wire" d="M146 148V160M480 148V160M814 148V160"/>
+  <rect class="box" x="76" y="96" width="140" height="52" rx="12"/>
+  <text class="label mid" x="146" y="118">Shop</text>
+  <text class="sub mid" x="146" y="136">client app</text>
+  <rect class="box" x="410" y="96" width="140" height="52" rx="12"/>
+  <text class="label mid" x="480" y="118">Orders API</text>
+  <text class="sub mid" x="480" y="136">resource server</text>
+  <rect class="box" x="744" y="96" width="140" height="52" rx="12"/>
+  <text class="label mid" x="814" y="118">Issuer</text>
+  <text class="sub mid" x="814" y="136">authorization server</text>
+  <text class="tiny mono mid f-ink jv-w jv-get" x="313" y="106">GET /orders</text>
+  <text class="tiny mono mid sb f-ink jv-w jv-del" x="313" y="106">DELETE /orders/7</text>
+  <text class="tiny mono mid p234" x="313" y="120">Authorization: Bearer</text>
+  <text class="tiny mid p1" x="647" y="120">at startup, or on first use</text>
+  <text class="tiny mid sb f-ink p23" x="647" y="120">no call to the issuer</text>
+  <text class="tiny mid sb f-amber-ink p4" x="647" y="120">refetch on an unknown kid</text>
+
+  <!-- the access token the client holds: header, payload, signature -->
+  <rect class="f-bg s-orange" x="30" y="160" width="232" height="242" rx="12" stroke-width="1.5"/>
+  <rect class="f-orange-soft jv-w jv-hl-alg" x="36" y="218.5" width="220" height="14" rx="3"/>
+  <rect class="f-orange-soft jv-w jv-hl-kid" x="36" y="232.5" width="220" height="14" rx="3"/>
+  <rect class="f-orange-soft jv-w jv-hl-sig" x="36" y="380.5" width="220" height="14" rx="3"/>
+  <rect class="f-orange-soft jv-w jv-hl-iss" x="36" y="278.5" width="220" height="14" rx="3"/>
+  <rect class="f-orange-soft jv-w jv-hl-aud" x="36" y="306.5" width="220" height="14" rx="3"/>
+  <rect class="f-orange-soft jv-w jv-hl-exp" x="36" y="320.5" width="220" height="14" rx="3"/>
+  <rect class="f-orange-soft jv-w jv-hl-scope" x="36" y="334.5" width="220" height="14" rx="3"/>
+  <rect class="f-orange-soft jv-w jv-hl-alg" x="36" y="246.5" width="220" height="14" rx="3"/>
+  <rect class="f-amber-soft jv-w jv-hl-kid4" x="36" y="232.5" width="220" height="14" rx="3"/>
+  <rect class="f-red-soft jv-w jv-exp-bad" x="36" y="320.5" width="220" height="14" rx="3"/>
+  <rect class="f-red-soft jv-w jv-sub-bad" x="36" y="292.5" width="220" height="14" rx="3"/>
+  <rect class="f-red-soft jv-w jv-sub-bad" x="36" y="380.5" width="220" height="14" rx="3"/>
+  <rect class="f-red-soft jv-w jv-aud-bad" x="36" y="306.5" width="220" height="14" rx="3"/>
+  <rect class="f-red-soft jv-w jv-scope-hi" x="36" y="334.5" width="220" height="14" rx="3"/>
+  <text class="label f-orange" x="42" y="181">Access token</text>
+  <text class="tiny" x="150" y="181">signed JWT (JWS)</text>
+  <text class="tiny mono" x="42" y="198"><tspan class="f-orange b">eyJhbGci…</tspan>.<tspan class="f-orange b">eyJpc3Mi…</tspan>.<tspan class="f-orange b">Qm9x7Kd2…</tspan></text>
+  <path class="none s-line" d="M94 209.5H254M100 269.5H254M110 371.5H254" stroke-width="1"/>
+  <text class="jv-seg" x="42" y="213">HEADER</text>
+  <text class="jv-seg" x="42" y="273">PAYLOAD</text>
+  <text class="jv-seg" x="42" y="375">SIGNATURE</text>
+  <text class="tiny mono" x="42" y="229">alg</text><text class="tiny mono f-ink" x="90" y="229">RS256</text>
+  <text class="tiny mono" x="42" y="243">kid</text>
+  <text class="tiny mono f-ink jv-kid2" x="90" y="243">k2</text>
+  <text class="tiny mono b f-amber-ink jv-w jv-kid3" x="90" y="243">k3</text>
+  <text class="tiny mono" x="42" y="257">typ</text><text class="tiny mono f-ink" x="90" y="257">at+jwt</text>
+  <text class="tiny mono" x="42" y="289">iss</text><text class="tiny mono f-ink" x="90" y="289">https://idp.example</text>
+  <text class="tiny mono" x="42" y="303">sub</text>
+  <text class="tiny mono f-ink jv-sub-ok" x="90" y="303">24400320</text>
+  <text class="tiny mono b f-red jv-w jv-sub-bad" x="90" y="303">1 (edited)</text>
+  <text class="tiny mono" x="42" y="317">aud</text>
+  <text class="tiny mono f-ink jv-aud-ok" x="90" y="317">orders-api</text>
+  <text class="tiny mono b f-red jv-w jv-aud-bad" x="90" y="317">billing-api</text>
+  <text class="tiny mono" x="42" y="331">exp</text>
+  <text class="tiny mono f-ink jv-exp-ok" x="90" y="331">1790856300 <tspan class="f-muted">· 12:05</tspan></text>
+  <text class="tiny mono b f-red jv-w jv-exp-bad" x="90" y="331">1790854800 · 11:40</text>
+  <text class="tiny mono" x="42" y="345">scope</text><text class="tiny mono f-ink" x="90" y="345">orders:read</text>
+  <text class="tiny mono" x="42" y="359">…</text><text class="tiny mono" x="90" y="359">client_id, iat, jti</text>
+  <g class="jv-sub-ok">
+    <text class="tiny jv-kid2" x="42" y="391">by the issuer’s private key <tspan class="mono b f-orange">k2</tspan></text>
+    <text class="tiny jv-w jv-kid3" x="42" y="391">by the issuer’s private key <tspan class="mono b f-orange">k3</tspan></text>
+  </g>
+  <text class="tiny sb f-red jv-w jv-sub-bad" x="42" y="391">no longer matches the payload</text>
+  <g class="p124">
+    <text class="tiny mid" x="146" y="421">Base64url-encoded, not encrypted:</text>
+    <text class="tiny mid" x="146" y="435">anyone holding it can read the claims.</text>
+  </g>
+  <g class="jv-w jv-exp-bad"><rect class="f-bg s-red" x="36" y="411" width="220" height="22" rx="11" stroke-width="1.5"/><text class="tiny mid sb f-red" x="146" y="426">#1 expired 20 minutes ago</text></g>
+  <g class="jv-w jv-sub-bad"><rect class="f-bg s-red" x="36" y="411" width="220" height="22" rx="11" stroke-width="1.5"/><text class="tiny mid sb f-red" x="146" y="426">#2 payload edited after signing</text></g>
+  <g class="jv-w jv-aud-bad"><rect class="f-bg s-red" x="36" y="411" width="220" height="22" rx="11" stroke-width="1.5"/><text class="tiny mid sb f-red" x="146" y="426">#3 issued for billing-api</text></g>
+  <g class="jv-w jv-scope-hi"><rect class="f-bg s-red" x="36" y="411" width="220" height="22" rx="11" stroke-width="1.5"/><text class="tiny mid sb f-red" x="146" y="426">#4 valid, but lacks orders:write</text></g>
+
+  <!-- inside the API: the JWKS cache and the checks, in order -->
+  <rect class="box" x="286" y="160" width="388" height="310" rx="12"/>
+  <rect class="f-teal-soft s-teal" x="298" y="170" width="364" height="40" rx="8" stroke-width="1.2"/>
+  <rect class="none s-teal jv-w jv-cache-ring" x="298" y="170" width="364" height="40" rx="8" stroke-width="2.5"/>
+  <text class="tiny mono sb f-teal" x="308" y="187">JWKS cache</text>
+  <text class="tiny" x="308" y="201">the issuer’s public keys, by kid</text>
+  <g class="jv-w jv-empty"><rect class="f-bg s-wire" x="516" y="180" width="138" height="20" rx="10" stroke-width="1.2" stroke-dasharray="3 3"/><text class="tiny mid f-faint" x="585" y="194">empty</text></g>
+  <g class="jv-chips">
+    <rect class="f-bg s-teal" x="516" y="180" width="42" height="20" rx="10" stroke-width="1.2"/><circle class="none s-teal" cx="525" cy="190" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M527.6 190h5.4M531.4 190v2.6" stroke-width="1.4" stroke-linecap="round"/><text class="tiny mono b f-teal" x="537" y="194">k1</text>
+    <rect class="f-bg s-teal" x="564" y="180" width="42" height="20" rx="10" stroke-width="1.2"/><circle class="none s-teal" cx="573" cy="190" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M575.6 190h5.4M579.4 190v2.6" stroke-width="1.4" stroke-linecap="round"/><text class="tiny mono b f-teal" x="585" y="194">k2</text>
+  </g>
+  <rect class="none s-teal jv-w jv-k2-ring" x="562" y="178" width="46" height="24" rx="12" stroke-width="2.5"/>
+  <g class="jv-w jv-q2"><rect class="f-bg s-amber" x="612" y="180" width="42" height="20" rx="10" stroke-width="1.5" stroke-dasharray="3 3"/><text class="tiny mono mid b f-amber-ink" x="633" y="194">k3?</text></g>
+  <g class="jv-w jv-k3-chip"><rect class="f-bg s-teal" x="612" y="180" width="42" height="20" rx="10" stroke-width="1.2"/><circle class="none s-teal" cx="621" cy="190" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M623.6 190h5.4M627.4 190v2.6" stroke-width="1.4" stroke-linecap="round"/><text class="tiny mono b f-teal" x="633" y="194">k3</text></g>
+  <rect class="none s-teal jv-w jv-k3-ring" x="610" y="178" width="46" height="24" rx="12" stroke-width="2.5"/>
+  <text class="tiny sb f-ink" x="298" y="230">On every request, in this order</text>
+  <text class="tiny mono end" x="662" y="230">now 12:00</text>
+  <rect class="f-red-soft jv-w jv-x6" x="292" y="348" width="376" height="20" rx="5"/>
+  <rect class="f-red-soft jv-w jv-x3" x="292" y="282" width="376" height="20" rx="5"/>
+  <rect class="f-red-soft jv-w jv-x5" x="292" y="326" width="376" height="20" rx="5"/>
+  <rect class="f-red-soft jv-w jv-x7" x="292" y="370" width="376" height="20" rx="5"/>
+  <rect class="f-amber-soft jv-w jv-q2" x="292" y="260" width="376" height="20" rx="5"/>
+  <rect class="f-orange-soft jv-w jv-hl-alg" x="292" y="238" width="376" height="20" rx="5"/>
+  <rect class="f-orange-soft jv-w jv-hl-kid" x="292" y="260" width="376" height="20" rx="5"/>
+  <rect class="f-orange-soft jv-w jv-hl-sig" x="292" y="282" width="376" height="20" rx="5"/>
+  <rect class="f-orange-soft jv-w jv-hl-iss" x="292" y="304" width="376" height="20" rx="5"/>
+  <rect class="f-orange-soft jv-w jv-hl-aud" x="292" y="326" width="376" height="20" rx="5"/>
+  <rect class="f-orange-soft jv-w jv-hl-exp" x="292" y="348" width="376" height="20" rx="5"/>
+  <rect class="f-orange-soft jv-w jv-hl-scope" x="292" y="370" width="376" height="20" rx="5"/>
+  <text class="tiny mono f-faint" x="300" y="252">1</text><text class="tiny" x="316" y="252"><tspan class="mono b f-ink">typ</tspan> <tspan class="mono f-ink">at+jwt</tspan> · <tspan class="mono b f-ink">alg</tspan> on the allowlist: <tspan class="mono f-ink">RS256</tspan>, never <tspan class="mono f-ink">none</tspan></text>
+  <text class="tiny mono f-faint" x="300" y="274">2</text><text class="tiny" x="316" y="274"><tspan class="mono b f-ink">kid</tspan> picks the key from the cache</text>
+  <text class="tiny mono f-faint" x="300" y="296">3</text><text class="tiny" x="316" y="296">signature verifies with that key</text>
+  <text class="tiny mono f-faint" x="300" y="318">4</text><text class="tiny" x="316" y="318"><tspan class="mono b f-ink">iss</tspan> is exactly <tspan class="mono f-ink">https://idp.example</tspan></text>
+  <text class="tiny mono f-faint" x="300" y="340">5</text><text class="tiny" x="316" y="340"><tspan class="mono b f-ink">aud</tspan> includes <tspan class="mono f-ink">orders-api</tspan></text>
+  <text class="tiny mono f-faint" x="300" y="362">6</text><text class="tiny" x="316" y="362"><tspan class="mono b f-ink">exp</tspan> is in the future (small leeway)</text>
+  <text class="tiny mono f-faint" x="300" y="384">7</text><text class="tiny" x="316" y="384"><tspan class="mono b f-ink">scope</tspan> allows this request</text>
+  <g class="jv-w jv-t1"><circle class="f-green" cx="654" cy="248" r="7"/><path class="none s-bg" d="M650.8 248l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="jv-w jv-t2"><circle class="f-green" cx="654" cy="270" r="7"/><path class="none s-bg" d="M650.8 270l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="jv-w jv-t3"><circle class="f-green" cx="654" cy="292" r="7"/><path class="none s-bg" d="M650.8 292l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="jv-w jv-t4"><circle class="f-green" cx="654" cy="314" r="7"/><path class="none s-bg" d="M650.8 314l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="jv-w jv-t5"><circle class="f-green" cx="654" cy="336" r="7"/><path class="none s-bg" d="M650.8 336l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="jv-w jv-t6"><circle class="f-green" cx="654" cy="358" r="7"/><path class="none s-bg" d="M650.8 358l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="jv-w jv-t7"><circle class="f-green" cx="654" cy="380" r="7"/><path class="none s-bg" d="M650.8 380l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="jv-w jv-q2"><text class="tiny end sb f-amber-ink" x="640" y="274">k3 is not cached</text><circle class="f-amber" cx="654" cy="270" r="7"/><text class="tiny mid b f-bg" x="654" y="274">?</text></g>
+  <g class="jv-w jv-x6"><text class="tiny end sb f-red" x="640" y="362">#1 expired → 401</text><circle class="f-red" cx="654" cy="358" r="7"/><path class="none s-bg" d="M651.2 355.2l5.6 5.6M656.8 355.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/></g>
+  <g class="jv-w jv-x3"><text class="tiny end sb f-red" x="640" y="296">#2 payload edited → 401</text><circle class="f-red" cx="654" cy="292" r="7"/><path class="none s-bg" d="M651.2 289.2l5.6 5.6M656.8 289.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/></g>
+  <g class="jv-w jv-x5"><text class="tiny end sb f-red" x="640" y="340">#3 aud is billing-api → 401</text><circle class="f-red" cx="654" cy="336" r="7"/><path class="none s-bg" d="M651.2 333.2l5.6 5.6M656.8 333.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/></g>
+  <g class="jv-w jv-x7"><text class="tiny end sb f-red" x="640" y="384">#4 needs orders:write → 403</text><circle class="f-red" cx="654" cy="380" r="7"/><path class="none s-bg" d="M651.2 377.2l5.6 5.6M656.8 377.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/></g>
+  <g class="p1">
+    <text class="tiny" x="298" y="414">The trusted issuer, audience and algorithms are configured</text>
+    <text class="tiny" x="298" y="430">in the API. They are never taken from a token.</text>
+  </g>
+  <text class="tiny p2" x="298" y="414">No network call: the token and the cached keys are enough.</text>
+  <text class="tiny sb f-green jv-w jv-pass" x="298" y="430">All seven pass: the handler runs and returns 200.</text>
+  <g class="p3">
+    <text class="tiny" x="298" y="410">Response header: <tspan class="mono f-ink">WWW-Authenticate: Bearer error="…"</tspan></text>
+    <rect class="f-red" x="298" y="418" width="30" height="16" rx="8"/><text class="tiny mid b f-bg" x="313" y="430">401</text>
+    <text class="tiny" x="334" y="430"><tspan class="mono b f-ink">invalid_token</tspan> expired, bad signature, wrong audience</text>
+    <rect class="f-red" x="298" y="438" width="30" height="16" rx="8"/><text class="tiny mid b f-bg" x="313" y="450">403</text>
+    <text class="tiny" x="334" y="450"><tspan class="mono b f-ink">insufficient_scope</tspan> valid token, missing scope</text>
+  </g>
+  <g class="p4">
+    <text class="tiny sb f-amber-ink" x="298" y="414">Unknown kid: refetch the JWKS, then verify.</text>
+    <text class="tiny" x="298" y="430">At most one refetch per cooldown, so made-up kids</text>
+    <text class="tiny" x="298" y="446">can’t cause a fetch storm.</text>
+  </g>
+
+  <!-- inside the issuer: metadata, the published public keys, and the private key that signs -->
+  <rect class="box" x="698" y="160" width="232" height="310" rx="12"/>
+  <text class="tiny mono mid" x="814" y="178">https://idp.example</text>
+  <rect class="f-teal-soft s-teal" x="708" y="186" width="212" height="64" rx="8" stroke-width="1.2"/>
+  <text class="tiny mono sb f-teal" x="716" y="201">/.well-known/</text>
+  <text class="tiny mono sb f-teal" x="716" y="214">oauth-authorization-server</text>
+  <text class="tiny" x="716" y="228">OIDC: <tspan class="mono">openid-configuration</tspan></text>
+  <text class="tiny mono f-ink" x="716" y="243">issuer · jwks_uri · …</text>
+  <rect class="none s-teal jv-w jv-meta-ring" x="708" y="186" width="212" height="64" rx="8" stroke-width="2.5"/>
+  <path class="none s-teal" d="M730 250V264" stroke-width="1.5" marker-end="url(#ah-teal)"/>
+  <text class="tiny mono f-teal" x="738" y="262">jwks_uri</text>
+  <rect class="f-teal-soft s-teal" x="708" y="266" width="212" height="76" rx="8" stroke-width="1.2"/>
+  <text class="tiny mono sb f-teal" x="716" y="282">JWKS</text>
+  <text class="tiny" x="752" y="282">public keys only</text>
+  <circle class="none s-teal" cx="720" cy="294.5" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M722.6 294.5h5.4M726.4 294.5v2.6" stroke-width="1.4" stroke-linecap="round"/><text class="tiny mono f-ink" x="732" y="298">k1</text><text class="tiny" x="754" y="298">older key, still published</text>
+  <circle class="none s-teal" cx="720" cy="310.5" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M722.6 310.5h5.4M726.4 310.5v2.6" stroke-width="1.4" stroke-linecap="round"/><text class="tiny mono f-ink" x="732" y="314">k2</text>
+  <text class="tiny sb f-green jv-k2-cur" x="754" y="314">signs new tokens</text>
+  <text class="tiny jv-w jv-k2-old" x="754" y="314">older key, still published</text>
+  <g class="jv-w jv-is-k3"><circle class="none s-teal" cx="720" cy="326.5" r="2.6" stroke-width="1.4"/><path class="none s-teal" d="M722.6 326.5h5.4M726.4 326.5v2.6" stroke-width="1.4" stroke-linecap="round"/><text class="tiny mono b f-ink" x="732" y="330">k3</text><text class="tiny sb f-green" x="754" y="330">new: signs new tokens</text></g>
+  <rect class="none s-teal jv-w jv-jwks-ring" x="708" y="266" width="212" height="76" rx="8" stroke-width="2.5"/>
+  <rect class="f-orange-soft s-orange" x="708" y="352" width="212" height="44" rx="8" stroke-width="1.2"/>
+  <circle class="none s-orange" cx="719" cy="368" r="2.6" stroke-width="1.4"/><path class="none s-orange" d="M721.6 368h5.4M725.4 368v2.6" stroke-width="1.4" stroke-linecap="round"/><text class="tiny sb f-orange" x="734" y="372">private signing key</text>
+  <text class="tiny" x="734" y="387">never leaves the issuer</text>
+  <rect class="f-bg s-orange" x="880" y="361" width="32" height="18" rx="9" stroke-width="1.2"/>
+  <text class="tiny mono mid b f-orange jv-k2-cur" x="896" y="374">k2</text>
+  <text class="tiny mono mid b f-orange jv-w jv-k2-old" x="896" y="374">k3</text>
+  <g class="p123">
+    <text class="tiny mid" x="814" y="424">Signs with the private key,</text>
+    <text class="tiny mid" x="814" y="438">publishes only the public keys.</text>
+  </g>
+  <g class="p4">
+    <text class="tiny mid" x="814" y="424">k1 and k2 stay published until</text>
+    <text class="tiny mid" x="814" y="438">the tokens they signed expire.</text>
+  </g>
+
+  <!-- messages: requests (blue), the token (orange), documents and keys (teal), results (green, red) -->
+  <g class="jv-t jv-getmeta"><rect class="pkt f-blue" x="-46" y="-8" width="92" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">GET metadata</text></g>
+  <g class="jv-t jv-uri"><rect class="pkt f-teal" x="-33" y="-8" width="66" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">jwks_uri</text></g>
+  <g class="jv-t jv-getjwks"><rect class="pkt f-blue" x="-44" y="-8" width="88" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">GET jwks_uri</text></g>
+  <g class="jv-t jv-jwks"><rect class="pkt f-teal" x="-24" y="-8" width="48" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">JWKS</text></g>
+  <g class="jv-t jv-req"><rect class="pkt f-orange" x="-37" y="-8" width="74" height="16" rx="8"/><text class="tiny mid sb mono f-bg" y="4">eyJhbGci…</text></g>
+  <g class="jv-t jv-ok"><rect class="pkt f-green" x="-28" y="-8" width="56" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">200 OK</text></g>
+  <g class="jv-t jv-401"><rect class="pkt f-red" x="-19" y="-8" width="38" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">401</text></g>
+  <g class="jv-t jv-403"><rect class="pkt f-red" x="-19" y="-8" width="38" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">403</text></g>
+</g>
+</svg>

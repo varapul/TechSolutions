@@ -1,0 +1,43 @@
+{
+  "aka": ["Local token validation", "Offline token validation"],
+  "steps": [
+    {
+      "title": "Fetch the keys once",
+      "caption": "At startup the API reads the issuer's metadata, finds jwks_uri and caches its public keys (JWKS).",
+      "body": "The API is configured with the one issuer it trusts, `https://idp.example`. At startup (or on the first request) it reads that issuer's metadata document, `/.well-known/oauth-authorization-server` (RFC 8414) or OpenID Connect's `/.well-known/openid-configuration`, follows `jwks_uri` and caches the **JWKS**: the issuer's public keys, each with a key ID (`kid`). The private signing key never leaves the issuer, so an API that can verify tokens still cannot mint one."
+    },
+    {
+      "title": "Verify locally",
+      "caption": "Each request: allowlisted alg, key by kid, signature, then iss, aud, exp and scope. No issuer call.",
+      "body": "A request arrives with `Authorization: Bearer eyJ…`. The API first checks the header: `typ` is `at+jwt` and `alg` is on its own allowlist (never `none`, and never letting the token choose between RSA and HMAC). It then picks the cached key whose `kid` matches and verifies the signature. Only then does it trust the claims: `iss` must equal the configured issuer exactly, `aud` must include this API, `exp` must be in the future (with a small allowance for clock skew), and `scope` decides whether this particular request is allowed. Every check ran against cached keys, so the issuer was never called, and the API answers `200`."
+    },
+    {
+      "title": "Reject what fails",
+      "caption": "Expired, tampered or meant for another API: 401 invalid_token. Valid but short of scope: 403.",
+      "body": "Three bad tokens arrive in turn: one whose `exp` has passed, one whose payload was edited after signing (so the signature no longer matches) and one issued for another audience (`aud: billing-api`). Each gets **401** with `WWW-Authenticate: Bearer error=\"invalid_token\"`. A fourth token is perfectly valid but carries only `orders:read`, and the request needs `orders:write`: that is **403** with `error=\"insufficient_scope\"`, because the token is fine and simply doesn't grant enough."
+    },
+    {
+      "title": "Key rotation",
+      "caption": "The issuer signs with a new key, k3. Unknown kid: the API refetches the JWKS once, then verifies.",
+      "body": "The issuer starts signing with a new key, `k3`. The next token's `kid` is not in the API's cache, so the API fetches the JWKS again, finds `k3` and verifies the token; the refetch is rate-limited (one fetch, then a cooldown), so tokens with made-up `kid` values can't make the API flood the issuer with requests. The older keys stay published until the tokens they signed have expired. The price of local validation is that a token stays valid until `exp` even if it was revoked a minute ago, so keep access tokens short-lived, or use token introspection where revocation must be immediate."
+    }
+  ],
+  "related": ["oauth2-authorization-code-pkce", "openid-connect", "oauth2-client-credentials", "api-gateway", "sessions-vs-tokens", "refresh-token-rotation", "token-exchange", "mutual-tls"],
+  "references": [
+    { "title": "RFC 7519 — JSON Web Token (JWT)", "url": "https://www.rfc-editor.org/rfc/rfc7519" },
+    { "title": "RFC 7515 — JSON Web Signature (JWS)", "url": "https://www.rfc-editor.org/rfc/rfc7515" },
+    { "title": "RFC 7517 — JSON Web Key (JWK)", "url": "https://www.rfc-editor.org/rfc/rfc7517" },
+    { "title": "RFC 8725 — JSON Web Token Best Current Practices", "url": "https://www.rfc-editor.org/rfc/rfc8725" },
+    { "title": "IETF OAuth WG — JSON Web Token Best Current Practices (draft-ietf-oauth-rfc8725bis, to replace RFC 8725)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-rfc8725bis/" },
+    { "title": "RFC 9068 — JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc9068" },
+    { "title": "RFC 8414 — OAuth 2.0 Authorization Server Metadata", "url": "https://www.rfc-editor.org/rfc/rfc8414" },
+    { "title": "OpenID Connect Discovery 1.0 incorporating errata set 2", "url": "https://openid.net/specs/openid-connect-discovery-1_0.html" },
+    { "title": "OpenID Connect Core 1.0 incorporating errata set 2 — §10.1.1 Rotation of Asymmetric Signing Keys", "url": "https://openid.net/specs/openid-connect-core-1_0.html#RotateSigKeys" },
+    { "title": "RFC 6750 — The OAuth 2.0 Authorization Framework: Bearer Token Usage", "url": "https://www.rfc-editor.org/rfc/rfc6750" },
+    { "title": "RFC 7662 — OAuth 2.0 Token Introspection", "url": "https://www.rfc-editor.org/rfc/rfc7662" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "RFC 9449 — OAuth 2.0 Demonstrating Proof of Possession (DPoP)", "url": "https://www.rfc-editor.org/rfc/rfc9449" },
+    { "title": "RFC 8705 — OAuth 2.0 Mutual-TLS Client Authentication and Certificate-Bound Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc8705" },
+    { "title": "OWASP Cheat Sheet Series — JSON Web Token Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html" }
+  ]
+}

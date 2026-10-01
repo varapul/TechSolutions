@@ -1,0 +1,43 @@
+{
+  "aka": ["Admission control", "API throttling"],
+  "steps": [
+    {
+      "title": "Token bucket",
+      "caption": "Each API key has a bucket of 5 tokens, refilled at 2 per second. Every request spends one.",
+      "body": "The limiter keeps a **token bucket** for each client, looked up by API key. A bucket holds at most 5 tokens, which is the largest burst it will allow, and is refilled at a steady 2 tokens per second, which is the rate a client can sustain. Every request takes one token, so traffic that stays under the rate always finds one and passes straight through."
+    },
+    {
+      "title": "Burst, then 429",
+      "caption": "A sends 8 at once: 5 spend the stored tokens, 3 find the bucket empty and get 429 + Retry-After.",
+      "body": "Partner A sends 8 requests at once. The first 5 spend the stored tokens, because a burst is allowed up to the bucket size. The other 3 find the bucket empty and are rejected at once with **429 Too Many Requests** and a `Retry-After` header: a cheap answer that never reaches the service. Partner B's bucket is untouched and its call passes. Tokens drip back in, and A's retry a second later passes."
+    },
+    {
+      "title": "One limit, many instances",
+      "caption": "Three gateways check one shared store, so A's 6 calls are counted once: 5 pass, the 6th gets 429.",
+      "body": "The limiter now runs on three gateway instances. With local counters each instance would grant the full limit, three times too much in total, so the buckets live in a **shared store** (for example Redis) and each check-and-take is one atomic operation. A's 6 calls land on three different gateways, yet only 5 pass. The price is a network hop per request, and you must decide whether to fail open or fail closed when the store is down."
+    },
+    {
+      "title": "Shed load by priority",
+      "caption": "Everyone is within quota, yet the service is full: it sheds a report with 503 and admits checkout.",
+      "body": "Quotas keep clients fair, but they don't protect the backend when every client is within its quota at the same moment. So the service (or the gateway on its behalf) also watches its own capacity, here the number of requests in flight, and **sheds the lowest-priority traffic first**: a reporting call gets `503` with `Retry-After`, while a checkout call still gets in on capacity held back for critical work. Well-behaved clients back off with jitter."
+    }
+  ],
+  "related": ["api-gateway", "retry-with-backoff", "circuit-breaker", "bulkhead", "queue-based-load-leveling", "timeout-and-fallback", "priority-queue", "autoscaling"],
+  "references": [
+    { "title": "RFC 6585 — Additional HTTP Status Codes: 429 Too Many Requests", "url": "https://www.rfc-editor.org/rfc/rfc6585.html#section-4" },
+    { "title": "RFC 9110 — HTTP Semantics: Retry-After", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3" },
+    { "title": "IETF HTTPAPI WG — RateLimit header fields for HTTP (draft-ietf-httpapi-ratelimit-headers, an Internet-Draft)", "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/" },
+    { "title": "Stripe — Scaling your API with rate limiters", "url": "https://stripe.com/blog/rate-limiters" },
+    { "title": "Cloudflare — How we built rate limiting capable of scaling to millions of domains", "url": "https://blog.cloudflare.com/counting-things-a-lot-of-different-things/" },
+    { "title": "Amazon Builders' Library — Fairness in multi-tenant systems", "url": "https://builder.aws.com/content/3Eupj3d2bo4fEvlzYbICMZNhQ3B/fairness-in-multi-tenant-systems" },
+    { "title": "Amazon Builders' Library — Using load shedding to avoid overload", "url": "https://builder.aws.com/content/3Eun1EEyX6p2e3VYNyRLSJzLuMV/using-load-shedding-to-avoid-overload" },
+    { "title": "Google SRE Book — Handling Overload", "url": "https://sre.google/sre-book/handling-overload/" },
+    { "title": "Azure Architecture Center — Throttling pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/throttling" },
+    { "title": "Azure Architecture Center — Rate Limiting pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/rate-limiting-pattern" },
+    { "title": "Amazon API Gateway Developer Guide — Throttle requests to your REST APIs", "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html" },
+    { "title": "Envoy — Global rate limiting", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_features/global_rate_limiting" },
+    { "title": "Envoy — Local rate limiting", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_features/local_rate_limiting" },
+    { "title": "NGINX — Module ngx_http_limit_req_module", "url": "https://nginx.org/en/docs/http/ngx_http_limit_req_module.html" },
+    { "title": "Redis Docs — Redis rate limiter", "url": "https://redis.io/docs/latest/develop/use-cases/rate-limiter/" }
+  ]
+}

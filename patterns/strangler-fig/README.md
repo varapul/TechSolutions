@@ -52,7 +52,7 @@ The migration becomes a long series of small, reversible releases instead of one
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Anti-Corruption Layer *(planned)* — A translation layer that keeps a legacy model from leaking into the new domain.
+- [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 - Branch by Abstraction *(planned)* — Introduce an abstraction, build the new implementation behind it, then switch over.
 - Parallel Run *(planned)* — Run old and new side by side on the same inputs and compare results before cutting over.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
