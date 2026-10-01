@@ -93,7 +93,7 @@ function indexPage() {
   const featured = animated.find((p) => p.slug === 'circuit-breaker') ?? animated[0];
   const toc = catalog.categories.map((c) => {
     const n = c.items.filter((p) => p.animated).length;
-    return `<li><a href="#${c.id}"><span aria-hidden="true">${c.icon}</span>${esc(c.title)}<span class="n">${n}/${c.items.length}</span></a></li>`;
+    return `<li><a href="#${c.id}"><span class="icon" aria-hidden="true">${c.icon}</span><span class="name">${esc(c.title)}</span><span class="n" title="${n} of ${c.items.length} animated">${n}/${c.items.length}</span></a></li>`;
   }).join('\n');
 
   const sections = catalog.categories.map((c) => {
@@ -105,7 +105,7 @@ function indexPage() {
     const planned = c.items.filter((p) => !p.animated).map((p) =>
       `<li data-search="${esc(searchText(p))}"><strong>${esc(p.title)}</strong> <span>— ${esc(p.summary)}</span></li>`).join('\n');
     return `
-  <section class="category wrap" id="${c.id}">
+  <section class="category" id="${c.id}">
     <header><h2><span class="icon" aria-hidden="true">${c.icon}</span>${esc(c.title)}</h2><p>${esc(c.blurb)}</p></header>
     ${cards ? `<div class="grid">${cards}\n    </div>` : ''}
     ${planned ? `<div class="planned"><h3>Planned</h3><ul>\n${planned}\n</ul></div>` : ''}
@@ -131,11 +131,19 @@ function indexPage() {
       <figcaption>${esc(featured.title)}: ${esc(featured.summary)}</figcaption>
     </figure>
   </section>
-  <nav class="toc" id="catalog" aria-label="Categories"><ul>
+  <div class="catalog wrap" id="catalog">
+    <nav class="side-toc" aria-label="Categories">
+      <button type="button" class="side-toc-toggle" aria-expanded="false" aria-controls="side-toc-list">Categories<span class="current"></span><span aria-hidden="true">▾</span></button>
+      <p class="side-toc-title">Categories</p>
+      <ul id="side-toc-list">
 ${toc}
-  </ul></nav>
+      </ul>
+    </nav>
+    <div class="sections">
 ${sections}
-  <p class="empty wrap" hidden>No patterns match that filter.</p>
+      <p class="empty" hidden>No patterns match that filter.</p>
+    </div>
+  </div>
 </main>`;
   return layout({ title: `${SITE.name}: architecture styles, cloud patterns and auth flows`, description: SITE.description, body, scripts: ['index.js'] });
 }
