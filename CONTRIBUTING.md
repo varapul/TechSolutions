@@ -23,6 +23,8 @@ npm run snap -- retry-with-backoff --dark
 npm run snap -- retry-with-backoff --static   # the no-animation fallback: should read as step 1
 npm run check                            # what CI runs
 npm run build                            # site → dist/ (open dist/index.html directly, no server needed)
+npm run links                            # every reference URL still loads (needs network; not in CI)
+npm run test:site                        # after build: every page loads, players hold, links resolve
 ```
 
 `npm run snap` uses your installed Google Chrome through `playwright-core`; nothing else is downloaded.

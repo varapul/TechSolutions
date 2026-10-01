@@ -1,0 +1,26 @@
+{
+  "$comment": "Args for Workflow({ name: 'author-batch', args }). groups = review groups (one reviewer agent per group, ideally 4 patterns each); every pattern gets its own author agent. Slugs must already be planned in catalog.json. A brief = layout, four steps (the story; end each step's story 0.4 s before the step ends), README topics, related slugs, references to consider. Batch 2 used 2 groups x 4 patterns = 10 agents, about 3.9M tokens. Set today to the current date and scratch to the session scratchpad.",
+  "repo": "/Users/wake/Desktop/workspace/architect",
+  "today": "YYYY-MM-DD",
+  "scratch": "<session scratchpad>/batchN",
+  "groups": [
+    [
+      {
+        "slug": "microservices",
+        "title": "Microservices",
+        "category": "Application Architecture",
+        "summary": "Small, independently deployable services, each owning one business capability and its data.",
+        "brief": "Layout: clients and an API gateway on the left; four services (e.g. Orders, Catalog, Payments, Users), each with its own database; an event broker between services.\nSteps:\n1. Split by business capability: a monolith (one box of modules over one shared database) splits into independent services that each own their data (database per service).\n2. Deploy and scale independently: the Payments team ships v2 while other services keep running untouched (version badges); Catalog scales out to three instances under load.\n3. Communicate deliberately: synchronous calls for queries (gateway to Catalog), asynchronous events for state changes (Orders publishes OrderPlaced; Payments and Inventory consume it).\n4. Contain failures: Payments goes down; Orders keeps accepting orders because events wait in the broker; Catalog is unaffected; Payments recovers and works through its backlog.\nThe loop must restart cleanly (the end state can fade back to the starting split view).\nREADME: distributed-systems costs (network, consistency, observability, operations), team ownership and Conway's law, sizing services, and when NOT to use (small teams: start with a modular monolith).\nRelated: modular-monolith, event-driven-architecture, api-gateway, database-per-service, saga-orchestration, service-mesh, strangler-fig, distributed-tracing.\nReferences to consider: Lewis and Fowler, \"Microservices\" (2014); microservices.io; Azure Architecture Center microservices architecture style; Sam Newman, Building Microservices."
+      }
+    ],
+    [
+      {
+        "slug": "transactional-outbox",
+        "title": "Transactional Outbox",
+        "category": "Messaging & Integration",
+        "summary": "Save the event in the same database transaction as the data, then relay it: no dual-write gap.",
+        "brief": "Layout: an Order Service; its database showing two tables, orders and outbox; a message relay (a poller, or a CDC connector reading the database log); a message broker; consumers.\nSteps:\n1. The dual-write problem: the service commits the order, then publishes OrderPlaced to the broker. It crashes in between: the order exists but the event is lost (red cross). Mention the reverse case (event published, transaction rolled back) in the body.\n2. One local transaction: insert the order row AND an outbox row (the event) in the same database transaction; both commit or neither does.\n3. Relay: a separate process reads unsent outbox rows (polling, or log-based CDC such as Debezium), publishes them to the broker and marks them sent. If it crashes after publishing but before marking, it publishes again: delivery is at-least-once.\n4. Idempotent consumers: a duplicate arrives; the consumer recognises the event ID it has already processed and skips it. Ordering is preserved per aggregate key.\nThe loop must restart cleanly.\nREADME: polling vs log-tailing CDC, outbox table cleanup, ordering and partition keys, at-least-once semantics, alternatives (CDC on business tables, event sourcing, listen-to-yourself) and their trade-offs.\nRelated: event-driven-architecture, change-data-capture, idempotent-consumer, saga-orchestration, publish-subscribe, dead-letter-queue.\nReferences to consider: microservices.io Transactional outbox pattern; Debezium Outbox Event Router documentation; AWS Prescriptive Guidance transactional outbox pattern; Azure Cosmos DB transactional outbox guidance."
+      }
+    ]
+  ]
+}
