@@ -11,18 +11,18 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**10 animated** · 81 planned · 10 categories
+**18 animated** · 73 planned · 10 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
-| 🏛️ | [Application Architecture](#application-architecture) | 1 / 10 | The big-picture shapes: how a system is split into parts and how those parts talk to each other. |
-| ☁️ | [Cloud Infrastructure](#cloud-infrastructure) | 1 / 9 | Where workloads run, and how they scale, stay available and recover from disaster. |
-| 🔐 | [Identity & Access (Auth)](#identity--access-auth) | 1 / 15 | Authentication and authorization flows: who is calling, and what they are allowed to do. |
-| 🚪 | [API & Edge](#api--edge) | 1 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
-| 📨 | [Messaging & Integration](#messaging--integration) | 1 / 12 | Asynchronous communication, and coordinating work that spans several services. |
-| 🗄️ | [Data Management](#data-management) | 1 / 9 | Storing, scaling, caching and synchronising data across services. |
-| 🛡️ | [Resilience & Reliability](#resilience--reliability) | 1 / 9 | Keep serving when dependencies are slow, overloaded or down. |
-| 🚀 | [Deployment & Release](#deployment--release) | 1 / 8 | Ship changes safely, watch them in production, and roll back fast. |
+| 🏛️ | [Application Architecture](#application-architecture) | 2 / 10 | The big-picture shapes: how a system is split into parts and how those parts talk to each other. |
+| ☁️ | [Cloud Infrastructure](#cloud-infrastructure) | 2 / 9 | Where workloads run, and how they scale, stay available and recover from disaster. |
+| 🔐 | [Identity & Access (Auth)](#identity--access-auth) | 2 / 15 | Authentication and authorization flows: who is calling, and what they are allowed to do. |
+| 🚪 | [API & Edge](#api--edge) | 2 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
+| 📨 | [Messaging & Integration](#messaging--integration) | 2 / 12 | Asynchronous communication, and coordinating work that spans several services. |
+| 🗄️ | [Data Management](#data-management) | 2 / 9 | Storing, scaling, caching and synchronising data across services. |
+| 🛡️ | [Resilience & Reliability](#resilience--reliability) | 2 / 9 | Keep serving when dependencies are slow, overloaded or down. |
+| 🚀 | [Deployment & Release](#deployment--release) | 2 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 1 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 1 / 4 | See what the system is doing, and why, when something goes wrong. |
 
@@ -34,7 +34,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 |---|---|:-:|
 | Layered (N-Tier) | Presentation, business and data layers; each layer only calls the one directly below it. | ⏳ planned |
 | Modular Monolith | One deployable unit built from strongly bounded modules that talk through explicit interfaces. | ⏳ planned |
-| Microservices | Small, independently deployable services, each owning one business capability and its data. | ⏳ planned |
+| [**Microservices**](patterns/microservices/) | Small, independently deployable services, each owning one business capability and its data. | ✅ animated |
 | [**Event-Driven Architecture**](patterns/event-driven-architecture/) | Producers publish events to a broker; any number of consumers react on their own schedule. | ✅ animated |
 | Serverless (Functions) | Functions start per event, scale out automatically and scale to zero when idle. | ⏳ planned |
 | Hexagonal (Ports & Adapters) | Domain logic at the core; UIs, databases and queues plug in through ports and adapters. | ⏳ planned |
@@ -54,7 +54,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Multi-Region Active-Active**](patterns/multi-region-active-active/) | Serve users from several regions at once and shift traffic away from a region that fails. | ✅ animated |
 | Active-Passive Failover | A warm standby region is promoted when the primary region goes down. | ⏳ planned |
 | Disaster Recovery Strategies | Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO. | ⏳ planned |
-| Autoscaling | Add and remove instances automatically as load rises and falls. | ⏳ planned |
+| [**Autoscaling**](patterns/autoscaling/) | Add and remove instances automatically as load rises and falls. | ✅ animated |
 | Load Balancing | Spread requests across healthy instances and stop sending to unhealthy ones. | ⏳ planned |
 | CDN & Edge Caching | Serve static content from edge locations close to users; only cache misses reach the origin. | ⏳ planned |
 | Deployment Stamps | Deploy many independent copies of the whole stack, each serving a subset of tenants. | ⏳ planned |
@@ -70,7 +70,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Pattern | In one line | Status |
 |---|---|:-:|
 | [**OAuth 2.0 Authorization Code + PKCE**](patterns/oauth2-authorization-code-pkce/) | The standard sign-in flow for web, mobile and single-page apps: code via the browser, tokens via the back channel. | ✅ animated |
-| OpenID Connect (OIDC) | An ID token on top of OAuth 2.0 tells the app who signed in. | ⏳ planned |
+| [**OpenID Connect (OIDC)**](patterns/openid-connect/) | An ID token on top of OAuth 2.0 tells the app who signed in. | ✅ animated |
 | OAuth 2.0 Client Credentials | Machine-to-machine access tokens, with no user involved. | ⏳ planned |
 | JWT Validation | APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS). | ⏳ planned |
 | Refresh Token Rotation | Short-lived access tokens, single-use refresh tokens, and reuse detection that revokes the whole family. | ⏳ planned |
@@ -94,7 +94,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Pattern | In one line | Status |
 |---|---|:-:|
 | [**API Gateway**](patterns/api-gateway/) | One entry point that authenticates, rate-limits and routes calls to backend services. | ✅ animated |
-| Backends for Frontends (BFF) | A dedicated backend per client type, shaped for exactly what that UI needs. | ⏳ planned |
+| [**Backends for Frontends (BFF)**](patterns/backends-for-frontends/) | A dedicated backend per client type, shaped for exactly what that UI needs. | ✅ animated |
 | Gateway Aggregation | Fan one client request out to several services and merge the answers into one response. | ⏳ planned |
 | Gateway Offloading | Move TLS termination, authentication and compression out of every service into the gateway. | ⏳ planned |
 | Sidecar | Run helper capabilities (proxy, logging, config) in a separate process next to the app. | ⏳ planned |
@@ -116,7 +116,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Queue-Based Load Leveling | A queue absorbs traffic spikes so the backend can work at a steady pace. | ⏳ planned |
 | Priority Queue | Urgent messages are processed ahead of routine ones. | ⏳ planned |
 | Asynchronous Request-Reply | Accept now with 202, process in the background, and let the client poll a status URL. | ⏳ planned |
-| Transactional Outbox | Save the event in the same database transaction as the data, then relay it: no dual-write gap. | ⏳ planned |
+| [**Transactional Outbox**](patterns/transactional-outbox/) | Save the event in the same database transaction as the data, then relay it: no dual-write gap. | ✅ animated |
 | [**Saga (Orchestration)**](patterns/saga-orchestration/) | A coordinator runs local transactions in sequence and triggers compensations when one fails. | ✅ animated |
 | Saga (Choreography) | Services react to each other's events to complete a workflow, with no central coordinator. | ⏳ planned |
 | Dead-Letter Queue | Park messages that keep failing so they stop blocking the queue and can be inspected. | ⏳ planned |
@@ -133,7 +133,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Pattern | In one line | Status |
 |---|---|:-:|
 | [**Cache-Aside**](patterns/cache-aside/) | Read from the cache first; on a miss load from the database and populate the cache. | ✅ animated |
-| CQRS | Separate the write model (commands) from read models (queries), each optimised for its job. | ⏳ planned |
+| [**CQRS**](patterns/cqrs/) | Separate the write model (commands) from read models (queries), each optimised for its job. | ✅ animated |
 | Event Sourcing | Store every change as an immutable event and rebuild state by replaying them. | ⏳ planned |
 | Sharding | Split data horizontally across databases using a shard key. | ⏳ planned |
 | Read Replicas | Send writes to the primary and spread reads across asynchronously updated replicas. | ⏳ planned |
@@ -151,7 +151,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Pattern | In one line | Status |
 |---|---|:-:|
 | [**Circuit Breaker**](patterns/circuit-breaker/) | Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers. | ✅ animated |
-| Retry with Backoff & Jitter | Retry transient failures with growing, randomised delays so clients don't stampede. | ⏳ planned |
+| [**Retry with Backoff & Jitter**](patterns/retry-with-backoff/) | Retry transient failures with growing, randomised delays so clients don't stampede. | ✅ animated |
 | Bulkhead | Give each dependency its own pool of resources so one failure can't sink the whole ship. | ⏳ planned |
 | Timeout & Fallback | Bound every remote call and degrade gracefully when the time runs out. | ⏳ planned |
 | Rate Limiting & Throttling | Cap how fast each client may call (token bucket) and shed the excess with 429s. | ⏳ planned |
@@ -168,7 +168,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 
 | Pattern | In one line | Status |
 |---|---|:-:|
-| Blue-Green Deployment | Run the new version beside the old one and switch all traffic in one step. | ⏳ planned |
+| [**Blue-Green Deployment**](patterns/blue-green-deployment/) | Run the new version beside the old one and switch all traffic in one step. | ✅ animated |
 | [**Canary Release**](patterns/canary-release/) | Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back. | ✅ animated |
 | Rolling Update | Replace instances batch by batch while the service stays up. | ⏳ planned |
 | Feature Flags | Deploy code dark, then turn features on per user or percentage at runtime. | ⏳ planned |

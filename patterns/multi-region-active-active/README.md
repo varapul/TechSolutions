@@ -59,7 +59,7 @@ A single region is a single failure domain. Spreading instances across availabil
 - Disaster Recovery Strategies *(planned)* — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 - Load Balancing *(planned)* — Spread requests across healthy instances and stop sending to unhealthy ones.
 - Health Endpoint Monitoring *(planned)* — Expose liveness and readiness checks that load balancers and monitors probe.
-- Autoscaling *(planned)* — Add and remove instances automatically as load rises and falls.
+- [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - Deployment Stamps *(planned)* — Deploy many independent copies of the whole stack, each serving a subset of tenants.
 - Cell-Based Architecture *(planned)* — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
 - Read Replicas *(planned)* — Send writes to the primary and spread reads across asynchronously updated replicas.

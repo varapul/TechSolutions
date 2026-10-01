@@ -1,0 +1,38 @@
+{
+  "aka": ["Retry pattern", "Exponential backoff", "Jittered backoff"],
+  "steps": [
+    {
+      "title": "Retry what can succeed",
+      "caption": "A 503 is retried after a short wait and succeeds. A 429 waits for Retry-After. A 400 is not retried.",
+      "body": "During a brief blip a call fails with **503**; the client waits 100 ms and the second attempt succeeds. Retry only errors that can go away: timeouts, 503, and 429 once its `Retry-After` delay has passed. A 400 or 401 is returned at once, because sending the same request again can't succeed."
+    },
+    {
+      "title": "Immediate retries",
+      "caption": "Six calls arrive at once and time out. Retrying immediately keeps six in flight: a retry storm.",
+      "body": "Six calls arrive together, more than the service can handle at once, and all of them time out. Every client retries the moment its call fails, so six calls stay in flight nonstop: 120 attempts in two seconds, none succeed, and the retries keep the service overloaded instead of letting it recover."
+    },
+    {
+      "title": "Exponential backoff",
+      "caption": "Waits double (100, 200, 400, 800 ms): far fewer attempts, but the six retries still arrive in waves.",
+      "body": "Each client waits longer after every failure: 100, 200, 400, then 800 ms, which is the cap (`min(cap, base × 2ⁿ)`). Attempts drop from 120 to 30 and the service is idle between rounds, but the clients failed together and follow the same schedule, so each round arrives as one wave and overloads it again."
+    },
+    {
+      "title": "Add jitter",
+      "caption": "Full jitter randomises each wait, so retries soon spread out under capacity and all six succeed.",
+      "body": "With **full jitter** each wait is drawn at random between zero and the backoff (`random(0, min(cap, base × 2ⁿ))`). The first retries still collide, then they spread out, the load stays under capacity, and all six succeed within 0.75 s using 19 attempts. A limit of five attempts stops a client from retrying forever when a failure isn't transient."
+    }
+  ],
+  "related": ["circuit-breaker", "timeout-and-fallback", "rate-limiting", "idempotent-consumer", "bulkhead", "queue-based-load-leveling"],
+  "references": [
+    { "title": "AWS Architecture Blog — Exponential Backoff And Jitter (Marc Brooker)", "url": "https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/" },
+    { "title": "Amazon Builders' Library — Timeouts, retries, and backoff with jitter", "url": "https://builder.aws.com/content/3EumjoZascWd1oZiEgL8ORlv3qE/timeouts-retries-and-backoff-with-jitter" },
+    { "title": "Google SRE book — Addressing Cascading Failures", "url": "https://sre.google/sre-book/addressing-cascading-failures/" },
+    { "title": "Google SRE book — Handling Overload (retry budgets)", "url": "https://sre.google/sre-book/handling-overload/" },
+    { "title": "RFC 9110 — HTTP Semantics: Retry-After", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3" },
+    { "title": "RFC 6585 — Additional HTTP Status Codes: 429 Too Many Requests", "url": "https://www.rfc-editor.org/rfc/rfc6585.html#section-4" },
+    { "title": "Azure Architecture Center — Retry pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/retry" },
+    { "title": "AWS SDKs and Tools — Retry behavior (retry quota token bucket)", "url": "https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html" },
+    { "title": "gRPC — Retry (retry policy and retry throttling)", "url": "https://grpc.io/docs/guides/retry/" },
+    { "title": "Stripe API reference — Idempotent requests", "url": "https://docs.stripe.com/api/idempotent_requests" }
+  ]
+}

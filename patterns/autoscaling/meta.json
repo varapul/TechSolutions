@@ -1,0 +1,35 @@
+{
+  "aka": ["Auto scaling", "Elastic scaling", "Horizontal autoscaling"],
+  "steps": [
+    {
+      "title": "Steady state",
+      "caption": "Two instances run at about 50% CPU, under the 60% target. The autoscaler holds at the minimum of 2.",
+      "body": "A **target-tracking** policy keeps the group's average CPU near **60%**, with between **2 and 6** instances. Two instances at 48% are under the target: 2 × 48% ÷ 60% = 1.6, which rounds up to 2, so the autoscaler changes nothing."
+    },
+    {
+      "title": "Spike: scale out",
+      "caption": "Traffic doubles and CPU hits 96%. Two new instances boot and join once they pass health checks.",
+      "body": "Traffic doubles, the two instances run at 96% and requests start to queue, so latency climbs. The autoscaler works out 2 × 96% ÷ 60% = 3.2, rounds up to **4** and launches two instances. They need time to boot and warm up, and the load balancer sends them requests only after they **pass its health checks**."
+    },
+    {
+      "title": "New capacity",
+      "caption": "Four instances at about 50%, latency back to normal. The scale-in window ignores a brief dip.",
+      "body": "Four instances share the load at 48% and latency recovers. 4 × 48% ÷ 60% = 3.2 still rounds up to 4, so the group holds. When the load dips for a moment the raw result is 3, but the **scale-in window** (a stabilisation window, 5 minutes here) acts on the highest result it has seen in that window, so the group doesn't flap between 3 and 4."
+    },
+    {
+      "title": "Scale in",
+      "caption": "Load falls. After the scale-in window, two instances drain their connections and are terminated.",
+      "body": "Traffic halves and CPU drops to 24%: 4 × 24% ÷ 60% = 1.6, so 2 instances would be enough. The autoscaler removes two only after the load has stayed low for the whole window. The load balancer **drains** them first (no new requests, in-flight ones finish), then they are terminated and the group is back at its minimum of 2."
+    }
+  ],
+  "related": ["load-balancing", "health-endpoint-monitoring", "queue-based-load-leveling", "serverless", "deployment-stamps", "multi-region-active-active"],
+  "references": [
+    { "title": "AWS — Target tracking scaling policies for Amazon EC2 Auto Scaling", "url": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-target-tracking.html" },
+    { "title": "AWS — How predictive scaling works (Amazon EC2 Auto Scaling)", "url": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/predictive-scaling-policy-overview.html" },
+    { "title": "Kubernetes — Horizontal Pod Autoscaling", "url": "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/" },
+    { "title": "KEDA — Scaling Deployments, StatefulSets & Custom Resources", "url": "https://keda.sh/docs/latest/concepts/scaling-deployments/" },
+    { "title": "Azure Monitor — Best practices for autoscale", "url": "https://learn.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-best-practices" },
+    { "title": "Azure Architecture Center — Autoscaling guidance", "url": "https://learn.microsoft.com/en-us/azure/architecture/best-practices/auto-scaling" },
+    { "title": "Google Cloud — Autoscaling groups of instances (Compute Engine)", "url": "https://docs.cloud.google.com/compute/docs/autoscaler" }
+  ]
+}

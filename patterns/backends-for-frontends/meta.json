@@ -1,0 +1,36 @@
+{
+  "aka": ["BFF", "Backend for Frontend"],
+  "steps": [
+    {
+      "title": "One API for every client",
+      "caption": "One API for both clients: web makes 3 round trips per page; mobile downloads 200 KB it barely uses.",
+      "body": "Web and mobile both call one **general-purpose API**, often run by a separate API team, whose endpoints mirror the services behind it. To build one product page the web app makes **three round trips** in a row, and the mobile app downloads a **200 KB** product resource over a slow network to show a handful of its fields. Every change one client needs has to go through that team and be checked against the other client."
+    },
+    {
+      "title": "A backend per experience",
+      "caption": "Split it: a Web BFF and a Mobile BFF, each owned and shipped by the team that builds that frontend.",
+      "body": "Replace it with **one backend per user experience**: a Web BFF and a Mobile BFF. Each is owned by the team that builds that frontend, so the team shapes its API as the screens change and decides when to ship: the web team releases its app and BFF together, and the mobile team can change its BFF without waiting for an app-store release."
+    },
+    {
+      "title": "Shape the response",
+      "caption": "Mobile BFF merges 3 calls into one 12 KB reply; Web BFF returns a richer page model, also in 1 trip.",
+      "body": "One call to the **Mobile BFF** fans out to Catalog, Reviews and Users in parallel; the BFF merges the answers, drops the fields the screen doesn't show and points images at mobile-sized versions, so the app gets **12 KB in one round trip**. The **Web BFF** calls all four services and returns a richer page model, also in a single round trip. The extra calls now run inside the data centre, next to the services, instead of over the user's network."
+    },
+    {
+      "title": "No tokens in the browser",
+      "caption": "Web BFF signs in as a confidential client and keeps the tokens; the browser gets an HttpOnly cookie.",
+      "body": "The **Web BFF** runs the authorization code flow (with PKCE) as a **confidential client**, keeps the access and refresh tokens server-side, and gives the browser only an `HttpOnly`, `Secure`, `SameSite=Strict` session cookie. On each call it swaps the cookie for the access token and forwards the request, so script injected into the page finds no token to steal. RFC 10017 strongly recommends this architecture for business apps, sensitive apps and apps that handle personal data."
+    }
+  ],
+  "related": ["api-gateway", "gateway-aggregation", "oauth2-authorization-code-pkce", "graphql-federation", "microservices", "sessions-vs-tokens"],
+  "references": [
+    { "title": "Sam Newman — Pattern: Backends For Frontends", "url": "https://samnewman.io/patterns/architectural/bff/" },
+    { "title": "Azure Architecture Center — Backends for Frontends pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/backends-for-frontends" },
+    { "title": "Phil Calçado — The Back-end for Front-end Pattern (BFF)", "url": "https://philcalcado.com/2015/09/18/the_back_end_for_front_end_pattern_bff.html" },
+    { "title": "RFC 10017 — OAuth 2.0 for Browser-Based Applications (§6.1 Backend for Frontend)", "url": "https://www.rfc-editor.org/rfc/rfc10017.html#section-6.1" },
+    { "title": "RFC 8252 — OAuth 2.0 for Native Apps", "url": "https://www.rfc-editor.org/rfc/rfc8252" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: API Gateway / Backends for Frontends", "url": "https://microservices.io/patterns/apigateway.html" },
+    { "title": "GraphQL.org — Security (demand control and trusted documents)", "url": "https://graphql.org/learn/security/" }
+  ]
+}

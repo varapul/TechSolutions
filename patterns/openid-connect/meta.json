@@ -1,0 +1,36 @@
+{
+  "aka": ["OIDC"],
+  "steps": [
+    {
+      "title": "Sign in to Shop",
+      "caption": "Shop sends Ana to the provider with scope openid and a nonce. She signs in; an SSO session starts.",
+      "body": "Ana clicks *Sign in*. Shop redirects her browser to the provider's authorization endpoint with `response_type=code`, `scope=openid profile email` (plus `orders:read` for its API) and a fresh, unguessable `nonce` that it remembers. The provider shows its login form, checks her password and starts its own **SSO session**, kept in a cookie on the provider's domain, then redirects her back to Shop with an authorization code."
+    },
+    {
+      "title": "Validate the ID token",
+      "caption": "Shop checks the ID token's signature (JWKS), iss, aud, exp and nonce, then starts a session for sub.",
+      "body": "Shop swaps the code for tokens over the back channel and inspects the **ID token**: a JWT signed by the provider that says who signed in, for which app and until when. Shop verifies the signature with the JWKS key whose `kid` matches (it found the JWKS URL in `/.well-known/openid-configuration`), then checks `iss` against the discovered issuer, `aud` against its own `client_id`, `exp`, and that `nonce` is the value it sent. It then starts its own session keyed on `sub` (together with `iss`), never on `email`, which can change."
+    },
+    {
+      "title": "Single sign-on",
+      "caption": "Support redirects to the provider. Its SSO session means no password; Support gets its own ID token.",
+      "body": "Later Ana opens Support, which redirects her to the same provider with its own `client_id` and a new `nonce`. Her browser sends the provider's session cookie along, so the provider skips the login form and returns a code at once (it would still ask for consent if Support needed it, and re-authenticate for `prompt=login` or an expired `max_age`). Support validates **its own ID token**, whose `aud` is `support`, and starts a separate session; with public subject identifiers its `sub` matches Shop's, while a provider using pairwise identifiers gives each app a different one."
+    },
+    {
+      "title": "ID token vs access token",
+      "caption": "The ID token stays in Shop. APIs take the access token; an API that checks aud rejects an ID token.",
+      "body": "The two tokens Shop holds have different jobs. The ID token is addressed to Shop (`aud=shop`) and only tells Shop who signed in, so it stays there; calls to the Orders API carry the **access token**, issued for the API (`aud=orders-api`, scope `orders:read`). An API that checks `aud` rejects an ID token, so never use one as a bearer token."
+    }
+  ],
+  "related": ["oauth2-authorization-code-pkce", "jwt-validation", "saml-sso", "federated-identity", "sessions-vs-tokens", "refresh-token-rotation"],
+  "references": [
+    { "title": "OpenID Connect Core 1.0 incorporating errata set 2", "url": "https://openid.net/specs/openid-connect-core-1_0.html" },
+    { "title": "OpenID Connect Discovery 1.0 incorporating errata set 2", "url": "https://openid.net/specs/openid-connect-discovery-1_0.html" },
+    { "title": "OpenID Connect RP-Initiated Logout 1.0", "url": "https://openid.net/specs/openid-connect-rpinitiated-1_0.html" },
+    { "title": "OpenID Connect Back-Channel Logout 1.0 incorporating errata set 1", "url": "https://openid.net/specs/openid-connect-backchannel-1_0.html" },
+    { "title": "OpenID Connect Front-Channel Logout 1.0", "url": "https://openid.net/specs/openid-connect-frontchannel-1_0.html" },
+    { "title": "RFC 7519 — JSON Web Token (JWT)", "url": "https://www.rfc-editor.org/rfc/rfc7519" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "oauth.net — ID Tokens vs Access Tokens", "url": "https://oauth.net/id-tokens-vs-access-tokens/" }
+  ]
+}

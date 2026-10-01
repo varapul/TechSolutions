@@ -66,14 +66,14 @@ Authenticating first lets quotas and cache keys depend on a *verified* identity;
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Backends for Frontends (BFF) *(planned)* — A dedicated backend per client type, shaped for exactly what that UI needs.
+- [Backends for Frontends (BFF)](../backends-for-frontends/) — A dedicated backend per client type, shaped for exactly what that UI needs.
 - Gateway Aggregation *(planned)* — Fan one client request out to several services and merge the answers into one response.
 - Gateway Offloading *(planned)* — Move TLS termination, authentication and compression out of every service into the gateway.
 - Rate Limiting & Throttling *(planned)* — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - JWT Validation *(planned)* — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - Service Mesh *(planned)* — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
-- Microservices *(planned)* — Small, independently deployable services, each owning one business capability and its data.
+- [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 
 ## References
 

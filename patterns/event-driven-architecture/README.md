@@ -58,11 +58,11 @@ Adding a new capability usually means adding a new subscriber, with no change to
 - Publish-Subscribe *(planned)* — Broadcast each message to every interested subscriber through a topic.
 - Competing Consumers *(planned)* — Several workers pull from one queue, so work is shared and throughput scales out.
 - Queue-Based Load Leveling *(planned)* — A queue absorbs traffic spikes so the backend can work at a steady pace.
-- Transactional Outbox *(planned)* — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
+- [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - Saga (Choreography) *(planned)* — Services react to each other's events to complete a workflow, with no central coordinator.
 - Idempotent Consumer *(planned)* — Remember processed message IDs so a redelivered message has no extra effect.
 - Dead-Letter Queue *(planned)* — Park messages that keep failing so they stop blocking the queue and can be inspected.
-- CQRS *(planned)* — Separate the write model (commands) from read models (queries), each optimised for its job.
+- [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 
 ## References
 

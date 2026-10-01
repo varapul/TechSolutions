@@ -1,0 +1,782 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Retry with Backoff &amp; Jitter</title>
+<desc id="dg-desc">Retry with Backoff &amp; Jitter. Retry transient failures with growing, randomised delays so clients don't stampede. Step 1, Retry what can succeed: A 503 is retried after a short wait and succeeds. A 429 waits for Retry-After. A 400 is not retried. Step 2, Immediate retries: Six calls arrive at once and time out. Retrying immediately keeps six in flight: a retry storm. Step 3, Exponential backoff: Waits double (100, 200, 400, 800 ms): far fewer attempts, but the six retries still arrive in waves. Step 4, Add jitter: Full jitter randomises each wait, so retries soon spread out under capacity and all six succeed.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">RESILIENCE &amp; RELIABILITY</text>
+  <text class="title" x="40" y="64">Retry with Backoff &amp; Jitter</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Retry what can succeed</text>
+  <text class="step on p1" x="40" y="518">1 · Retry what can succeed</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Immediate retries</text>
+  <text class="step on p2" x="262" y="518">2 · Immediate retries</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Exponential backoff</text>
+  <text class="step on p3" x="484" y="518">3 · Exponential backoff</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Add jitter</text>
+  <text class="step on p4" x="706" y="518">4 · Add jitter</text>
+  <text class="caption p1" x="40" y="552">A 503 is retried after a short wait and succeeds. A 429 waits for Retry-After. A 400 is not retried.</text>
+  <text class="caption p2" x="40" y="552">Six calls arrive at once and time out. Retrying immediately keeps six in flight: a retry storm.</text>
+  <text class="caption p3" x="40" y="552">Waits double (100, 200, 400, 800 ms): far fewer attempts, but the six retries still arrive in waves.</text>
+  <text class="caption p4" x="40" y="552">Full jitter randomises each wait, so retries soon spread out under capacity and all six succeed.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Retry with Backoff and Jitter. Timeline (20s loop, 1s = 5%):
+   Each step replays the same 2 s of story time (0-2000 ms on the chart) while a playhead and a
+   wipe sweep the chart from 0.3 s to 4.0 s into the step. 6 clients call one service; each call
+   is in flight for 100 ms; the service handles 4 calls at once and, above that, every call in
+   flight times out.
+   0-25%   step 1: a 503 (brief blip) is retried after 100 ms and succeeds; a 429 waits for
+           Retry-After: 1; a 400 is not retried
+   25-50%  step 2: all 6 calls fail at t=0 and are retried immediately: 6 in flight nonstop,
+           120 attempts, the service never recovers
+   50-75%  step 3: capped exponential backoff (100, 200, 400, 800 ms): 30 attempts in 5 waves of 6,
+           each wave overloads the service again
+   75-100% step 4: full jitter, random(0, min(800, 100*2^n)): one run near the median of 20k
+           simulated runs; after two collisions the retries spread out and all 6 succeed by 750 ms */
+.diagram .rb-cover { transform: scaleX(0); transform-box: fill-box; transform-origin: 100% 50%; animation: rb-cover var(--T) linear infinite; }
+.diagram .rb-play { opacity: 0; animation: rb-play var(--T) linear infinite; }
+.diagram .rb-over { opacity: 0; animation: rb-over var(--T) linear infinite; }
+.diagram .rb-blip { opacity: 0; animation: rb-blip var(--T) linear infinite; }
+.diagram .rb-res1 { animation: rb-res1 var(--T) linear infinite; }
+.diagram .rb-res2 { opacity: 0; animation: rb-res2 var(--T) linear infinite; }
+.diagram .rb-res3 { opacity: 0; animation: rb-res3 var(--T) linear infinite; }
+.diagram .rb-res4 { opacity: 0; animation: rb-res4 var(--T) linear infinite; }
+.diagram .rb-pend { opacity: 0; animation: rb-pend var(--T) linear infinite; }
+.diagram .rb-pill { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; }
+.diagram .rb-big { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+.diagram .rb-sup { font-size: 9px; }
+.diagram .rb-code { font-size: 12px; font-weight: 700; }
+@keyframes rb-cover {
+  0% { transform: scaleX(1); }
+  1.5% { transform: scaleX(1); }
+  20% { transform: scaleX(0.02); }
+  20.5% { transform: scaleX(0); }
+  24.99% { transform: scaleX(0); }
+  25% { transform: scaleX(1); }
+  26.5% { transform: scaleX(1); }
+  45% { transform: scaleX(0.02); }
+  45.5% { transform: scaleX(0); }
+  49.99% { transform: scaleX(0); }
+  50% { transform: scaleX(1); }
+  51.5% { transform: scaleX(1); }
+  70% { transform: scaleX(0.02); }
+  70.5% { transform: scaleX(0); }
+  74.99% { transform: scaleX(0); }
+  75% { transform: scaleX(1); }
+  76.5% { transform: scaleX(1); }
+  95% { transform: scaleX(0.02); }
+  95.5% { transform: scaleX(0); }
+  99.99% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes rb-play {
+  0% { transform: translate(132px, 0px); opacity: 0; }
+  0.6% { transform: translate(132px, 0px); opacity: 0; }
+  1.5% { transform: translate(132px, 0px); opacity: 1; }
+  20% { transform: translate(684px, 0px); opacity: 1; }
+  21% { transform: translate(684px, 0px); opacity: 0; }
+  25.6% { transform: translate(132px, 0px); opacity: 0; }
+  26.5% { transform: translate(132px, 0px); opacity: 1; }
+  45% { transform: translate(684px, 0px); opacity: 1; }
+  46% { transform: translate(684px, 0px); opacity: 0; }
+  50.6% { transform: translate(132px, 0px); opacity: 0; }
+  51.5% { transform: translate(132px, 0px); opacity: 1; }
+  70% { transform: translate(684px, 0px); opacity: 1; }
+  71% { transform: translate(684px, 0px); opacity: 0; }
+  75.6% { transform: translate(132px, 0px); opacity: 0; }
+  76.5% { transform: translate(132px, 0px); opacity: 1; }
+  95% { transform: translate(684px, 0px); opacity: 1; }
+  96% { transform: translate(684px, 0px); opacity: 0; }
+  100% { transform: translate(684px, 0px); opacity: 0; }
+}
+@keyframes rb-over {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  26.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  48.75% { opacity: 0; }
+  51.5% { opacity: 0; }
+  51.75% { opacity: 1; }
+  52.43% { opacity: 1; }
+  52.68% { opacity: 0; }
+  53.35% { opacity: 0; }
+  53.6% { opacity: 1; }
+  54.28% { opacity: 1; }
+  54.53% { opacity: 0; }
+  56.13% { opacity: 0; }
+  56.38% { opacity: 1; }
+  57.05% { opacity: 1; }
+  57.3% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61% { opacity: 1; }
+  61.68% { opacity: 1; }
+  61.93% { opacity: 0; }
+  69.08% { opacity: 0; }
+  69.33% { opacity: 1; }
+  73.5% { opacity: 1; }
+  73.75% { opacity: 0; }
+  76.5% { opacity: 0; }
+  76.75% { opacity: 1; }
+  77.43% { opacity: 1; }
+  77.68% { opacity: 0; }
+  78.3% { opacity: 0; }
+  78.55% { opacity: 1; }
+  78.91% { opacity: 1; }
+  79.16% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rb-blip {
+  0% { opacity: 0; }
+  5.2% { opacity: 0; }
+  5.45% { opacity: 1; }
+  6.13% { opacity: 1; }
+  6.38% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rb-res1 {
+  0% { opacity: 0; }
+  20% { opacity: 0; }
+  21.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rb-res2 {
+  0% { opacity: 0; }
+  45% { opacity: 0; }
+  46.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rb-res3 {
+  0% { opacity: 0; }
+  70% { opacity: 0; }
+  71.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rb-res4 {
+  0% { opacity: 0; }
+  95% { opacity: 0; }
+  96.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rb-pend {
+  0% { opacity: 0; }
+  0.25% { opacity: 0; }
+  1% { opacity: 1; }
+  20% { opacity: 1; }
+  21% { opacity: 0; }
+  25.25% { opacity: 0; }
+  26% { opacity: 1; }
+  45% { opacity: 1; }
+  46% { opacity: 0; }
+  50.25% { opacity: 0; }
+  51% { opacity: 1; }
+  70% { opacity: 1; }
+  71% { opacity: 0; }
+  75.25% { opacity: 0; }
+  76% { opacity: 1; }
+  95% { opacity: 1; }
+  96% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- service box background (its border and labels are drawn above the wipe) -->
+  <rect class="f-panel" x="30" y="294" width="666" height="128" rx="12"/>
+  <g class="p1">
+    <rect class="f-red" x="174.15" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="203" y="138.5" width="272" height="3" rx="1.5"/>
+    <rect class="f-green" x="477.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-green" x="353.55" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="243.15" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="272" y="190.5" width="23.6" height="3" rx="1.5"/>
+    <rect class="f-green" x="298.35" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-green" x="408.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red-soft s-red" x="532.95" y="239" width="26.1" height="10" rx="2.5" stroke-width="1.5"/>
+    <rect class="f-green" x="601.95" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-blue" x="173.9" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="242.9" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="298.1" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="353.3" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="408.5" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="477.5" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="532.7" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="601.7" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <text class="tiny sb mid f-red" x="187.2" y="131">429</text>
+    <text class="tiny mid f-amber-ink" x="339" y="131">wait for Retry-After: 1 s</text>
+    <text class="tiny f-green" x="511.6" y="144">ok on attempt 2</text>
+    <text class="tiny sb mid f-red" x="256.2" y="183">503</text>
+    <text class="tiny f-amber-ink" x="274" y="183">wait 100 ms</text>
+    <text class="tiny f-green" x="332.2" y="196">ok on attempt 2</text>
+    <text class="tiny sb mid f-red" x="546" y="235">400</text>
+    <text class="tiny f-red" x="566.8" y="248">not retried</text>
+    <rect class="f-red-soft" x="236.88" y="318" width="38.64" height="90"/>
+    <text class="tiny sb mid f-red" x="256.2" y="332">blip</text>
+  </g>
+  <g class="p2">
+    <rect class="f-red" x="132.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="160.35" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="187.95" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="215.55" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="243.15" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="270.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="298.35" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="325.95" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="353.55" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="381.15" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="408.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="436.35" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="463.95" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="491.55" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="519.15" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="546.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="574.35" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="601.95" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="629.55" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="657.15" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="160.35" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="187.95" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="215.55" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="243.15" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="270.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="298.35" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="325.95" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="353.55" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="381.15" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="408.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="436.35" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="463.95" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="491.55" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="519.15" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="546.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="574.35" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="601.95" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="629.55" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="657.15" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="160.35" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="187.95" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="215.55" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="243.15" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="270.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="298.35" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="325.95" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="353.55" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="381.15" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="408.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="436.35" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="463.95" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="491.55" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="519.15" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="546.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="574.35" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="601.95" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="629.55" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="657.15" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="160.35" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="187.95" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="215.55" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="243.15" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="270.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="298.35" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="325.95" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="353.55" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="381.15" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="408.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="436.35" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="463.95" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="491.55" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="519.15" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="546.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="574.35" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="601.95" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="629.55" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="657.15" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="160.35" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="187.95" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="215.55" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="243.15" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="270.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="298.35" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="325.95" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="353.55" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="381.15" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="408.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="436.35" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="463.95" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="491.55" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="519.15" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="546.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="574.35" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="601.95" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="629.55" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="657.15" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="160.35" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="187.95" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="215.55" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="243.15" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="270.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="298.35" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="325.95" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="353.55" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="381.15" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="408.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="436.35" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="463.95" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="491.55" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="519.15" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="546.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="574.35" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="601.95" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="629.55" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="657.15" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.5" y="400" width="551" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="391" width="551" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="382" width="551" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="373" width="551" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="364" width="551" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="355" width="551" height="7.5" rx="1.5"/>
+    <text class="tiny sb f-red" x="138" y="346">retry storm: 6 calls in flight, nonstop</text>
+  </g>
+  <g class="p3">
+    <rect class="f-red" x="132.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="138.5" width="23.6" height="3" rx="1.5"/>
+    <rect class="f-red" x="187.95" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="216.8" y="138.5" width="51.2" height="3" rx="1.5"/>
+    <rect class="f-red" x="270.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="299.6" y="138.5" width="106.4" height="3" rx="1.5"/>
+    <rect class="f-red" x="408.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="437.6" y="138.5" width="216.8" height="3" rx="1.5"/>
+    <rect class="f-red" x="657.15" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="164.5" width="23.6" height="3" rx="1.5"/>
+    <rect class="f-red" x="187.95" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="216.8" y="164.5" width="51.2" height="3" rx="1.5"/>
+    <rect class="f-red" x="270.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="299.6" y="164.5" width="106.4" height="3" rx="1.5"/>
+    <rect class="f-red" x="408.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="437.6" y="164.5" width="216.8" height="3" rx="1.5"/>
+    <rect class="f-red" x="657.15" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="190.5" width="23.6" height="3" rx="1.5"/>
+    <rect class="f-red" x="187.95" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="216.8" y="190.5" width="51.2" height="3" rx="1.5"/>
+    <rect class="f-red" x="270.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="299.6" y="190.5" width="106.4" height="3" rx="1.5"/>
+    <rect class="f-red" x="408.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="437.6" y="190.5" width="216.8" height="3" rx="1.5"/>
+    <rect class="f-red" x="657.15" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="216.5" width="23.6" height="3" rx="1.5"/>
+    <rect class="f-red" x="187.95" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="216.8" y="216.5" width="51.2" height="3" rx="1.5"/>
+    <rect class="f-red" x="270.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="299.6" y="216.5" width="106.4" height="3" rx="1.5"/>
+    <rect class="f-red" x="408.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="437.6" y="216.5" width="216.8" height="3" rx="1.5"/>
+    <rect class="f-red" x="657.15" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="242.5" width="23.6" height="3" rx="1.5"/>
+    <rect class="f-red" x="187.95" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="216.8" y="242.5" width="51.2" height="3" rx="1.5"/>
+    <rect class="f-red" x="270.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="299.6" y="242.5" width="106.4" height="3" rx="1.5"/>
+    <rect class="f-red" x="408.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="437.6" y="242.5" width="216.8" height="3" rx="1.5"/>
+    <rect class="f-red" x="657.15" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="268.5" width="23.6" height="3" rx="1.5"/>
+    <rect class="f-red" x="187.95" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="216.8" y="268.5" width="51.2" height="3" rx="1.5"/>
+    <rect class="f-red" x="270.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="299.6" y="268.5" width="106.4" height="3" rx="1.5"/>
+    <rect class="f-red" x="408.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="437.6" y="268.5" width="216.8" height="3" rx="1.5"/>
+    <rect class="f-red" x="657.15" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.5" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="187.7" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="270.5" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="408.5" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="656.9" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="391" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="187.7" y="391" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="270.5" y="391" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="408.5" y="391" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="656.9" y="391" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="382" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="187.7" y="382" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="270.5" y="382" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="408.5" y="382" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="656.9" y="382" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="373" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="187.7" y="373" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="270.5" y="373" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="408.5" y="373" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="656.9" y="373" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="364" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="187.7" y="364" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="270.5" y="364" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="408.5" y="364" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="656.9" y="364" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="355" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="187.7" y="355" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="270.5" y="355" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="408.5" y="355" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="656.9" y="355" width="26.6" height="7.5" rx="1.5"/>
+    <text class="tiny mid f-amber-ink" x="173.4" y="131">100 ms</text>
+    <text class="tiny mid f-amber-ink" x="242.4" y="131">200 ms</text>
+    <text class="tiny mid f-amber-ink" x="352.8" y="131">400 ms</text>
+    <text class="tiny mid f-amber-ink" x="546" y="131">800 ms</text>
+    <text class="tiny mid f-muted" x="546" y="396">idle between waves</text>
+    <text class="tiny sb f-red" x="412" y="346">every wave overloads it again</text>
+  </g>
+  <g class="p4">
+    <rect class="f-red" x="132.75" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="138.5" width="22.22" height="3" rx="1.5"/>
+    <rect class="f-red" x="186.57" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="215.42" y="138.5" width="24.98" height="3" rx="1.5"/>
+    <rect class="f-green" x="243.15" y="135" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="164.5" width="7.04" height="3" rx="1.5"/>
+    <rect class="f-red" x="171.39" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="200.24" y="164.5" width="20.84" height="3" rx="1.5"/>
+    <rect class="f-green" x="223.83" y="161" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="190.5" width="22.22" height="3" rx="1.5"/>
+    <rect class="f-red" x="186.57" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="215.42" y="190.5" width="36.02" height="3" rx="1.5"/>
+    <rect class="f-green" x="254.19" y="187" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="216.5" width="15.32" height="3" rx="1.5"/>
+    <rect class="f-red" x="179.67" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="208.52" y="216.5" width="45.68" height="3" rx="1.5"/>
+    <rect class="f-green" x="256.95" y="213" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="242.5" width="12.56" height="3" rx="1.5"/>
+    <rect class="f-red" x="176.91" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="205.76" y="242.5" width="2.9" height="3" rx="1.5"/>
+    <rect class="f-green" x="211.41" y="239" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.75" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="161.6" y="268.5" width="2.9" height="3" rx="1.5"/>
+    <rect class="f-red" x="167.25" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="196.1" y="268.5" width="4.28" height="3" rx="1.5"/>
+    <rect class="f-red" x="203.13" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-amber" x="231.98" y="268.5" width="77.42" height="3" rx="1.5"/>
+    <rect class="f-green" x="312.15" y="265" width="26.1" height="10" rx="2.5"/>
+    <rect class="f-red" x="132.5" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="167" y="400" width="18.32" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="186.32" y="400" width="11.42" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="198.74" y="400" width="3.14" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="202.88" y="400" width="1" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="204.26" y="400" width="79.04" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="311.9" y="400" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="391" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="171.14" y="391" width="14.18" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="186.32" y="391" width="11.42" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="198.74" y="391" width="3.14" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="202.88" y="391" width="1" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="204.26" y="391" width="33.5" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="242.9" y="391" width="7.28" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="253.94" y="391" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="382" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="176.66" y="382" width="8.66" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="186.32" y="382" width="11.42" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="198.74" y="382" width="3.14" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="202.88" y="382" width="1" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="204.26" y="382" width="8.66" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="223.58" y="382" width="5.9" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="256.7" y="382" width="12.8" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="373" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="179.42" y="373" width="5.9" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="186.32" y="373" width="11.42" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="198.74" y="373" width="3.14" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="202.88" y="373" width="1" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="204.26" y="373" width="1.76" height="7.5" rx="1.5"/>
+    <rect class="f-blue" x="211.16" y="373" width="1.76" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="364" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="186.32" y="364" width="11.42" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="202.88" y="364" width="1" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="132.5" y="355" width="26.6" height="7.5" rx="1.5"/>
+    <rect class="f-red" x="186.32" y="355" width="7.28" height="7.5" rx="1.5"/>
+    <text class="tiny f-green" x="277" y="144">ok on attempt 3 of 5</text>
+    <text class="tiny f-green" x="257.68" y="170">ok on attempt 3 of 5</text>
+    <text class="tiny f-green" x="288.04" y="196">ok on attempt 3 of 5</text>
+    <text class="tiny f-green" x="290.8" y="222">ok on attempt 3 of 5</text>
+    <text class="tiny f-green" x="245.26" y="248">ok on attempt 3 of 5</text>
+    <text class="tiny f-green" x="346" y="274">ok on attempt 4 of 5</text>
+    <text class="tiny sb f-green" x="421.8" y="396">retries spread out: under capacity</text>
+  </g>
+  <g class="rb-cover">
+    <rect class="f-bg" x="132" y="118" width="564" height="164"/>
+    <rect class="f-panel" x="132" y="295" width="564" height="126"/>
+  </g>
+  <text class="tiny sb f-ink" x="132" y="114">attempts per client</text>
+  <text class="tiny" x="594.4" y="114">waiting to retry</text>
+  <rect class="f-amber" x="572.4" y="108.5" width="16" height="3" rx="1.5"/>
+  <text class="tiny" x="510" y="114">succeeded</text>
+  <rect class="f-green" x="488" y="105" width="16" height="10" rx="2.5"/>
+  <text class="tiny" x="442.4" y="114">failed</text>
+  <rect class="f-red" x="420.4" y="105" width="16" height="10" rx="2.5"/>
+  <line class="wire" x1="36" y1="140" x2="36" y2="285" marker-end="url(#ah)"/>
+  <line class="wire" x1="36" y1="140" x2="44" y2="140"/>
+  <rect class="box" x="44" y="130" width="76" height="20" rx="6"/>
+  <text class="sub mid f-ink" x="82" y="144">client 1</text>
+  <line class="s-line" x1="132" y1="149" x2="684" y2="149" stroke-width="1"/>
+  <line class="wire" x1="36" y1="166" x2="44" y2="166"/>
+  <rect class="box" x="44" y="156" width="76" height="20" rx="6"/>
+  <text class="sub mid f-ink" x="82" y="170">client 2</text>
+  <line class="s-line" x1="132" y1="175" x2="684" y2="175" stroke-width="1"/>
+  <line class="wire" x1="36" y1="192" x2="44" y2="192"/>
+  <rect class="box" x="44" y="182" width="76" height="20" rx="6"/>
+  <text class="sub mid f-ink" x="82" y="196">client 3</text>
+  <line class="s-line" x1="132" y1="201" x2="684" y2="201" stroke-width="1"/>
+  <line class="wire" x1="36" y1="218" x2="44" y2="218"/>
+  <rect class="box" x="44" y="208" width="76" height="20" rx="6"/>
+  <text class="sub mid f-ink" x="82" y="222">client 4</text>
+  <line class="s-line" x1="132" y1="227" x2="684" y2="227" stroke-width="1"/>
+  <line class="wire" x1="36" y1="244" x2="44" y2="244"/>
+  <rect class="box" x="44" y="234" width="76" height="20" rx="6"/>
+  <text class="sub mid f-ink" x="82" y="248">client 5</text>
+  <line class="s-line" x1="132" y1="253" x2="684" y2="253" stroke-width="1"/>
+  <line class="wire" x1="36" y1="270" x2="44" y2="270"/>
+  <rect class="box" x="44" y="260" width="76" height="20" rx="6"/>
+  <text class="sub mid f-ink" x="82" y="274">client 6</text>
+  <line class="s-line" x1="132" y1="279" x2="684" y2="279" stroke-width="1"/>
+  <rect class="none s-line" x="30" y="294" width="666" height="128" rx="12" stroke-width="1.5"/>
+  <text class="label" x="44" y="322">Service</text>
+  <g><rect class="f-panel" x="38" y="332" width="88" height="20" rx="10"/><rect class="f-green-soft s-green" x="38" y="332" width="88" height="20" rx="10" stroke-width="1.5"/><text class="rb-pill mid f-green" x="82" y="346">HEALTHY</text></g>
+  <g class="rb-blip"><rect class="f-panel" x="38" y="332" width="88" height="20" rx="10"/><rect class="f-red-soft s-red" x="38" y="332" width="88" height="20" rx="10" stroke-width="1.5"/><text class="rb-pill mid f-red" x="82" y="346">BLIP</text></g>
+  <g class="rb-over"><rect class="f-panel" x="38" y="332" width="88" height="20" rx="10"/><rect class="f-red-soft s-red" x="38" y="332" width="88" height="20" rx="10" stroke-width="1.5"/><text class="rb-pill mid f-red" x="82" y="346">OVERLOADED</text></g>
+  <rect class="f-blue" x="132" y="305" width="12" height="7.5" rx="1.5"/>
+  <text class="tiny" x="149" y="312">calls in flight</text>
+  <rect class="f-red" x="250" y="305" width="12" height="7.5" rx="1.5"/>
+  <text class="tiny" x="267" y="312">over capacity: every call in flight times out</text>
+  <line class="s-ink" x1="132" y1="372" x2="684" y2="372" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text class="tiny sb f-ink end" x="126" y="376">capacity</text>
+  <text class="tiny end" x="126" y="389">4 calls at once</text>
+  <line class="s-wire" x1="132" y1="408" x2="684" y2="408" stroke-width="1.5"/>
+  <line class="s-wire" x1="132" y1="408" x2="132" y2="413" stroke-width="1.5"/>
+  <text class="tiny mid" x="132" y="438">0</text>
+  <line class="s-wire" x1="270" y1="408" x2="270" y2="413" stroke-width="1.5"/>
+  <text class="tiny mid" x="270" y="438">0.5 s</text>
+  <line class="s-wire" x1="408" y1="408" x2="408" y2="413" stroke-width="1.5"/>
+  <text class="tiny mid" x="408" y="438">1 s</text>
+  <line class="s-wire" x1="546" y1="408" x2="546" y2="413" stroke-width="1.5"/>
+  <text class="tiny mid" x="546" y="438">1.5 s</text>
+  <line class="s-wire" x1="684" y1="408" x2="684" y2="413" stroke-width="1.5"/>
+  <text class="tiny mid" x="684" y="438">2 s</text>
+  <rect class="box" x="708" y="118" width="222" height="164" rx="12"/>
+  <text class="tiny sb" x="724" y="137">RETRY POLICY</text>
+  <g class="p1">
+    <text class="label" x="724" y="160">What to retry</text>
+    <circle class="f-green" cx="731" cy="184" r="7"/><path class="none s-bg" d="M727.8 184l2.2 2.3 4.3-4.8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="rb-code" x="746" y="188">timeout, 503</text>
+    <text class="tiny" x="746" y="202">transient: retry after a wait</text>
+    <circle class="f-green" cx="731" cy="222" r="7"/><path class="none s-bg" d="M727.8 222l2.2 2.3 4.3-4.8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="rb-code" x="746" y="226">429</text>
+    <text class="tiny" x="746" y="240">wait as long as Retry-After says</text>
+    <circle class="f-red" cx="731" cy="260" r="7"/><path class="none s-bg" d="M728.4 257.4l5.2 5.2M733.6 257.4l-5.2 5.2" stroke-width="1.8" stroke-linecap="round"/>
+    <text class="rb-code" x="746" y="264">400, 401</text>
+    <text class="tiny" x="746" y="278">never: a retry can't fix them</text>
+  </g>
+  <g class="p2">
+    <text class="label" x="724" y="160">Retry immediately</text>
+    <text class="mono rb-code" x="724" y="190">wait = 0</text>
+    <text class="sub" x="724" y="216">Every client resends the moment</text>
+    <text class="sub" x="724" y="233">its call fails, again and again.</text>
+    <text class="sub" x="724" y="259">Retries add to the overload</text>
+    <text class="sub" x="724" y="276">that caused the failures.</text>
+  </g>
+  <g class="p3">
+    <text class="label" x="724" y="160">Exponential backoff</text>
+    <text class="mono rb-code" x="724" y="190">wait = min(800, 100×2<tspan class="rb-sup" dy="-5">n</tspan><tspan dy="5">) ms</tspan></text>
+    <text class="tiny" x="724" y="207">n = retries so far</text>
+    <text class="sub" x="724" y="233">Waits double: 100, 200, 400,</text>
+    <text class="sub" x="724" y="250">800 ms, then stay at the cap.</text>
+    <text class="sub" x="724" y="276">Same schedule on every client.</text>
+  </g>
+  <g class="p4">
+    <text class="label" x="724" y="160">Backoff + full jitter</text>
+    <text class="mono rb-code" x="724" y="190">backoff = min(800, 100×2<tspan class="rb-sup" dy="-5">n</tspan><tspan dy="5">)</tspan></text>
+    <text class="mono rb-code" x="724" y="210">wait = random(0, backoff)</text>
+    <text class="sub" x="724" y="236">Each client draws its own wait,</text>
+    <text class="sub" x="724" y="253">so retries no longer line up.</text>
+    <text class="sub sb f-ink" x="724" y="276">Max 5 attempts, then fail.</text>
+  </g>
+  <rect class="box" x="708" y="294" width="222" height="128" rx="12"/>
+  <text class="tiny sb" x="724" y="316">RESULT AFTER 2 s</text>
+  <text class="tiny" x="724" y="376">attempts</text>
+  <text class="tiny" x="820" y="376">succeeded</text>
+  <g class="rb-pend">
+    <text class="rb-big f-faint" x="724" y="356">–</text>
+    <text class="rb-big f-faint" x="820" y="356">–</text>
+  </g>
+  <g class="rb-res1">
+    <text class="rb-big f-ink" x="724" y="356">8</text>
+    <text class="rb-big f-green" x="820" y="356">5 of 6</text>
+    <text class="tiny sb f-muted" x="724" y="402">the 400 is not retried</text>
+  </g>
+  <g class="rb-res2">
+    <text class="rb-big f-red" x="724" y="356">120</text>
+    <text class="rb-big f-red" x="820" y="356">0 of 6</text>
+    <text class="tiny sb f-red" x="724" y="402">nothing gets through</text>
+  </g>
+  <g class="rb-res3">
+    <text class="rb-big f-ink" x="724" y="356">30</text>
+    <text class="rb-big f-red" x="820" y="356">0 of 6</text>
+    <text class="tiny sb f-red" x="724" y="402">fewer attempts, no success</text>
+  </g>
+  <g class="rb-res4">
+    <text class="rb-big f-ink" x="724" y="356">19</text>
+    <text class="rb-big f-green" x="820" y="356">6 of 6</text>
+    <text class="tiny sb f-green" x="724" y="402">recovered within 0.75 s</text>
+  </g>
+  <g class="rb-play">
+    <line class="s-ink" x1="0" y1="120" x2="0" y2="282" stroke-width="1.5"/>
+    <line class="s-ink" x1="0" y1="318" x2="0" y2="412" stroke-width="1.5"/>
+    <circle class="f-ink" cx="0" cy="120" r="3.5"/>
+  </g>
+</g>
+</svg>

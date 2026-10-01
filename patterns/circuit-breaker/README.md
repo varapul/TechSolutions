@@ -50,7 +50,7 @@ A circuit breaker wraps calls to a dependency and watches their outcomes. It is 
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Retry with Backoff & Jitter *(planned)* — Retry transient failures with growing, randomised delays so clients don't stampede.
+- [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 - Timeout & Fallback *(planned)* — Bound every remote call and degrade gracefully when the time runs out.
 - Bulkhead *(planned)* — Give each dependency its own pool of resources so one failure can't sink the whole ship.
 - Health Endpoint Monitoring *(planned)* — Expose liveness and readiness checks that load balancers and monitors probe.

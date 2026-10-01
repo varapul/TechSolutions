@@ -71,7 +71,7 @@ They combine well: a canary build usually ships new features dark behind flags, 
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Blue-Green Deployment *(planned)* — Run the new version beside the old one and switch all traffic in one step.
+- [Blue-Green Deployment](../blue-green-deployment/) — Run the new version beside the old one and switch all traffic in one step.
 - Feature Flags *(planned)* — Deploy code dark, then turn features on per user or percentage at runtime.
 - Rolling Update *(planned)* — Replace instances batch by batch while the service stays up.
 - Shadow Traffic *(planned)* — Mirror live requests to the new version and compare results without affecting users.

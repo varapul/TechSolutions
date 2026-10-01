@@ -1,0 +1,35 @@
+{
+  "aka": ["Command Query Responsibility Segregation"],
+  "steps": [
+    {
+      "title": "Commands change state",
+      "caption": "PlaceOrder: the handler checks the rules, the write model commits, and the client gets 201 Created.",
+      "body": "The client sends a **command**, a business task such as `PlaceOrder`, not a generic update. The command handler checks the business rules against the **write model**, normalised tables that are the source of truth, and commits the change in one transaction. The client gets an acknowledgement: `201 Created` here."
+    },
+    {
+      "title": "Project to read models",
+      "caption": "Change #7 flows to the projector, which updates each denormalised view: order summary and search.",
+      "body": "The commit is published as a **change event** (`OrderPlaced`, change #7), through a transactional outbox or change data capture. A **projector** consumes it and updates every **read model**: a summary table with one ready-made row per order, and a search index keyed by keyword. It then records its checkpoint so it can resume where it left off."
+    },
+    {
+      "title": "Queries hit the read side",
+      "caption": "A query reads one ready-made table, with no joins, from read replicas that scale apart from writes.",
+      "body": "Queries never change state, so the query handler just reads the view that matches the screen: `SELECT * FROM order_summary WHERE customer_id = 7`, one table and no joins. Reads usually far outnumber writes, so the read side scales on its own, here to **three replicas**, while the write side stays small and consistent."
+    },
+    {
+      "title": "Eventual consistency",
+      "caption": "Right after CancelOrder, a read still shows placed: the view lags until the projector catches up.",
+      "body": "The write commits at once, but the read model is updated asynchronously, so a query issued right after the command can return **stale data**, here `placed` instead of `cancelled`, until the projector catches up. Hide the lag where it matters: return the new state in the command's response, pass a **version token** so the read waits for change #8, or update the UI optimistically."
+    }
+  ],
+  "related": ["event-sourcing", "materialized-view", "change-data-capture", "event-driven-architecture", "read-replicas", "cache-aside", "transactional-outbox"],
+  "references": [
+    { "title": "Martin Fowler — CQRS", "url": "https://martinfowler.com/bliki/CQRS.html" },
+    { "title": "Greg Young — CQRS Documents (2010, PDF)", "url": "https://cqrs.wordpress.com/wp-content/uploads/2010/11/cqrs_documents.pdf" },
+    { "title": "Azure Architecture Center — CQRS pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs" },
+    { "title": "microservices.io — Pattern: Command Query Responsibility Segregation (CQRS)", "url": "https://microservices.io/patterns/data/cqrs.html" },
+    { "title": "Udi Dahan — Clarified CQRS", "url": "https://udidahan.com/2009/12/09/clarified-cqrs/" },
+    { "title": "AWS Prescriptive Guidance — CQRS pattern", "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/modernization-data-persistence/cqrs-pattern.html" },
+    { "title": "Werner Vogels — Eventually Consistent, Revisited", "url": "https://www.allthingsdistributed.com/2008/12/eventually_consistent.html" }
+  ]
+}

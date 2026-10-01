@@ -1,0 +1,36 @@
+{
+  "aka": ["Microservice architecture"],
+  "steps": [
+    {
+      "title": "Split by capability",
+      "caption": "Split the monolith by business capability: each service gets its own code and its own database.",
+      "body": "The monolith is one deployable unit over one shared database, so every change ships together and any module can reach into any table. Split it along **business capabilities** (Catalog, Orders, Payments, Inventory): each service gets its own codebase, its own deployment and its **own database**, which other services reach only through its API or its events."
+    },
+    {
+      "title": "Independent deploy & scale",
+      "caption": "Payments ships v2 on its own while the others keep running; Catalog scales out to 3 instances.",
+      "body": "Each service has its own version and release cadence. The Payments team rolls out **v2** on its own schedule, with no coordinated release, while Catalog and Orders keep serving requests on their current versions. When Catalog comes under load, only Catalog **scales out** (to three instances here); nothing else is redeployed or resized."
+    },
+    {
+      "title": "Sync queries, async events",
+      "caption": "Queries are synchronous calls; a state change is an event that Payments and Inventory each react to.",
+      "body": "Use a **synchronous** call when the caller needs the answer now: `GET /products` waits for Catalog's response. Between services, announce a **state change** as an event instead of calling everyone who cares: Orders saves the order, replies, and publishes `OrderPlaced`; the broker delivers a copy to Payments and to Inventory, and each one updates its own data at its own pace."
+    },
+    {
+      "title": "Contain failures",
+      "caption": "Payments fails, yet orders are still accepted: their events wait in the broker until it catches up.",
+      "body": "Payments crashes. Orders never calls it directly, so orders are still accepted, Inventory keeps consuming, and the `OrderPlaced` events for Payments **wait in its queue** on the broker. Catalog doesn't notice. When Payments recovers it works through the backlog and catches up: the failure stayed inside one service, and orders placed during the outage are simply paid a little later."
+    }
+  ],
+  "related": ["modular-monolith", "event-driven-architecture", "api-gateway", "database-per-service", "saga-orchestration", "service-mesh", "strangler-fig", "distributed-tracing"],
+  "references": [
+    { "title": "James Lewis and Martin Fowler — Microservices (2014)", "url": "https://martinfowler.com/articles/microservices.html" },
+    { "title": "Azure Architecture Center — Microservices architecture style", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: Microservice Architecture", "url": "https://microservices.io/patterns/microservices.html" },
+    { "title": "Sam Newman — Building Microservices (2nd edition)", "url": "https://samnewman.io/books/building_microservices_2nd_edition/" },
+    { "title": "Martin Fowler — Microservice Trade-Offs", "url": "https://martinfowler.com/articles/microservice-trade-offs.html" },
+    { "title": "Martin Fowler — Monolith First", "url": "https://martinfowler.com/bliki/MonolithFirst.html" },
+    { "title": "Martin Fowler — Conway's Law", "url": "https://martinfowler.com/bliki/ConwaysLaw.html" },
+    { "title": "Melvin E. Conway — How Do Committees Invent? (1968)", "url": "https://www.melconway.com/Home/Committees_Paper.html" }
+  ]
+}

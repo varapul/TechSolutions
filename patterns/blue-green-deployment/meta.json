@@ -1,0 +1,34 @@
+{
+  "aka": ["Blue/green deployment", "Red/black deployment"],
+  "steps": [
+    {
+      "title": "Blue is live",
+      "caption": "Blue runs v1 and serves all traffic. Green, an identical environment, sits idle.",
+      "body": "**Blue** runs the current version (v1), and the router sends it 100% of production traffic. **Green** is a second production environment, built to match Blue, that serves nothing at the moment. Both environments use the same database."
+    },
+    {
+      "title": "Deploy and test Green",
+      "caption": "v2 is deployed to Green and smoke-tested through a private test endpoint. Users stay on Blue.",
+      "body": "The pipeline deploys **v2** to Green while every user stays on Blue. Smoke tests reach Green through a private test endpoint (a preview service, a test listener or a tagged URL) and must pass before anyone switches."
+    },
+    {
+      "title": "Switch",
+      "caption": "The router sends 100% of traffic to Green in one step. Blue drains and stays warm for rollback.",
+      "body": "The router points all traffic at Green at once, with a load-balancer target swap, a Kubernetes Service selector change or a DNS record update. Requests already in flight finish on Blue (connection draining), and Blue keeps running, so rolling back is just another switch."
+    },
+    {
+      "title": "Roll back or retire",
+      "caption": "Errors stay normal, so Blue goes idle and the roles swap. A spike would flip traffic back to Blue.",
+      "body": "Watch Green's error rate and latency for a while. If they spike, **flip the router straight back** to Blue. If they stay normal, Blue is retired to idle and becomes the target for the next release, so the two environments swap roles with every deployment."
+    }
+  ],
+  "related": ["canary-release", "feature-flags", "rolling-update", "expand-and-contract", "immutable-infrastructure", "shadow-traffic"],
+  "references": [
+    { "title": "Martin Fowler — BlueGreenDeployment", "url": "https://martinfowler.com/bliki/BlueGreenDeployment.html" },
+    { "title": "AWS whitepaper — Blue/Green Deployments on AWS (2021, archived)", "url": "https://docs.aws.amazon.com/whitepapers/latest/blue-green-deployments/welcome.html" },
+    { "title": "Amazon ECS — Blue/green deployments", "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-blue-green.html" },
+    { "title": "Argo Rollouts — BlueGreen deployment strategy", "url": "https://argo-rollouts.readthedocs.io/en/stable/features/bluegreen/" },
+    { "title": "Cloud Foundry — Using blue-green deployment to reduce downtime", "url": "https://docs.cloudfoundry.org/devguide/deploy-apps/blue-green.html" },
+    { "title": "Azure App Service — Set up staging environments (deployment slots)", "url": "https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots" }
+  ]
+}
