@@ -55,7 +55,7 @@ Adding a new capability usually means adding a new subscriber, with no change to
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Publish-Subscribe *(planned)* — Broadcast each message to every interested subscriber through a topic.
+- [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 - Competing Consumers *(planned)* — Several workers pull from one queue, so work is shared and throughput scales out.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.

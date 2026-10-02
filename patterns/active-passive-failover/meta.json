@@ -1,0 +1,71 @@
+{
+  "aka": ["Active-standby", "Primary-standby", "Regional failover"],
+  "steps": [
+    {
+      "title": "One serves, one stands by",
+      "caption": "All traffic goes to the active region. The standby receives each change a few seconds later.",
+      "body": "All traffic goes to the **active** region, because that is the answer the traffic manager gives to every DNS lookup. Each change committed there reaches the **passive** region a few seconds later through asynchronous replication (5 seconds in this example), so the standby is always slightly behind. Its app tier is deployed and healthy but serves nothing, and health checks probe both regions."
+    },
+    {
+      "title": "Detect, then decide",
+      "caption": "The active region fails. Only three failed health checks in a row declare it unhealthy.",
+      "body": "The active region fails. One failed check is not enough: with a check every 10 seconds, the region is declared unhealthy only after **three failures in a row**, 30 seconds after it went down, so that a blip does not trigger a failover. Many organisations put a **human decision** here, because failing over a region costs data and carries risk."
+    },
+    {
+      "title": "Promote, fence, redirect",
+      "caption": "The replica is promoted, the old primary is fenced, and clients follow as DNS caches expire.",
+      "body": "The replica is **promoted** and starts accepting writes, and the old primary is **fenced**: marked so that it cannot accept writes if it comes back, because two primaries would diverge (**split brain**). The traffic manager now answers with the passive region and clients follow as their cached DNS answers expire (60 seconds here): promoted at +90 s, traffic moved by about +150 s, a recovery time of roughly 2.5 minutes. The last 5 seconds of writes never reached the replica and are lost. All of these numbers are examples."
+    },
+    {
+      "title": "Fail back on purpose",
+      "caption": "The failed region rejoins as the standby. Going back is a planned switchover: no data is lost.",
+      "body": "The failed region returns, but it does not take the traffic back by itself: it rejoins as the **new standby** and catches up through replication in the other direction. Returning to the original layout is a **planned switchover**: pause writes, let the replica catch up fully, swap the roles. Nothing is lost this time, and the two regions end in the arrangement they started in."
+    }
+  ],
+  "related": [
+    "disaster-recovery-strategies",
+    "multi-region-active-active",
+    "read-replicas",
+    "load-balancing",
+    "health-endpoint-monitoring",
+    "leader-election",
+    "autoscaling",
+    "chaos-engineering"
+  ],
+  "references": [
+    { "title": "AWS whitepaper — Disaster Recovery of Workloads on AWS: disaster recovery options in the cloud (pilot light, warm standby, failover)", "url": "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html" },
+    { "title": "AWS Well-Architected Framework, Reliability Pillar — REL11-BP04 Rely on the data plane and not the control plane during recovery", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_withstand_component_failures_avoid_control_plane.html" },
+    { "title": "AWS Well-Architected Framework, Reliability Pillar — REL11-BP05 Use static stability to prevent bimodal behavior", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_withstand_component_failures_static_stability.html" },
+    { "title": "AWS Well-Architected Framework, Reliability Pillar — REL13-BP03 Test disaster recovery implementation to validate the implementation", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_planning_for_recovery_dr_tested.html" },
+    { "title": "Amazon Builders' Library — Static stability using Availability Zones", "url": "https://aws.amazon.com/builders-library/static-stability-using-availability-zones/" },
+    { "title": "Amazon Route 53 Developer Guide — Active-active and active-passive failover", "url": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html" },
+    { "title": "Amazon Route 53 Developer Guide — How Amazon Route 53 chooses records when health checking is configured", "url": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-how-route-53-chooses-records.html" },
+    { "title": "Amazon Route 53 Developer Guide — How Amazon Route 53 determines whether a health check is healthy", "url": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-determining-health-of-endpoints.html" },
+    { "title": "Amazon Route 53 API Reference — HealthCheckConfig (request interval, failure threshold)", "url": "https://docs.aws.amazon.com/Route53/latest/APIReference/API_HealthCheckConfig.html" },
+    { "title": "Amazon Application Recovery Controller Developer Guide — Routing control in ARC", "url": "https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html" },
+    { "title": "Amazon Application Recovery Controller Developer Guide — Best practices for routing control in ARC (TTLs, connection lifetime)", "url": "https://docs.aws.amazon.com/r53recovery/latest/dg/route53-arc-best-practices.regional.html" },
+    { "title": "Amazon Application Recovery Controller Developer Guide — Region switch in ARC", "url": "https://docs.aws.amazon.com/r53recovery/latest/dg/region-switch.html" },
+    { "title": "Amazon Aurora User Guide — Using switchover or failover in Amazon Aurora Global Database", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-disaster-recovery.html" },
+    { "title": "Amazon RDS User Guide — Failing over a Multi-AZ DB instance for Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.Failover.html" },
+    { "title": "AWS SDK for Java Developer Guide — Set the JVM TTL for DNS name lookups", "url": "https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/jvm-ttl-dns.html" },
+    { "title": "Microsoft Learn — Azure Traffic Manager routing methods (priority)", "url": "https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods" },
+    { "title": "Microsoft Learn — Azure Traffic Manager endpoint monitoring", "url": "https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-monitoring" },
+    { "title": "Microsoft Learn — Failover groups overview and best practices (Azure SQL Database)", "url": "https://learn.microsoft.com/en-us/azure/azure-sql/database/failover-group-sql-db" },
+    { "title": "Microsoft Learn — Traffic routing methods for origins (Azure Front Door)", "url": "https://learn.microsoft.com/en-us/azure/frontdoor/routing-methods" },
+    { "title": "Google Cloud — About disaster recovery (DR) in Cloud SQL", "url": "https://docs.cloud.google.com/sql/docs/postgres/intro-to-cloud-sql-disaster-recovery" },
+    { "title": "Google Cloud — Cloud DNS: DNS routing policies and health checks", "url": "https://docs.cloud.google.com/dns/docs/routing-policies-overview" },
+    { "title": "Google SRE Book — Load Balancing at the Frontend (load balancing using DNS)", "url": "https://sre.google/sre-book/load-balancing-frontend/" },
+    { "title": "PostgreSQL documentation — Failover", "url": "https://www.postgresql.org/docs/current/warm-standby-failover.html" },
+    { "title": "PostgreSQL documentation — Log-Shipping Standby Servers (synchronous replication)", "url": "https://www.postgresql.org/docs/current/warm-standby.html" },
+    { "title": "PostgreSQL documentation — pg_rewind", "url": "https://www.postgresql.org/docs/current/app-pgrewind.html" },
+    { "title": "PostgreSQL documentation — Database Connection Control Functions (multiple hosts, target_session_attrs)", "url": "https://www.postgresql.org/docs/current/libpq-connect.html" },
+    { "title": "Patroni documentation — Watchdog support (leader key and split-brain protection)", "url": "https://patroni.readthedocs.io/en/latest/watchdog.html" },
+    { "title": "Pacemaker Explained — Fencing", "url": "https://clusterlabs.org/projects/pacemaker/doc/3.0/Pacemaker_Explained/html/fencing.html" },
+    { "title": "MongoDB Manual — Replica Set Elections", "url": "https://www.mongodb.com/docs/manual/core/replica-set-elections/" },
+    { "title": "MongoDB Manual — Rollbacks During Replica Set Failover", "url": "https://www.mongodb.com/docs/manual/core/replica-set-rollbacks/" },
+    { "title": "Martin Kleppmann — How to do distributed locking (fencing tokens)", "url": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" },
+    { "title": "RFC 8767 — Serving Stale Data to Improve DNS Resiliency", "url": "https://www.rfc-editor.org/rfc/rfc8767.html" },
+    { "title": "GitHub Blog — GitHub availability this week (incident report, September 2012)", "url": "https://github.blog/news-insights/the-library/github-availability-this-week/" },
+    { "title": "Martin Kleppmann & Chris Riccomini — Designing Data-Intensive Applications, 2nd Edition (O'Reilly, 2026): leader failover, in the chapter on replication", "url": "https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" }
+  ]
+}

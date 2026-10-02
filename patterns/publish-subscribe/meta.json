@@ -1,0 +1,62 @@
+{
+  "aka": ["Pub/Sub", "Publisher-Subscriber", "Publish-Subscribe Channel", "Fan-out"],
+  "steps": [
+    {
+      "title": "Publish once, fan out",
+      "caption": "Orders publishes OrderPlaced once and is done; the broker puts a copy into every subscription.",
+      "body": "Orders publishes `OrderPlaced` to the topic `orders` and is done: it does not know who is listening and does not wait for anyone. The broker puts a copy into every **subscription**. Each subscription is a small queue of its own with its own position, the record of what its subscriber has acknowledged, and Billing, Shipping and Analytics each receive their copy and acknowledge it. The inset shows the contrast: on a plain queue a message is taken by exactly one receiver, so Billing would take it and Shipping would never see it."
+    },
+    {
+      "title": "Independent and durable",
+      "caption": "Analytics is offline: its copies wait and it catches up. The live dashboard just misses them.",
+      "body": "Analytics goes offline. Its subscription is **durable**: the two messages published in the meantime wait there, Billing and Shipping carry on unaffected, and when Analytics returns it catches up from where it stopped. The live dashboard has a **non-durable** subscription, which exists only while the dashboard is connected. Nothing is kept for it, so the two messages published while it was away are simply missed."
+    },
+    {
+      "title": "Filter in the broker",
+      "caption": "Shipping's subscription filters on region = 'EU': it gets two of three; Billing gets all three.",
+      "body": "Shipping's subscription carries a filter on a message attribute: `region = 'EU'`. Three messages are published (EU, US, EU). The subscriptions of Billing and Analytics have no filter and receive all three; Shipping's receives only the two that match. The broker evaluates the filter, so the US message never enters Shipping's subscription and never reaches the subscriber. Depending on the broker, a filter can look at the topic name (with wildcards), at attributes as it does here, or at the content of the message."
+    },
+    {
+      "title": "Add a subscriber",
+      "caption": "Fraud adds its own subscription. Orders is not changed; Fraud gets what is published from now on.",
+      "body": "A new Fraud service creates its own subscription on the topic. The publisher's code, configuration and deployment do not change, and the other subscribers are not affected. The new subscription receives what is published from now on: the six earlier messages are not in it. On a log-based broker, or one with retention and replay, a new subscriber can start from an earlier position and read the history instead."
+    }
+  ],
+  "related": ["event-driven-architecture", "competing-consumers", "dead-letter-queue", "idempotent-consumer", "webhooks", "transactional-outbox", "saga-choreography", "queue-based-load-leveling"],
+  "references": [
+    { "title": "Enterprise Integration Patterns — Publish-Subscribe Channel", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html" },
+    { "title": "Enterprise Integration Patterns — Point-to-Point Channel", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PointToPointChannel.html" },
+    { "title": "Enterprise Integration Patterns — Durable Subscriber", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/DurableSubscription.html" },
+    { "title": "Enterprise Integration Patterns — Message Filter", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/Filter.html" },
+    { "title": "Azure Architecture Center — Publisher-Subscriber pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/publisher-subscriber" },
+    { "title": "Eugster, Felber, Guerraoui, Kermarrec — The Many Faces of Publish/Subscribe (ACM Computing Surveys 35(2), 2003)", "url": "https://infoscience.epfl.ch/entities/publication/e290bdee-459f-404c-905e-21c765c9dc02" },
+    { "title": "Apache Kafka 4.3 — Introduction (topics, partitions, retention)", "url": "https://kafka.apache.org/43/getting-started/introduction/" },
+    { "title": "Apache Kafka 4.3 — KafkaConsumer (consumer groups and topic subscriptions)", "url": "https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html" },
+    { "title": "Apache Kafka 4.3 — Consumer and share consumer configs (auto.offset.reset)", "url": "https://kafka.apache.org/43/configuration/consumer-configs/" },
+    { "title": "Apache Kafka 4.3 — Broker configs (log.retention.hours, offsets.retention.minutes)", "url": "https://kafka.apache.org/43/configuration/broker-configs/" },
+    { "title": "Apache Kafka 4.3 — Basic Kafka operations (consumer group lag, resetting offsets)", "url": "https://kafka.apache.org/43/operations/basic-kafka-operations/" },
+    { "title": "Google Cloud Pub/Sub — Subscription overview", "url": "https://docs.cloud.google.com/pubsub/docs/subscription-overview" },
+    { "title": "Google Cloud Pub/Sub — Subscription properties (retention, expiration)", "url": "https://docs.cloud.google.com/pubsub/docs/subscription-properties" },
+    { "title": "Google Cloud Pub/Sub — Filter messages from a subscription", "url": "https://docs.cloud.google.com/pubsub/docs/subscription-message-filter" },
+    { "title": "Google Cloud Pub/Sub — Replay and purge messages with seek", "url": "https://docs.cloud.google.com/pubsub/docs/replay-overview" },
+    { "title": "Google Cloud Pub/Sub — Monitor Pub/Sub in Cloud Monitoring", "url": "https://docs.cloud.google.com/pubsub/docs/monitoring" },
+    { "title": "Google Cloud Pub/Sub — Quotas and limits", "url": "https://docs.cloud.google.com/pubsub/quotas" },
+    { "title": "Amazon SNS — Fanout to Amazon SQS queues", "url": "https://docs.aws.amazon.com/sns/latest/dg/sns-sqs-as-subscriber.html" },
+    { "title": "Amazon SNS — Message filtering", "url": "https://docs.aws.amazon.com/sns/latest/dg/sns-message-filtering.html" },
+    { "title": "Amazon SNS — Message delivery retries", "url": "https://docs.aws.amazon.com/sns/latest/dg/sns-message-delivery-retries.html" },
+    { "title": "Amazon SNS — Message archiving and replay for FIFO topics", "url": "https://docs.aws.amazon.com/sns/latest/dg/fifo-message-archiving-replay.html" },
+    { "title": "AWS General Reference — Amazon SNS endpoints and quotas", "url": "https://docs.aws.amazon.com/general/latest/gr/sns.html" },
+    { "title": "Amazon SQS — Message quotas (retention)", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html" },
+    { "title": "Azure Service Bus — Queues, topics, and subscriptions", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-queues-topics-subscriptions" },
+    { "title": "Azure Service Bus — Topic filters and actions", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/topic-filters" },
+    { "title": "Azure Service Bus — Quotas and limits", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quotas" },
+    { "title": "RabbitMQ — Exchanges", "url": "https://www.rabbitmq.com/docs/exchanges" },
+    { "title": "RabbitMQ tutorial — Publish/Subscribe", "url": "https://www.rabbitmq.com/tutorials/tutorial-three-python" },
+    { "title": "RabbitMQ — Streams and Superstreams", "url": "https://www.rabbitmq.com/docs/streams" },
+    { "title": "OASIS Standard — MQTT Version 5.0", "url": "https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html" },
+    { "title": "Redis Docs — Redis Pub/sub", "url": "https://redis.io/docs/latest/develop/pubsub/" },
+    { "title": "Jakarta Messaging 3.1 — Specification (durable and non-durable subscriptions)", "url": "https://jakarta.ee/specifications/messaging/3.1/jakarta-messaging-spec-3.1" },
+    { "title": "Confluent — Schema Evolution and Compatibility for Schema Registry", "url": "https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html" },
+    { "title": "CloudEvents — Specification, version 1.0.2", "url": "https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md" }
+  ]
+}

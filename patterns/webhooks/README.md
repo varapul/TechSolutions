@@ -170,7 +170,7 @@ GitHub leaves recovery to the subscriber: a failed delivery stays failed until s
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
-- Publish-Subscribe *(planned)* — Broadcast each message to every interested subscriber through a topic.
+- [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - Asynchronous Request-Reply *(planned)* — Accept now with 202, process in the background, and let the client poll a status URL.

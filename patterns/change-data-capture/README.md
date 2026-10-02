@@ -143,7 +143,7 @@ All three end with a stream of changes that other systems consume. They differ i
 
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
-- Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
+- [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
 - [Cache-Aside](../cache-aside/) — Read from the cache first; on a miss load from the database and populate the cache.
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.

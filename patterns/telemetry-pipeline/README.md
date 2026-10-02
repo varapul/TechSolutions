@@ -165,7 +165,7 @@ Add the second tier when something has to be done centrally: tail sampling over 
 ## Related patterns
 
 - [Distributed Tracing](../distributed-tracing/) — Propagate a trace context across services and assemble the spans into one timeline.
-- Centralized Logging *(planned)* — Ship structured logs from every service to one searchable store, correlated by request ID.
+- [Centralized Logging](../centralized-logging/) — Ship structured logs from every service to one searchable store, correlated by request ID.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.

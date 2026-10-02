@@ -1,0 +1,81 @@
+{
+  "aka": ["Log aggregation", "Central log management"],
+  "steps": [
+    {
+      "title": "Scattered logs",
+      "caption": "One failed request left lines on three instances; a deployment replaces one, and its log is gone.",
+      "body": "The payment for order 8123 failed, and the request passed through three services on two nodes. Every instance writes free text, each service in its own format, to a file of its own, so the on-call engineer opens one machine after another and searches for the order number with `grep`. Before the search reaches Payments, a deployment replaces `payments-2`, and the one line that says why the charge failed is deleted together with the instance."
+    },
+    {
+      "title": "Structured and shipped",
+      "caption": "Services write named fields to stdout; each node's agent adds metadata and ships them to one store.",
+      "body": "Each service now writes **structured** events to standard output and nothing else: a timestamp, a level, the service name, a message, the order ID and the request's trace ID, as named fields instead of a sentence. The platform keeps that stream in files on the node, and one **agent per node** reads them, adds what a service cannot reliably know about itself (instance, node, environment) and ships the result to the central store. No service holds the store's address or credentials, so the store can change without a change to application code."
+    },
+    {
+      "title": "One query, one request",
+      "caption": "One search for the trace ID returns all three services' lines in time order: Payments timed out.",
+      "body": "The gateway starts a trace, every call passes its ID on in the W3C `traceparent` header (`4bf92f…`, the same ID as in the distributed tracing diagram), and each service writes that ID into every line as `trace_id`. One search for that value returns the lines of Gateway, Orders and Payments in time order, whichever instance wrote them, and shows that the charge timed out in Payments three seconds after the request arrived. Because the fields are named, a second query counts the errors of the last hour per service without parsing any text."
+    },
+    {
+      "title": "Affordable and safe",
+      "caption": "Drop debug lines, mask card numbers on the node, tier retention, and buffer while the store is down.",
+      "body": "The bill follows the volume, so decide on the node what is worth shipping: the agent drops `DEBUG` lines, keeps one in ten of the routine `INFO` lines and every warning and error, and masks a card number before the line leaves the node. The store keeps lines searchable for 14 days, archives them to cheap storage for 12 months and then deletes them. When the store is unavailable, each agent holds the lines in its **buffer** and retries, so delivery is late while the services, which only write to standard output, keep running. A buffer is finite: an outage that outlasts it still loses lines."
+    }
+  ],
+  "related": ["distributed-tracing", "telemetry-pipeline", "slo-error-budgets", "sidecar", "health-endpoint-monitoring", "microservices", "api-gateway"],
+  "references": [
+    { "title": "The Twelve-Factor App — XI. Logs", "url": "https://12factor.net/logs" },
+    { "title": "Chris Richardson — Pattern: Log aggregation (microservices.io)", "url": "https://microservices.io/patterns/observability/application-logging.html" },
+    { "title": "OpenTelemetry — Logs (structured, semi-structured and unstructured logs)", "url": "https://opentelemetry.io/docs/concepts/signals/logs/" },
+    { "title": "OpenTelemetry specification — OpenTelemetry Logging (collection from files, stdout and directly over OTLP)", "url": "https://opentelemetry.io/docs/specs/otel/logs/" },
+    { "title": "OpenTelemetry specification — Logs Data Model", "url": "https://opentelemetry.io/docs/specs/otel/logs/data-model/" },
+    { "title": "OpenTelemetry specification — Trace Context in non-OTLP Log Formats", "url": "https://opentelemetry.io/docs/specs/otel/compatibility/logging_trace_context/" },
+    { "title": "OpenTelemetry semantic conventions — Service attributes", "url": "https://opentelemetry.io/docs/specs/semconv/registry/attributes/service/" },
+    { "title": "OpenTelemetry semantic conventions — Deployment attributes", "url": "https://opentelemetry.io/docs/specs/semconv/registry/attributes/deployment/" },
+    { "title": "W3C — Trace Context (Recommendation)", "url": "https://www.w3.org/TR/trace-context/" },
+    { "title": "OWASP Cheat Sheet Series — Logging Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html" },
+    { "title": "Kubernetes documentation — Logging Architecture", "url": "https://kubernetes.io/docs/concepts/cluster-administration/logging/" },
+    { "title": "Kubernetes documentation — DaemonSet", "url": "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/" },
+    { "title": "Kubernetes design proposal — CRI: Log management for container stdout/stderr streams", "url": "https://github.com/kubernetes/design-proposals-archive/blob/main/node/kubelet-cri-logging.md" },
+    { "title": "Docker documentation — Configure logging drivers (blocking and non-blocking delivery)", "url": "https://docs.docker.com/engine/logging/configure/" },
+    { "title": "Fluent Bit manual — Buffering", "url": "https://docs.fluentbit.io/manual/data-pipeline/buffering" },
+    { "title": "Fluent Bit manual — Backpressure", "url": "https://docs.fluentbit.io/manual/administration/backpressure" },
+    { "title": "Fluent Bit manual — Tail input (offsets database)", "url": "https://docs.fluentbit.io/manual/data-pipeline/inputs/tail" },
+    { "title": "Fluent Bit manual — Multiline parsing", "url": "https://docs.fluentbit.io/manual/data-pipeline/parsers/multiline-parsing" },
+    { "title": "Fluent Bit manual — Kubernetes filter", "url": "https://docs.fluentbit.io/manual/data-pipeline/filters/kubernetes" },
+    { "title": "Vector documentation — Buffering model", "url": "https://vector.dev/docs/architecture/buffering-model/" },
+    { "title": "Vector documentation — Sample transform", "url": "https://vector.dev/docs/reference/configuration/transforms/sample/" },
+    { "title": "OpenTelemetry — Important Components for Kubernetes (filelog receiver, Kubernetes attributes processor)", "url": "https://opentelemetry.io/docs/platforms/kubernetes/collector/components/" },
+    { "title": "OpenTelemetry Collector Contrib — File Log Receiver", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/filelogreceiver/README.md" },
+    { "title": "OpenTelemetry Collector Contrib — Filter Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/filterprocessor/README.md" },
+    { "title": "OpenTelemetry Collector Contrib — Probabilistic Sampling Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/probabilisticsamplerprocessor/README.md" },
+    { "title": "OpenTelemetry Collector Contrib — Redaction Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/redactionprocessor/README.md" },
+    { "title": "Grafana Loki documentation — Loki overview", "url": "https://grafana.com/docs/loki/latest/get-started/overview/" },
+    { "title": "Grafana Loki documentation — Understand labels", "url": "https://grafana.com/docs/loki/latest/get-started/labels/" },
+    { "title": "Grafana Loki documentation — What is structured metadata", "url": "https://grafana.com/docs/loki/latest/get-started/labels/structured-metadata/" },
+    { "title": "Grafana Loki documentation — Log retention", "url": "https://grafana.com/docs/loki/latest/operations/storage/retention/" },
+    { "title": "Grafana Loki documentation — Alerting and recording rules", "url": "https://grafana.com/docs/loki/latest/alert/" },
+    { "title": "Grafana Loki documentation — Promtail agent (end-of-life notice)", "url": "https://grafana.com/docs/loki/latest/send-data/promtail/" },
+    { "title": "Elastic Docs — Index lifecycle management (ILM) in Elasticsearch", "url": "https://www.elastic.co/docs/manage-data/lifecycle/index-lifecycle-management" },
+    { "title": "Elastic Docs — Elasticsearch data tiers: hot, warm, cold and frozen", "url": "https://www.elastic.co/docs/manage-data/lifecycle/data-tiers" },
+    { "title": "Elastic Docs — Logs data streams (logsdb index mode)", "url": "https://www.elastic.co/docs/manage-data/data-store/data-streams/logs-data-stream" },
+    { "title": "Elastic Docs — Dynamic field mapping", "url": "https://www.elastic.co/docs/manage-data/data-store/mapping/dynamic-field-mapping" },
+    { "title": "Elasticsearch Reference — Mapping limit settings", "url": "https://www.elastic.co/docs/reference/elasticsearch/index-settings/mapping-limit" },
+    { "title": "Elastic Common Schema (ECS) reference", "url": "https://www.elastic.co/docs/reference/ecs" },
+    { "title": "Elastic Common Schema — ECS & OpenTelemetry", "url": "https://www.elastic.co/docs/reference/ecs/ecs-opentelemetry" },
+    { "title": "OpenSearch documentation — Index State Management", "url": "https://docs.opensearch.org/latest/im-plugin/ism/index/" },
+    { "title": "Amazon CloudWatch Logs User Guide — What is Amazon CloudWatch Logs?", "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html" },
+    { "title": "Amazon CloudWatch Logs User Guide — Log classes", "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch_Logs_Log_Classes.html" },
+    { "title": "Amazon CloudWatch Logs User Guide — Help protect sensitive log data with masking", "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/mask-sensitive-log-data.html" },
+    { "title": "Amazon CloudWatch Logs User Guide — Creating metrics from log events using filters", "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/MonitoringLogData.html" },
+    { "title": "AWS CloudTrail User Guide — Validating CloudTrail log file integrity", "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-intro.html" },
+    { "title": "Google Cloud Logging — Route log entries (sinks, inclusion and exclusion filters)", "url": "https://docs.cloud.google.com/logging/docs/routing/overview" },
+    { "title": "Google Cloud Logging — Quotas and limits (retention periods)", "url": "https://docs.cloud.google.com/logging/quotas" },
+    { "title": "Google Cloud Logging — Log-based metrics overview", "url": "https://docs.cloud.google.com/logging/docs/logs-based-metrics" },
+    { "title": "Google Cloud Logging — Cloud Audit Logs overview", "url": "https://docs.cloud.google.com/logging/docs/audit" },
+    { "title": "Google Cloud Observability — Pricing", "url": "https://cloud.google.com/products/observability/pricing" },
+    { "title": "Microsoft Learn — Manage data retention in a Log Analytics workspace", "url": "https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-retention-configure" },
+    { "title": "RFC 5424 — The Syslog Protocol", "url": "https://www.rfc-editor.org/rfc/rfc5424" },
+    { "title": "RFC 3339 — Date and Time on the Internet: Timestamps", "url": "https://www.rfc-editor.org/rfc/rfc3339" }
+  ]
+}

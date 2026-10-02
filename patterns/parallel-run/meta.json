@@ -1,0 +1,39 @@
+{
+  "aka": ["Parallel running"],
+  "steps": [
+    {
+      "title": "Same input to both",
+      "caption": "Every request goes to both. Old answers the caller; new is only recorded, with no real side effects.",
+      "body": "Every price request is handed to both implementations. The old one, in production for years, stays the **source of truth**: its answer goes back to the caller. The new one's answer is only recorded, and its writes and outbound calls go to an isolated store and to stubs, so nothing is charged or sent twice."
+    },
+    {
+      "title": "Compare every result",
+      "caption": "A comparator checks every pair of results. 970 of 1,000 match (97%); the 30 mismatches are logged.",
+      "body": "A comparator checks the two results for every input. A match is only counted. A mismatch is logged with the input and both outputs: for `3 × $16.67 + 8% tax` the old code says $54.00 and the new code $54.01. Of the last 1,000 inputs 970 match, so the gauge reads 97%."
+    },
+    {
+      "title": "Explain every mismatch",
+      "caption": "Explain every mismatch: new-code defect, old quirk or noise. Fix and redeploy: 100%, and it holds.",
+      "body": "Each of the 30 mismatches is a finding of one of three kinds: a defect in the new code (fix it), a quirk of the old code that the business relies on (decide deliberately whether to reproduce or correct it), or noise such as timestamps, ordering and generated IDs (normalise or ignore it in the comparison). The new version is fixed and redeployed, and the match rate climbs to 100%. It has to stay there over a representative period that includes the rare cases, such as month end and refunds."
+    },
+    {
+      "title": "Cut over",
+      "caption": "Zero mismatches for long enough: the roles swap. New answers now; old shadows a while, then retires.",
+      "body": "When the mismatch count has stayed at zero for long enough, the roles swap: the new implementation becomes the source of truth and its answer is returned. The old one can keep running in the shadow for a while, as a check and as a way back, and is then retired."
+    }
+  ],
+  "related": ["strangler-fig", "branch-by-abstraction", "shadow-traffic", "canary-release", "feature-flags", "anti-corruption-layer", "expand-and-contract", "blue-green-deployment"],
+  "references": [
+    { "title": "Sam Newman — Monolith to Microservices (book)", "url": "https://samnewman.io/books/monolith-to-microservices/" },
+    { "title": "GitHub Blog — Scientist: Measure Twice, Cut Once", "url": "https://github.blog/developer-skills/application-development/scientist/" },
+    { "title": "GitHub Blog — Move Fast and Fix Things", "url": "https://github.blog/engineering/move-fast/" },
+    { "title": "GitHub — Scientist: a Ruby library for carefully refactoring critical paths", "url": "https://github.com/github/scientist" },
+    { "title": "Opendiffy — Diffy: what it is and how it works (README)", "url": "https://github.com/opendiffy/diffy" },
+    { "title": "Twitter — Diffy (the original repository, archived)", "url": "https://github.com/twitter-archive/diffy" },
+    { "title": "Zalando Engineering — Parallel Run Pattern - A Migration Technique in Microservices Architecture", "url": "https://engineering.zalando.com/posts/2021/11/parallel-run.html" },
+    { "title": "Stripe — Online migrations at scale", "url": "https://stripe.com/blog/online-migrations" },
+    { "title": "Steve Smith — Application pattern: Verify Branch By Abstraction", "url": "https://www.stevesmith.tech/blog/application-pattern-verify-branch-by-abstraction/" },
+    { "title": "Martin Fowler — Dark Launching", "url": "https://martinfowler.com/bliki/DarkLaunching.html" },
+    { "title": "Istio — Mirroring", "url": "https://istio.io/latest/docs/tasks/traffic-management/mirroring/" }
+  ]
+}

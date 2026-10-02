@@ -164,8 +164,8 @@ It is the wrong tool when:
 - Sharding *(planned)* — Split data horizontally across databases using a shard key.
 - [Multi-Region Active-Active](../multi-region-active-active/) — Serve users from several regions at once and shift traffic away from a region that fails.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
-- Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
-- Active-Passive Failover *(planned)* — A warm standby region is promoted when the primary region goes down.
+- [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
+- [Active-Passive Failover](../active-passive-failover/) — A warm standby region is promoted when the primary region goes down.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 
 ## References

@@ -91,7 +91,7 @@ RFC 9700, the OAuth security best current practice, recommends the asymmetric me
 - [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
-- Zero Trust Access *(planned)* — No implicit trust from network location: verify identity, device and context on every request.
+- [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 
 ## References
 

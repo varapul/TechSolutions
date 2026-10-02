@@ -1,0 +1,62 @@
+{
+  "aka": ["Timeouts and deadlines", "Deadline propagation", "Graceful degradation"],
+  "steps": [
+    {
+      "title": "No timeout",
+      "caption": "No timeout: the service waits as long as Recommendations hangs, and the user gives up first.",
+      "body": "The Product page service calls Catalog, then Reviews and Recommendations, and none of the calls has a timeout. Recommendations hangs, so the service waits on it for as long as it hangs: the user's request stays open, and the thread and connection it holds are not available to anyone else. The user gives up after 8 seconds; after a minute the call is still waiting."
+    },
+    {
+      "title": "Bound the call",
+      "caption": "A 300 ms timeout frees the caller, but the page still fails: slow has turned into broken.",
+      "body": "Every call gets a **timeout** chosen from the dependency's measured latency: Recommendations normally answers in about 100 ms with a p99 of 120 ms, so 300 ms leaves plenty of room. When the timer runs out the caller stops waiting and frees its thread and connection, so the request fails after 380 ms (80 ms for Catalog plus the 300 ms timeout) instead of hanging. It still fails, though: a timeout on its own turns slow into broken."
+    },
+    {
+      "title": "Fall back",
+      "caption": "An optional call that times out gets a fallback: the page arrives with one degraded section.",
+      "body": "When an *optional* call times out or fails, return something useful instead: Recommendations falls back to a cached list of popular items, marked as a fallback, and Reviews would simply be left out. Catalog is *required*: there is no honest substitute for the product itself, so if Catalog fails the page fails. The page arrives after 380 ms with one degraded section."
+    },
+    {
+      "title": "One deadline per request",
+      "caption": "A 1,000 ms deadline caps every call at the time left, and a cancelled call stops work downstream.",
+      "body": "The per-call timeouts live inside one **deadline** for the whole request, here 1,000 ms, and every call is sent with the time it may take. Catalog is slow and uses 400 ms, so at most 600 ms remain: Reviews is capped at 600 ms instead of its usual 750 ms, and a call that could not finish in what remains would not be started at all. When a limit passes or the client disconnects, the **cancellation** travels down, so no service keeps working for a caller that has gone; here Recommendations is cut off after 300 ms and the page still arrives after 700 ms."
+    }
+  ],
+  "related": ["circuit-breaker", "retry-with-backoff", "bulkhead", "rate-limiting", "cache-aside", "health-endpoint-monitoring", "queue-based-load-leveling", "idempotent-consumer"],
+  "references": [
+    { "title": "Amazon Builders' Library — Timeouts, retries, and backoff with jitter", "url": "https://builder.aws.com/content/3EumjoZascWd1oZiEgL8ORlv3qE/timeouts-retries-and-backoff-with-jitter" },
+    { "title": "Amazon Builders' Library — Avoiding fallback in distributed systems", "url": "https://builder.aws.com/content/3EuS9Sakq7L3VLQIF3qzfMfke1Y/avoiding-fallback-in-distributed-systems" },
+    { "title": "Google SRE Book — Addressing Cascading Failures (deadlines, deadline propagation, cancellation, graceful degradation)", "url": "https://sre.google/sre-book/addressing-cascading-failures/" },
+    { "title": "Michael Nygard — Release It! (2nd edition)", "url": "https://pragprog.com/titles/mnee2/release-it-second-edition/" },
+    { "title": "gRPC — Deadlines", "url": "https://grpc.io/docs/guides/deadlines/" },
+    { "title": "gRPC — Cancellation", "url": "https://grpc.io/docs/guides/cancellation/" },
+    { "title": "gRPC over HTTP/2 — protocol specification (grpc-timeout)", "url": "https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md" },
+    { "title": "RFC 7240 — Prefer Header for HTTP: the wait preference", "url": "https://www.rfc-editor.org/rfc/rfc7240.html#section-4.3" },
+    { "title": "RFC 5861 — HTTP Cache-Control Extensions for Stale Content (stale-if-error)", "url": "https://www.rfc-editor.org/rfc/rfc5861.html" },
+    { "title": "RFC 9110 — HTTP Semantics: 504 Gateway Timeout", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.6.5" },
+    { "title": "RFC 9113 — HTTP/2: error codes (CANCEL)", "url": "https://www.rfc-editor.org/rfc/rfc9113.html#section-7" },
+    { "title": "Envoy — How do I configure timeouts?", "url": "https://www.envoyproxy.io/docs/envoy/latest/faq/configuration/timeouts" },
+    { "title": "Envoy — Router filter: x-envoy-expected-rq-timeout-ms", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-expected-rq-timeout-ms" },
+    { "title": "Connect — Protocol reference (Connect-Timeout-Ms)", "url": "https://connectrpc.com/docs/protocol/" },
+    { "title": "Requests — Advanced Usage: Timeouts", "url": "https://requests.readthedocs.io/en/latest/user/advanced/#timeouts" },
+    { "title": "Go — net/http package (Client.Timeout, DefaultTransport, Server timeouts)", "url": "https://pkg.go.dev/net/http" },
+    { "title": "Go — context package (WithDeadline, WithTimeout)", "url": "https://pkg.go.dev/context" },
+    { "title": "Java SE 25 — HttpRequest.Builder (timeout)", "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.net.http/java/net/http/HttpRequest.Builder.html" },
+    { "title": "Microsoft Learn — HttpClient.Timeout property", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout" },
+    { "title": "axios — Request config (timeout)", "url": "https://github.com/axios/axios#request-config" },
+    { "title": "undici — Client options (headersTimeout, bodyTimeout)", "url": "https://github.com/nodejs/undici/blob/main/docs/docs/api/Client.md" },
+    { "title": "Node.js — Global objects: fetch (based on undici)", "url": "https://nodejs.org/docs/latest/api/globals.html" },
+    { "title": "Node.js — HTTP (server.requestTimeout)", "url": "https://nodejs.org/docs/latest/api/http.html" },
+    { "title": "MDN — AbortSignal: timeout() static method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static" },
+    { "title": "Microsoft Learn — HttpContext.RequestAborted property", "url": "https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.httpcontext.requestaborted" },
+    { "title": "Python — asyncio: Timeouts", "url": "https://docs.python.org/3/library/asyncio-task.html#timeouts" },
+    { "title": "Linux manual pages — tcp(7) (tcp_retries2, tcp_keepalive_time)", "url": "https://man7.org/linux/man-pages/man7/tcp.7.html" },
+    { "title": "nginx — ngx_http_proxy_module (proxy_connect_timeout, proxy_read_timeout)", "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout" },
+    { "title": "PostgreSQL — Client Connection Defaults (statement_timeout)", "url": "https://www.postgresql.org/docs/current/runtime-config-client.html" },
+    { "title": "Resilience4j — TimeLimiter", "url": "https://resilience4j.readme.io/docs/timeout" },
+    { "title": "Resilience4j — Getting Started with Spring Boot (fallback methods and aspect order)", "url": "https://resilience4j.readme.io/docs/getting-started-3" },
+    { "title": "Polly — Timeout resilience strategy", "url": "https://www.pollydocs.org/strategies/timeout.html" },
+    { "title": "Polly — Fallback resilience strategy", "url": "https://www.pollydocs.org/strategies/fallback.html" },
+    { "title": "Microsoft Learn — Build resilient HTTP apps (standard resilience handler defaults)", "url": "https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience" }
+  ]
+}

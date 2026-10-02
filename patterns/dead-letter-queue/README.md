@@ -100,7 +100,7 @@ Do **not** use one:
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Serverless (Functions)](../serverless/) — Functions start per event, scale out automatically and scale to zero when idle.
-- Publish-Subscribe *(planned)* — Broadcast each message to every interested subscriber through a topic.
+- [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 
 ## References
 

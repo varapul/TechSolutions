@@ -102,7 +102,7 @@ It is overkill when:
 ## Related patterns
 
 - [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
-- Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
+- [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.

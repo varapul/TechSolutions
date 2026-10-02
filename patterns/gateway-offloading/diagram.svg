@@ -1,0 +1,961 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Gateway Offloading</title>
+<desc id="dg-desc">Gateway Offloading. Move TLS termination, authentication and compression out of every service into the gateway. Step 1, Plumbing in every service: Every service repeats the same plumbing in its own language, and one certificate is about to expire. Step 2, Move it to the gateway: The shared work moves into the gateway: one certificate, one auth configuration, one place to patch. Step 3, One request at the edge: The gateway ends TLS, answers a bad token with 401, forwards the identity, logs and compresses. Step 4, Know the limits: Business rules stay in the service, the hop behind the gateway is secured, the gateway is redundant.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">API &amp; EDGE</text>
+  <text class="title" x="40" y="64">Gateway Offloading</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Plumbing in every service</text>
+  <text class="step on p1" x="40" y="518">1 · Plumbing in every service</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Move it to the gateway</text>
+  <text class="step on p2" x="262" y="518">2 · Move it to the gateway</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · One request at the edge</text>
+  <text class="step on p3" x="484" y="518">3 · One request at the edge</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Know the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Know the limits</text>
+  <text class="caption p1" x="40" y="552">Every service repeats the same plumbing in its own language, and one certificate is about to expire.</text>
+  <text class="caption p2" x="40" y="552">The shared work moves into the gateway: one certificate, one auth configuration, one place to patch.</text>
+  <text class="caption p3" x="40" y="552">The gateway ends TLS, answers a bad token with 401, forwards the identity, logs and compresses.</text>
+  <text class="caption p4" x="40" y="552">Business rules stay in the service, the hop behind the gateway is secured, the gateway is redundant.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Gateway Offloading. Timeline (20s loop, 1s = 5%):
+   0-25%   no gateway: clients call each service over HTTPS (0.4-1.7s); the same four chips sit in all three
+           services and light up row by row (1.7-3.3s); certificates are due, two teams renew, one has not (3.3-4.2s)
+   25-50%  the gateway appears with four empty slots; the chips slide out of the services, one kind at a time
+           (5.35s, 5.95s, 6.55s, 7.15s) and each triple merges into one chip; the services keep their business logic
+   50-75%  one bad token is answered 401 at the edge (10.1-11.25s); one good request is decrypted, authenticated,
+           forwarded with the caller's identity, logged, and its response compressed (11.25-14.2s)
+   75-100% three limits: the business rule stays in Orders (15.2-16s), the hop behind the gateway is isolated and
+           re-encrypted and a direct call is refused (16.3-18.1s), the gateway runs as three instances (18.3-18.6s);
+           the chips fly home in the last half-second (19.45-19.95s) so the loop restarts as step 1
+   Generated from one timeline with scripts/lib/motion.mjs (track, windows, keys, route). */
+.diagram .go-chip { fill: var(--panel-2); stroke: var(--wire); stroke-width: 1.2; }
+.diagram .go-slot { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.diagram .go-card { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .go-biz { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.diagram .go-rulechip { fill: var(--bg); stroke: var(--ink); stroke-width: 1.2; }
+.diagram .go-pin { font-size: 10px; font-weight: 700; fill: var(--bg); text-anchor: middle; }
+.diagram .go-nw { font-weight: 400; }
+.diagram .go-c11 { animation: go-c11 var(--T) linear infinite; }
+.diagram .go-c12 { animation: go-c12 var(--T) linear infinite; }
+.diagram .go-c13 { animation: go-c13 var(--T) linear infinite; }
+.diagram .go-c14 { animation: go-c14 var(--T) linear infinite; }
+.diagram .go-c21 { animation: go-c21 var(--T) linear infinite; }
+.diagram .go-c22 { animation: go-c22 var(--T) linear infinite; }
+.diagram .go-c23 { animation: go-c23 var(--T) linear infinite; }
+.diagram .go-c24 { animation: go-c24 var(--T) linear infinite; }
+.diagram .go-c31 { animation: go-c31 var(--T) linear infinite; }
+.diagram .go-c32 { animation: go-c32 var(--T) linear infinite; }
+.diagram .go-c33 { animation: go-c33 var(--T) linear infinite; }
+.diagram .go-c34 { animation: go-c34 var(--T) linear infinite; }
+.diagram .go-card2 { animation: go-card2 var(--T) linear infinite; }
+.diagram .go-st1 { animation: go-st1 var(--T) linear infinite; }
+.diagram .go-st2 { animation: go-st2 var(--T) linear infinite; }
+.diagram .go-st3 { animation: go-st3 var(--T) linear infinite; }
+.diagram .go-d1 { opacity: 0; animation: go-d1 var(--T) linear infinite; }
+.diagram .go-d2 { opacity: 0; animation: go-d2 var(--T) linear infinite; }
+.diagram .go-d3 { opacity: 0; animation: go-d3 var(--T) linear infinite; }
+.diagram .go-sw1 { opacity: 0; animation: go-sw1 var(--T) linear infinite; }
+.diagram .go-sw2 { opacity: 0; animation: go-sw2 var(--T) linear infinite; }
+.diagram .go-sw3 { opacity: 0; animation: go-sw3 var(--T) linear infinite; }
+.diagram .go-sw4 { opacity: 0; animation: go-sw4 var(--T) linear infinite; }
+.diagram .go-de1 { opacity: 0; animation: go-de1 var(--T) linear infinite; }
+.diagram .go-de2 { opacity: 0; animation: go-de2 var(--T) linear infinite; }
+.diagram .go-de3 { opacity: 0; animation: go-de3 var(--T) linear infinite; }
+.diagram .go-de4 { opacity: 0; animation: go-de4 var(--T) linear infinite; }
+.diagram .go-ghost { opacity: 0; animation: go-ghost var(--T) linear infinite; }
+.diagram .go-gho { opacity: 0; animation: go-gho var(--T) linear infinite; }
+.diagram .go-keep { opacity: 0; animation: go-keep var(--T) linear infinite; }
+.diagram .go-patch { opacity: 0; animation: go-patch var(--T) linear infinite; }
+.diagram .go-b-in { opacity: 0; animation: go-b-in var(--T) linear infinite; }
+.diagram .go-b-401 { opacity: 0; animation: go-b-401 var(--T) linear infinite; }
+.diagram .go-g-in { opacity: 0; animation: go-g-in var(--T) linear infinite; }
+.diagram .go-g-fwd { opacity: 0; animation: go-g-fwd var(--T) linear infinite; }
+.diagram .go-g-res { opacity: 0; animation: go-g-res var(--T) linear infinite; }
+.diagram .go-g-out { opacity: 0; animation: go-g-out var(--T) linear infinite; }
+.diagram .go-h-tls { opacity: 0; animation: go-h-tls var(--T) linear infinite; }
+.diagram .go-h-bad { opacity: 0; animation: go-h-bad var(--T) linear infinite; }
+.diagram .go-h-ok { opacity: 0; animation: go-h-ok var(--T) linear infinite; }
+.diagram .go-h-cmp { opacity: 0; animation: go-h-cmp var(--T) linear infinite; }
+.diagram .go-h-log { opacity: 0; animation: go-h-log var(--T) linear infinite; }
+.diagram .go-r-tls { opacity: 0; animation: go-r-tls var(--T) linear infinite; }
+.diagram .go-r-bad { opacity: 0; animation: go-r-bad var(--T) linear infinite; }
+.diagram .go-r-ok { opacity: 0; animation: go-r-ok var(--T) linear infinite; }
+.diagram .go-r-cmp { opacity: 0; animation: go-r-cmp var(--T) linear infinite; }
+.diagram .go-r-log1 { opacity: 0; animation: go-r-log1 var(--T) linear infinite; }
+.diagram .go-r-log2 { opacity: 0; animation: go-r-log2 var(--T) linear infinite; }
+.diagram .go-m-401 { opacity: 0; animation: go-m-401 var(--T) linear infinite; }
+.diagram .go-cr1 { opacity: 0; animation: go-cr1 var(--T) linear infinite; }
+.diagram .go-cr2 { opacity: 0; animation: go-cr2 var(--T) linear infinite; }
+.diagram .go-o-hl { opacity: 0; animation: go-o-hl var(--T) linear infinite; }
+.diagram .go-o-id { opacity: 0; animation: go-o-id var(--T) linear infinite; }
+.diagram .go-who { opacity: 0; animation: go-who var(--T) linear infinite; }
+.diagram .go-q { opacity: 0; animation: go-q var(--T) linear infinite; }
+.diagram .go-rule { opacity: 0; animation: go-rule var(--T) linear infinite; }
+.diagram .go-zone { opacity: 0; animation: go-zone var(--T) linear infinite; }
+.diagram .go-lock { opacity: 0; animation: go-lock var(--T) linear infinite; }
+.diagram .go-enc { opacity: 0; animation: go-enc var(--T) linear infinite; }
+.diagram .go-byp { opacity: 0; animation: go-byp var(--T) linear infinite; }
+.diagram .go-byp-dot { opacity: 0; animation: go-byp-dot var(--T) linear infinite; }
+.diagram .go-deny { opacity: 0; animation: go-deny var(--T) linear infinite; }
+.diagram .go-inst2 { opacity: 0; animation: go-inst2 var(--T) linear infinite; }
+.diagram .go-inst3 { opacity: 0; animation: go-inst3 var(--T) linear infinite; }
+.diagram .go-m-ha { opacity: 0; animation: go-m-ha var(--T) linear infinite; }
+@keyframes go-c11 {
+  0% { transform: translate(0px, 0px); }
+  26.75% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  30.5% { transform: translate(-414px, 38px); }
+  97.25% { transform: translate(-414px, 38px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.65% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c12 {
+  0% { transform: translate(0px, 0px); }
+  29.75% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  33.5% { transform: translate(-414px, 41px); }
+  97.35% { transform: translate(-414px, 41px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.75% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c13 {
+  0% { transform: translate(0px, 0px); }
+  32.75% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  36.5% { transform: translate(-414px, 176px); }
+  97.45% { transform: translate(-414px, 176px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.85% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c14 {
+  0% { transform: translate(0px, 0px); }
+  35.75% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  39.5% { transform: translate(-414px, 179px); }
+  97.55% { transform: translate(-414px, 179px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.95% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c21 {
+  0% { transform: translate(0px, 0px); }
+  27.15% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  30.9% { transform: translate(-414px, -82px); }
+  97.25% { transform: translate(-414px, -82px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.65% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c22 {
+  0% { transform: translate(0px, 0px); }
+  30.15% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  33.9% { transform: translate(-414px, -79px); }
+  97.35% { transform: translate(-414px, -79px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.75% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c23 {
+  0% { transform: translate(0px, 0px); }
+  33.15% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  36.9% { transform: translate(-414px, 56px); }
+  97.45% { transform: translate(-414px, 56px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.85% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c24 {
+  0% { transform: translate(0px, 0px); }
+  36.15% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  39.9% { transform: translate(-414px, 59px); }
+  97.55% { transform: translate(-414px, 59px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.95% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c31 {
+  0% { transform: translate(0px, 0px); }
+  27.55% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  31.3% { transform: translate(-414px, -202px); }
+  97.25% { transform: translate(-414px, -202px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.65% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c32 {
+  0% { transform: translate(0px, 0px); }
+  30.55% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  34.3% { transform: translate(-414px, -199px); }
+  97.35% { transform: translate(-414px, -199px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.75% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c33 {
+  0% { transform: translate(0px, 0px); }
+  33.55% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  37.3% { transform: translate(-414px, -64px); }
+  97.45% { transform: translate(-414px, -64px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.85% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-c34 {
+  0% { transform: translate(0px, 0px); }
+  36.55% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  40.3% { transform: translate(-414px, -61px); }
+  97.55% { transform: translate(-414px, -61px); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  99.95% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes go-d1 {
+  0% { transform: translate(138px, 280px); opacity: 0; }
+  2% { transform: translate(138px, 280px); opacity: 0; }
+  2.25% { opacity: 1; }
+  5.768% { transform: translate(560px, 280px); }
+  6.839% { transform: translate(560px, 160px); }
+  7.214% { transform: translate(602px, 160px); opacity: 1; }
+  7.464% { transform: translate(602px, 160px); opacity: 0; }
+  100% { transform: translate(602px, 160px); opacity: 0; }
+}
+@keyframes go-d2 {
+  0% { transform: translate(138px, 280px); opacity: 0; }
+  2.5% { transform: translate(138px, 280px); opacity: 0; }
+  2.75% { opacity: 1; }
+  6.643% { transform: translate(602px, 280px); opacity: 1; }
+  6.893% { transform: translate(602px, 280px); opacity: 0; }
+  100% { transform: translate(602px, 280px); opacity: 0; }
+}
+@keyframes go-d3 {
+  0% { transform: translate(138px, 280px); opacity: 0; }
+  3% { transform: translate(138px, 280px); opacity: 0; }
+  3.25% { opacity: 1; }
+  6.768% { transform: translate(560px, 280px); }
+  7.839% { transform: translate(560px, 400px); }
+  8.214% { transform: translate(602px, 400px); opacity: 1; }
+  8.464% { transform: translate(602px, 400px); opacity: 0; }
+  100% { transform: translate(602px, 400px); opacity: 0; }
+}
+@keyframes go-sw1 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9% { opacity: 1; }
+  10.5% { opacity: 1; }
+  11% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-sw2 {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-sw3 {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13% { opacity: 1; }
+  14.5% { opacity: 1; }
+  15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-sw4 {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15% { opacity: 1; }
+  16.5% { opacity: 1; }
+  17% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-card2 {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-st1 {
+  0% { opacity: 0; }
+  17.75% { opacity: 0; }
+  18.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-st2 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  19.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-st3 {
+  0% { opacity: 0; }
+  20.25% { opacity: 0; }
+  20.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-de1 {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32% { opacity: 1; }
+  49.25% { opacity: 1; }
+  49.75% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-de2 {
+  0% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35% { opacity: 1; }
+  49.25% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-de3 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38% { opacity: 1; }
+  49.25% { opacity: 1; }
+  49.75% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-de4 {
+  0% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41% { opacity: 1; }
+  49.25% { opacity: 1; }
+  49.75% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-ghost {
+  0% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  97.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-gho {
+  0% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.25% { opacity: 1; }
+  62.5% { opacity: 1; }
+  63% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  79% { opacity: 1; }
+  79.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-keep {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-patch {
+  0% { opacity: 0; }
+  43.75% { opacity: 0; }
+  44.25% { opacity: 1; }
+  49.25% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-b-in {
+  0% { transform: translate(138px, 280px); opacity: 0; }
+  50.5% { transform: translate(138px, 280px); opacity: 0; }
+  50.75% { opacity: 1; }
+  52.5% { transform: translate(356px, 280px); }
+  54.25% { transform: translate(356px, 280px); opacity: 1; }
+  54.5% { transform: translate(356px, 280px); opacity: 0; }
+  100% { transform: translate(356px, 280px); opacity: 0; }
+}
+@keyframes go-b-401 {
+  0% { transform: translate(356px, 280px); opacity: 0; }
+  54.25% { transform: translate(356px, 280px); opacity: 0; }
+  54.5% { opacity: 1; }
+  56.25% { transform: translate(138px, 280px); opacity: 1; }
+  56.5% { transform: translate(138px, 280px); opacity: 0; }
+  100% { transform: translate(138px, 280px); opacity: 0; }
+}
+@keyframes go-g-in {
+  0% { transform: translate(138px, 280px); opacity: 0; }
+  56.25% { transform: translate(138px, 280px); opacity: 0; }
+  56.5% { opacity: 1; }
+  58.25% { transform: translate(356px, 280px); }
+  60% { transform: translate(356px, 280px); opacity: 1; }
+  60.25% { transform: translate(356px, 280px); opacity: 0; }
+  100% { transform: translate(356px, 280px); opacity: 0; }
+}
+@keyframes go-g-fwd {
+  0% { transform: translate(356px, 280px); opacity: 0; }
+  60% { transform: translate(356px, 280px); opacity: 0; }
+  60.25% { opacity: 1; }
+  61.7% { transform: translate(560px, 280px); }
+  62.7% { transform: translate(560px, 160px); }
+  63.05% { transform: translate(602px, 160px); opacity: 1; }
+  63.3% { transform: translate(602px, 160px); opacity: 0; }
+  100% { transform: translate(602px, 160px); opacity: 0; }
+}
+@keyframes go-g-res {
+  0% { transform: translate(602px, 160px); opacity: 0; }
+  64.5% { transform: translate(602px, 160px); opacity: 0; }
+  64.75% { opacity: 1; }
+  64.85% { transform: translate(560px, 160px); }
+  65.85% { transform: translate(560px, 280px); }
+  67.55% { transform: translate(356px, 280px); }
+  68.9% { transform: translate(356px, 280px); opacity: 1; }
+  69.15% { transform: translate(356px, 280px); opacity: 0; }
+  100% { transform: translate(356px, 280px); opacity: 0; }
+}
+@keyframes go-g-out {
+  0% { transform: translate(356px, 280px); opacity: 0; }
+  68.9% { transform: translate(356px, 280px); opacity: 0; }
+  69.15% { opacity: 1; }
+  70.9% { transform: translate(138px, 280px); opacity: 1; }
+  71.15% { transform: translate(138px, 280px); opacity: 0; }
+  100% { transform: translate(138px, 280px); opacity: 0; }
+}
+@keyframes go-h-tls {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53% { opacity: 1; }
+  54.25% { opacity: 1; }
+  54.75% { opacity: 0; }
+  58.25% { opacity: 0; }
+  58.75% { opacity: 1; }
+  60% { opacity: 1; }
+  60.5% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83% { opacity: 1; }
+  85.5% { opacity: 1; }
+  86% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-h-bad {
+  0% { opacity: 0; }
+  53.1% { opacity: 0; }
+  53.6% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-h-ok {
+  0% { opacity: 0; }
+  58.9% { opacity: 0; }
+  59.4% { opacity: 1; }
+  61% { opacity: 1; }
+  61.5% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  80.5% { opacity: 1; }
+  81% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-h-cmp {
+  0% { opacity: 0; }
+  67.55% { opacity: 0; }
+  68.05% { opacity: 1; }
+  69.75% { opacity: 1; }
+  70.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-h-log {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55% { opacity: 1; }
+  56% { opacity: 1; }
+  56.5% { opacity: 0; }
+  68.3% { opacity: 0; }
+  68.8% { opacity: 1; }
+  70.25% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-r-tls {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-r-bad {
+  0% { opacity: 0; }
+  53.1% { opacity: 0; }
+  53.6% { opacity: 1; }
+  57.75% { opacity: 1; }
+  58.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-r-ok {
+  0% { opacity: 0; }
+  58.9% { opacity: 0; }
+  59.4% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-r-cmp {
+  0% { opacity: 0; }
+  67.55% { opacity: 0; }
+  68.05% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-r-log1 {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-r-log2 {
+  0% { opacity: 0; }
+  68.3% { opacity: 0; }
+  68.8% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-m-401 {
+  0% { opacity: 0; }
+  53.1% { opacity: 0; }
+  53.6% { opacity: 1; }
+  56.5% { opacity: 1; }
+  57% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-cr1 {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  56.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-cr2 {
+  0% { opacity: 0; }
+  70.9% { opacity: 0; }
+  71.4% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-o-hl {
+  0% { opacity: 0; }
+  63.05% { opacity: 0; }
+  63.55% { opacity: 1; }
+  64.8% { opacity: 1; }
+  65.3% { opacity: 0; }
+  79.6% { opacity: 0; }
+  80.1% { opacity: 1; }
+  81.5% { opacity: 1; }
+  82% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-o-id {
+  0% { opacity: 0; }
+  63.05% { opacity: 0; }
+  63.55% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-who {
+  0% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-q {
+  0% { transform: translate(356px, 280px); opacity: 0; }
+  76.5% { transform: translate(356px, 280px); opacity: 0; }
+  76.75% { opacity: 1; }
+  78.2% { transform: translate(560px, 280px); }
+  79.2% { transform: translate(560px, 160px); }
+  79.55% { transform: translate(602px, 160px); opacity: 1; }
+  79.8% { transform: translate(602px, 160px); opacity: 0; }
+  100% { transform: translate(602px, 160px); opacity: 0; }
+}
+@keyframes go-rule {
+  0% { opacity: 0; }
+  79.55% { opacity: 0; }
+  80.05% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-zone {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  82% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-lock {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-enc {
+  0% { transform: translate(356px, 280px); opacity: 0; }
+  83% { transform: translate(356px, 280px); opacity: 0; }
+  83.25% { opacity: 1; }
+  85.05% { transform: translate(602px, 280px); opacity: 1; }
+  85.3% { transform: translate(602px, 280px); opacity: 0; }
+  100% { transform: translate(602px, 280px); opacity: 0; }
+}
+@keyframes go-byp {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  85.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-byp-dot {
+  0% { transform: translate(78px, 316px); opacity: 0; }
+  85.5% { transform: translate(78px, 316px); opacity: 0; }
+  85.75% { opacity: 1; }
+  86.484% { transform: translate(78px, 442px); }
+  90.391% { transform: translate(578px, 442px); opacity: 1; }
+  90.641% { transform: translate(578px, 442px); opacity: 0; }
+  100% { transform: translate(578px, 442px); opacity: 0; }
+}
+@keyframes go-deny {
+  0% { opacity: 0; }
+  90.391% { opacity: 0; }
+  90.891% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-inst2 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-inst3 {
+  0% { opacity: 0; }
+  92.25% { opacity: 0; }
+  92.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-m-ha {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+  <!-- legend -->
+  <circle class="f-blue s-orange" cx="41" cy="108" r="5" stroke-width="2.2"/><text class="tiny" x="58" y="112">request over TLS</text>
+  <g class="p34"><circle class="f-blue" cx="41" cy="126" r="5.5"/><text class="tiny" x="58" y="130">plain HTTP</text>
+  <rect class="f-orange s-bg" x="30" y="138" width="22" height="13" rx="4" stroke-width="1.5"/><text class="go-pin" x="41" y="148">ID</text><text class="tiny" x="58" y="148">verified identity</text></g>
+
+  <!-- clients, and the path every call takes: straight to the services in step 1, through the gateway afterwards -->
+  <path class="wire" d="M126 280H560"/>
+  <path class="wire" d="M560 280V160H602" marker-end="url(#ah)"/>
+  <path class="wire" d="M560 280H602" marker-end="url(#ah)"/>
+  <path class="wire" d="M560 280V400H602" marker-end="url(#ah)"/>
+  <rect class="box" x="30" y="252" width="96" height="56" rx="12"/>
+  <text class="label mid" x="78" y="277">Clients</text>
+  <text class="sub mid" x="78" y="294">web · mobile</text>
+
+  <!-- three services in three languages: business logic on the right, room for the plumbing chips on the left -->
+  <rect class="box" x="604" y="108" width="316" height="104" rx="12"/>
+  <text class="label" x="772" y="134">Orders</text>
+  <rect class="f-bg s-line" x="866" y="121" width="44" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb mid f-ink" x="888" y="133">Java</text>
+  <rect class="go-biz" x="772" y="146" width="138" height="58" rx="8"/>
+  <text class="tiny" x="780" y="161">business logic</text>
+  <rect class="go-rulechip" x="778" y="172" width="126" height="22" rx="11"/><path class="none s-ink" d="M791 178l5 5-5 5-5-5z" stroke-width="1.4" stroke-linejoin="round"/><text class="tiny sb f-ink" x="802" y="187">Business rules</text>
+  <g class="go-keep"><rect class="none s-green" x="772" y="146" width="138" height="58" rx="8" stroke-width="2"/><circle class="f-green" cx="906" cy="150" r="6"/><path class="none s-bg" d="M903 150l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <rect class="go-slot go-ghost" x="612" y="116" width="150" height="89" rx="10"/>
+  <g class="go-gho"><text class="tiny mid" x="687" y="158">moved to</text><text class="tiny mid" x="687" y="172">the gateway</text></g>
+  <rect class="box" x="604" y="228" width="316" height="104" rx="12"/>
+  <text class="label" x="772" y="254">Catalog</text>
+  <rect class="f-bg s-line" x="874" y="241" width="36" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb mid f-ink" x="892" y="253">Go</text>
+  <rect class="go-biz" x="772" y="266" width="138" height="58" rx="8"/>
+  <text class="tiny" x="780" y="281">business logic</text>
+  <rect class="go-rulechip" x="778" y="292" width="126" height="22" rx="11"/><path class="none s-ink" d="M791 298l5 5-5 5-5-5z" stroke-width="1.4" stroke-linejoin="round"/><text class="tiny sb f-ink" x="802" y="307">Business rules</text>
+  <g class="go-keep"><rect class="none s-green" x="772" y="266" width="138" height="58" rx="8" stroke-width="2"/><circle class="f-green" cx="906" cy="270" r="6"/><path class="none s-bg" d="M903 270l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <rect class="go-slot go-ghost" x="612" y="236" width="150" height="89" rx="10"/>
+  <g class="go-ghost"><text class="tiny mid" x="687" y="278">moved to</text><text class="tiny mid" x="687" y="292">the gateway</text></g>
+  <rect class="box" x="604" y="348" width="316" height="104" rx="12"/>
+  <text class="label" x="772" y="374">Search</text>
+  <rect class="f-bg s-line" x="849" y="361" width="61" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb mid f-ink" x="879.5" y="373">Python</text>
+  <rect class="go-biz" x="772" y="386" width="138" height="58" rx="8"/>
+  <text class="tiny" x="780" y="401">business logic</text>
+  <rect class="go-rulechip" x="778" y="412" width="126" height="22" rx="11"/><path class="none s-ink" d="M791 418l5 5-5 5-5-5z" stroke-width="1.4" stroke-linejoin="round"/><text class="tiny sb f-ink" x="802" y="427">Business rules</text>
+  <g class="go-keep"><rect class="none s-green" x="772" y="386" width="138" height="58" rx="8" stroke-width="2"/><circle class="f-green" cx="906" cy="390" r="6"/><path class="none s-bg" d="M903 390l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <rect class="go-slot go-ghost" x="612" y="356" width="150" height="89" rx="10"/>
+  <g class="go-ghost"><text class="tiny mid" x="687" y="398">moved to</text><text class="tiny mid" x="687" y="412">the gateway</text></g>
+  <rect class="none s-blue go-o-hl" x="604" y="108" width="316" height="104" rx="12" stroke-width="2.5"/>
+
+  <!-- step 1: no gateway. What is duplicated, and what that costs -->
+  <g class="p1">
+    <rect class="go-card" x="186" y="100" width="350" height="162" rx="10"/>
+    <text class="sub sb f-ink" x="202" y="123">The same plumbing in every service</text>
+    <text class="tiny" x="202" y="139">3 languages · 3 libraries · 3 configurations</text>
+    <rect class="f-amber-soft go-sw1" x="194" y="148" width="334" height="22" rx="6"/><rect class="f-orange" x="203.5" y="157.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M205.4 157.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><text class="tiny f-ink" x="224" y="163">TLS termination and its certificate</text><text class="tiny sb end f-amber-ink" x="522" y="163">× 3</text>
+    <rect class="f-amber-soft go-sw2" x="194" y="172" width="334" height="22" rx="6"/><circle class="none s-orange" cx="205" cy="183" r="2.5" stroke-width="1.5"/><path class="none s-orange" d="M207.5 183h6M210.8 183v2.6M213.5 183v2.6" stroke-width="1.5" stroke-linecap="round"/><text class="tiny f-ink" x="224" y="187">Authentication (token validation)</text><text class="tiny sb end f-amber-ink" x="522" y="187">× 3</text>
+    <rect class="f-amber-soft go-sw3" x="194" y="196" width="334" height="22" rx="6"/><path class="none s-muted" d="M202.5 203.5l3.5 3.5-3.5 3.5M213.5 203.5l-3.5 3.5 3.5 3.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="224" y="211">Response compression</text><text class="tiny sb end f-amber-ink" x="522" y="211">× 3</text>
+    <rect class="f-amber-soft go-sw4" x="194" y="220" width="334" height="22" rx="6"/><path class="none s-teal" d="M203 227.5h10M203 231h6.5M203 234.5h8.5" stroke-width="1.6" stroke-linecap="round"/><text class="tiny f-ink" x="224" y="235">Access logging and metrics</text><text class="tiny sb end f-amber-ink" x="522" y="235">× 3</text>
+    <g class="go-card2">
+      <rect class="go-card" x="186" y="298" width="350" height="126" rx="10"/>
+      <text class="sub sb f-ink" x="202" y="321">Certificates expire in 3 days</text>
+      <text class="tiny" x="202" y="337">three teams, each renews its own</text>
+      <rect class="f-orange" x="203.5" y="355.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M205.4 355.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><text class="tiny f-ink" x="224" y="361">Orders team</text>
+      <rect class="f-orange" x="203.5" y="379.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M205.4 379.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><text class="tiny f-ink" x="224" y="385">Catalog team</text>
+      <rect class="f-orange" x="203.5" y="403.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M205.4 403.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><text class="tiny f-ink" x="224" y="409">Search team</text>
+      <g class="go-st1"><text class="tiny sb end f-green" x="504" y="361">renewed</text><circle class="f-green" cx="516" cy="357" r="6"/><path class="none s-bg" d="M513 357l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g class="go-st2"><text class="tiny sb end f-green" x="504" y="385">renewed</text><circle class="f-green" cx="516" cy="381" r="6"/><path class="none s-bg" d="M513 381l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g class="go-st3"><text class="tiny sb end f-red" x="504" y="409">not yet</text><circle class="f-red" cx="516" cy="405" r="6"/><path class="s-bg" d="M513.6 402.6l4.8 4.8M518.4 402.6l-4.8 4.8" stroke-width="1.8" stroke-linecap="round"/></g>
+    </g>
+  </g>
+
+  <!-- step 4: the gateway is on every path, so it runs as several instances -->
+  <g class="p4">
+    <rect class="box go-inst3" x="198" y="116" width="340" height="300" rx="16"/>
+    <rect class="box go-inst2" x="192" y="110" width="340" height="300" rx="16"/>
+  </g>
+
+  <!-- the gateway (from step 2): four slots, two on the way in and two on the way out -->
+  <g class="p234">
+    <rect class="box" x="186" y="104" width="340" height="300" rx="16"/>
+    <path class="wire" d="M126 280H184" marker-end="url(#ah)"/>
+    <line class="wire" x1="186" y1="280" x2="526" y2="280"/>
+    <text class="label" x="202" y="129">Gateway<tspan class="tiny go-nw" dx="7">the only public endpoint</tspan></text>
+    <text class="tiny" x="200" y="147">on the way in</text>
+    <text class="tiny" x="200" y="331">on the way out</text>
+    <rect class="go-slot" x="198" y="154" width="150" height="20" rx="10"/>
+    <rect class="go-slot" x="198" y="180" width="150" height="20" rx="10"/>
+    <rect class="go-slot" x="198" y="338" width="150" height="20" rx="10"/>
+    <rect class="go-slot" x="198" y="364" width="150" height="20" rx="10"/>
+    <text class="tiny f-ink go-de1" x="358" y="168"><tspan class="b f-green">1</tspan> certificate to renew</text>
+    <text class="tiny f-ink go-de2" x="358" y="194"><tspan class="b f-green">1</tspan> auth configuration</text>
+    <text class="tiny f-ink go-de3" x="358" y="352"><tspan class="b f-green">1</tspan> compression setting</text>
+    <text class="tiny f-ink go-de4" x="358" y="378"><tspan class="b f-green">1</tspan> log format</text>
+    <g class="go-patch"><circle class="f-green" cx="208" cy="234" r="6"/><path class="none s-bg" d="M205 234l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="sub sb f-ink" x="222" y="238">One place to patch a vulnerability</text></g>
+  </g>
+
+  <!-- step 3: what the gateway did to each request -->
+  <g class="p3">
+    <text class="tiny f-ink go-r-tls" x="358" y="168">HTTPS ends here</text>
+    <text class="tiny sb f-red go-r-bad" x="358" y="194">bad token → 401</text>
+    <text class="tiny sb f-green go-r-ok" x="358" y="194">valid → user 42</text>
+    <text class="tiny f-ink go-r-cmp" x="358" y="352">48 kB → 9 kB (gzip)</text>
+    <text class="tiny mono f-ink go-r-log1" x="358" y="378">401 GET /orders</text>
+    <text class="tiny mono f-ink go-r-log2" x="358" y="392">200 GET /orders</text>
+    <g class="go-m-401"><text class="tiny sb mid f-red" x="356" y="229">401 at the edge</text><text class="tiny mid" x="356" y="244">no service sees this request</text></g>
+    <g class="go-cr1"><circle class="f-red" cx="38" cy="326" r="6"/><path class="s-bg" d="M35.6 323.6l4.8 4.8M40.4 323.6l-4.8 4.8" stroke-width="1.8" stroke-linecap="round"/><text class="tiny sb f-red" x="50" y="330">401 Unauthorized</text><text class="tiny" x="50" y="344">no service called</text></g>
+    <g class="go-cr2"><circle class="f-green" cx="38" cy="366" r="6"/><path class="none s-bg" d="M35 366l2.16 2.16 3.84 -4.32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green" x="50" y="370">200 OK</text><text class="tiny" x="50" y="384">9 kB, was 48 kB</text></g>
+    <g class="go-o-id">
+      <rect class="f-bg s-orange" x="632" y="128" width="110" height="22" rx="11" stroke-width="1.5"/>
+      <text class="tiny mono sb mid f-orange" x="687" y="143">X-User-Id: 42</text>
+      <text class="tiny mid" x="687" y="168">verified identity,</text>
+      <text class="tiny mid" x="687" y="182">set by the gateway</text>
+    </g>
+  </g>
+
+  <!-- step 4: three things that do not move into the gateway -->
+  <g class="p4">
+    <text class="tiny f-ink go-who" x="358" y="194">knows who is calling</text>
+    <g class="go-rule">
+      <rect class="f-blue-soft s-blue" x="778" y="172" width="126" height="22" rx="11" stroke-width="2"/>
+      <circle class="f-blue s-bg" cx="626" cy="132" r="8" stroke-width="1.5"/><text class="go-pin" x="626" y="135.5">1</text><text class="tiny sb f-ink" x="640" y="136">Stays here</text>
+      <text class="tiny f-ink" x="620" y="156">The service decides:</text>
+      <text class="tiny f-ink" x="620" y="171">may user 42 cancel</text>
+      <text class="tiny f-ink" x="620" y="186">order 7?</text>
+    </g>
+    <g class="go-zone">
+      <rect class="zone" x="592" y="98" width="338" height="364" rx="14"/>
+      <rect class="f-bg" x="607" y="91" width="308" height="15"/>
+      <text class="tiny mid" x="761" y="102">only the gateway may connect, over TLS or mTLS</text>
+    </g>
+    <g class="go-lock"><circle class="f-bg" cx="581" cy="160" r="8.5"/><rect class="f-orange" x="576.5" y="158.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M578.4 158.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><circle class="f-bg" cx="581" cy="280" r="8.5"/><rect class="f-orange" x="576.5" y="278.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M578.4 278.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><circle class="f-bg" cx="581" cy="400" r="8.5"/><rect class="f-orange" x="576.5" y="398.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M578.4 398.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/></g>
+    <g class="go-byp">
+      <path class="wire dash" d="M78 308V442H580" marker-end="url(#ah)"/>
+      <circle class="f-orange s-bg" cx="204" cy="458" r="8" stroke-width="1.5"/><text class="go-pin" x="204" y="461.5">2</text><text class="tiny f-ink" x="218" y="462">Behind the gateway: a call that bypasses it is refused</text>
+    </g>
+    <g class="go-deny"><circle class="f-red" cx="590" cy="442" r="9"/><path class="s-bg" d="M586.4 438.4l7.2 7.2M593.6 438.4l-7.2 7.2" stroke-width="1.8" stroke-linecap="round"/><text class="tiny sb end f-red" x="574" y="432">refused</text></g>
+    <g class="go-m-ha">
+      <circle class="f-green s-bg" cx="210" cy="226" r="8" stroke-width="1.5"/><text class="go-pin" x="210" y="229.5">3</text><text class="tiny sb f-ink" x="224" y="230">On every request's path:</text>
+      <text class="tiny f-ink" x="224" y="245">so it runs as several redundant instances</text>
+      <text class="tiny sb end f-green" x="514" y="129">3 instances</text>
+    </g>
+  </g>
+
+  <!-- the plumbing chips: drawn at home in the services, moved into the gateway by their keyframes -->
+  <g class="go-c11"><rect class="go-chip" x="612" y="116" width="150" height="20" rx="10"/><rect class="f-orange" x="621.5" y="124.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M623.4 124.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><text class="tiny sb f-ink" x="639" y="130">TLS + certificate</text></g>
+  <g class="go-c12"><rect class="go-chip" x="612" y="139" width="150" height="20" rx="10"/><circle class="none s-orange" cx="623" cy="149" r="2.5" stroke-width="1.5"/><path class="none s-orange" d="M625.5 149h6M628.8 149v2.6M631.5 149v2.6" stroke-width="1.5" stroke-linecap="round"/><text class="tiny sb f-ink" x="639" y="153">Authentication</text></g>
+  <g class="go-c13"><rect class="go-chip" x="612" y="162" width="150" height="20" rx="10"/><path class="none s-muted" d="M620.5 168.5l3.5 3.5-3.5 3.5M631.5 168.5l-3.5 3.5 3.5 3.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-ink" x="639" y="176">Compression</text></g>
+  <g class="go-c14"><rect class="go-chip" x="612" y="185" width="150" height="20" rx="10"/><path class="none s-teal" d="M621 191.5h10M621 195h6.5M621 198.5h8.5" stroke-width="1.6" stroke-linecap="round"/><text class="tiny sb f-ink" x="639" y="199">Logs + metrics</text></g>
+  <g class="go-c21"><rect class="go-chip" x="612" y="236" width="150" height="20" rx="10"/><rect class="f-orange" x="621.5" y="244.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M623.4 244.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><text class="tiny sb f-ink" x="639" y="250">TLS + certificate</text></g>
+  <g class="go-c22"><rect class="go-chip" x="612" y="259" width="150" height="20" rx="10"/><circle class="none s-orange" cx="623" cy="269" r="2.5" stroke-width="1.5"/><path class="none s-orange" d="M625.5 269h6M628.8 269v2.6M631.5 269v2.6" stroke-width="1.5" stroke-linecap="round"/><text class="tiny sb f-ink" x="639" y="273">Authentication</text></g>
+  <g class="go-c23"><rect class="go-chip" x="612" y="282" width="150" height="20" rx="10"/><path class="none s-muted" d="M620.5 288.5l3.5 3.5-3.5 3.5M631.5 288.5l-3.5 3.5 3.5 3.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-ink" x="639" y="296">Compression</text></g>
+  <g class="go-c24"><rect class="go-chip" x="612" y="305" width="150" height="20" rx="10"/><path class="none s-teal" d="M621 311.5h10M621 315h6.5M621 318.5h8.5" stroke-width="1.6" stroke-linecap="round"/><text class="tiny sb f-ink" x="639" y="319">Logs + metrics</text></g>
+  <g class="go-c31"><rect class="go-chip" x="612" y="356" width="150" height="20" rx="10"/><rect class="f-orange" x="621.5" y="364.5" width="9" height="6.5" rx="1.6"/><path class="none s-orange" d="M623.4 364.5v-1.8a2.6 2.6 0 0 1 5.2 0v1.8" stroke-width="1.5"/><text class="tiny sb f-ink" x="639" y="370">TLS + certificate</text></g>
+  <g class="go-c32"><rect class="go-chip" x="612" y="379" width="150" height="20" rx="10"/><circle class="none s-orange" cx="623" cy="389" r="2.5" stroke-width="1.5"/><path class="none s-orange" d="M625.5 389h6M628.8 389v2.6M631.5 389v2.6" stroke-width="1.5" stroke-linecap="round"/><text class="tiny sb f-ink" x="639" y="393">Authentication</text></g>
+  <g class="go-c33"><rect class="go-chip" x="612" y="402" width="150" height="20" rx="10"/><path class="none s-muted" d="M620.5 408.5l3.5 3.5-3.5 3.5M631.5 408.5l-3.5 3.5 3.5 3.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-ink" x="639" y="416">Compression</text></g>
+  <g class="go-c34"><rect class="go-chip" x="612" y="425" width="150" height="20" rx="10"/><path class="none s-teal" d="M621 431.5h10M621 435h6.5M621 438.5h8.5" stroke-width="1.6" stroke-linecap="round"/><text class="tiny sb f-ink" x="639" y="439">Logs + metrics</text></g>
+
+  <!-- chip states: the duplicated rows and the certificates (step 1), what handles a request (steps 3 and 4) -->
+  <g class="p1">
+    <g class="go-sw1"><rect class="f-amber-soft s-amber" x="612" y="116" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="236" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="356" width="150" height="20" rx="10" stroke-width="2"/></g>
+    <g class="go-sw2"><rect class="f-amber-soft s-amber" x="612" y="139" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="259" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="379" width="150" height="20" rx="10" stroke-width="2"/></g>
+    <g class="go-sw3"><rect class="f-amber-soft s-amber" x="612" y="162" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="282" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="402" width="150" height="20" rx="10" stroke-width="2"/></g>
+    <g class="go-sw4"><rect class="f-amber-soft s-amber" x="612" y="185" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="305" width="150" height="20" rx="10" stroke-width="2"/><rect class="f-amber-soft s-amber" x="612" y="425" width="150" height="20" rx="10" stroke-width="2"/></g>
+    <g class="go-st1"><circle class="f-green" cx="752" cy="126" r="5.5"/><path class="none s-bg" d="M749.25 126l1.98 1.98 3.52 -3.96" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g class="go-st2"><circle class="f-green" cx="752" cy="246" r="5.5"/><path class="none s-bg" d="M749.25 246l1.98 1.98 3.52 -3.96" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g class="go-st3"><rect class="f-red-soft s-red" x="612" y="356" width="150" height="20" rx="10" stroke-width="2"/><circle class="f-red" cx="752" cy="366" r="6.5"/><text class="go-pin" x="752" y="369.5">!</text></g>
+  </g>
+  <rect class="f-orange-soft s-orange go-h-tls" x="198" y="154" width="150" height="20" rx="10" stroke-width="2"/>
+  <rect class="f-red-soft s-red go-h-bad" x="198" y="180" width="150" height="20" rx="10" stroke-width="2"/>
+  <rect class="f-green-soft s-green go-h-ok" x="198" y="180" width="150" height="20" rx="10" stroke-width="2"/>
+  <rect class="f-green-soft s-green go-h-cmp" x="198" y="338" width="150" height="20" rx="10" stroke-width="2"/>
+  <rect class="f-teal-soft s-teal go-h-log" x="198" y="364" width="150" height="20" rx="10" stroke-width="2"/>
+
+  <!-- traffic: requests (blue), responses (green), rejections (red); an orange ring means the hop is encrypted -->
+  <g class="go-d1"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/></g>
+  <g class="go-d2"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/></g>
+  <g class="go-d3"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/></g>
+  <g class="go-b-in"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/><text class="tiny mid sb f-red" y="-13">bad token</text></g>
+  <g class="go-b-401"><circle class="f-red s-orange" r="6" stroke-width="2.5"/><text class="tiny mid b f-red" y="-13">401</text></g>
+  <g class="go-g-in"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/><text class="tiny mid sb f-orange" y="-13">valid token</text></g>
+  <g class="go-g-fwd"><circle class="pkt f-blue" r="7"/><rect class="f-orange s-bg" x="6" y="-21" width="22" height="13" rx="4" stroke-width="1.5"/><text class="go-pin" x="17" y="-11">ID</text></g>
+  <g class="go-g-res"><rect class="pkt f-green" x="-24" y="-8.5" width="48" height="17" rx="8.5"/><text class="go-pin" y="3.5">48 kB</text></g>
+  <g class="go-g-out"><rect class="f-green s-orange" x="-17" y="-7.5" width="34" height="15" rx="7.5" stroke-width="2.2"/><text class="go-pin" y="3.5">9 kB</text></g>
+  <g class="go-q"><circle class="pkt f-blue" r="7"/><rect class="f-orange s-bg" x="6" y="-21" width="22" height="13" rx="4" stroke-width="1.5"/><text class="go-pin" x="17" y="-11">ID</text></g>
+  <g class="go-enc"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/></g>
+  <g class="go-byp-dot"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/></g>
+</g>
+</svg>

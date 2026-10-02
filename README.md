@@ -11,20 +11,20 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**50 animated** · 41 planned · 10 categories
+**58 animated** · 33 planned · 10 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
 | 🏛️ | [Application Architecture](#application-architecture) | 5 / 10 | The big-picture shapes: how a system is split into parts and how those parts talk to each other. |
-| ☁️ | [Cloud Infrastructure](#cloud-infrastructure) | 5 / 9 | Where workloads run, and how they scale, stay available and recover from disaster. |
-| 🔐 | [Identity & Access (Auth)](#identity--access-auth) | 8 / 15 | Authentication and authorization flows: who is calling, and what they are allowed to do. |
-| 🚪 | [API & Edge](#api--edge) | 5 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
-| 📨 | [Messaging & Integration](#messaging--integration) | 6 / 12 | Asynchronous communication, and coordinating work that spans several services. |
-| 🗄️ | [Data Management](#data-management) | 5 / 9 | Storing, scaling, caching and synchronising data across services. |
-| 🛡️ | [Resilience & Reliability](#resilience--reliability) | 5 / 9 | Keep serving when dependencies are slow, overloaded or down. |
+| ☁️ | [Cloud Infrastructure](#cloud-infrastructure) | 6 / 9 | Where workloads run, and how they scale, stay available and recover from disaster. |
+| 🔐 | [Identity & Access (Auth)](#identity--access-auth) | 9 / 15 | Authentication and authorization flows: who is calling, and what they are allowed to do. |
+| 🚪 | [API & Edge](#api--edge) | 6 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
+| 📨 | [Messaging & Integration](#messaging--integration) | 7 / 12 | Asynchronous communication, and coordinating work that spans several services. |
+| 🗄️ | [Data Management](#data-management) | 6 / 9 | Storing, scaling, caching and synchronising data across services. |
+| 🛡️ | [Resilience & Reliability](#resilience--reliability) | 6 / 9 | Keep serving when dependencies are slow, overloaded or down. |
 | 🚀 | [Deployment & Release](#deployment--release) | 4 / 8 | Ship changes safely, watch them in production, and roll back fast. |
-| 🔄 | [Migration & Modernization](#migration--modernization) | 4 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
-| 🔭 | [Observability & Operations](#observability--operations) | 3 / 4 | See what the system is doing, and why, when something goes wrong. |
+| 🔄 | [Migration & Modernization](#migration--modernization) | 5 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
+| 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
 
 ## Application Architecture
 
@@ -52,7 +52,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Pattern | In one line | Status |
 |---|---|:-:|
 | [**Multi-Region Active-Active**](patterns/multi-region-active-active/) | Serve users from several regions at once and shift traffic away from a region that fails. | ✅ animated |
-| Active-Passive Failover | A warm standby region is promoted when the primary region goes down. | ⏳ planned |
+| [**Active-Passive Failover**](patterns/active-passive-failover/) | A warm standby region is promoted when the primary region goes down. | ✅ animated |
 | [**Disaster Recovery Strategies**](patterns/disaster-recovery-strategies/) | Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO. | ✅ animated |
 | [**Autoscaling**](patterns/autoscaling/) | Add and remove instances automatically as load rises and falls. | ✅ animated |
 | [**Load Balancing**](patterns/load-balancing/) | Spread requests across healthy instances and stop sending to unhealthy ones. | ✅ animated |
@@ -83,7 +83,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Valet Key | Give clients a short-lived, narrowly scoped URL to read or write storage directly. | ⏳ planned |
 | Gatekeeper | A hardened broker validates and sanitises requests before they reach trusted hosts. | ⏳ planned |
 | Policy-Based Authorization | Services ask a central policy engine for allow/deny decisions (RBAC, ABAC, ReBAC). | ⏳ planned |
-| Zero Trust Access | No implicit trust from network location: verify identity, device and context on every request. | ⏳ planned |
+| [**Zero Trust Access**](patterns/zero-trust-access/) | No implicit trust from network location: verify identity, device and context on every request. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 
@@ -96,7 +96,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**API Gateway**](patterns/api-gateway/) | One entry point that authenticates, rate-limits and routes calls to backend services. | ✅ animated |
 | [**Backends for Frontends (BFF)**](patterns/backends-for-frontends/) | A dedicated backend per client type, shaped for exactly what that UI needs. | ✅ animated |
 | Gateway Aggregation | Fan one client request out to several services and merge the answers into one response. | ⏳ planned |
-| Gateway Offloading | Move TLS termination, authentication and compression out of every service into the gateway. | ⏳ planned |
+| [**Gateway Offloading**](patterns/gateway-offloading/) | Move TLS termination, authentication and compression out of every service into the gateway. | ✅ animated |
 | [**Sidecar**](patterns/sidecar/) | Run helper capabilities (proxy, logging, config) in a separate process next to the app. | ✅ animated |
 | Ambassador | An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client. | ⏳ planned |
 | [**Service Mesh**](patterns/service-mesh/) | Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code. | ✅ animated |
@@ -111,7 +111,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 
 | Pattern | In one line | Status |
 |---|---|:-:|
-| Publish-Subscribe | Broadcast each message to every interested subscriber through a topic. | ⏳ planned |
+| [**Publish-Subscribe**](patterns/publish-subscribe/) | Broadcast each message to every interested subscriber through a topic. | ✅ animated |
 | Competing Consumers | Several workers pull from one queue, so work is shared and throughput scales out. | ⏳ planned |
 | [**Queue-Based Load Leveling**](patterns/queue-based-load-leveling/) | A queue absorbs traffic spikes so the backend can work at a steady pace. | ✅ animated |
 | Priority Queue | Urgent messages are processed ahead of routine ones. | ⏳ planned |
@@ -137,7 +137,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Event Sourcing**](patterns/event-sourcing/) | Store every change as an immutable event and rebuild state by replaying them. | ✅ animated |
 | Sharding | Split data horizontally across databases using a shard key. | ⏳ planned |
 | [**Read Replicas**](patterns/read-replicas/) | Send writes to the primary and spread reads across asynchronously updated replicas. | ✅ animated |
-| Materialized View | Precompute query-shaped views so reads don't pay for joins and aggregations. | ⏳ planned |
+| [**Materialized View**](patterns/materialized-view/) | Precompute query-shaped views so reads don't pay for joins and aggregations. | ✅ animated |
 | [**Change Data Capture (CDC)**](patterns/change-data-capture/) | Stream every committed change from the database log to other systems. | ✅ animated |
 | Database per Service | Each service owns its data; others go through its API or events, never its tables. | ⏳ planned |
 | Medallion Architecture | Bronze, silver, gold: raw data is refined in layers inside a lakehouse. | ⏳ planned |
@@ -153,7 +153,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Circuit Breaker**](patterns/circuit-breaker/) | Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers. | ✅ animated |
 | [**Retry with Backoff & Jitter**](patterns/retry-with-backoff/) | Retry transient failures with growing, randomised delays so clients don't stampede. | ✅ animated |
 | [**Bulkhead**](patterns/bulkhead/) | Give each dependency its own pool of resources so one failure can't sink the whole ship. | ✅ animated |
-| Timeout & Fallback | Bound every remote call and degrade gracefully when the time runs out. | ⏳ planned |
+| [**Timeout & Fallback**](patterns/timeout-and-fallback/) | Bound every remote call and degrade gracefully when the time runs out. | ✅ animated |
 | [**Rate Limiting & Throttling**](patterns/rate-limiting/) | Cap how fast each client may call (token bucket) and shed the excess with 429s. | ✅ animated |
 | [**Health Endpoint Monitoring**](patterns/health-endpoint-monitoring/) | Expose liveness and readiness checks that load balancers and monitors probe. | ✅ animated |
 | Leader Election | Instances elect one coordinator; another takes over when its lease expires. | ⏳ planned |
@@ -188,7 +188,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Strangler Fig**](patterns/strangler-fig/) | Put a facade in front of the legacy system and move routes to new services one at a time. | ✅ animated |
 | [**Anti-Corruption Layer**](patterns/anti-corruption-layer/) | A translation layer that keeps a legacy model from leaking into the new domain. | ✅ animated |
 | [**Branch by Abstraction**](patterns/branch-by-abstraction/) | Introduce an abstraction, build the new implementation behind it, then switch over. | ✅ animated |
-| Parallel Run | Run old and new side by side on the same inputs and compare results before cutting over. | ⏳ planned |
+| [**Parallel Run**](patterns/parallel-run/) | Run old and new side by side on the same inputs and compare results before cutting over. | ✅ animated |
 | [**Expand and Contract**](patterns/expand-and-contract/) | Change a schema or API in backward-compatible steps: expand, migrate, then contract. | ✅ animated |
 | Cloud Migration Strategies (7 Rs) | Rehost, replatform, refactor, repurchase, relocate, retain or retire: pick one per workload. | ⏳ planned |
 
@@ -201,7 +201,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Pattern | In one line | Status |
 |---|---|:-:|
 | [**Distributed Tracing**](patterns/distributed-tracing/) | Propagate a trace context across services and assemble the spans into one timeline. | ✅ animated |
-| Centralized Logging | Ship structured logs from every service to one searchable store, correlated by request ID. | ⏳ planned |
+| [**Centralized Logging**](patterns/centralized-logging/) | Ship structured logs from every service to one searchable store, correlated by request ID. | ✅ animated |
 | [**SLOs & Error Budgets**](patterns/slo-error-budgets/) | Measure SLIs against an objective and alert on error-budget burn rate, not on every blip. | ✅ animated |
 | [**Telemetry Pipeline (OpenTelemetry)**](patterns/telemetry-pipeline/) | Receive, process and export traces, metrics and logs through one vendor-neutral collector. | ✅ animated |
 

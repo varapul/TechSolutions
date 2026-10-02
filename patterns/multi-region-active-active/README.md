@@ -55,7 +55,7 @@ A single region is a single failure domain. Spreading instances across availabil
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Active-Passive Failover *(planned)* — A warm standby region is promoted when the primary region goes down.
+- [Active-Passive Failover](../active-passive-failover/) — A warm standby region is promoted when the primary region goes down.
 - [Disaster Recovery Strategies](../disaster-recovery-strategies/) — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.

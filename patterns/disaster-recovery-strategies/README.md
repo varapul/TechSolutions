@@ -106,7 +106,7 @@ Choose per workload, starting from its RTO and RPO, and take the cheapest strate
 ## Related patterns
 
 - [Multi-Region Active-Active](../multi-region-active-active/) — Serve users from several regions at once and shift traffic away from a region that fails.
-- Active-Passive Failover *(planned)* — A warm standby region is promoted when the primary region goes down.
+- [Active-Passive Failover](../active-passive-failover/) — A warm standby region is promoted when the primary region goes down.
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.

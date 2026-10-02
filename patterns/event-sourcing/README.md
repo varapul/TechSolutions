@@ -121,7 +121,7 @@ It doesn't have to be all or nothing. Azure's guidance suggests applying it to t
 ## Related patterns
 
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
-- Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
+- [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.

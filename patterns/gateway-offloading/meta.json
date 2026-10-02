@@ -1,0 +1,68 @@
+{
+  "aka": ["TLS offloading and SSL offloading (its best-known case)"],
+  "steps": [
+    {
+      "title": "Plumbing in every service",
+      "caption": "Every service repeats the same plumbing in its own language, and one certificate is about to expire.",
+      "body": "Without a gateway every service is its own edge. Orders (Java), Catalog (Go) and Search (Python) each carry a TLS certificate and its configuration, token validation, response compression and access logging: the same four jobs, built three times with three libraries and three configurations. The certificates expire in three days and each team has to renew its own. Two have, one has not."
+    },
+    {
+      "title": "Move it to the gateway",
+      "caption": "The shared work moves into the gateway: one certificate, one auth configuration, one place to patch.",
+      "body": "The shared work moves out of the services into a gateway in front of them: the chips slide across, and each set of three becomes one. The services keep only their business logic. There is now one certificate to renew, one authentication configuration, one compression setting and one log format, and one place to patch when a vulnerability is found."
+    },
+    {
+      "title": "One request at the edge",
+      "caption": "The gateway ends TLS, answers a bad token with 401, forwards the identity, logs and compresses.",
+      "body": "A client connects over HTTPS and the gateway does the edge work once. It terminates TLS, validates the token and answers a bad one with **401 Unauthorized** before any service sees the request. A good request goes on to Orders with the verified identity attached (here an `X-User-Id` header) on a connection of the gateway's own, which is still plain HTTP at this point. The gateway writes one access-log line per request and compresses the response on its way back to the client."
+    },
+    {
+      "title": "Know the limits",
+      "caption": "Business rules stay in the service, the hop behind the gateway is secured, the gateway is redundant.",
+      "body": "Three things do not move. **Business rules and fine-grained authorisation** stay in the service: the gateway knows *who* is calling, but only Orders can decide whether this caller may cancel this order. **The hop behind the gateway needs its own protection**: the services accept connections only from the gateway, so a call that goes around it is refused, and the gateway opens a new TLS (or mutual TLS) connection to each service instead of forwarding plain HTTP. And because every request now passes through it, **the gateway runs as several redundant instances** (three here)."
+    }
+  ],
+  "related": ["api-gateway", "gateway-aggregation", "backends-for-frontends", "service-mesh", "sidecar", "mutual-tls", "jwt-validation", "rate-limiting"],
+  "references": [
+    { "title": "Azure Architecture Center — Gateway Offloading pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-offloading" },
+    { "title": "Azure Architecture Center — API gateways (microservices design)", "url": "https://learn.microsoft.com/en-us/azure/architecture/microservices/design/gateway" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: API Gateway / Backends for Frontends", "url": "https://microservices.io/patterns/apigateway.html" },
+    { "title": "James Lewis, Martin Fowler — Microservices (smart endpoints and dumb pipes)", "url": "https://martinfowler.com/articles/microservices.html" },
+    { "title": "OWASP API Security Top 10 — API1:2023 Broken Object Level Authorization", "url": "https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization/" },
+    { "title": "CA/Browser Forum — Latest Baseline Requirements (section 6.3.2, maximum validity periods)", "url": "https://cabforum.org/working-groups/server/baseline-requirements/requirements/" },
+    { "title": "CA/Browser Forum — Ballot SC081v3: Introduce Schedule of Reducing Validity and Data Reuse Periods", "url": "https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/" },
+    { "title": "Let's Encrypt — Decreasing Certificate Lifetimes to 45 Days", "url": "https://letsencrypt.org/2025/12/02/from-90-to-45" },
+    { "title": "RFC 8555 — Automatic Certificate Management Environment (ACME)", "url": "https://www.rfc-editor.org/rfc/rfc8555" },
+    { "title": "RFC 7239 — Forwarded HTTP Extension", "url": "https://www.rfc-editor.org/rfc/rfc7239" },
+    { "title": "RFC 9440 — Client-Cert HTTP Header Field", "url": "https://www.rfc-editor.org/rfc/rfc9440" },
+    { "title": "RFC 9110 — HTTP Semantics (content codings, Vary, 401 and WWW-Authenticate)", "url": "https://www.rfc-editor.org/rfc/rfc9110" },
+    { "title": "RFC 6750 — The OAuth 2.0 Authorization Framework: Bearer Token Usage", "url": "https://www.rfc-editor.org/rfc/rfc6750" },
+    { "title": "BREACH attack", "url": "https://www.breachattack.com/" },
+    { "title": "HAProxy — The PROXY protocol", "url": "https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt" },
+    { "title": "Elastic Load Balancing — Create an HTTPS listener for your Application Load Balancer", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html" },
+    { "title": "Elastic Load Balancing — Authenticate users using an Application Load Balancer", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html" },
+    { "title": "Elastic Load Balancing — Verify JWTs using an Application Load Balancer", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-verify-jwt.html" },
+    { "title": "AWS Certificate Manager — Managed certificate renewal", "url": "https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html" },
+    { "title": "Amazon API Gateway — Control access to HTTP APIs with JWT authorizers", "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html" },
+    { "title": "Google Cloud Identity-Aware Proxy — Securing your app with signed headers", "url": "https://docs.cloud.google.com/iap/docs/signed-headers-howto" },
+    { "title": "Azure API Management — validate-jwt policy", "url": "https://learn.microsoft.com/en-us/azure/api-management/validate-jwt-policy" },
+    { "title": "Azure Application Gateway — TLS termination and end to end TLS", "url": "https://learn.microsoft.com/en-us/azure/application-gateway/ssl-overview" },
+    { "title": "NGINX — NGINX SSL Termination", "url": "https://docs.nginx.com/nginx/admin-guide/security-controls/terminating-ssl-http/" },
+    { "title": "NGINX — Securing HTTP Traffic to Upstream Servers", "url": "https://docs.nginx.com/nginx/admin-guide/security-controls/securing-http-traffic-upstream/" },
+    { "title": "nginx.org — Module ngx_http_proxy_module (proxy_ssl_verify, proxy_ssl_server_name)", "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html" },
+    { "title": "nginx.org — Module ngx_http_gzip_module", "url": "https://nginx.org/en/docs/http/ngx_http_gzip_module.html" },
+    { "title": "nginx.org — Module ngx_http_auth_request_module", "url": "https://nginx.org/en/docs/http/ngx_http_auth_request_module.html" },
+    { "title": "nginx.org — Module ngx_http_auth_jwt_module", "url": "https://nginx.org/en/docs/http/ngx_http_auth_jwt_module.html" },
+    { "title": "nginx.org — Module ngx_http_acme_module", "url": "https://nginx.org/en/docs/http/ngx_http_acme_module.html" },
+    { "title": "Envoy — TLS (architecture overview)", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ssl" },
+    { "title": "Envoy — JWT Authentication filter", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/jwt_authn_filter" },
+    { "title": "Envoy — External Authorization filter", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_authz_filter" },
+    { "title": "Envoy — Compressor filter", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/compressor_filter" },
+    { "title": "Envoy — Configuring Envoy as an edge proxy", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/best_practices/edge" },
+    { "title": "Envoy — HTTP header manipulation (x-forwarded-for, x-forwarded-client-cert)", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers" },
+    { "title": "Kubernetes Gateway API — TLS Configuration", "url": "https://gateway-api.sigs.k8s.io/guides/user-guides/tls/" },
+    { "title": "Kubernetes Gateway API — GEP-1494: HTTP Auth in Gateway API", "url": "https://gateway-api.sigs.k8s.io/geps/gep-1494/" },
+    { "title": "Kubernetes blog — Ingress NGINX Retirement: What You Need to Know", "url": "https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/" },
+    { "title": "cert-manager — Annotated Gateway resource", "url": "https://cert-manager.io/docs/usage/gateway/" }
+  ]
+}

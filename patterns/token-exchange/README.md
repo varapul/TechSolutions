@@ -124,7 +124,7 @@ The exchanged token in the diagram therefore reads `aud: inventory-api`, `sub: a
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
-- Zero Trust Access *(planned)* — No implicit trust from network location: verify identity, device and context on every request.
+- [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 
 ## References
 

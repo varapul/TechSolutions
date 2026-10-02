@@ -1,0 +1,1181 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Materialized View</title>
+<desc id="dg-desc">Materialized View. Precompute query-shaped views so reads don't pay for joins and aggregations. Step 1, Same query, every time: Every dashboard view re-runs the same join and aggregation on the source tables: slow, every time. Step 2, Precompute the answer: A materialized view stores the answer, one row per product; the dashboard just reads rows in 5 ms. Step 3, Keep it fresh: A new order makes the view stale until a scheduled full refresh or an incremental update catches up. Step 4, Rebuild it, know the price: For a new question, build a second view beside the first, switch readers, then drop the old one.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATA MANAGEMENT</text>
+  <text class="title" x="40" y="64">Materialized View</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Same query, every time</text>
+  <text class="step on p1" x="40" y="518">1 · Same query, every time</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Precompute the answer</text>
+  <text class="step on p2" x="262" y="518">2 · Precompute the answer</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Keep it fresh</text>
+  <text class="step on p3" x="484" y="518">3 · Keep it fresh</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Rebuild it, know the price</text>
+  <text class="step on p4" x="706" y="518">4 · Rebuild it, know the price</text>
+  <text class="caption p1" x="40" y="552">Every dashboard view re-runs the same join and aggregation on the source tables: slow, every time.</text>
+  <text class="caption p2" x="40" y="552">A materialized view stores the answer, one row per product; the dashboard just reads rows in 5 ms.</text>
+  <text class="caption p3" x="40" y="552">A new order makes the view stale until a scheduled full refresh or an incremental update catches up.</text>
+  <text class="caption p4" x="40" y="552">For a new question, build a second view beside the first, switch readers, then drop the old one.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Materialized View. Timeline (20s loop, 1s = 5%):
+   0-25%   no stored answer: the dashboard's query goes to the source tables (0.3s), the scan sweeps
+           order_items and joins products (0.8-1.6s), the answer returns in 1.8 s (2.15s); a second
+           viewer repeats all of it (2.5-4.35s). Checkout's writes land on the same tables meanwhile.
+   25-50%  the view builder runs the same query once (5.4-6.5s) and stores the result as
+           sales_by_product: Mug 12 / $240 (6.55s), T-shirt 5 / $150 (7.05s), as of 09:00.
+           The dashboard now reads the view: 5 ms (8.25s), and again (9.45s).
+   50-75%  order 1043 (2 x Mug) commits at 09:07 (10.75s): the view is stale (11.0s). The change travels to
+           the builder (11.6-12.0s) and a delta of +2 units, +$40 lands on one row (12.85s): as of 09:07.
+           The dashboard reads $280 (14.25s). The scheduled full refresh would wait for 09:15.
+   75-100% a new question (per product and region): v2 is built beside v1 from the source (15.2-16.75s),
+           readers switch (16.9-17.15s) and read v2 (17.2-18.55s), v1 is dropped (18.75-19.15s).
+           19.5-20s: everything fades back to the step-1 state. */
+.diagram .cell { font-size: 11px; }
+.diagram .th { font-size: 10.5px; font-weight: 600; fill: var(--muted); }
+.diagram .tname { font-size: 11px; font-weight: 700; fill: var(--teal); }
+.diagram .sm { font-size: 10.5px; }
+.diagram .big { font-size: 20px; font-weight: 700; }
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .mv-q { opacity: 0; animation: mv-q var(--T) linear infinite; }
+.diagram .mv-res { opacity: 0; animation: mv-res var(--T) linear infinite; }
+.diagram .mv-w { opacity: 0; animation: mv-w var(--T) linear infinite; }
+.diagram .mv-in1 { opacity: 0; animation: mv-in1 var(--T) linear infinite; }
+.diagram .mv-in2 { opacity: 0; animation: mv-in2 var(--T) linear infinite; }
+.diagram .mv-out { opacity: 0; animation: mv-out var(--T) linear infinite; }
+.diagram .mv-out2 { opacity: 0; animation: mv-out2 var(--T) linear infinite; }
+.diagram .mv-ev { opacity: 0; animation: mv-ev var(--T) linear infinite; }
+.diagram .mv-rd { opacity: 0; animation: mv-rd var(--T) linear infinite; }
+.diagram .mv-rs { opacity: 0; animation: mv-rs var(--T) linear infinite; }
+.diagram .mv-scan { opacity: 0; animation: mv-scan var(--T) linear infinite; }
+.diagram .mv-join { opacity: 0; animation: mv-join var(--T) linear infinite; }
+.diagram .mv-join2 { opacity: 0; animation: mv-join2 var(--T) linear infinite; }
+.diagram .mv-spin { opacity: 0; animation: mv-spin var(--T) linear infinite; }
+.diagram .mv-ld { opacity: 0; animation: mv-ld var(--T) linear infinite; }
+.diagram .mv-fast { opacity: 0; animation: mv-fast var(--T) linear infinite; }
+.diagram .mv-d280 { opacity: 0; animation: mv-d280 var(--T) linear infinite; }
+.diagram .mv-grid { opacity: 0; animation: mv-grid var(--T) linear infinite; }
+.diagram .mv-q2 { opacity: 0; animation: mv-q2 var(--T) linear infinite; }
+.diagram .mv-chip { opacity: 0; animation: mv-chip var(--T) linear infinite; }
+.diagram .mv-as00 { opacity: 0; animation: mv-as00 var(--T) linear infinite; }
+.diagram .mv-as07 { opacity: 0; animation: mv-as07 var(--T) linear infinite; }
+.diagram .mv-as30 { opacity: 0; animation: mv-as30 var(--T) linear infinite; }
+.diagram .mv-new { opacity: 0; animation: mv-new var(--T) linear infinite; }
+.diagram .mv-newfl { opacity: 0; animation: mv-newfl var(--T) linear infinite; }
+.diagram .mv-v1 { opacity: 0; animation: mv-v1 var(--T) linear infinite; }
+.diagram .mv-wv1 { opacity: 0; animation: mv-wv1 var(--T) linear infinite; }
+.diagram .mv-r1 { opacity: 0; animation: mv-r1 var(--T) linear infinite; }
+.diagram .mv-old { opacity: 0; animation: mv-old var(--T) linear infinite; }
+.diagram .mv-newv { opacity: 0; animation: mv-newv var(--T) linear infinite; }
+.diagram .mv-r2 { opacity: 0; animation: mv-r2 var(--T) linear infinite; }
+.diagram .mv-rfl1 { opacity: 0; animation: mv-rfl1 var(--T) linear infinite; }
+.diagram .mv-rfl2 { opacity: 0; animation: mv-rfl2 var(--T) linear infinite; }
+.diagram .mv-readfl { opacity: 0; animation: mv-readfl var(--T) linear infinite; }
+.diagram .mv-stale { opacity: 0; animation: mv-stale var(--T) linear infinite; }
+.diagram .mv-fresh { opacity: 0; animation: mv-fresh var(--T) linear infinite; }
+.diagram .mv-vas00 { opacity: 0; animation: mv-vas00 var(--T) linear infinite; }
+.diagram .mv-vas07 { opacity: 0; animation: mv-vas07 var(--T) linear infinite; }
+.diagram .mv-ghost { opacity: 0; animation: mv-ghost var(--T) linear infinite; }
+.diagram .mv-b1 { opacity: 0; animation: mv-b1 var(--T) linear infinite; }
+.diagram .mv-b2 { opacity: 0; animation: mv-b2 var(--T) linear infinite; }
+.diagram .mv-bfl1 { opacity: 0; animation: mv-bfl1 var(--T) linear infinite; }
+.diagram .mv-bfl2 { opacity: 0; animation: mv-bfl2 var(--T) linear infinite; }
+.diagram .mv-build { opacity: 0; animation: mv-build var(--T) linear infinite; }
+.diagram .mv-done { opacity: 0; animation: mv-done var(--T) linear infinite; }
+.diagram .mv-ptr1 { opacity: 0; animation: mv-ptr1 var(--T) linear infinite; }
+.diagram .mv-lbl1 { opacity: 0; animation: mv-lbl1 var(--T) linear infinite; }
+.diagram .mv-rail { opacity: 0; animation: mv-rail var(--T) linear infinite; }
+.diagram .mv-lbl2 { opacity: 0; animation: mv-lbl2 var(--T) linear infinite; }
+.diagram .mv-node { opacity: 0; animation: mv-node var(--T) linear infinite; }
+.diagram .mv-la { opacity: 0; animation: mv-la var(--T) linear infinite; }
+.diagram .mv-lb { opacity: 0; animation: mv-lb var(--T) linear infinite; }
+.diagram .mv-lbd { opacity: 0; animation: mv-lbd var(--T) linear infinite; }
+.diagram .mv-slow { animation: mv-slow var(--T) linear infinite; }
+.diagram .mv-ans { animation: mv-ans var(--T) linear infinite; }
+.diagram .mv-d240 { animation: mv-d240 var(--T) linear infinite; }
+.diagram .mv-q1 { animation: mv-q1 var(--T) linear infinite; }
+.diagram .mv-asnow { animation: mv-asnow var(--T) linear infinite; }
+.diagram .mv-t1 { animation: mv-t1 var(--T) linear infinite; }
+.diagram .mv-t2 { animation: mv-t2 var(--T) linear infinite; }
+.diagram .mv-load { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.14); opacity: 0; animation: mv-load var(--T) linear infinite; }
+.diagram .mv-prog { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0); animation: mv-prog var(--T) linear infinite; }
+@keyframes mv-q {
+  0% { transform: translate(326px, 146px); opacity: 0; }
+  1.5% { transform: translate(326px, 146px); opacity: 0; }
+  1.75% { opacity: 1; }
+  2.567% { transform: translate(262px, 146px); }
+  3.667% { transform: translate(262px, 212px); opacity: 1; }
+  3.917% { transform: translate(262px, 212px); opacity: 0; }
+  12.5% { transform: translate(326px, 146px); opacity: 0; }
+  12.75% { opacity: 1; }
+  13.567% { transform: translate(262px, 146px); }
+  14.667% { transform: translate(262px, 212px); opacity: 1; }
+  14.917% { transform: translate(262px, 212px); opacity: 0; }
+  100% { transform: translate(262px, 212px); opacity: 0; }
+}
+@keyframes mv-res {
+  0% { transform: translate(262px, 212px); opacity: 0; }
+  8.25% { transform: translate(262px, 212px); opacity: 0; }
+  8.5% { opacity: 1; }
+  9.35% { transform: translate(262px, 146px); }
+  10.417% { transform: translate(326px, 146px); opacity: 1; }
+  10.667% { transform: translate(326px, 146px); opacity: 0; }
+  19.25% { transform: translate(262px, 212px); opacity: 0; }
+  19.5% { opacity: 1; }
+  20.35% { transform: translate(262px, 146px); }
+  21.417% { transform: translate(326px, 146px); opacity: 1; }
+  21.667% { transform: translate(326px, 146px); opacity: 0; }
+  100% { transform: translate(326px, 146px); opacity: 0; }
+}
+@keyframes mv-w {
+  0% { transform: translate(111px, 158px); opacity: 0; }
+  5% { transform: translate(111px, 158px); opacity: 0; }
+  5.25% { opacity: 1; }
+  7% { transform: translate(111px, 212px); opacity: 1; }
+  7.25% { transform: translate(111px, 212px); opacity: 0; }
+  16% { transform: translate(111px, 158px); opacity: 0; }
+  16.25% { opacity: 1; }
+  18% { transform: translate(111px, 212px); opacity: 1; }
+  18.25% { transform: translate(111px, 212px); opacity: 0; }
+  51.5% { transform: translate(111px, 158px); opacity: 0; }
+  51.75% { opacity: 1; }
+  53.5% { transform: translate(111px, 212px); opacity: 1; }
+  53.75% { transform: translate(111px, 212px); opacity: 0; }
+  100% { transform: translate(111px, 212px); opacity: 0; }
+}
+@keyframes mv-in1 {
+  0% { transform: translate(338px, 265px); opacity: 0; }
+  27.5% { transform: translate(338px, 265px); opacity: 0; }
+  27.75% { opacity: 1; }
+  29.26% { transform: translate(426px, 265px); opacity: 1; }
+  29.51% { transform: translate(426px, 265px); opacity: 0; }
+  29.75% { transform: translate(338px, 265px); opacity: 0; }
+  30% { opacity: 1; }
+  31.51% { transform: translate(426px, 265px); opacity: 1; }
+  31.76% { transform: translate(426px, 265px); opacity: 0; }
+  76.25% { transform: translate(338px, 265px); opacity: 0; }
+  76.5% { opacity: 1; }
+  78.01% { transform: translate(426px, 265px); opacity: 1; }
+  78.26% { transform: translate(426px, 265px); opacity: 0; }
+  78.5% { transform: translate(338px, 265px); opacity: 0; }
+  78.75% { opacity: 1; }
+  80.26% { transform: translate(426px, 265px); opacity: 1; }
+  80.51% { transform: translate(426px, 265px); opacity: 0; }
+  100% { transform: translate(426px, 265px); opacity: 0; }
+}
+@keyframes mv-in2 {
+  0% { transform: translate(338px, 265px); opacity: 0; }
+  28.6% { transform: translate(338px, 265px); opacity: 0; }
+  28.85% { opacity: 1; }
+  30.36% { transform: translate(426px, 265px); opacity: 1; }
+  30.61% { transform: translate(426px, 265px); opacity: 0; }
+  30.85% { transform: translate(338px, 265px); opacity: 0; }
+  31.1% { opacity: 1; }
+  32.61% { transform: translate(426px, 265px); opacity: 1; }
+  32.86% { transform: translate(426px, 265px); opacity: 0; }
+  77.35% { transform: translate(338px, 265px); opacity: 0; }
+  77.6% { opacity: 1; }
+  79.11% { transform: translate(426px, 265px); opacity: 1; }
+  79.36% { transform: translate(426px, 265px); opacity: 0; }
+  79.6% { transform: translate(338px, 265px); opacity: 0; }
+  79.85% { opacity: 1; }
+  81.36% { transform: translate(426px, 265px); opacity: 1; }
+  81.61% { transform: translate(426px, 265px); opacity: 0; }
+  100% { transform: translate(426px, 265px); opacity: 0; }
+}
+@keyframes mv-out {
+  0% { transform: translate(538px, 265px); opacity: 0; }
+  30.75% { transform: translate(538px, 265px); opacity: 0; }
+  31% { opacity: 1; }
+  32.75% { transform: translate(626px, 265px); opacity: 1; }
+  33% { transform: translate(626px, 265px); opacity: 0; }
+  33.25% { transform: translate(538px, 265px); opacity: 0; }
+  33.5% { opacity: 1; }
+  35.25% { transform: translate(626px, 265px); opacity: 1; }
+  35.5% { transform: translate(626px, 265px); opacity: 0; }
+  62% { transform: translate(538px, 265px); opacity: 0; }
+  62.25% { opacity: 1; }
+  64% { transform: translate(626px, 265px); opacity: 1; }
+  64.25% { transform: translate(626px, 265px); opacity: 0; }
+  100% { transform: translate(626px, 265px); opacity: 0; }
+}
+@keyframes mv-out2 {
+  0% { transform: translate(538px, 265px); opacity: 0; }
+  78.25% { transform: translate(538px, 265px); opacity: 0; }
+  78.5% { opacity: 1; }
+  79.01% { transform: translate(614px, 265px); }
+  80.4% { transform: translate(614px, 404px); }
+  80.52% { transform: translate(626px, 404px); opacity: 1; }
+  80.77% { transform: translate(626px, 404px); opacity: 0; }
+  81% { transform: translate(538px, 265px); opacity: 0; }
+  81.25% { opacity: 1; }
+  81.76% { transform: translate(614px, 265px); }
+  83.15% { transform: translate(614px, 404px); }
+  83.27% { transform: translate(626px, 404px); opacity: 1; }
+  83.52% { transform: translate(626px, 404px); opacity: 0; }
+  100% { transform: translate(626px, 404px); opacity: 0; }
+}
+@keyframes mv-ev {
+  0% { transform: translate(338px, 265px); opacity: 0; }
+  58% { transform: translate(338px, 265px); opacity: 0; }
+  58.25% { opacity: 1; }
+  60% { transform: translate(426px, 265px); opacity: 1; }
+  60.25% { transform: translate(426px, 265px); opacity: 0; }
+  100% { transform: translate(426px, 265px); opacity: 0; }
+}
+@keyframes mv-rd {
+  0% { transform: translate(638px, 146px); opacity: 0; }
+  36.5% { transform: translate(638px, 146px); opacity: 0; }
+  36.75% { opacity: 1; }
+  37.856% { transform: translate(760px, 146px); }
+  38.589% { transform: translate(760px, 212px); opacity: 1; }
+  38.839% { transform: translate(760px, 212px); opacity: 0; }
+  42.5% { transform: translate(638px, 146px); opacity: 0; }
+  42.75% { opacity: 1; }
+  43.856% { transform: translate(760px, 146px); }
+  44.589% { transform: translate(760px, 212px); opacity: 1; }
+  44.839% { transform: translate(760px, 212px); opacity: 0; }
+  66.5% { transform: translate(638px, 146px); opacity: 0; }
+  66.75% { opacity: 1; }
+  67.856% { transform: translate(760px, 146px); }
+  68.589% { transform: translate(760px, 212px); opacity: 1; }
+  68.839% { transform: translate(760px, 212px); opacity: 0; }
+  86% { transform: translate(638px, 146px); opacity: 0; }
+  86.25% { opacity: 1; }
+  87.593% { transform: translate(912px, 146px); }
+  89.093% { transform: translate(912px, 404px); }
+  89.198% { transform: translate(894px, 404px); opacity: 1; }
+  89.448% { transform: translate(894px, 404px); opacity: 0; }
+  100% { transform: translate(894px, 404px); opacity: 0; }
+}
+@keyframes mv-rs {
+  0% { transform: translate(760px, 212px); opacity: 0; }
+  39% { transform: translate(760px, 212px); opacity: 0; }
+  39.25% { opacity: 1; }
+  39.733% { transform: translate(760px, 146px); }
+  41.089% { transform: translate(638px, 146px); opacity: 1; }
+  41.339% { transform: translate(638px, 146px); opacity: 0; }
+  45% { transform: translate(760px, 212px); opacity: 0; }
+  45.25% { opacity: 1; }
+  45.733% { transform: translate(760px, 146px); }
+  47.089% { transform: translate(638px, 146px); opacity: 1; }
+  47.339% { transform: translate(638px, 146px); opacity: 0; }
+  69% { transform: translate(760px, 212px); opacity: 0; }
+  69.25% { opacity: 1; }
+  69.733% { transform: translate(760px, 146px); }
+  71.089% { transform: translate(638px, 146px); opacity: 1; }
+  71.339% { transform: translate(638px, 146px); opacity: 0; }
+  89.5% { transform: translate(894px, 404px); opacity: 0; }
+  89.605% { transform: translate(912px, 404px); }
+  89.75% { opacity: 1; }
+  91.105% { transform: translate(912px, 146px); }
+  92.698% { transform: translate(638px, 146px); opacity: 1; }
+  92.948% { transform: translate(638px, 146px); opacity: 0; }
+  100% { transform: translate(638px, 146px); opacity: 0; }
+}
+@keyframes mv-scan {
+  0% { transform: translate(48px, 283px); opacity: 0; }
+  4% { transform: translate(48px, 283px); opacity: 0; }
+  4.25% { opacity: 1; }
+  8% { transform: translate(48px, 333px); opacity: 1; }
+  8.25% { transform: translate(48px, 333px); opacity: 0; }
+  15% { transform: translate(48px, 283px); opacity: 0; }
+  15.25% { opacity: 1; }
+  19% { transform: translate(48px, 333px); opacity: 1; }
+  19.25% { transform: translate(48px, 333px); opacity: 0; }
+  27% { transform: translate(48px, 283px); opacity: 0; }
+  27.25% { opacity: 1; }
+  31.5% { transform: translate(48px, 333px); opacity: 1; }
+  31.75% { transform: translate(48px, 333px); opacity: 0; }
+  76% { transform: translate(48px, 283px); opacity: 0; }
+  76.25% { opacity: 1; }
+  81% { transform: translate(48px, 350px); opacity: 1; }
+  81.25% { transform: translate(48px, 350px); opacity: 0; }
+  100% { transform: translate(48px, 350px); opacity: 0; }
+}
+@keyframes mv-join {
+  0% { opacity: 0; }
+  4% { opacity: 0; }
+  4.5% { opacity: 1; }
+  8% { opacity: 1; }
+  8.5% { opacity: 0; }
+  15% { opacity: 0; }
+  15.5% { opacity: 1; }
+  19% { opacity: 1; }
+  19.5% { opacity: 0; }
+  27% { opacity: 0; }
+  27.5% { opacity: 1; }
+  31.5% { opacity: 1; }
+  32% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  81% { opacity: 1; }
+  81.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-join2 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  81% { opacity: 1; }
+  81.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-load {
+  0% { transform: scaleX(0.14); opacity: 0; }
+  4% { transform: scaleX(0.14); opacity: 0; }
+  4.75% { transform: scaleX(0.95); opacity: 1; }
+  8.25% { transform: scaleX(0.95); opacity: 1; }
+  9.5% { transform: scaleX(0.14); opacity: 0; }
+  15% { transform: scaleX(0.14); opacity: 0; }
+  15.75% { transform: scaleX(0.95); opacity: 1; }
+  19.25% { transform: scaleX(0.95); opacity: 1; }
+  20.5% { transform: scaleX(0.14); opacity: 0; }
+  27% { transform: scaleX(0.14); opacity: 0; }
+  27.75% { transform: scaleX(0.95); opacity: 1; }
+  31.75% { transform: scaleX(0.95); opacity: 1; }
+  33% { transform: scaleX(0.14); opacity: 0; }
+  53.5% { transform: scaleX(0.14); opacity: 0; }
+  54.25% { transform: scaleX(0.3); opacity: 1; }
+  54.75% { transform: scaleX(0.3); opacity: 1; }
+  56% { transform: scaleX(0.14); opacity: 0; }
+  60% { transform: scaleX(0.14); opacity: 0; }
+  60.75% { transform: scaleX(0.26); opacity: 1; }
+  63% { transform: scaleX(0.26); opacity: 1; }
+  64.25% { transform: scaleX(0.14); opacity: 0; }
+  76% { transform: scaleX(0.14); opacity: 0; }
+  76.75% { transform: scaleX(0.95); opacity: 1; }
+  81.25% { transform: scaleX(0.95); opacity: 1; }
+  82.5% { transform: scaleX(0.14); opacity: 0; }
+  100% { transform: scaleX(0.14); opacity: 0; }
+}
+@keyframes mv-spin {
+  0% { opacity: 0; }
+  0.25% { opacity: 0; }
+  0.75% { opacity: 1; }
+  10.5% { opacity: 1; }
+  11% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13% { opacity: 1; }
+  21.5% { opacity: 1; }
+  22% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-ld {
+  0% { opacity: 0; }
+  0.25% { opacity: 0; }
+  0.75% { opacity: 1; }
+  10.5% { opacity: 1; }
+  11% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-slow {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13% { opacity: 0; }
+  21.75% { opacity: 0; }
+  22.25% { opacity: 1; }
+  41.25% { opacity: 1; }
+  41.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-fast {
+  0% { opacity: 0; }
+  41.25% { opacity: 0; }
+  41.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-ans {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-d240 {
+  0% { opacity: 1; }
+  71.25% { opacity: 1; }
+  71.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-d280 {
+  0% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  93.5% { opacity: 1; }
+  94% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-grid {
+  0% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-q1 {
+  0% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93% { opacity: 0; }
+  99.6% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+@keyframes mv-q2 {
+  0% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-chip {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-asnow {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  41.25% { opacity: 1; }
+  41.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-as00 {
+  0% { opacity: 0; }
+  41.25% { opacity: 0; }
+  41.75% { opacity: 1; }
+  71.25% { opacity: 1; }
+  71.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-as07 {
+  0% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-as30 {
+  0% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-t1 {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-t2 {
+  0% { opacity: 0; }
+  21.75% { opacity: 0; }
+  22.25% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-new {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-newfl {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54.25% { opacity: 1; }
+  58% { opacity: 1; }
+  58.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-v1 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  93.75% { opacity: 1; }
+  95.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-wv1 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  93.75% { opacity: 1; }
+  95.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-r1 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.25% { opacity: 1; }
+  98% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-old {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.25% { opacity: 1; }
+  64.25% { opacity: 1; }
+  64.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-newv {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  98% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-r2 {
+  0% { opacity: 0; }
+  35.25% { opacity: 0; }
+  35.75% { opacity: 1; }
+  98% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-rfl1 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.25% { opacity: 1; }
+  35.5% { opacity: 1; }
+  36% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  68% { opacity: 1; }
+  68.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-rfl2 {
+  0% { opacity: 0; }
+  35.25% { opacity: 0; }
+  35.75% { opacity: 1; }
+  37.5% { opacity: 1; }
+  38% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-readfl {
+  0% { opacity: 0; }
+  38.7% { opacity: 0; }
+  39.2% { opacity: 1; }
+  40.5% { opacity: 1; }
+  41% { opacity: 0; }
+  44.7% { opacity: 0; }
+  45.2% { opacity: 1; }
+  46.5% { opacity: 1; }
+  47% { opacity: 0; }
+  68.7% { opacity: 0; }
+  69.2% { opacity: 1; }
+  70.5% { opacity: 1; }
+  71% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-stale {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  55.5% { opacity: 1; }
+  64.25% { opacity: 1; }
+  64.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-fresh {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36% { opacity: 1; }
+  55% { opacity: 1; }
+  55.5% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  98% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-vas00 {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36% { opacity: 1; }
+  64.25% { opacity: 1; }
+  64.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-vas07 {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  98% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-ghost {
+  0% { opacity: 0; }
+  95.5% { opacity: 0; }
+  96% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-b1 {
+  0% { opacity: 0; }
+  80.5% { opacity: 0; }
+  81% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes mv-b2 {
+  0% { opacity: 0; }
+  83.25% { opacity: 0; }
+  83.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes mv-bfl1 {
+  0% { opacity: 0; }
+  80.5% { opacity: 0; }
+  81% { opacity: 1; }
+  83.5% { opacity: 1; }
+  84% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-bfl2 {
+  0% { opacity: 0; }
+  83.25% { opacity: 0; }
+  83.75% { opacity: 1; }
+  86.25% { opacity: 1; }
+  86.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-build {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  83.75% { opacity: 1; }
+  84.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-done {
+  0% { opacity: 0; }
+  83.75% { opacity: 0; }
+  84.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes mv-prog {
+  0% { transform: scaleX(0); }
+  76.25% { transform: scaleX(0); }
+  83.25% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes mv-ptr1 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  84.5% { opacity: 1; }
+  85.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-lbl1 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  84.5% { opacity: 1; }
+  85.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-rail {
+  0% { opacity: 0; }
+  84.75% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-lbl2 {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-node {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  29.75% { opacity: 1; }
+  35.25% { opacity: 1; }
+  35.75% { opacity: 0; }
+  59.75% { opacity: 0; }
+  60.25% { opacity: 1; }
+  64.25% { opacity: 1; }
+  64.75% { opacity: 0; }
+  78% { opacity: 0; }
+  78.5% { opacity: 1; }
+  83.5% { opacity: 1; }
+  84% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-la {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  55.5% { opacity: 1; }
+  76.5% { opacity: 1; }
+  77% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-lb {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.5% { opacity: 1; }
+  76.5% { opacity: 1; }
+  77% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes mv-lbd {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  60.5% { opacity: 1; }
+  76.5% { opacity: 1; }
+  77% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- legend -->
+  <circle class="f-blue" cx="654" cy="104" r="5"/><text class="tiny" x="664" y="108">request</text>
+  <circle class="f-teal" cx="718" cy="104" r="5"/><text class="tiny" x="728" y="108">rows</text>
+  <rect class="f-purple" x="764" y="99" width="10" height="10" rx="2.5"/><text class="tiny" x="780" y="108">change</text>
+  <rect class="f-amber-soft s-amber" x="832" y="99" width="12" height="10" rx="3" stroke-width="1"/><text class="tiny" x="850" y="108">slow or stale</text>
+
+  <!-- wires: checkout and (step 1 only) the dashboard go to the source tables -->
+  <line class="wire" x1="111" y1="156" x2="111" y2="213" marker-end="url(#ah)"/>
+  <g class="p1">
+    <path class="wire" d="M326 146H262V213" marker-end="url(#ah)"/>
+    <text class="tiny mid mono b f-blue" x="264" y="134">JOIN + GROUP BY</text>
+    <text class="tiny" x="123" y="176">its writes share</text>
+    <text class="tiny" x="123" y="191">the same tables</text>
+  </g>
+  <g class="p3">
+    <text class="tiny mono b f-blue" x="123" y="176">new order 1043</text>
+    <text class="tiny mono" x="123" y="191">2 × Mug · 09:07</text>
+  </g>
+
+  <!-- wires: from step 2 on, the dashboard reads the view (v1, then v2 after the switch) -->
+  <g class="p234"><path class="wire" d="M638 146H760"/></g>
+  <path class="wire mv-ptr1" d="M638 146H760V213" marker-end="url(#ah)"/>
+  <path class="wire mv-rail" d="M638 146H912V404H893" marker-end="url(#ah)"/>
+  <text class="tiny mono b f-blue mv-lbl1" x="648" y="134">SELECT … FROM sales_by_product</text>
+  <text class="tiny mono b f-blue mv-lbl2" x="648" y="134">SELECT … FROM sales_by_product_region</text>
+  <g class="p23">
+    <text class="tiny" x="772" y="172">a few rows, by key:</text>
+    <text class="tiny" x="772" y="187">no join, no scan</text>
+  </g>
+  <g class="mv-rail">
+    <text class="tiny end sb f-green" x="902" y="172">readers switch</text>
+    <text class="tiny end" x="902" y="187">to the new version</text>
+  </g>
+
+  <!-- wires: source -> view builder -> view -->
+  <g class="p234">
+    <line class="wire" x1="336" y1="265" x2="427" y2="265" marker-end="url(#ah)"/>
+    <line class="s-line" x1="482" y1="282" x2="482" y2="296" stroke-width="1.5"/>
+  </g>
+  <line class="wire mv-wv1" x1="536" y1="265" x2="627" y2="265" marker-end="url(#ah)"/>
+  <g class="p4"><path class="wire" d="M536 265H614V404H627" marker-end="url(#ah)"/></g>
+  <g class="p24">
+    <text class="tiny mid" x="382" y="251">all rows</text>
+    <text class="tiny mid" x="582" y="251">the result</text>
+  </g>
+  <g class="p3">
+    <text class="tiny mid sb f-purple" x="382" y="251">one change</text>
+    <text class="tiny mid mono b f-teal" x="582" y="251">+2 · +$40</text>
+  </g>
+
+  <!-- Checkout: the application that writes the source tables -->
+  <rect class="box" x="36" y="106" width="150" height="50" rx="12"/>
+  <text class="label mid" x="111" y="128">Checkout</text>
+  <text class="sub mid" x="111" y="145">writes orders</text>
+
+  <!-- Dashboard: one question, and how long the answer took -->
+  <rect class="box" x="326" y="94" width="312" height="102" rx="12"/>
+  <text class="label" x="340" y="114">Dashboard</text>
+  <g class="mv-chip"><rect class="f-blue-soft s-blue" x="442" y="102" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny mid sb f-blue" x="494" y="114">new: + region</text></g>
+  <text class="tiny sb f-ink mv-q1" x="340" y="132">Revenue per product</text>
+  <text class="tiny sb f-ink mv-q2" x="340" y="132">Revenue per product and region</text>
+  <g class="mv-ans">
+    <text class="tiny f-ink" x="340" y="152">Mug</text>
+    <rect class="f-teal" x="392" y="144" width="68.6" height="9" rx="2"/>
+    <text class="cell mono sb end mv-d240" x="534" y="152">$240</text>
+    <g class="mv-d280"><rect class="f-teal" x="458" y="144" width="14" height="9" rx="2"/><text class="cell mono sb end" x="534" y="152">$280</text></g>
+    <text class="tiny f-ink" x="340" y="170">T-shirt</text>
+    <rect class="f-teal" x="392" y="162" width="42.9" height="9" rx="2"/>
+    <text class="cell mono sb end" x="534" y="170">$150</text>
+    <text class="tiny f-faint" x="340" y="187">⋮</text>
+  </g>
+  <text class="tiny mv-ld" x="340" y="152">running the query…</text>
+  <g class="mv-grid">
+    <text class="th end" x="460" y="150">EU</text><text class="th end" x="524" y="150">US</text>
+    <text class="tiny f-ink" x="340" y="166">Mug</text><text class="cell mono sb end" x="460" y="166">$180</text><text class="cell mono sb end" x="524" y="166">$100</text>
+    <text class="tiny f-ink" x="340" y="182">T-shirt</text><text class="cell mono sb end" x="460" y="182">$90</text><text class="cell mono sb end" x="524" y="182">$60</text>
+  </g>
+  <line class="s-line" x1="556" y1="104" x2="556" y2="186" stroke-width="1"/>
+  <text class="tiny mid" x="597" y="117">answered in</text>
+  <g class="mv-spin"><circle class="none s-line" cx="597" cy="138" r="7" stroke-width="2.5"/><circle class="none s-amber spin" cx="597" cy="138" r="7" stroke-width="2.5" stroke-dasharray="11 33" stroke-linecap="round"/></g>
+  <text class="big mid f-amber-ink mv-slow" x="597" y="145">1.8 s</text>
+  <text class="big mid f-green mv-fast" x="597" y="145">5 ms</text>
+  <text class="tiny mid f-faint" x="597" y="161">illustrative</text>
+  <text class="tiny mid mv-asnow" x="597" y="184">as of now</text>
+  <text class="tiny mid mv-as00" x="597" y="184">as of 09:00</text>
+  <text class="tiny mid mv-as07" x="597" y="184">as of 09:07</text>
+  <text class="tiny mid mv-as30" x="597" y="184">as of 09:30</text>
+
+  <!-- Source database: normalised tables, the source of truth -->
+  <rect class="box" x="36" y="214" width="300" height="250" rx="14"/>
+  <path class="f-teal-soft s-teal" d="M50 229v11a8 3 0 0 0 16 0v-11" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="58" cy="229" rx="8" ry="3" stroke-width="1.5"/>
+  <text class="label" x="74" y="240">Source database</text>
+  <text class="tiny end" x="324" y="240">source of truth</text>
+
+  <text class="tname mono" x="48" y="262">order_items</text>
+  <rect class="f-panel-2" x="48" y="267" width="158" height="15" rx="4"/><text class="th" x="54" y="278">order_id</text><text class="th" x="112" y="278">product_id</text><text class="th" x="182" y="278">qty</text>
+  <text class="tiny" x="54" y="294">⋮ thousands of rows</text>
+  <rect class="f-bg s-line" x="48" y="299" width="158" height="16" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="48" y="316" width="158" height="16" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="48" y="333" width="158" height="16" rx="3" stroke-width="1"/>
+  <text class="cell mono" x="54" y="311">1041</text><text class="cell mono" x="112" y="311">1</text><text class="cell mono" x="182" y="311">1</text>
+  <text class="cell mono" x="54" y="328">1041</text><text class="cell mono" x="112" y="328">2</text><text class="cell mono" x="182" y="328">2</text>
+  <text class="cell mono" x="54" y="345">1042</text><text class="cell mono" x="112" y="345">1</text><text class="cell mono" x="182" y="345">3</text>
+
+  <text class="tname mono" x="216" y="262">products</text>
+  <rect class="f-panel-2" x="216" y="267" width="108" height="15" rx="4"/><text class="th" x="222" y="278">id</text><text class="th" x="240" y="278">name</text><text class="th end" x="318" y="278">price</text>
+  <rect class="f-bg s-line" x="216" y="284" width="108" height="16" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="216" y="301" width="108" height="16" rx="3" stroke-width="1"/>
+  <rect class="f-amber-soft s-amber mv-join" x="216" y="284" width="108" height="33" rx="3" stroke-width="1"/>
+  <text class="cell mono" x="222" y="296">1</text><text class="cell mono" x="240" y="296">Mug</text><text class="cell mono end" x="318" y="296">$20</text>
+  <text class="cell mono" x="222" y="313">2</text><text class="cell mono" x="240" y="313">T-shirt</text><text class="cell mono end" x="318" y="313">$30</text>
+  <text class="tiny" x="222" y="330">⋮</text>
+
+  <text class="tname mono" x="216" y="352">orders</text>
+  <rect class="f-panel-2" x="216" y="357" width="108" height="15" rx="4"/><text class="th" x="222" y="368">id</text><text class="th" x="262" y="368">region</text>
+  <text class="tiny" x="222" y="384">⋮</text>
+  <rect class="f-bg s-line" x="216" y="388" width="108" height="16" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="216" y="405" width="108" height="16" rx="3" stroke-width="1"/>
+  <text class="cell mono" x="222" y="400">1041</text><text class="cell mono" x="262" y="400">EU</text>
+  <text class="cell mono" x="222" y="417">1042</text><text class="cell mono" x="262" y="417">US</text>
+
+  <!-- step 3: order 1043 for 2 Mugs commits -->
+  <g class="mv-new">
+    <rect class="f-bg s-line" x="48" y="350" width="158" height="16" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="216" y="422" width="108" height="16" rx="3" stroke-width="1"/>
+    <rect class="f-teal-soft s-teal mv-newfl" x="48" y="350" width="158" height="16" rx="3" stroke-width="1"/>
+    <rect class="f-teal-soft s-teal mv-newfl" x="216" y="422" width="108" height="16" rx="3" stroke-width="1"/>
+    <text class="cell mono" x="54" y="362">1043</text><text class="cell mono" x="112" y="362">1</text><text class="cell mono" x="182" y="362">2</text>
+    <text class="cell mono" x="222" y="434">1043</text><text class="cell mono" x="262" y="434">EU</text>
+  </g>
+  <rect class="f-amber-soft s-amber mv-join2" x="216" y="388" width="108" height="50" rx="3" stroke-width="1"/>
+  <rect class="f-amber-soft s-amber mv-scan" width="158" height="16" rx="3" stroke-width="1"/>
+
+  <!-- what each step costs the source -->
+  <text class="tiny sb f-ink" x="48" y="390">database load</text>
+  <rect class="f-line" x="48" y="397" width="158" height="7" rx="3.5"/>
+  <rect class="f-green" x="48" y="397" width="22" height="7" rx="3.5"/>
+  <rect class="f-amber mv-load" x="48" y="397" width="158" height="7" rx="3.5"/>
+  <g class="p1"><text class="tiny" x="48" y="422">one full scan per view, next</text><text class="tiny" x="48" y="437">to Checkout’s writes</text></g>
+  <g class="p2"><text class="tiny" x="48" y="422">one scan to build it; reads</text><text class="tiny" x="48" y="437">no longer come here</text></g>
+  <g class="p3"><text class="tiny" x="48" y="422">a delta costs little; a full</text><text class="tiny" x="48" y="437">refresh is another scan</text></g>
+  <g class="p4"><text class="tiny" x="48" y="422">a rebuild scans</text><text class="tiny" x="48" y="437">everything again</text></g>
+
+  <!-- centre column: the query, then the view builder and how it keeps the view -->
+  <g class="p1">
+    <text class="sub mid sb f-ink" x="482" y="244">No stored answer</text>
+    <text class="tiny mid" x="482" y="262">every view starts from the raw rows</text>
+  </g>
+  <g class="p2"><text class="tiny mid sb f-ink" x="482" y="232">Run the query once, keep the result</text></g>
+  <g class="p3"><text class="tiny mid sb f-ink" x="482" y="232">Two ways to refresh the view</text></g>
+  <g class="p4"><text class="tiny mid sb f-ink" x="482" y="232">Build the new version beside the old</text></g>
+  <g class="p234">
+    <rect class="box" x="428" y="248" width="108" height="34" rx="10"/>
+    <text class="sub mid sb f-ink" x="482" y="269">View builder</text>
+  </g>
+  <rect class="none s-teal mv-node" x="428" y="248" width="108" height="34" rx="10" stroke-width="2"/>
+
+  <rect class="box" x="364" y="296" width="236" height="168" rx="12"/>
+  <g class="p1">
+    <text class="tiny sb f-ink" x="376" y="313">The dashboard’s query</text>
+    <text class="tiny" x="376" y="327">runs again on every page view:</text>
+    <text class="tiny" x="376" y="440">A join and an aggregation over every</text>
+    <text class="tiny" x="376" y="454">order line, repeated for each viewer.</text>
+  </g>
+  <g class="p2">
+    <text class="sm mono b f-teal" x="376" y="313">CREATE MATERIALIZED VIEW</text>
+    <text class="sm mono b f-teal" x="376" y="326" xml:space="preserve">  sales_by_product AS</text>
+    <text class="tiny sb f-green" x="376" y="440">Runs once, ahead of the reads.</text>
+    <text class="tiny" x="376" y="454">Stored result: one row per product.</text>
+  </g>
+  <g class="p12">
+    <text class="sm mono f-ink" x="376" y="342" xml:space="preserve">SELECT p.name AS product,</text>
+    <text class="sm mono f-ink" x="376" y="355" xml:space="preserve">  SUM(i.qty) AS units,</text>
+    <text class="sm mono f-ink" x="376" y="368" xml:space="preserve">  SUM(i.qty * p.price) AS revenue</text>
+    <text class="sm mono f-ink" x="376" y="381" xml:space="preserve">FROM order_items i</text>
+    <text class="sm mono f-ink" x="376" y="394" xml:space="preserve">JOIN products p</text>
+    <text class="sm mono f-ink" x="376" y="407" xml:space="preserve">  ON p.id = i.product_id</text>
+    <text class="sm mono f-ink" x="376" y="420" xml:space="preserve">GROUP BY p.name</text>
+  </g>
+  <g class="p3">
+    <rect class="f-bg s-line" x="372" y="302" width="220" height="76" rx="8" stroke-width="1"/>
+    <rect class="none s-amber mv-la" x="372" y="302" width="220" height="76" rx="8" stroke-width="1.5"/>
+    <text class="tiny sb f-ink" x="382" y="319">Scheduled full refresh</text>
+    <text class="tiny" x="382" y="335">re-runs the query every 15 min</text>
+    <text class="tiny sb f-amber-ink mv-la" x="382" y="351">→ stale until the 09:15 run</text>
+    <text class="tiny" x="382" y="368">simple · stale up to one interval</text>
+    <rect class="f-bg s-line" x="372" y="384" width="220" height="74" rx="8" stroke-width="1"/>
+    <rect class="none s-teal mv-lb" x="372" y="384" width="220" height="74" rx="8" stroke-width="1.5"/>
+    <text class="tiny sb f-ink" x="382" y="401">Incremental maintenance</text>
+    <text class="tiny" x="382" y="417">applies each change as it arrives</text>
+    <text class="tiny mono b f-teal mv-lbd" x="382" y="433">→ +2 units, +$40 on one row</text>
+    <text class="tiny" x="382" y="449">fresher · more machinery to run</text>
+  </g>
+  <g class="p4">
+    <text class="tiny sb f-ink" x="376" y="314">Rebuild for the new question</text>
+    <text class="tiny" x="376" y="329">the view must also group by region</text>
+    <rect class="f-line" x="376" y="337" width="212" height="6" rx="3"/>
+    <rect class="f-teal mv-prog" x="376" y="337" width="212" height="6" rx="3"/>
+    <text class="tiny mv-build" x="376" y="357">built from the source, beside the old</text>
+    <text class="tiny sb f-green mv-done" x="376" y="357">✓ complete: readers can switch</text>
+    <line class="s-line" x1="376" y1="367" x2="588" y2="367" stroke-width="1"/>
+    <text class="tiny sb f-ink" x="376" y="385">The price of every view</text>
+    <text class="tiny" x="376" y="401">•  storage for the copy</text>
+    <text class="tiny" x="376" y="416">•  work on every write or refresh</text>
+    <text class="tiny" x="376" y="431">•  answers can be slightly behind</text>
+    <text class="tiny" x="376" y="446">•  one more thing to operate</text>
+  </g>
+
+  <!-- right column, step 1: every viewer repeats the work -->
+  <g class="p1">
+    <text class="tiny sb f-ink" x="640" y="234">Every viewer pays the full price</text>
+    <g class="mv-t1"><rect class="f-panel s-line" x="636" y="244" width="248" height="22" rx="6" stroke-width="1"/><text class="tiny f-ink" x="646" y="259">viewer 1</text><text class="tiny" x="702" y="259">join + aggregate</text><text class="cell mono b end f-amber-ink" x="876" y="259">1.8 s</text></g>
+    <g class="mv-t2"><rect class="f-panel s-line" x="636" y="270" width="248" height="22" rx="6" stroke-width="1"/><text class="tiny f-ink" x="646" y="285">viewer 2</text><text class="tiny" x="702" y="285">join + aggregate</text><text class="cell mono b end f-amber-ink" x="876" y="285">1.8 s</text></g>
+    <text class="tiny f-faint" x="646" y="311">viewer 3, 4, 5 …</text><text class="tiny end f-faint" x="876" y="311">the same again</text>
+    <text class="tiny sb f-ink" x="640" y="352">Nothing is reused</text>
+    <text class="tiny" x="640" y="368">Each run starts from the raw rows again,</text>
+    <text class="tiny" x="640" y="384">even when almost nothing has changed</text>
+    <text class="tiny" x="640" y="400">since the last one.</text>
+    <text class="tiny" x="640" y="426">And it gets slower as the tables grow.</text>
+  </g>
+
+  <!-- right column, steps 2-4: the materialized view (v1) -->
+  <g class="mv-v1">
+    <rect class="box" x="628" y="214" width="264" height="118" rx="12"/>
+    <text class="tname mono" x="640" y="233">sales_by_product</text>
+    <text class="tiny end" x="880" y="233">materialized view</text>
+    <rect class="f-panel-2" x="636" y="240" width="248" height="15" rx="4"/><text class="th" x="644" y="251">product</text><text class="th end" x="780" y="251">units</text><text class="th end" x="876" y="251">revenue</text>
+    <rect class="f-bg s-line" x="636" y="257" width="248" height="16" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="636" y="274" width="248" height="16" rx="3" stroke-width="1"/>
+    <rect class="f-teal-soft mv-rfl1" x="637" y="258" width="246" height="14" rx="2"/>
+    <rect class="f-teal-soft mv-rfl2" x="637" y="275" width="246" height="14" rx="2"/>
+    <rect class="f-teal-soft mv-readfl" x="637" y="258" width="246" height="31" rx="2"/>
+    <rect class="f-amber-soft s-amber mv-stale" x="636" y="257" width="248" height="16" rx="3" stroke-width="1.5"/>
+    <g class="mv-r1"><text class="cell mono" x="644" y="269">Mug</text></g>
+    <g class="mv-old"><text class="cell mono end" x="780" y="269">12</text><text class="cell mono end" x="876" y="269">$240</text></g>
+    <g class="mv-newv"><text class="cell mono end" x="780" y="269">14</text><text class="cell mono end" x="876" y="269">$280</text></g>
+    <g class="mv-r2"><text class="cell mono" x="644" y="286">T-shirt</text><text class="cell mono end" x="780" y="286">5</text><text class="cell mono end" x="876" y="286">$150</text></g>
+    <text class="tiny" x="644" y="304">⋮ one row per product</text>
+    <text class="tiny mono mv-vas00" x="644" y="322">as of 09:00</text>
+    <text class="tiny mono mv-vas07" x="644" y="322">as of 09:07</text>
+    <text class="tiny end sb f-green mv-fresh" x="880" y="322">● fresh</text>
+    <text class="tiny end sb f-amber-ink mv-stale" x="880" y="322">stale: 1 order behind</text>
+  </g>
+  <g class="mv-ghost">
+    <rect class="zone" x="628" y="214" width="264" height="118" rx="12"/>
+    <text class="tiny mid sb" x="760" y="270">old version dropped</text>
+    <text class="tiny mid" x="760" y="286">its storage is freed</text>
+  </g>
+  <g class="p2">
+    <text class="tiny sb f-ink" x="640" y="366">Derived data</text>
+    <text class="tiny" x="640" y="382">It holds nothing original: drop it and</text>
+    <text class="tiny" x="640" y="398">the source can rebuild it.</text>
+    <text class="tiny sb f-ink" x="640" y="424">Complete, and ready early</text>
+    <text class="tiny" x="640" y="440">A row for every product, computed</text>
+    <text class="tiny" x="640" y="456">before anyone asks.</text>
+  </g>
+  <g class="p3">
+    <text class="tiny sb f-ink" x="640" y="366">Stale until refreshed</text>
+    <text class="tiny" x="640" y="382">The view misses every change made</text>
+    <text class="tiny" x="640" y="398">since its as-of time.</text>
+    <text class="tiny sb f-ink" x="640" y="424">Show the as-of time</text>
+    <text class="tiny" x="640" y="440">Readers can then judge how fresh</text>
+    <text class="tiny" x="640" y="456">the numbers are.</text>
+  </g>
+
+  <!-- right column, step 4: the new version (v2), built beside v1 -->
+  <g class="p4">
+    <rect class="box" x="628" y="344" width="264" height="120" rx="12"/>
+    <text class="tname mono" x="640" y="362">sales_by_product_region</text>
+    <text class="tiny end sb f-amber-ink mv-build" x="880" y="362">building…</text>
+    <text class="tiny end sb f-green mv-done" x="880" y="362">✓ complete</text>
+    <rect class="f-panel-2" x="636" y="368" width="248" height="15" rx="4"/><text class="th" x="644" y="379">product</text><text class="th" x="716" y="379">region</text><text class="th end" x="808" y="379">units</text><text class="th end" x="876" y="379">revenue</text>
+    <rect class="f-bg s-line" x="636" y="384" width="248" height="15" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="636" y="400" width="248" height="15" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="636" y="416" width="248" height="15" rx="3" stroke-width="1"/><rect class="f-bg s-line" x="636" y="432" width="248" height="15" rx="3" stroke-width="1"/>
+    <rect class="f-teal-soft mv-bfl1" x="637" y="385" width="246" height="29" rx="2"/>
+    <rect class="f-teal-soft mv-bfl2" x="637" y="417" width="246" height="29" rx="2"/>
+    <g class="mv-b1"><text class="cell mono" x="644" y="395">Mug</text><text class="cell mono" x="716" y="395">EU</text><text class="cell mono end" x="808" y="395">9</text><text class="cell mono end" x="876" y="395">$180</text><text class="cell mono" x="644" y="411">Mug</text><text class="cell mono" x="716" y="411">US</text><text class="cell mono end" x="808" y="411">5</text><text class="cell mono end" x="876" y="411">$100</text></g>
+    <g class="mv-b2"><text class="cell mono" x="644" y="427">T-shirt</text><text class="cell mono" x="716" y="427">EU</text><text class="cell mono end" x="808" y="427">3</text><text class="cell mono end" x="876" y="427">$90</text><text class="cell mono" x="644" y="443">T-shirt</text><text class="cell mono" x="716" y="443">US</text><text class="cell mono end" x="808" y="443">2</text><text class="cell mono end" x="876" y="443">$60</text></g>
+    <text class="tiny mono mv-done" x="644" y="459">as of 09:30</text>
+  </g>
+
+  <!-- tokens: blue requests, teal rows, purple change event -->
+  <circle class="pkt f-blue mv-q" r="7"/>
+  <circle class="pkt f-teal mv-res" r="7"/>
+  <circle class="pkt f-blue mv-w" r="7"/>
+  <circle class="pkt f-teal mv-in1" r="5"/>
+  <circle class="pkt f-teal mv-in2" r="5"/>
+  <circle class="pkt f-teal mv-out" r="7"/>
+  <circle class="pkt f-teal mv-out2" r="7"/>
+  <rect class="ev mv-ev" x="-9" y="-9" width="18" height="18" rx="4"/>
+  <circle class="pkt f-blue mv-rd" r="7"/>
+  <circle class="pkt f-teal mv-rs" r="7"/>
+</g>
+</svg>

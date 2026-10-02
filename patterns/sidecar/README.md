@@ -219,9 +219,9 @@ On the positive side, a sidecar can add a security control such as [Mutual TLS](
 - Ambassador *(planned)* — An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client.
 - [Telemetry Pipeline (OpenTelemetry)](../telemetry-pipeline/) — Receive, process and export traces, metrics and logs through one vendor-neutral collector.
 - [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
-- Centralized Logging *(planned)* — Ship structured logs from every service to one searchable store, correlated by request ID.
+- [Centralized Logging](../centralized-logging/) — Ship structured logs from every service to one searchable store, correlated by request ID.
 - External Configuration Store *(planned)* — Keep configuration out of the deployment package, in a central store read at runtime.
-- Gateway Offloading *(planned)* — Move TLS termination, authentication and compression out of every service into the gateway.
+- [Gateway Offloading](../gateway-offloading/) — Move TLS termination, authentication and compression out of every service into the gateway.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 
 ## References

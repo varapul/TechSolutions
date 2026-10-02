@@ -1,0 +1,44 @@
+{
+  "aka": ["Precomputed view", "Summary table", "Indexed view"],
+  "steps": [
+    {
+      "title": "Same query, every time",
+      "caption": "Every dashboard view re-runs the same join and aggregation on the source tables: slow, every time.",
+      "body": "The dashboard asks one question: revenue per product. Against the source tables that is a join of `order_items` with `products` and an aggregation over every order line, and it runs again for every viewer, even when almost nothing has changed since the last run. It is slow (1.8 s here, an illustrative figure), and it competes with the transactions that write those same tables."
+    },
+    {
+      "title": "Precompute the answer",
+      "caption": "A materialized view stores the answer, one row per product; the dashboard just reads rows in 5 ms.",
+      "body": "A **materialized view** stores the result of that query in the shape the question needs: one row per product, complete for every product and computed before anyone asks. The dashboard now reads a few rows by key (5 ms here, also illustrative) and no longer touches the source tables. The view is **derived data**: it holds nothing that cannot be rebuilt from the source."
+    },
+    {
+      "title": "Keep it fresh",
+      "caption": "A new order makes the view stale until a scheduled full refresh or an incremental update catches up.",
+      "body": "An order for two Mugs commits in the source, and the view is **stale** until it is refreshed, which its as-of time shows. A **scheduled full refresh** re-runs the whole query every 15 minutes: simple, and stale for up to the interval. **Incremental maintenance** applies only the change (+2 units and +$40 on one row), driven by the stream of changes: fresher, at the price of more machinery."
+    },
+    {
+      "title": "Rebuild it, know the price",
+      "caption": "For a new question, build a second view beside the first, switch readers, then drop the old one.",
+      "body": "The question changes to revenue per product *and region*, which the stored rows cannot answer. A new version of the view is built beside the old one from the source, readers switch once it is complete, and the old one is dropped. Every view has a price: storage, work on each write or refresh, answers that can be slightly behind and one more thing to operate, so materialize only queries that are both expensive and frequent."
+    }
+  ],
+  "related": ["cqrs", "cache-aside", "read-replicas", "change-data-capture", "event-sourcing", "database-per-service", "medallion-architecture", "event-driven-architecture"],
+  "references": [
+    { "title": "Azure Architecture Center — Materialized View pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/materialized-view" },
+    { "title": "PostgreSQL documentation — Materialized Views", "url": "https://www.postgresql.org/docs/current/rules-materializedviews.html" },
+    { "title": "PostgreSQL documentation — REFRESH MATERIALIZED VIEW", "url": "https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html" },
+    { "title": "pg_ivm — Incremental View Maintenance as a PostgreSQL extension (README)", "url": "https://github.com/sraoss/pg_ivm" },
+    { "title": "Microsoft Learn — Create indexed views (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/views/create-indexed-views" },
+    { "title": "Oracle AI Database 26ai Data Warehousing Guide — Refreshing Materialized Views", "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/dwhsg/refreshing-materialized-views.html" },
+    { "title": "Google Cloud — BigQuery: Introduction to materialized views", "url": "https://docs.cloud.google.com/bigquery/docs/materialized-views-intro" },
+    { "title": "Google Cloud — BigQuery: Manage materialized views (automatic refresh)", "url": "https://docs.cloud.google.com/bigquery/docs/materialized-views-manage" },
+    { "title": "Snowflake documentation — Working with Materialized Views", "url": "https://docs.snowflake.com/en/user-guide/views-materialized" },
+    { "title": "Snowflake documentation — Dynamic tables", "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/overview" },
+    { "title": "Amazon Redshift Database Developer Guide — Refreshing a materialized view", "url": "https://docs.aws.amazon.com/redshift/latest/dg/materialized-view-refresh.html" },
+    { "title": "Materialize documentation — CREATE MATERIALIZED VIEW", "url": "https://materialize.com/docs/sql/create-materialized-view/" },
+    { "title": "Apache Flink documentation — Dynamic Tables (continuous queries)", "url": "https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/sql-table-concepts/dynamic_tables/" },
+    { "title": "Ashish Gupta & Inderpal Singh Mumick — Maintenance of Materialized Views: Problems, Techniques, and Applications (IEEE Data Engineering Bulletin 18(2), June 1995; archived PDF of the issue)", "url": "https://web.archive.org/web/20240617204059/http://sites.computer.org/debull/95JUN-CD.pdf" },
+    { "title": "Martin Kleppmann — Turning the database inside-out with Apache Samza (Strange Loop 2014 talk)", "url": "https://martin.kleppmann.com/2015/03/04/turning-the-database-inside-out.html" },
+    { "title": "Martin Kleppmann & Chris Riccomini — Designing Data-Intensive Applications, 2nd Edition (O'Reilly, 2026)", "url": "https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" }
+  ]
+}
