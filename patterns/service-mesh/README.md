@@ -123,7 +123,7 @@ The node-level designs cost less, and workloads can join them without a restart.
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Sidecar *(planned)* — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
+- [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 - Ambassador *(planned)* — An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client.
 - [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.

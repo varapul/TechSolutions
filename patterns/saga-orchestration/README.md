@@ -59,7 +59,7 @@ Compensation is **semantic**, not an undo. The charge stays in the payments ledg
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Saga (Choreography) *(planned)* — Services react to each other's events to complete a workflow, with no central coordinator.
+- [Saga (Choreography)](../saga-choreography/) — Services react to each other's events to complete a workflow, with no central coordinator.
 - Compensating Transaction *(planned)* — Undo the completed steps of a multi-step operation that failed part-way.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.

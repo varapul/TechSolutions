@@ -1,0 +1,47 @@
+{
+  "aka": ["On-behalf-of (OBO) flow", "OAuth 2.0 Token Exchange (RFC 8693)", "Delegated token exchange"],
+  "steps": [
+    {
+      "title": "Don't forward the token",
+      "caption": "Forwarded as it is, Ana's token still says aud: orders-api, so the Inventory API answers 401.",
+      "body": "Ana's Shop app calls the Orders API with an access token made for it: `aud: orders-api`, `sub: ana`, `scope: orders:write`. To check stock, the Orders API passes that same token on to the Inventory API, which reads `aud`, finds another API's name and answers **401**. That refusal is the defence working: an API that accepted tokens made for other APIs would let any of them, lifted from a log or from a compromised service, be replayed against it."
+    },
+    {
+      "title": "Exchange it",
+      "caption": "The Orders API asks the token endpoint: Ana's token, its own token, and the API it wants to call.",
+      "body": "Instead, the Orders API goes to the authorization server's token endpoint as itself, authenticating as a client. It sends `grant_type=urn:ietf:params:oauth:grant-type:token-exchange` with Ana's token as `subject_token` (who the call is for), its own access token as `actor_token` (who will be acting), each with its `…_token_type`, and the target it wants: `audience=inventory-api` (or a `resource` URI) and `scope=inventory:read`. The server validates both tokens and consults its policy: may the Orders API act for users at the Inventory API, with that scope?"
+    },
+    {
+      "title": "A narrow token for one hop",
+      "caption": "The new token is for inventory-api only: still Ana, read-only, five minutes, act names the caller.",
+      "body": "The server answers with a new access token: `aud: inventory-api`, `sub` still `ana`, `scope` limited to `inventory:read`, a five-minute lifetime and `act: {\"sub\": \"orders-api\"}`, which records who is acting for her. The Orders API calls the Inventory API with it. The Inventory API validates it locally, like any other access token, and sees both parties: the user in `sub` and the acting service in `act`."
+    },
+    {
+      "title": "Every hop, its own token",
+      "caption": "The Inventory API exchanges again for the Pricing API. Each token is valid at one API only.",
+      "body": "The Inventory API needs a price, so it exchanges the token it was called with: the result has `aud: pricing-api`, only the scope that hop needs, and a nested `act` chain with `inventory-api` as the current actor and `orders-api` inside it as the earlier one. No token is valid at more than one API. This is **delegation**: `act` keeps the acting service visible. With **impersonation** the server issues a token without `act`, and downstream the call looks as if Ana had made it herself. When no user is involved at all there is nothing to exchange: use the client credentials grant."
+    }
+  ],
+  "related": ["jwt-validation", "oauth2-client-credentials", "oauth2-authorization-code-pkce", "refresh-token-rotation", "sessions-vs-tokens", "api-gateway", "service-mesh", "zero-trust-access"],
+  "references": [
+    { "title": "RFC 8693 — OAuth 2.0 Token Exchange", "url": "https://www.rfc-editor.org/rfc/rfc8693" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "RFC 9068 — JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc9068" },
+    { "title": "RFC 8707 — Resource Indicators for OAuth 2.0", "url": "https://www.rfc-editor.org/rfc/rfc8707" },
+    { "title": "RFC 6750 — The OAuth 2.0 Authorization Framework: Bearer Token Usage", "url": "https://www.rfc-editor.org/rfc/rfc6750" },
+    { "title": "RFC 7523 — JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants", "url": "https://www.rfc-editor.org/rfc/rfc7523" },
+    { "title": "Microsoft identity platform — OAuth 2.0 On-Behalf-Of flow", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow" },
+    { "title": "Microsoft Authentication Library for .NET — On-behalf-of flows with MSAL.NET", "url": "https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/web-apps-apis/on-behalf-of-flow" },
+    { "title": "Google Cloud IAM — Workload Identity Federation", "url": "https://docs.cloud.google.com/iam/docs/workload-identity-federation" },
+    { "title": "Google Cloud IAM — Security Token Service API, Method: token", "url": "https://docs.cloud.google.com/iam/docs/reference/sts/rest/v1/TopLevel/token" },
+    { "title": "IETF OAuth WG — Transaction Tokens (draft-ietf-oauth-transaction-tokens)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/" },
+    { "title": "IETF OAuth WG — OAuth Identity and Authorization Chaining Across Domains (draft-ietf-oauth-identity-chaining)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-chaining/" },
+    { "title": "Keycloak — Configuring and using token exchange", "url": "https://www.keycloak.org/securing-apps/token-exchange" },
+    { "title": "Spring Security — OAuth 2.0 Authorization Server: Protocol Endpoints", "url": "https://docs.spring.io/spring-security/reference/servlet/oauth2/authorization-server/protocol-endpoints.html" },
+    { "title": "Spring Security — OAuth 2.0 Client: Authorization Grant Support", "url": "https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html" },
+    { "title": "Okta Developer — Set up OAuth 2.0 On-Behalf-Of Token Exchange", "url": "https://developer.okta.com/docs/guides/set-up-token-exchange/main/" },
+    { "title": "Auth0 Docs — On-Behalf-Of Token Exchange", "url": "https://auth0.com/docs/secure/call-apis-on-users-behalf/on-behalf-of-token-exchange" },
+    { "title": "Auth0 Docs — Custom Token Exchange", "url": "https://auth0.com/docs/authenticate/custom-token-exchange" },
+    { "title": "Duende IdentityServer — Extension Grants", "url": "https://docs.duendesoftware.com/identityserver/tokens/extension-grants/" }
+  ]
+}

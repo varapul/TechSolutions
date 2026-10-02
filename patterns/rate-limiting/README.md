@@ -98,7 +98,7 @@ The numbers in the animation are small so they can be counted: 5 tokens, one bac
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 - [Circuit Breaker](../circuit-breaker/) — Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers.
-- Bulkhead *(planned)* — Give each dependency its own pool of resources so one failure can't sink the whole ship.
+- [Bulkhead](../bulkhead/) — Give each dependency its own pool of resources so one failure can't sink the whole ship.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - Timeout & Fallback *(planned)* — Bound every remote call and degrade gracefully when the time runs out.
 - Priority Queue *(planned)* — Urgent messages are processed ahead of routine ones.

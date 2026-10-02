@@ -1,0 +1,42 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Create the seam",
+      "caption": "Put an interface in front of the old client and move the callers onto it, one small commit each.",
+      "body": "Checkout, Invoicing and Reports call the LegacyPay client directly, and replacing it will take weeks. Instead of a long-lived branch, the work happens on the main branch: one commit adds a `PaymentGateway` interface that says what the callers need, with the old client behind it, and each following commit moves one caller onto it. After every commit the application still builds, passes its tests and is released."
+    },
+    {
+      "title": "Build behind the interface",
+      "caption": "The new client grows on main and ships in every release, unused. One test suite checks both.",
+      "body": "A switch and a suite of contract tests land next, with the switch pointing at the old client. The NewPay client then grows behind the interface, one method per commit. It is compiled, tested and shipped in every release, but nothing calls it yet, and it is finished when it passes the same contract tests as the old client."
+    },
+    {
+      "title": "Switch, with a way back",
+      "caption": "Flip the flag for Reports first, then for all callers. Flipping it back takes seconds, no revert.",
+      "body": "The switch here is a runtime flag, so moving it needs no deployment. It moves first for the caller where a mistake costs least (Reports), then for all of them. The old client is still in place and still tested, so the way back is to flip the flag again, which takes seconds: nothing has to be reverted or merged back."
+    },
+    {
+      "title": "Clean up",
+      "caption": "Delete the old client and the switch. Main was releasable throughout: no long-lived branch.",
+      "body": "Once the new client has carried all the traffic for long enough, two more small commits delete the old client and the switch. The interface stays if it is a useful boundary (it is the seam the next replacement will need) and is inlined if it is not. The main branch was releasable at every commit, other work kept landing on it, and no long-lived branch ever existed."
+    }
+  ],
+  "related": ["strangler-fig", "feature-flags", "expand-and-contract", "parallel-run", "hexagonal-architecture", "anti-corruption-layer", "modular-monolith"],
+  "references": [
+    { "title": "Paul Hammant — Introducing Branch By Abstraction (the 2007 post)", "url": "https://paulhammant.com/blog/branch_by_abstraction.html" },
+    { "title": "Trunk Based Development — Branch by Abstraction", "url": "https://trunkbaseddevelopment.com/branch-by-abstraction/" },
+    { "title": "Jez Humble — Make Large Scale Changes Incrementally with Branch By Abstraction", "url": "https://continuousdelivery.com/2011/05/make-large-scale-changes-incrementally-with-branch-by-abstraction/" },
+    { "title": "Martin Fowler — Branch By Abstraction", "url": "https://martinfowler.com/bliki/BranchByAbstraction.html" },
+    { "title": "Steve Smith — Application pattern: Verify Branch By Abstraction", "url": "https://www.stevesmith.tech/blog/application-pattern-verify-branch-by-abstraction/" },
+    { "title": "Jez Humble and David Farley — Continuous Delivery (book)", "url": "https://martinfowler.com/books/continuousDelivery.html" },
+    { "title": "Sam Newman — Monolith to Microservices (book)", "url": "https://samnewman.io/books/monolith-to-microservices/" },
+    { "title": "Michael Feathers — Working Effectively with Legacy Code (book)", "url": "https://www.informit.com/store/working-effectively-with-legacy-code-9780131177055" },
+    { "title": "Martin Fowler — Legacy Seam", "url": "https://martinfowler.com/bliki/LegacySeam.html" },
+    { "title": "Martin Fowler — Patterns for Managing Source Code Branches", "url": "https://martinfowler.com/articles/branching-patterns.html" },
+    { "title": "Martin Fowler — Continuous Integration", "url": "https://martinfowler.com/articles/continuousIntegration.html" },
+    { "title": "DORA — Capabilities: Trunk-based development", "url": "https://dora.dev/capabilities/trunk-based-development/" },
+    { "title": "Trunk Based Development — Short-Lived Feature Branches", "url": "https://trunkbaseddevelopment.com/short-lived-feature-branches/" },
+    { "title": "GitHub — Scientist: a Ruby library for carefully refactoring critical paths", "url": "https://github.com/github/scientist" }
+  ]
+}

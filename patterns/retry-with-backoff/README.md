@@ -63,7 +63,7 @@ The numbers in the animation come from a small model: six clients send 100 ms ca
 - Timeout & Fallback *(planned)* — Bound every remote call and degrade gracefully when the time runs out.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
-- Bulkhead *(planned)* — Give each dependency its own pool of resources so one failure can't sink the whole ship.
+- [Bulkhead](../bulkhead/) — Give each dependency its own pool of resources so one failure can't sink the whole ship.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 
 ## References

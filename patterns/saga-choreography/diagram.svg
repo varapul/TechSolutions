@@ -1,0 +1,1104 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Saga (Choreography)</title>
+<desc id="dg-desc">Saga (Choreography). Services react to each other's events to complete a workflow, with no central coordinator. Step 1, An event starts it: Orders saves order #1042 as PENDING and publishes OrderPlaced. It tells nobody what to do next. Step 2, React and publish: Each service reacts, commits locally and publishes the next event, until Orders marks CONFIRMED. Step 3, A failure is an event too: Out of stock: Inventory publishes StockReservationFailed. Payments refunds; Orders cancels. Step 4, Nobody sees the whole flow: Every event carries the order ID, so a tracking view can rebuild a saga and flag a stuck one.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">MESSAGING &amp; INTEGRATION</text>
+  <text class="title" x="40" y="64">Saga (Choreography)</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · An event starts it</text>
+  <text class="step on p1" x="40" y="518">1 · An event starts it</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · React and publish</text>
+  <text class="step on p2" x="262" y="518">2 · React and publish</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · A failure is an event too</text>
+  <text class="step on p3" x="484" y="518">3 · A failure is an event too</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Nobody sees the whole flow</text>
+  <text class="step on p4" x="706" y="518">4 · Nobody sees the whole flow</text>
+  <text class="caption p1" x="40" y="552">Orders saves order #1042 as PENDING and publishes OrderPlaced. It tells nobody what to do next.</text>
+  <text class="caption p2" x="40" y="552">Each service reacts, commits locally and publishes the next event, until Orders marks CONFIRMED.</text>
+  <text class="caption p3" x="40" y="552">Out of stock: Inventory publishes StockReservationFailed. Payments refunds; Orders cancels.</text>
+  <text class="caption p4" x="40" y="552">Every event carries the order ID, so a tracking view can rebuild a saga and flag a stuck one.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Saga (Choreography). Timeline (20s loop, 1s = 5%):
+   0-25%   Orders commits order #1042 as PENDING (6%) and publishes OrderPlaced (8.5%). The event waits on the
+           topic: nobody is told what to do, and Payments is the one service that listens for it (16.5%).
+   25-50%  the chain of reactions: Payments charges (27.25%) -> PaymentCompleted -> Inventory reserves (33.5%)
+           -> StockReserved -> Shipping books (40.75%) -> ShipmentBooked -> Orders marks CONFIRMED (46.5%)
+   50-75%  order #1043, already charged: Inventory is out of stock (56.75%) and publishes
+           StockReservationFailed (58.75%); Payments refunds (64.5%) and publishes PaymentRefunded (65.25%);
+           Orders marks CANCELLED (71.5%)
+   75-100% the stage slides left (75-77.5%) and a tracking view appears. Order #1044 stops after the charge
+           because Inventory's consumer is down; the view has collected OrderPlaced (84.25%) and
+           PaymentCompleted (88.25%) by order ID, its timeout runs out (89-95%) and it flags the saga STUCK.
+           Everything fades and slides back in 97.5-99.75%, after the player's hold frame at 97%.
+   An event name on a wire lights up once that event has been published or delivered in this step. */
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .sc-id { font-size: 10px; font-weight: 700; }
+.diagram .sc-state { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+.diagram .sc-e1 { transform: translate(511px, 282px); animation: sc-e1 var(--T) linear infinite; }
+.diagram .sc-n1 { transform: translate(511px, 282px); animation: sc-n1 var(--T) linear infinite; }
+.diagram .sc-e2 { opacity: 0; animation: sc-e2 var(--T) linear infinite; }
+.diagram .sc-n2 { opacity: 0; animation: sc-n2 var(--T) linear infinite; }
+.diagram .sc-e3 { opacity: 0; animation: sc-e3 var(--T) linear infinite; }
+.diagram .sc-n3 { opacity: 0; animation: sc-n3 var(--T) linear infinite; }
+.diagram .sc-e4 { opacity: 0; animation: sc-e4 var(--T) linear infinite; }
+.diagram .sc-n4 { opacity: 0; animation: sc-n4 var(--T) linear infinite; }
+.diagram .sc-f1 { opacity: 0; animation: sc-f1 var(--T) linear infinite; }
+.diagram .sc-nf { opacity: 0; animation: sc-nf var(--T) linear infinite; }
+.diagram .sc-f2 { opacity: 0; animation: sc-f2 var(--T) linear infinite; }
+.diagram .sc-n5 { opacity: 0; animation: sc-n5 var(--T) linear infinite; }
+.diagram .sc-g1 { opacity: 0; animation: sc-g1 var(--T) linear infinite; }
+.diagram .sc-g1b { opacity: 0; animation: sc-g1b var(--T) linear infinite; }
+.diagram .sc-g2 { opacity: 0; animation: sc-g2 var(--T) linear infinite; }
+.diagram .sc-g2b { opacity: 0; animation: sc-g2b var(--T) linear infinite; }
+.diagram .sc-req { opacity: 0; animation: sc-req var(--T) linear infinite; }
+.diagram .sc-w-ord { opacity: 0; animation: sc-w-ord var(--T) linear infinite; }
+.diagram .sc-w-pay { opacity: 0; animation: sc-w-pay var(--T) linear infinite; }
+.diagram .sc-w-inv { opacity: 0; animation: sc-w-inv var(--T) linear infinite; }
+.diagram .sc-w-shp { opacity: 0; animation: sc-w-shp var(--T) linear infinite; }
+.diagram .sc-inv-bad { opacity: 0; animation: sc-inv-bad var(--T) linear infinite; }
+.diagram .sc-inv-oos { opacity: 0; animation: sc-inv-oos var(--T) linear infinite; }
+.diagram .sc-inv-down { opacity: 0; animation: sc-inv-down var(--T) linear infinite; }
+.diagram .sc-inv-sub { animation: sc-inv-sub var(--T) linear infinite; }
+.diagram .sc-pay-comp { opacity: 0; animation: sc-pay-comp var(--T) linear infinite; }
+.diagram .sc-pay-sub { animation: sc-pay-sub var(--T) linear infinite; }
+.diagram .sc-db-ord { opacity: 0; animation: sc-db-ord var(--T) linear infinite; }
+.diagram .sc-db-pay { opacity: 0; animation: sc-db-pay var(--T) linear infinite; }
+.diagram .sc-db-pay-c { opacity: 0; animation: sc-db-pay-c var(--T) linear infinite; }
+.diagram .sc-db-inv { opacity: 0; animation: sc-db-inv var(--T) linear infinite; }
+.diagram .sc-db-shp { opacity: 0; animation: sc-db-shp var(--T) linear infinite; }
+.diagram .sc-o-a { animation: sc-o-a var(--T) linear infinite; }
+.diagram .sc-o-b { opacity: 0; animation: sc-o-b var(--T) linear infinite; }
+.diagram .sc-o-c { opacity: 0; animation: sc-o-c var(--T) linear infinite; }
+.diagram .sc-o-pend { animation: sc-o-pend var(--T) linear infinite; }
+.diagram .sc-o-conf { opacity: 0; animation: sc-o-conf var(--T) linear infinite; }
+.diagram .sc-o-canc { opacity: 0; animation: sc-o-canc var(--T) linear infinite; }
+.diagram .sc-p-a { opacity: 0; animation: sc-p-a var(--T) linear infinite; }
+.diagram .sc-p-b { opacity: 0; animation: sc-p-b var(--T) linear infinite; }
+.diagram .sc-p-c { opacity: 0; animation: sc-p-c var(--T) linear infinite; }
+.diagram .sc-p-chg { opacity: 0; animation: sc-p-chg var(--T) linear infinite; }
+.diagram .sc-p-ref { opacity: 0; animation: sc-p-ref var(--T) linear infinite; }
+.diagram .sc-i-row { opacity: 0; animation: sc-i-row var(--T) linear infinite; }
+.diagram .sc-i-zero { opacity: 0; animation: sc-i-zero var(--T) linear infinite; }
+.diagram .sc-s-row { opacity: 0; animation: sc-s-row var(--T) linear infinite; }
+.diagram .sc-lit-o-pub { animation: sc-lit-o-pub var(--T) linear infinite; }
+.diagram .sc-lit-p-sub { animation: sc-lit-p-sub var(--T) linear infinite; }
+.diagram .sc-lit-p-pub { opacity: 0; animation: sc-lit-p-pub var(--T) linear infinite; }
+.diagram .sc-lit-i-sub { opacity: 0; animation: sc-lit-i-sub var(--T) linear infinite; }
+.diagram .sc-lit-i-pub { opacity: 0; animation: sc-lit-i-pub var(--T) linear infinite; }
+.diagram .sc-lit-s-sub { opacity: 0; animation: sc-lit-s-sub var(--T) linear infinite; }
+.diagram .sc-lit-s-pub { opacity: 0; animation: sc-lit-s-pub var(--T) linear infinite; }
+.diagram .sc-lit-o-sub { opacity: 0; animation: sc-lit-o-sub var(--T) linear infinite; }
+.diagram .sc-lit-i-fail { opacity: 0; animation: sc-lit-i-fail var(--T) linear infinite; }
+.diagram .sc-lit-p-fail { opacity: 0; animation: sc-lit-p-fail var(--T) linear infinite; }
+.diagram .sc-lit-p-ref { opacity: 0; animation: sc-lit-p-ref var(--T) linear infinite; }
+.diagram .sc-lit-o-ref { opacity: 0; animation: sc-lit-o-ref var(--T) linear infinite; }
+.diagram .sc-unc { opacity: 0; animation: sc-unc var(--T) linear infinite; }
+.diagram .sc-sub-hi { animation: sc-sub-hi var(--T) linear infinite; }
+.diagram .sc-view { opacity: 0; animation: sc-view var(--T) linear infinite; }
+.diagram .sc-r0 { animation: sc-r0 var(--T) linear infinite; }
+.diagram .sc-r1 { opacity: 0; animation: sc-r1 var(--T) linear infinite; }
+.diagram .sc-r2 { opacity: 0; animation: sc-r2 var(--T) linear infinite; }
+.diagram .sc-r3 { opacity: 0; animation: sc-r3 var(--T) linear infinite; }
+.diagram .sc-st-placed { opacity: 0; animation: sc-st-placed var(--T) linear infinite; }
+.diagram .sc-st-paid { opacity: 0; animation: sc-st-paid var(--T) linear infinite; }
+.diagram .sc-st-stuck { opacity: 0; animation: sc-st-stuck var(--T) linear infinite; }
+.diagram .sc-bar { transform-box: fill-box; transform-origin: 0 50%; animation: sc-bar var(--T) linear infinite; }
+.diagram .sc-pan { transform: translate(103px, 0px); animation: sc-pan var(--T) ease-in-out infinite; }
+@keyframes sc-e1 {
+  0% { transform: translate(243px, 184px); opacity: 0; }
+  8.5% { transform: translate(243px, 184px); opacity: 0; }
+  8.75% { opacity: 1; }
+  9.75% { transform: translate(243px, 282px); }
+  13.25% { transform: translate(511px, 282px); }
+  25% { transform: translate(511px, 282px); }
+  26.25% { transform: translate(511px, 184px); opacity: 1; }
+  26.5% { transform: translate(511px, 184px); opacity: 0; }
+  100% { transform: translate(511px, 184px); opacity: 0; }
+}
+@keyframes sc-n1 {
+  0% { transform: translate(243px, 282px); opacity: 0; }
+  9.75% { transform: translate(243px, 282px); opacity: 0; }
+  10% { opacity: 1; }
+  13.25% { transform: translate(511px, 282px); }
+  25% { transform: translate(511px, 282px); opacity: 1; }
+  25.25% { transform: translate(511px, 282px); opacity: 0; }
+  100% { transform: translate(511px, 282px); opacity: 0; }
+}
+@keyframes sc-e2 {
+  0% { transform: translate(539px, 184px); opacity: 0; }
+  28.5% { transform: translate(539px, 184px); opacity: 0; }
+  28.75% { opacity: 1; }
+  29.75% { transform: translate(539px, 282px); }
+  31.25% { transform: translate(539px, 282px); }
+  32.5% { transform: translate(539px, 380px); opacity: 1; }
+  32.75% { transform: translate(539px, 380px); opacity: 0; }
+  51.5% { transform: translate(539px, 184px); opacity: 0; }
+  51.75% { opacity: 1; }
+  52.75% { transform: translate(539px, 282px); }
+  54.25% { transform: translate(539px, 282px); }
+  55.5% { transform: translate(539px, 380px); opacity: 1; }
+  55.75% { transform: translate(539px, 380px); opacity: 0; }
+  100% { transform: translate(539px, 380px); opacity: 0; }
+}
+@keyframes sc-n2 {
+  0% { transform: translate(539px, 282px); opacity: 0; }
+  29.75% { transform: translate(539px, 282px); opacity: 0; }
+  30% { opacity: 1; }
+  31.25% { transform: translate(539px, 282px); opacity: 1; }
+  31.5% { transform: translate(539px, 282px); opacity: 0; }
+  52.75% { transform: translate(539px, 282px); opacity: 0; }
+  53% { opacity: 1; }
+  54.25% { transform: translate(539px, 282px); opacity: 1; }
+  54.5% { transform: translate(539px, 282px); opacity: 0; }
+  100% { transform: translate(539px, 282px); opacity: 0; }
+}
+@keyframes sc-e3 {
+  0% { transform: translate(511px, 380px); opacity: 0; }
+  34.75% { transform: translate(511px, 380px); opacity: 0; }
+  35% { opacity: 1; }
+  35.85% { transform: translate(511px, 282px); }
+  38.65% { transform: translate(243px, 282px); }
+  39.75% { transform: translate(243px, 380px); opacity: 1; }
+  40% { transform: translate(243px, 380px); opacity: 0; }
+  100% { transform: translate(243px, 380px); opacity: 0; }
+}
+@keyframes sc-n3 {
+  0% { transform: translate(511px, 282px); opacity: 0; }
+  35.85% { transform: translate(511px, 282px); opacity: 0; }
+  36.1% { opacity: 1; }
+  38.65% { transform: translate(243px, 282px); opacity: 1; }
+  38.9% { transform: translate(243px, 282px); opacity: 0; }
+  100% { transform: translate(243px, 282px); opacity: 0; }
+}
+@keyframes sc-e4 {
+  0% { transform: translate(215px, 380px); opacity: 0; }
+  42% { transform: translate(215px, 380px); opacity: 0; }
+  42.25% { opacity: 1; }
+  43.25% { transform: translate(215px, 282px); }
+  44.75% { transform: translate(215px, 282px); }
+  46% { transform: translate(215px, 184px); opacity: 1; }
+  46.25% { transform: translate(215px, 184px); opacity: 0; }
+  100% { transform: translate(215px, 184px); opacity: 0; }
+}
+@keyframes sc-n4 {
+  0% { transform: translate(215px, 282px); opacity: 0; }
+  43.25% { transform: translate(215px, 282px); opacity: 0; }
+  43.5% { opacity: 1; }
+  44.75% { transform: translate(215px, 282px); opacity: 1; }
+  45% { transform: translate(215px, 282px); opacity: 0; }
+  100% { transform: translate(215px, 282px); opacity: 0; }
+}
+@keyframes sc-f1 {
+  0% { transform: translate(511px, 380px); opacity: 0; }
+  58.75% { transform: translate(511px, 380px); opacity: 0; }
+  59% { opacity: 1; }
+  60% { transform: translate(511px, 282px); }
+  61.5% { transform: translate(511px, 282px); }
+  62.75% { transform: translate(511px, 184px); opacity: 1; }
+  63% { transform: translate(511px, 184px); opacity: 0; }
+  100% { transform: translate(511px, 184px); opacity: 0; }
+}
+@keyframes sc-nf {
+  0% { transform: translate(511px, 282px); opacity: 0; }
+  60% { transform: translate(511px, 282px); opacity: 0; }
+  60.25% { opacity: 1; }
+  61.5% { transform: translate(511px, 282px); opacity: 1; }
+  61.75% { transform: translate(511px, 282px); opacity: 0; }
+  100% { transform: translate(511px, 282px); opacity: 0; }
+}
+@keyframes sc-f2 {
+  0% { transform: translate(539px, 184px); opacity: 0; }
+  65.25% { transform: translate(539px, 184px); opacity: 0; }
+  65.5% { opacity: 1; }
+  66.35% { transform: translate(539px, 282px); }
+  69.65% { transform: translate(215px, 282px); }
+  70.75% { transform: translate(215px, 184px); opacity: 1; }
+  71% { transform: translate(215px, 184px); opacity: 0; }
+  100% { transform: translate(215px, 184px); opacity: 0; }
+}
+@keyframes sc-n5 {
+  0% { transform: translate(539px, 282px); opacity: 0; }
+  66.35% { transform: translate(539px, 282px); opacity: 0; }
+  66.6% { opacity: 1; }
+  69.65% { transform: translate(215px, 282px); opacity: 1; }
+  69.9% { transform: translate(215px, 282px); opacity: 0; }
+  100% { transform: translate(215px, 282px); opacity: 0; }
+}
+@keyframes sc-g1 {
+  0% { transform: translate(243px, 184px); opacity: 0; }
+  78% { transform: translate(243px, 184px); opacity: 0; }
+  78.25% { opacity: 1; }
+  79.1% { transform: translate(243px, 282px); }
+  81.9% { transform: translate(511px, 282px); }
+  84.2% { transform: translate(731px, 282px); opacity: 1; }
+  84.45% { transform: translate(731px, 282px); opacity: 0; }
+  100% { transform: translate(731px, 282px); opacity: 0; }
+}
+@keyframes sc-g1b {
+  0% { transform: translate(511px, 282px); opacity: 0; }
+  81.9% { transform: translate(511px, 282px); opacity: 0; }
+  82.15% { opacity: 1; }
+  83% { transform: translate(511px, 184px); opacity: 1; }
+  83.25% { transform: translate(511px, 184px); opacity: 0; }
+  100% { transform: translate(511px, 184px); opacity: 0; }
+}
+@keyframes sc-g2 {
+  0% { transform: translate(539px, 184px); opacity: 0; }
+  85% { transform: translate(539px, 184px); opacity: 0; }
+  85.25% { opacity: 1; }
+  86.1% { transform: translate(539px, 282px); }
+  97.5% { transform: translate(539px, 282px); opacity: 1; }
+  97.75% { transform: translate(539px, 282px); opacity: 0; }
+  100% { transform: translate(539px, 282px); opacity: 0; }
+}
+@keyframes sc-g2b {
+  0% { transform: translate(539px, 282px); opacity: 0; }
+  86.1% { transform: translate(539px, 282px); opacity: 0; }
+  86.35% { opacity: 1; }
+  88.1% { transform: translate(731px, 282px); opacity: 1; }
+  88.35% { transform: translate(731px, 282px); opacity: 0; }
+  100% { transform: translate(731px, 282px); opacity: 0; }
+}
+@keyframes sc-req {
+  0% { opacity: 0; }
+  2.5% { opacity: 0; }
+  3% { opacity: 1; }
+  7% { opacity: 1; }
+  7.5% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  78% { opacity: 1; }
+  78.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-w-ord {
+  0% { opacity: 0; }
+  46% { opacity: 0; }
+  46.5% { opacity: 1; }
+  47.25% { opacity: 1; }
+  47.75% { opacity: 0; }
+  70.75% { opacity: 0; }
+  71.25% { opacity: 1; }
+  72.25% { opacity: 1; }
+  72.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-w-pay {
+  0% { opacity: 0; }
+  26.25% { opacity: 0; }
+  26.75% { opacity: 1; }
+  28.25% { opacity: 1; }
+  28.75% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.25% { opacity: 1; }
+  64% { opacity: 1; }
+  64.5% { opacity: 0; }
+  83% { opacity: 0; }
+  83.5% { opacity: 1; }
+  85% { opacity: 1; }
+  85.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-w-inv {
+  0% { opacity: 0; }
+  32.5% { opacity: 0; }
+  33% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56% { opacity: 1; }
+  56.75% { opacity: 1; }
+  57.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-w-shp {
+  0% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  41.75% { opacity: 1; }
+  42.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-inv-bad {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-inv-oos {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-inv-down {
+  0% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-inv-sub {
+  0% { opacity: 1; }
+  56.25% { opacity: 1; }
+  56.75% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  77% { opacity: 1; }
+  77.5% { opacity: 0; }
+  98% { opacity: 0; }
+  98.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sc-pay-comp {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  64.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-pay-sub {
+  0% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sc-db-ord {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  5.5% { opacity: 1; }
+  8% { opacity: 1; }
+  8.5% { opacity: 0; }
+  46.25% { opacity: 0; }
+  46.75% { opacity: 1; }
+  49% { opacity: 1; }
+  49.5% { opacity: 0; }
+  71% { opacity: 0; }
+  71.5% { opacity: 1; }
+  74% { opacity: 1; }
+  74.5% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77% { opacity: 1; }
+  78.5% { opacity: 1; }
+  79% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-db-pay {
+  0% { opacity: 0; }
+  27% { opacity: 0; }
+  27.5% { opacity: 1; }
+  29.25% { opacity: 1; }
+  29.75% { opacity: 0; }
+  83.5% { opacity: 0; }
+  84% { opacity: 1; }
+  85.5% { opacity: 1; }
+  86% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-db-pay-c {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  64.5% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-db-inv {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  33.75% { opacity: 1; }
+  35.5% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-db-shp {
+  0% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41% { opacity: 1; }
+  42.75% { opacity: 1; }
+  43.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-o-a {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  6.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-o-b {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  51.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-o-c {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  77.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-o-pend {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  6.5% { opacity: 1; }
+  46% { opacity: 1; }
+  46.5% { opacity: 0; }
+  51% { opacity: 0; }
+  51.5% { opacity: 1; }
+  71% { opacity: 1; }
+  71.5% { opacity: 0; }
+  77% { opacity: 0; }
+  77.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-o-conf {
+  0% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-o-canc {
+  0% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-p-a {
+  0% { opacity: 0; }
+  27.25% { opacity: 0; }
+  27.75% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-p-b {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  51.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-p-c {
+  0% { opacity: 0; }
+  84.25% { opacity: 0; }
+  84.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-p-chg {
+  0% { opacity: 0; }
+  27.25% { opacity: 0; }
+  27.75% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  51% { opacity: 0; }
+  51.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  84.25% { opacity: 0; }
+  84.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-p-ref {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-i-row {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-i-zero {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-s-row {
+  0% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.25% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-o-pub {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  78% { opacity: 0; }
+  78.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-p-sub {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-p-pub {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  85% { opacity: 0; }
+  85.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-i-sub {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  55.25% { opacity: 0; }
+  55.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-i-pub {
+  0% { opacity: 0; }
+  34.75% { opacity: 0; }
+  35.25% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-s-sub {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-s-pub {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-o-sub {
+  0% { opacity: 0; }
+  45.75% { opacity: 0; }
+  46.25% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-i-fail {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-p-fail {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-p-ref {
+  0% { opacity: 0; }
+  65.25% { opacity: 0; }
+  65.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-lit-o-ref {
+  0% { opacity: 0; }
+  70.5% { opacity: 0; }
+  71% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-unc {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-sub-hi {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17% { opacity: 1; }
+  26% { opacity: 1; }
+  26.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-view {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  77.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-r0 {
+  0% { opacity: 1; }
+  83.75% { opacity: 1; }
+  84.25% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sc-r1 {
+  0% { opacity: 0; }
+  84.25% { opacity: 0; }
+  84.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-r2 {
+  0% { opacity: 0; }
+  88.25% { opacity: 0; }
+  88.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-r3 {
+  0% { opacity: 0; }
+  88.75% { opacity: 0; }
+  89.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-st-placed {
+  0% { opacity: 0; }
+  84.25% { opacity: 0; }
+  84.75% { opacity: 1; }
+  87.75% { opacity: 1; }
+  88.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-st-paid {
+  0% { opacity: 0; }
+  88.25% { opacity: 0; }
+  88.75% { opacity: 1; }
+  94.5% { opacity: 1; }
+  95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-st-stuck {
+  0% { opacity: 0; }
+  95% { opacity: 0; }
+  95.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sc-bar {
+  0% { transform: scaleX(1); }
+  89% { transform: scaleX(1); }
+  95% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes sc-pan {
+  0% { transform: translate(103px, 0px); }
+  75% { transform: translate(103px, 0px); }
+  77.5% { transform: translate(0px, 0px); }
+  97.5% { transform: translate(0px, 0px); }
+  99.75% { transform: translate(103px, 0px); }
+  100% { transform: translate(103px, 0px); }
+}
+</style>
+<g class="stage">
+  <!-- Tracking view (step 4 only): one more subscriber on the topic, added because nothing else can see a whole saga -->
+  <g class="sc-view">
+    <line class="wire" x1="724" y1="282" x2="739" y2="282" marker-end="url(#ah)"/>
+    <rect class="box" x="740" y="168" width="190" height="230" rx="12"/>
+    <text class="label" x="756" y="194">Tracking view</text>
+    <text class="tiny" x="756" y="210">subscribes to every event,</text>
+    <text class="tiny" x="756" y="224">groups them by order ID</text>
+    <rect class="f-bg s-line" x="752" y="234" width="166" height="152" rx="8" stroke-width="1.5"/>
+    <rect class="none s-red sc-st-stuck" x="752" y="234" width="166" height="152" rx="8" stroke-width="1.5"/>
+    <text class="tiny f-faint sc-r0" x="764" y="257">waiting for events</text>
+    <text class="tiny mono sb sc-r1" x="764" y="257">order #1044</text>
+    <g class="sc-st-placed">
+      <rect class="f-amber-soft s-amber" x="846" y="244" width="62" height="20" rx="10" stroke-width="1.5"/>
+      <text class="sc-state mid f-amber-ink" x="877" y="258">PLACED</text>
+    </g>
+    <g class="sc-st-paid">
+      <rect class="f-amber-soft s-amber" x="846" y="244" width="62" height="20" rx="10" stroke-width="1.5"/>
+      <text class="sc-state mid f-amber-ink" x="877" y="258">PAID</text>
+    </g>
+    <g class="sc-st-stuck">
+      <rect class="f-red-soft s-red" x="846" y="244" width="62" height="20" rx="10" stroke-width="1.5"/>
+      <text class="sc-state mid f-red" x="877" y="258">STUCK</text>
+    </g>
+    <line class="s-line" x1="752" y1="270" x2="918" y2="270" stroke-width="1.5"/>
+    <g class="sc-r1">
+      <rect class="f-purple" x="764" y="281" width="10" height="10" rx="2.5"/>
+      <text class="tiny sb" x="782" y="290">OrderPlaced</text>
+    </g>
+    <g class="sc-r2">
+      <rect class="f-purple" x="764" y="301" width="10" height="10" rx="2.5"/>
+      <text class="tiny sb" x="782" y="310">PaymentCompleted</text>
+    </g>
+    <g class="sc-r3">
+      <rect class="none s-muted" x="764.75" y="321.75" width="8.5" height="8.5" rx="2.5" stroke-width="1.5" stroke-dasharray="2 2"/>
+      <text class="tiny f-faint" x="782" y="330">nothing since</text>
+      <text class="tiny" x="764" y="353">timeout</text>
+      <rect class="f-line" x="812" y="346" width="94" height="6" rx="3"/>
+      <rect class="f-amber sc-bar" x="812" y="346" width="94" height="6" rx="3"/>
+    </g>
+    <text class="tiny sb f-red sc-st-stuck" x="764" y="374">no event for 30 s</text>
+  </g>
+
+  <!-- The saga: four services around one topic, and no coordinator. Shown centred; slides left in step 4. -->
+  <g class="sc-pan">
+    <!-- message broker: the one topic every service publishes to and subscribes on -->
+    <rect class="box" x="30" y="258" width="694" height="48" rx="12"/>
+    <text class="tiny sb" x="46" y="278">message broker</text>
+    <text class="tiny mono" x="46" y="294">topic: order-events</text>
+
+    <!-- per service: one wire out of the topic (subscribe) and one into it (publish) -->
+    <line class="wire" x1="215" y1="258" x2="215" y2="185" marker-end="url(#ah)"/>
+    <line class="wire" x1="243" y1="184" x2="243" y2="257" marker-end="url(#ah)"/>
+    <line class="wire" x1="511" y1="258" x2="511" y2="185" marker-end="url(#ah)"/>
+    <line class="wire" x1="539" y1="184" x2="539" y2="257" marker-end="url(#ah)"/>
+    <line class="wire" x1="215" y1="380" x2="215" y2="307" marker-end="url(#ah)"/>
+    <line class="wire" x1="243" y1="306" x2="243" y2="379" marker-end="url(#ah)"/>
+    <line class="wire" x1="511" y1="380" x2="511" y2="307" marker-end="url(#ah)"/>
+    <line class="wire" x1="539" y1="306" x2="539" y2="379" marker-end="url(#ah)"/>
+    <line class="s-purple sc-sub-hi" x1="511" y1="258" x2="511" y2="185" stroke-width="2.5" marker-end="url(#ah-purple)"/>
+
+    <!-- what each service listens for and publishes: the only place the workflow exists -->
+    <text class="tiny f-faint end" x="189" y="203">listens for</text>
+    <text class="sub sb end" x="189" y="219">ShipmentBooked</text>
+    <text class="sub sb f-purple end sc-lit-o-sub" x="189" y="219">ShipmentBooked</text>
+    <text class="sub sb end" x="189" y="235">PaymentRefunded</text>
+    <text class="sub sb f-purple end sc-lit-o-ref" x="189" y="235">PaymentRefunded</text>
+    <text class="tiny f-faint" x="269" y="203">publishes</text>
+    <text class="sub sb" x="269" y="219">OrderPlaced</text>
+    <text class="sub sb f-purple sc-lit-o-pub" x="269" y="219">OrderPlaced</text>
+    <text class="tiny f-faint end" x="485" y="203">listens for</text>
+    <text class="sub sb end" x="485" y="219">OrderPlaced</text>
+    <text class="sub sb f-purple end sc-lit-p-sub" x="485" y="219">OrderPlaced</text>
+    <text class="sub sb end" x="485" y="235">StockReservationFailed</text>
+    <text class="sub sb f-purple end sc-lit-p-fail" x="485" y="235">StockReservationFailed</text>
+    <text class="tiny f-faint" x="565" y="203">publishes</text>
+    <text class="sub sb" x="565" y="219">PaymentCompleted</text>
+    <text class="sub sb f-purple sc-lit-p-pub" x="565" y="219">PaymentCompleted</text>
+    <text class="sub sb" x="565" y="235">PaymentRefunded</text>
+    <text class="sub sb f-purple sc-lit-p-ref" x="565" y="235">PaymentRefunded</text>
+    <text class="tiny f-faint end" x="189" y="325">publishes</text>
+    <text class="sub sb end" x="189" y="341">ShipmentBooked</text>
+    <text class="sub sb f-purple end sc-lit-s-pub" x="189" y="341">ShipmentBooked</text>
+    <text class="tiny f-faint" x="269" y="325">listens for</text>
+    <text class="sub sb" x="269" y="341">StockReserved</text>
+    <text class="sub sb f-purple sc-lit-s-sub" x="269" y="341">StockReserved</text>
+    <text class="tiny f-faint end" x="485" y="325">publishes</text>
+    <text class="sub sb end" x="485" y="341">StockReserved</text>
+    <text class="sub sb f-purple end sc-lit-i-pub" x="485" y="341">StockReserved</text>
+    <text class="sub sb end" x="485" y="357">StockReservationFailed</text>
+    <text class="sub sb f-purple end sc-lit-i-fail" x="485" y="357">StockReservationFailed</text>
+    <text class="tiny f-faint" x="565" y="325">listens for</text>
+    <text class="sub sb" x="565" y="341">PaymentCompleted</text>
+    <text class="sub sb f-purple sc-lit-i-sub" x="565" y="341">PaymentCompleted</text>
+
+    <!-- Orders and its own database -->
+    <rect class="box" x="140" y="100" width="178" height="84" rx="12"/>
+    <rect class="none s-blue sc-req" x="140" y="100" width="178" height="84" rx="12" stroke-width="2.5"/>
+    <rect class="none s-purple sc-w-ord" x="140" y="100" width="178" height="84" rx="12" stroke-width="2.5"/>
+    <text class="label mid" x="229" y="137">Orders</text>
+    <text class="sub mid" x="229" y="157">keeps the order status</text>
+    <line class="wire" x1="130" y1="142" x2="140" y2="142"/>
+    <path class="box" d="M30 114v56a50 8 0 0 0 100 0v-56"/>
+    <ellipse class="box" cx="80" cy="114" rx="50" ry="8"/>
+    <g class="sc-db-ord">
+      <path class="f-teal-soft s-teal" d="M30 114v56a50 8 0 0 0 100 0v-56z" stroke-width="2"/>
+      <ellipse class="none s-teal" cx="80" cy="114" rx="50" ry="8" stroke-width="2"/>
+    </g>
+    <text class="tiny mono mid sc-o-a" x="80" y="141">#1042</text>
+    <text class="tiny mono mid sc-o-b" x="80" y="141">#1043</text>
+    <text class="tiny mono mid sc-o-c" x="80" y="141">#1044</text>
+    <text class="tiny mono sb mid f-amber-ink sc-o-pend" x="80" y="156">PENDING</text>
+    <text class="tiny mono sb mid f-green sc-o-conf" x="80" y="156">CONFIRMED</text>
+    <text class="tiny mono sb mid f-red sc-o-canc" x="80" y="156">CANCELLED</text>
+
+    <!-- Payments and its own database -->
+    <rect class="box" x="436" y="100" width="178" height="84" rx="12"/>
+    <rect class="f-amber-soft s-amber sc-pay-comp" x="436" y="100" width="178" height="84" rx="12" stroke-width="1.5"/>
+    <rect class="none s-purple sc-w-pay" x="436" y="100" width="178" height="84" rx="12" stroke-width="2.5"/>
+    <text class="label mid" x="525" y="137">Payments</text>
+    <text class="sub mid sc-pay-sub" x="525" y="157">charges the card</text>
+    <text class="sub mid sb f-amber-ink sc-pay-comp" x="525" y="157">refunds the charge</text>
+    <line class="wire" x1="614" y1="142" x2="624" y2="142"/>
+    <path class="box" d="M624 114v56a50 8 0 0 0 100 0v-56"/>
+    <ellipse class="box" cx="674" cy="114" rx="50" ry="8"/>
+    <g class="sc-db-pay">
+      <path class="f-teal-soft s-teal" d="M624 114v56a50 8 0 0 0 100 0v-56z" stroke-width="2"/>
+      <ellipse class="none s-teal" cx="674" cy="114" rx="50" ry="8" stroke-width="2"/>
+    </g>
+    <g class="sc-db-pay-c">
+      <path class="f-amber-soft s-amber" d="M624 114v56a50 8 0 0 0 100 0v-56z" stroke-width="2"/>
+      <ellipse class="none s-amber" cx="674" cy="114" rx="50" ry="8" stroke-width="2"/>
+    </g>
+    <text class="tiny mono mid sc-p-a" x="674" y="139">#1042</text>
+    <text class="tiny mono mid sc-p-b" x="674" y="139">#1043</text>
+    <text class="tiny mono mid sc-p-c" x="674" y="139">#1044</text>
+    <text class="tiny mono sb mid f-teal sc-p-chg" x="674" y="154">charged $80</text>
+    <text class="tiny mono sb mid f-amber-ink sc-p-ref" x="674" y="169">refunded $80</text>
+
+    <!-- Shipping and its own database -->
+    <rect class="box" x="140" y="380" width="178" height="84" rx="12"/>
+    <rect class="none s-purple sc-w-shp" x="140" y="380" width="178" height="84" rx="12" stroke-width="2.5"/>
+    <text class="label mid" x="229" y="417">Shipping</text>
+    <text class="sub mid" x="229" y="437">books a courier</text>
+    <line class="wire" x1="130" y1="422" x2="140" y2="422"/>
+    <path class="box" d="M30 394v56a50 8 0 0 0 100 0v-56"/>
+    <ellipse class="box" cx="80" cy="394" rx="50" ry="8"/>
+    <g class="sc-db-shp">
+      <path class="f-teal-soft s-teal" d="M30 394v56a50 8 0 0 0 100 0v-56z" stroke-width="2"/>
+      <ellipse class="none s-teal" cx="80" cy="394" rx="50" ry="8" stroke-width="2"/>
+    </g>
+    <g class="sc-s-row">
+      <text class="tiny mono mid" x="80" y="421">#1042</text>
+      <text class="tiny mono sb mid f-teal" x="80" y="436">booked</text>
+    </g>
+
+    <!-- Inventory and its own database -->
+    <rect class="box" x="436" y="380" width="178" height="84" rx="12"/>
+    <rect class="f-red-soft s-red sc-inv-bad" x="436" y="380" width="178" height="84" rx="12" stroke-width="1.5"/>
+    <rect class="none s-purple sc-w-inv" x="436" y="380" width="178" height="84" rx="12" stroke-width="2.5"/>
+    <text class="label mid" x="525" y="417">Inventory</text>
+    <text class="sub mid sc-inv-sub" x="525" y="437">reserves stock</text>
+    <text class="sub mid sb f-red sc-inv-oos" x="525" y="437">out of stock</text>
+    <text class="sub mid sb f-red sc-inv-down" x="525" y="437">● consumer down</text>
+    <line class="wire" x1="614" y1="422" x2="624" y2="422"/>
+    <path class="box" d="M624 394v56a50 8 0 0 0 100 0v-56"/>
+    <ellipse class="box" cx="674" cy="394" rx="50" ry="8"/>
+    <g class="sc-db-inv">
+      <path class="f-teal-soft s-teal" d="M624 394v56a50 8 0 0 0 100 0v-56z" stroke-width="2"/>
+      <ellipse class="none s-teal" cx="674" cy="394" rx="50" ry="8" stroke-width="2"/>
+    </g>
+    <g class="sc-i-row">
+      <text class="tiny mono mid" x="674" y="421">#1042</text>
+      <text class="tiny mono sb mid f-teal" x="674" y="436">reserved 1</text>
+    </g>
+    <text class="tiny mono sb mid f-red sc-i-zero" x="674" y="429">in stock: 0</text>
+
+    <!-- events: purple squares, named while they are on the topic; in step 4 they show the order ID they carry -->
+    <text class="tiny sb f-amber-ink sc-unc" x="566" y="286">not consumed</text>
+    <rect class="ev sc-e1" x="-9" y="-9" width="18" height="18" rx="4"/>
+    <text class="sub sb f-purple sc-n1" x="16" y="4">OrderPlaced</text>
+    <rect class="ev sc-e2" x="-9" y="-9" width="18" height="18" rx="4"/>
+    <text class="sub sb f-purple sc-n2" x="16" y="4">PaymentCompleted</text>
+    <rect class="ev sc-e3" x="-9" y="-9" width="18" height="18" rx="4"/>
+    <text class="sub sb f-purple sc-n3" x="16" y="4">StockReserved</text>
+    <rect class="ev sc-e4" x="-9" y="-9" width="18" height="18" rx="4"/>
+    <text class="sub sb f-purple sc-n4" x="16" y="4">ShipmentBooked</text>
+    <g class="sc-f1">
+      <rect class="ev" x="-9" y="-9" width="18" height="18" rx="4"/>
+      <path class="none s-bg" d="M-3.5 -3.5l7 7M3.5 -3.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <text class="sub sb f-purple sc-nf" x="16" y="4">StockReservationFailed</text>
+    <rect class="ev sc-f2" x="-9" y="-9" width="18" height="18" rx="4"/>
+    <text class="sub sb f-purple sc-n5" x="16" y="4">PaymentRefunded</text>
+    <g class="sc-g1b"><rect class="ev" x="-19" y="-9" width="38" height="18" rx="5"/><text class="sc-id mono mid f-bg" y="3.5">#1044</text></g>
+    <g class="sc-g1"><rect class="ev" x="-19" y="-9" width="38" height="18" rx="5"/><text class="sc-id mono mid f-bg" y="3.5">#1044</text></g>
+    <g class="sc-g2"><rect class="ev" x="-19" y="-9" width="38" height="18" rx="5"/><text class="sc-id mono mid f-bg" y="3.5">#1044</text></g>
+    <g class="sc-g2b"><rect class="ev" x="-19" y="-9" width="38" height="18" rx="5"/><text class="sc-id mono mid f-bg" y="3.5">#1044</text></g>
+  </g>
+</g>
+</svg>

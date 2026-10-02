@@ -85,7 +85,7 @@ If the whole data set is small and rarely changes, skip lazy loading: load it al
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Read Replicas *(planned)* — Send writes to the primary and spread reads across asynchronously updated replicas.
+- [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [CDN & Edge Caching](../cdn-edge-caching/) — Serve static content from edge locations close to users; only cache misses reach the origin.

@@ -1,0 +1,47 @@
+{
+  "aka": ["DR strategies", "Cold, warm and hot standby"],
+  "steps": [
+    {
+      "title": "Backup and restore",
+      "caption": "Backup and restore: only backups wait. After a disaster everything is rebuilt, which takes hours.",
+      "body": "Only **backups** are copied to the recovery region; nothing else runs there. After a disaster the workload is rebuilt from nothing: provision the infrastructure from code, restore the data from the last backup, deploy the application, then redirect users. **RPO** (everything since the last backup) and **RTO** are both measured in hours, and the standing cost is the lowest of the four."
+    },
+    {
+      "title": "Pilot light",
+      "caption": "Pilot light: data stays live in the recovery region, but app servers start only after a disaster.",
+      "body": "The data is replicated continuously to a **live database** in the recovery region and the core infrastructure is in place, but no application servers run there; only their images and templates are ready. Recovery starts and scales the app tier, promotes the database and redirects users. RPO falls to the replication lag (minutes or less) and RTO to tens of minutes."
+    },
+    {
+      "title": "Warm standby",
+      "caption": "Warm standby: a small, complete copy always runs. Recovery scales it up and shifts the traffic.",
+      "body": "A **scaled-down but complete** copy of the workload runs in the recovery region all the time and can take test traffic. Recovery scales the fleet to full size, promotes the database and shifts the traffic, so RTO falls to minutes. RPO stays at the replication lag: what you pay for at this step is time, not data."
+    },
+    {
+      "title": "Multi-site active/active",
+      "caption": "Active/active: both regions always serve, so a failure only shifts traffic, at the highest cost.",
+      "body": "Both regions run at full size and **serve users all the time**, so there is nothing to rebuild or promote: when a region fails, its traffic shifts to the other one and RTO is near zero. RPO depends on how the data is replicated (the lag if asynchronous, zero only if synchronous). Cost and complexity are the highest of the four."
+    }
+  ],
+  "related": [
+    "multi-region-active-active",
+    "active-passive-failover",
+    "read-replicas",
+    "autoscaling",
+    "load-balancing",
+    "chaos-engineering",
+    "immutable-infrastructure",
+    "health-endpoint-monitoring"
+  ],
+  "references": [
+    { "title": "AWS whitepaper — Disaster Recovery of Workloads on AWS: disaster recovery options in the cloud", "url": "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html" },
+    { "title": "AWS whitepaper — Disaster Recovery of Workloads on AWS: business continuity plan (RTO and RPO)", "url": "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/business-continuity-plan-bcp.html" },
+    { "title": "AWS Well-Architected Framework, Reliability Pillar — REL13-BP02 Use defined recovery strategies to meet the recovery objectives", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_planning_for_recovery_disaster_recovery.html" },
+    { "title": "AWS Well-Architected Framework, Reliability Pillar — REL11-BP04 Rely on the data plane and not the control plane during recovery", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_withstand_component_failures_avoid_control_plane.html" },
+    { "title": "AWS whitepaper — AWS Fault Isolation Boundaries: global services", "url": "https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/global-services.html" },
+    { "title": "Azure Well-Architected Framework — Architecture strategies for disaster recovery", "url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/disaster-recovery" },
+    { "title": "Azure Well-Architected Framework — Develop a disaster recovery plan for multi-region deployments", "url": "https://learn.microsoft.com/en-us/azure/well-architected/design-guides/disaster-recovery" },
+    { "title": "Google Cloud Architecture Center — Disaster recovery planning guide", "url": "https://docs.cloud.google.com/architecture/dr-scenarios-planning-guide" },
+    { "title": "Google Cloud Architecture Center — Disaster recovery scenarios for applications", "url": "https://docs.cloud.google.com/architecture/dr-scenarios-for-applications" },
+    { "title": "NIST SP 800-34 Rev. 1 — Contingency Planning Guide for Federal Information Systems", "url": "https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final" }
+  ]
+}

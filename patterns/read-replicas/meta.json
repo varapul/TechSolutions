@@ -1,0 +1,49 @@
+{
+  "aka": ["Read/write splitting", "Read scale-out", "Leader-follower replication"],
+  "steps": [
+    {
+      "title": "Split reads from writes",
+      "caption": "Writes go to the primary; reads are spread over replicas that replay its log a moment later.",
+      "body": "The application's router (a driver setting, an ORM feature or a proxy) sends every write to the **primary** and spreads reads over the **replicas** through a reader endpoint. Every replica holds the same tables and the same data: the primary ships its log to each of them **asynchronously**, after the commit has already been acknowledged, and the replica replays it. Adding replicas adds read capacity; write capacity stays that of one primary."
+    },
+    {
+      "title": "Replication lag",
+      "caption": "A user upgrades to Pro and reloads at once: replica 2 has not replayed it yet and answers Free.",
+      "body": "A user upgrades to Pro. The primary commits the change at log position 43 and acknowledges it before any replica has it. The page reloads at once, and the read lands on a replica that is 200 ms behind and has replayed only up to position 42, so it answers **Free**: a stale read, caused by nothing more than normal **replication lag**."
+    },
+    {
+      "title": "Read your own writes",
+      "caption": "The fix: that user's next read carries position 43 and is held until the replica has replayed it.",
+      "body": "The write returns its log position (43) and the session keeps it. That user's next read carries the position, and the replica holds the read until it has replayed that far; the router can instead send such a read straight to the primary. Either way the user sees **Pro**, while other users' reads carry no position and still go to any replica without waiting."
+    },
+    {
+      "title": "Lagging or failed replicas",
+      "caption": "A long report stalls replica 3 past the lag limit and replica 1 fails: both leave the rotation.",
+      "body": "A long report query holds up replay on replica 3, so its lag grows from milliseconds to seconds, and once it passes the lag limit (5 s here) the reader endpoint takes it out of rotation. Replica 1 stops answering its health check and is dropped the same way, which leaves the remaining replica to carry every read. If the *primary* fails, a replica is promoted to take its place, and with asynchronous replication the last commits that had not reached it are lost."
+    }
+  ],
+  "related": ["cqrs", "cache-aside", "sharding", "multi-region-active-active", "change-data-capture", "materialized-view", "active-passive-failover", "load-balancing"],
+  "references": [
+    { "title": "PostgreSQL documentation — High Availability, Load Balancing, and Replication", "url": "https://www.postgresql.org/docs/current/high-availability.html" },
+    { "title": "PostgreSQL documentation — Log-Shipping Standby Servers (streaming, synchronous and cascading replication, monitoring)", "url": "https://www.postgresql.org/docs/current/warm-standby.html" },
+    { "title": "PostgreSQL documentation — Hot Standby (queries on a standby, replay conflicts)", "url": "https://www.postgresql.org/docs/current/hot-standby.html" },
+    { "title": "PostgreSQL 19 documentation — WAIT (the WAIT FOR LSN command)", "url": "https://www.postgresql.org/docs/19/sql-wait.html" },
+    { "title": "MySQL 8.4 Reference Manual — Replication", "url": "https://dev.mysql.com/doc/refman/8.4/en/replication.html" },
+    { "title": "MySQL 8.4 Reference Manual — Replication with Global Transaction Identifiers", "url": "https://dev.mysql.com/doc/refman/8.4/en/replication-gtids.html" },
+    { "title": "MySQL 8.4 Reference Manual — Functions Used with Global Transaction Identifiers (WAIT_FOR_EXECUTED_GTID_SET)", "url": "https://dev.mysql.com/doc/refman/8.4/en/gtid-functions.html" },
+    { "title": "MySQL 8.4 Reference Manual — Semisynchronous Replication", "url": "https://dev.mysql.com/doc/refman/8.4/en/replication-semisync.html" },
+    { "title": "MySQL Router 8.4 — Read/Write Splitting", "url": "https://dev.mysql.com/doc/mysql-router/8.4/en/router-read-write-splitting.html" },
+    { "title": "Amazon RDS User Guide — Working with DB instance read replicas", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html" },
+    { "title": "Amazon RDS User Guide — Configuring and managing a Multi-AZ deployment", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html" },
+    { "title": "Amazon Aurora User Guide — Replication with Amazon Aurora", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Replication.html" },
+    { "title": "Amazon Aurora User Guide — Amazon Aurora endpoint connections", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html" },
+    { "title": "Microsoft Learn — Read replicas in Azure Database for PostgreSQL flexible server", "url": "https://learn.microsoft.com/en-us/azure/postgresql/read-replica/concepts-read-replicas" },
+    { "title": "Google Cloud — About replication in Cloud SQL (PostgreSQL)", "url": "https://docs.cloud.google.com/sql/docs/postgres/replication" },
+    { "title": "Google Cloud — Cloud SQL: About read pools", "url": "https://docs.cloud.google.com/sql/docs/postgres/about-read-pools" },
+    { "title": "MongoDB Manual — Causal Consistency and Read and Write Concerns", "url": "https://www.mongodb.com/docs/manual/core/causal-consistency-read-write-concerns/" },
+    { "title": "MongoDB Manual — Read Preference maxStalenessSeconds", "url": "https://www.mongodb.com/docs/manual/core/read-preference-staleness/" },
+    { "title": "Ruby on Rails Guides — Multiple Databases with Active Record", "url": "https://guides.rubyonrails.org/active_record_multiple_databases.html" },
+    { "title": "Martin Kleppmann & Chris Riccomini — Designing Data-Intensive Applications, 2nd Edition (O'Reilly, 2026): the chapter on replication", "url": "https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" },
+    { "title": "Werner Vogels — Eventually Consistent, Revisited", "url": "https://www.allthingsdistributed.com/2008/12/eventually_consistent.html" }
+  ]
+}

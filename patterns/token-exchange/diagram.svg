@@ -1,0 +1,690 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Token Exchange (On-Behalf-Of)</title>
+<desc id="dg-desc">Token Exchange (On-Behalf-Of). Swap an incoming user token for a narrowly scoped one before calling a downstream API. Step 1, Don't forward the token: Forwarded as it is, Ana's token still says aud: orders-api, so the Inventory API answers 401. Step 2, Exchange it: The Orders API asks the token endpoint: Ana's token, its own token, and the API it wants to call. Step 3, A narrow token for one hop: The new token is for inventory-api only: still Ana, read-only, five minutes, act names the caller. Step 4, Every hop, its own token: The Inventory API exchanges again for the Pricing API. Each token is valid at one API only.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">IDENTITY &amp; ACCESS (AUTH)</text>
+  <text class="title" x="40" y="64">Token Exchange (On-Behalf-Of)</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Don't forward the token</text>
+  <text class="step on p1" x="40" y="518">1 · Don't forward the token</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Exchange it</text>
+  <text class="step on p2" x="262" y="518">2 · Exchange it</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · A narrow token for one hop</text>
+  <text class="step on p3" x="484" y="518">3 · A narrow token for one hop</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Every hop, its own token</text>
+  <text class="step on p4" x="706" y="518">4 · Every hop, its own token</text>
+  <text class="caption p1" x="40" y="552">Forwarded as it is, Ana's token still says aud: orders-api, so the Inventory API answers 401.</text>
+  <text class="caption p2" x="40" y="552">The Orders API asks the token endpoint: Ana's token, its own token, and the API it wants to call.</text>
+  <text class="caption p3" x="40" y="552">The new token is for inventory-api only: still Ana, read-only, five minutes, act names the caller.</text>
+  <text class="caption p4" x="40" y="552">The Inventory API exchanges again for the Pricing API. Each token is valid at one API only.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Token Exchange (On-Behalf-Of). Timeline (20s loop, 1s = 5%):
+   0-25%   the Shop app calls the Orders API with Ana's token (aud orders-api); the Orders API forwards the
+           same token to the Inventory API, which finds another API's name in aud and answers 401
+   25-50%  the Orders API posts a token exchange to the token endpoint, line by line: client authentication,
+           grant_type, subject_token (Ana's token), actor_token (its own), audience and scope; the server
+           finds the matching row in its policy
+   50-75%  token response; the new token (aud inventory-api, sub ana, scope inventory:read, act.sub orders-api)
+           lands on the second hop, the Inventory API checks aud and scope, reads sub and act, answers 200
+   75-100% a Pricing API appears; the Inventory API exchanges the token it was called with for one with
+           aud pricing-api and a nested act chain, and calls the Pricing API. Everything from steps 2-4
+           fades in the last half-second, so the loop restarts with one token and three boxes
+   Generated from a timeline with scripts/lib/motion.mjs (track, windows). */
+.diagram .tx-t, .diagram .tx-w { opacity: 0; }
+.diagram .tx-req { animation: tx-req var(--T) linear infinite; }
+.diagram .tx-err { animation: tx-err var(--T) linear infinite; }
+.diagram .tx-up { animation: tx-up var(--T) linear infinite; }
+.diagram .tx-down { animation: tx-down var(--T) linear infinite; }
+.diagram .tx-ok { animation: tx-ok var(--T) linear infinite; }
+.diagram .tx-ok1 { opacity: 1; animation: tx-ok1 var(--T) linear infinite; }
+.diagram .tx-fwd { opacity: 1; animation: tx-fwd var(--T) linear infinite; }
+.diagram .tx-bad { opacity: 1; animation: tx-bad var(--T) linear infinite; }
+.diagram .tx-slot2 { animation: tx-slot2 var(--T) linear infinite; }
+.diagram .tx-l1 { animation: tx-l1 var(--T) linear infinite; }
+.diagram .tx-l2 { animation: tx-l2 var(--T) linear infinite; }
+.diagram .tx-l3 { animation: tx-l3 var(--T) linear infinite; }
+.diagram .tx-l4 { animation: tx-l4 var(--T) linear infinite; }
+.diagram .tx-l5 { animation: tx-l5 var(--T) linear infinite; }
+.diagram .tx-pol1 { animation: tx-pol1 var(--T) linear infinite; }
+.diagram .tx-pok1 { animation: tx-pok1 var(--T) linear infinite; }
+.diagram .tx-t2 { animation: tx-t2 var(--T) linear infinite; }
+.diagram .tx-v1 { animation: tx-v1 var(--T) linear infinite; }
+.diagram .tx-v2 { animation: tx-v2 var(--T) linear infinite; }
+.diagram .tx-ok2 { animation: tx-ok2 var(--T) linear infinite; }
+.diagram .tx-see { animation: tx-see var(--T) linear infinite; }
+.diagram .tx-c { animation: tx-c var(--T) linear infinite; }
+.diagram .tx-r4 { animation: tx-r4 var(--T) linear infinite; }
+.diagram .tx-slot3 { animation: tx-slot3 var(--T) linear infinite; }
+.diagram .tx-pol2 { animation: tx-pol2 var(--T) linear infinite; }
+.diagram .tx-pok2 { animation: tx-pok2 var(--T) linear infinite; }
+.diagram .tx-t3 { animation: tx-t3 var(--T) linear infinite; }
+.diagram .tx-ok3 { animation: tx-ok3 var(--T) linear infinite; }
+@keyframes tx-req {
+  0% { transform: translate(180px, 297px); opacity: 0; }
+  2% { transform: translate(180px, 297px); opacity: 0; }
+  2.25% { opacity: 1; }
+  6% { transform: translate(280px, 297px); opacity: 1; }
+  6.25% { transform: translate(280px, 297px); opacity: 0; }
+  8% { transform: translate(430px, 297px); opacity: 0; }
+  8.25% { opacity: 1; }
+  12% { transform: translate(530px, 297px); opacity: 1; }
+  12.25% { transform: translate(530px, 297px); opacity: 0; }
+  58% { transform: translate(430px, 297px); opacity: 0; }
+  58.25% { opacity: 1; }
+  62% { transform: translate(530px, 297px); opacity: 1; }
+  62.25% { transform: translate(530px, 297px); opacity: 0; }
+  88% { transform: translate(680px, 297px); opacity: 0; }
+  88.25% { opacity: 1; }
+  92% { transform: translate(780px, 297px); opacity: 1; }
+  92.25% { transform: translate(780px, 297px); opacity: 0; }
+  100% { transform: translate(780px, 297px); opacity: 0; }
+}
+@keyframes tx-err {
+  0% { transform: translate(530px, 297px); opacity: 0; }
+  14.5% { transform: translate(530px, 297px); opacity: 0; }
+  14.75% { opacity: 1; }
+  18.5% { transform: translate(430px, 297px); opacity: 1; }
+  18.75% { transform: translate(430px, 297px); opacity: 0; }
+  100% { transform: translate(430px, 297px); opacity: 0; }
+}
+@keyframes tx-up {
+  0% { transform: translate(341px, 268px); opacity: 0; }
+  27% { transform: translate(341px, 268px); opacity: 0; }
+  27.25% { opacity: 1; }
+  29.5% { transform: translate(341px, 222px); opacity: 1; }
+  29.75% { transform: translate(341px, 222px); opacity: 0; }
+  76.5% { transform: translate(591px, 268px); opacity: 0; }
+  76.75% { opacity: 1; }
+  79% { transform: translate(591px, 222px); opacity: 1; }
+  79.25% { transform: translate(591px, 222px); opacity: 0; }
+  100% { transform: translate(591px, 222px); opacity: 0; }
+}
+@keyframes tx-down {
+  0% { transform: translate(369px, 222px); opacity: 0; }
+  52.5% { transform: translate(369px, 222px); opacity: 0; }
+  52.75% { opacity: 1; }
+  55% { transform: translate(369px, 268px); opacity: 1; }
+  55.25% { transform: translate(369px, 268px); opacity: 0; }
+  84% { transform: translate(619px, 222px); opacity: 0; }
+  84.25% { opacity: 1; }
+  86.5% { transform: translate(619px, 268px); opacity: 1; }
+  86.75% { transform: translate(619px, 268px); opacity: 0; }
+  100% { transform: translate(619px, 268px); opacity: 0; }
+}
+@keyframes tx-ok {
+  0% { transform: translate(530px, 297px); opacity: 0; }
+  68% { transform: translate(530px, 297px); opacity: 0; }
+  68.25% { opacity: 1; }
+  71.5% { transform: translate(430px, 297px); opacity: 1; }
+  71.75% { transform: translate(430px, 297px); opacity: 0; }
+  93% { transform: translate(780px, 297px); opacity: 0; }
+  93.25% { opacity: 1; }
+  96% { transform: translate(680px, 297px); opacity: 1; }
+  96.25% { transform: translate(680px, 297px); opacity: 0; }
+  100% { transform: translate(680px, 297px); opacity: 0; }
+}
+@keyframes tx-ok1 {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  7% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-fwd {
+  0% { opacity: 0; }
+  7.5% { opacity: 0; }
+  9% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-bad {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-slot2 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  54% { opacity: 1; }
+  55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-l1 {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  30.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-l2 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  33% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-l3 {
+  0% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-l4 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-l5 {
+  0% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-pol1 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  44% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-pok1 {
+  0% { opacity: 0; }
+  45.5% { opacity: 0; }
+  46.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-t2 {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-v1 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-v2 {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-ok2 {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-see {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-c {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-r4 {
+  0% { opacity: 0; }
+  79% { opacity: 0; }
+  80% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-slot3 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  85.5% { opacity: 1; }
+  86.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tx-pol2 {
+  0% { opacity: 0; }
+  81% { opacity: 0; }
+  82% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-pok2 {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-t3 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  88% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes tx-ok3 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- what the rows on every token card mean -->
+  <text class="tiny sb f-ink" x="30" y="110">On every token card</text>
+  <path class="none s-line" d="M30 117.5H236" stroke-width="1"/>
+  <text class="tiny mono b f-orange" x="30" y="135">aud</text><text class="tiny" x="76" y="135">the one API it is for</text>
+  <text class="tiny mono b f-orange" x="30" y="152">sub</text><text class="tiny" x="76" y="152">the user it is about</text>
+  <text class="tiny mono b f-orange" x="30" y="169">scope</text><text class="tiny" x="76" y="169">what it allows there</text>
+  <text class="tiny mono b f-orange" x="30" y="186">act</text><text class="tiny" x="76" y="186">the service acting for her</text>
+  <text class="tiny sb f-ink" x="30" y="210"><tspan class="mono">sub</tspan> never changes. The rest does.</text>
+
+  <!-- wires: the call chain, and the round trip to the token endpoint -->
+  <line class="wire" x1="180" y1="297" x2="279" y2="297" marker-end="url(#ah)"/>
+  <line class="wire" x1="430" y1="297" x2="529" y2="297" marker-end="url(#ah)"/>
+  <line class="wire" x1="341" y1="268" x2="341" y2="223" marker-end="url(#ah)"/>
+  <line class="wire" x1="369" y1="222" x2="369" y2="267" marker-end="url(#ah)"/>
+  <text class="tiny end" x="329" y="248">exchange</text>
+  <text class="tiny" x="381" y="248">new token</text>
+  <g class="p4">
+    <line class="wire" x1="591" y1="268" x2="591" y2="223" marker-end="url(#ah)"/>
+    <line class="wire" x1="619" y1="222" x2="619" y2="267" marker-end="url(#ah)"/>
+    <text class="tiny end" x="579" y="248">exchange</text>
+    <text class="tiny" x="631" y="248">new token</text>
+  </g>
+  <path class="none s-orange" d="M230 303V350" stroke-width="1.2" stroke-dasharray="2 3"/>
+  <path class="none s-orange tx-fwd" d="M480 303V350" stroke-width="1.2" stroke-dasharray="2 3"/>
+  <path class="none s-wire tx-w tx-slot2" d="M480 303V350" stroke-width="1.2" stroke-dasharray="2 3"/>
+  <path class="none s-orange tx-w tx-t2" d="M480 303V350" stroke-width="1.2" stroke-dasharray="2 3"/>
+
+  <!-- the authorization server: its token endpoint and its exchange policy -->
+  <rect class="box" x="250" y="96" width="680" height="126" rx="12"/>
+  <text class="label" x="262" y="116">Authorization server</text>
+  <text class="tiny mono end" x="918" y="116">https://idp.example</text>
+  <rect class="f-bg s-line" x="260" y="124" width="432" height="92" rx="8" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="702" y="124" width="218" height="92" rx="8" stroke-width="1.2"/>
+
+  <text class="tiny mono b f-ink p124" x="270" y="138">POST /token</text>
+  <g class="p1">
+    <text class="tiny end" x="684" y="138">token endpoint</text>
+    <text class="tiny" x="270" y="160">Earlier, at sign-in, it issued Ana’s token for one API only:</text>
+    <rect class="f-orange-soft" x="270" y="169" width="118" height="17" rx="8.5"/>
+    <text class="tiny mono b f-orange" x="279" y="181">aud: orders-api</text>
+    <text class="tiny" x="270" y="204">Only the API named in <tspan class="mono">aud</tspan> should ever accept that token.</text>
+  </g>
+
+  <!-- step 2: the exchange request, line by line -->
+  <text class="tiny end tx-w tx-l1" x="684" y="138">the caller authenticates as <tspan class="mono b f-orange">orders-api</tspan></text>
+  <text class="tiny mono f-ink tx-w tx-l2" x="270" y="152">grant_type=<tspan class="b">urn:ietf:params:oauth:grant-type:token-exchange</tspan></text>
+  <g class="tx-w tx-l3">
+    <rect class="f-orange-soft" x="265" y="155.5" width="422" height="14" rx="3"/>
+    <text class="tiny mono f-ink" x="270" y="166">subject_token=<tspan class="b f-orange">eyJ…</tspan></text>
+    <text class="tiny" x="400" y="166">Ana’s token: who the call is for</text>
+  </g>
+  <g class="tx-w tx-l4">
+    <rect class="f-orange-soft" x="265" y="169.5" width="422" height="14" rx="3"/>
+    <text class="tiny mono f-ink" x="270" y="180">actor_token=<tspan class="b f-orange">eyJ…</tspan></text>
+    <text class="tiny" x="400" y="180">its own token: who will be acting</text>
+  </g>
+  <g class="tx-w tx-l5">
+    <text class="tiny mono f-ink" x="270" y="194">audience=<tspan class="b">inventory-api</tspan></text>
+    <text class="tiny mono f-ink" x="432" y="194">scope=<tspan class="b">inventory:read</tspan></text>
+    <text class="tiny mono" x="270" y="208">*_token_type=urn:…:token-type:access_token</text>
+    <text class="tiny" x="560" y="208">for both tokens</text>
+  </g>
+
+  <!-- step 3: the token response -->
+  <g class="p3">
+    <text class="tiny mono b f-green" x="270" y="138">200 OK</text>
+    <text class="tiny end" x="684" y="138">token response</text>
+    <rect class="f-orange-soft" x="265" y="141.5" width="422" height="14" rx="3"/>
+    <text class="tiny mono" x="270" y="152">access_token</text><text class="tiny mono b f-orange" x="400" y="152">eyJ…</text><text class="tiny" x="436" y="152">the new token</text>
+    <text class="tiny mono" x="270" y="166">issued_token_type</text><text class="tiny mono f-ink" x="400" y="166">urn:…:token-type:access_token</text>
+    <text class="tiny mono" x="270" y="180">token_type</text><text class="tiny mono f-ink" x="400" y="180">Bearer</text>
+    <text class="tiny mono" x="270" y="194">expires_in</text><text class="tiny mono f-ink" x="400" y="194">300</text><text class="tiny" x="426" y="194">seconds</text>
+    <text class="tiny mono" x="270" y="208">refresh_token</text><text class="tiny" x="400" y="208">none: exchange again when this one expires</text>
+  </g>
+
+  <!-- step 4: the second exchange, asked by the Inventory API -->
+  <g class="tx-w tx-r4">
+    <text class="tiny end" x="684" y="138">the caller authenticates as <tspan class="mono b f-orange">inventory-api</tspan></text>
+    <text class="tiny mono f-ink" x="270" y="152">grant_type=<tspan class="b">urn:ietf:params:oauth:grant-type:token-exchange</tspan></text>
+    <rect class="f-orange-soft" x="265" y="155.5" width="422" height="14" rx="3"/>
+    <text class="tiny mono f-ink" x="270" y="166">subject_token=<tspan class="b f-orange">eyJ…</tspan></text>
+    <text class="tiny" x="400" y="166">the token it was called with</text>
+    <rect class="f-orange-soft" x="265" y="169.5" width="422" height="14" rx="3"/>
+    <text class="tiny mono f-ink" x="270" y="180">actor_token=<tspan class="b f-orange">eyJ…</tspan></text>
+    <text class="tiny" x="400" y="180">its own token: who will be acting</text>
+    <text class="tiny mono f-ink" x="270" y="194">audience=<tspan class="b">pricing-api</tspan></text>
+    <text class="tiny mono f-ink" x="432" y="194">scope=<tspan class="b">pricing:read</tspan></text>
+    <text class="tiny mono" x="270" y="208">*_token_type=urn:…:token-type:access_token</text>
+    <text class="tiny" x="560" y="208">for both tokens</text>
+  </g>
+
+  <!-- the policy the server checks before it issues anything -->
+  <rect class="f-orange-soft tx-w tx-pol1" x="706" y="146" width="210" height="31" rx="5"/>
+  <rect class="f-orange-soft tx-w tx-pol2" x="706" y="179" width="210" height="31" rx="5"/>
+  <text class="tiny sb f-ink" x="712" y="138">Policy: who may act for users</text>
+  <text class="tiny mono f-ink" x="712" y="159">orders-api → inventory-api</text>
+  <text class="tiny" x="712" y="172">with scope <tspan class="mono">inventory:read</tspan></text>
+  <text class="tiny mono f-ink" x="712" y="192">inventory-api → pricing-api</text>
+  <text class="tiny" x="712" y="205">with scope <tspan class="mono">pricing:read</tspan></text>
+  <g class="tx-w tx-pok1"><circle class="f-green" cx="906" cy="161.5" r="6.5"/><path class="none s-bg" d="M902.8 161.5l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="tx-w tx-pok2"><circle class="f-green" cx="906" cy="194.5" r="6.5"/><path class="none s-bg" d="M902.8 194.5l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+  <!-- the call chain -->
+  <rect class="box" x="30" y="268" width="150" height="58" rx="12"/>
+  <text class="label mid" x="105" y="293">Shop app</text>
+  <text class="sub mid" x="105" y="311">Ana is signed in</text>
+  <rect class="box" x="280" y="268" width="150" height="58" rx="12"/>
+  <text class="label mid" x="355" y="293">Orders API</text>
+  <text class="sub mid" x="355" y="311">middle tier</text>
+  <rect class="box" x="530" y="268" width="150" height="58" rx="12"/>
+  <rect class="f-red-soft s-red tx-bad" x="530" y="268" width="150" height="58" rx="12" stroke-width="1.5"/>
+  <rect class="f-green-soft s-green tx-w tx-ok2" x="530" y="268" width="150" height="58" rx="12" stroke-width="1.5"/>
+  <text class="label mid" x="605" y="293">Inventory API</text>
+  <text class="sub mid" x="605" y="311">downstream</text>
+  <g class="tx-bad"><rect class="f-red s-bg" x="654" y="258" width="38" height="18" rx="9" stroke-width="2"/><text class="tiny mid b f-bg" x="673" y="271">401</text></g>
+  <g class="tx-w tx-ok2"><rect class="f-green s-bg" x="654" y="258" width="38" height="18" rx="9" stroke-width="2"/><text class="tiny mid b f-bg" x="673" y="271">200</text></g>
+
+  <!-- step 4: one hop further -->
+  <g class="tx-w tx-c">
+    <line class="wire" x1="680" y1="297" x2="779" y2="297" marker-end="url(#ah)"/>
+    <rect class="box" x="780" y="268" width="150" height="58" rx="12"/>
+  </g>
+  <rect class="f-green-soft s-green tx-w tx-ok3" x="780" y="268" width="150" height="58" rx="12" stroke-width="1.5"/>
+  <g class="tx-w tx-c">
+    <text class="label mid" x="855" y="293">Pricing API</text>
+    <text class="sub mid" x="855" y="311">one hop further</text>
+  </g>
+  <g class="tx-w tx-ok3"><rect class="f-green s-bg" x="892" y="258" width="38" height="18" rx="9" stroke-width="2"/><text class="tiny mid b f-bg" x="911" y="271">200</text></g>
+  <path class="none s-wire tx-w tx-slot3" d="M730 303V350" stroke-width="1.2" stroke-dasharray="2 3"/>
+  <path class="none s-orange tx-w tx-t3" d="M730 303V350" stroke-width="1.2" stroke-dasharray="2 3"/>
+
+  <!-- steps 1-3: what the Inventory API does with the token it is handed -->
+  <g class="p123">
+    <path class="none s-line" d="M680 284H704" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text class="tiny sb f-ink" x="712" y="288">The Inventory API checks</text>
+    <circle class="f-bg s-line" cx="718" cy="304" r="5" stroke-width="1.5"/>
+    <text class="tiny" x="730" y="308"><tspan class="mono b f-ink">aud</tspan> is <tspan class="mono f-ink">inventory-api</tspan></text>
+    <circle class="f-bg s-line" cx="718" cy="322" r="5" stroke-width="1.5"/>
+    <text class="tiny" x="730" y="326"><tspan class="mono b f-ink">scope</tspan> has <tspan class="mono f-ink">inventory:read</tspan></text>
+  </g>
+  <g class="tx-bad">
+    <circle class="f-red" cx="718" cy="304" r="6"/><path class="none s-bg" d="M715.4 301.4l5.2 5.2M720.6 301.4l-5.2 5.2" stroke-width="1.8" stroke-linecap="round"/>
+    <text class="tiny sb f-red" x="712" y="350">It says <tspan class="mono">orders-api</tspan>: refused, 401.</text>
+  </g>
+  <g class="p1">
+    <text class="tiny" x="712" y="372">An API that took tokens made for</text>
+    <text class="tiny" x="712" y="387">other APIs would let any of them</text>
+    <text class="tiny" x="712" y="402">be replayed against it.</text>
+  </g>
+  <g class="p2">
+    <text class="tiny" x="712" y="350">Nothing to check yet: no token</text>
+    <text class="tiny" x="712" y="365">names this API as its audience.</text>
+  </g>
+  <g class="tx-w tx-v1"><circle class="f-green" cx="718" cy="304" r="6"/><path class="none s-bg" d="M714.8 304l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="tx-w tx-v2"><circle class="f-green" cx="718" cy="322" r="6"/><path class="none s-bg" d="M714.8 322l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="tx-w tx-see">
+    <text class="tiny sb f-ink" x="712" y="350">and reads who is calling:</text>
+    <text class="tiny" x="712" y="368"><tspan class="mono">sub</tspan> <tspan class="mono b f-ink">ana</tspan>, the user</text>
+    <text class="tiny" x="712" y="384"><tspan class="mono">act.sub</tspan> <tspan class="mono b f-ink">orders-api</tspan>, the actor</text>
+    <text class="tiny" x="712" y="406">Its log records both names.</text>
+  </g>
+
+  <!-- hop 1: the token Ana’s app holds -->
+  <g>
+    <rect class="f-bg s-orange" x="122" y="350" width="216" height="72" rx="10" stroke-width="1.5"/>
+    <rect class="none s-orange" x="132" y="357" width="12" height="9" rx="2" stroke-width="1.5"/><path class="none s-orange" d="M135 361.5h6" stroke-width="1.5"/>
+    <text class="tiny sb f-orange" x="150" y="365">Ana’s token</text>
+    <text class="tiny end" x="328" y="365">valid 30 min</text>
+    <path class="none s-line" d="M130 371.5H330" stroke-width="1"/>
+    <text class="tiny mono" x="132" y="386">aud</text><text class="tiny mono f-ink" x="214" y="386">orders-api</text>
+    <text class="tiny mono" x="132" y="400">sub</text><text class="tiny mono f-ink" x="214" y="400">ana</text>
+    <text class="tiny mono" x="132" y="414">scope</text><text class="tiny mono f-ink" x="214" y="414">orders:write</text>
+  </g>
+  <g class="tx-ok1">
+    <circle class="f-green" cx="324" cy="382" r="6"/><path class="none s-bg" d="M320.8 382l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="tiny mid sb f-green" x="230" y="437">valid only at the Orders API</text>
+  </g>
+
+  <!-- hop 2: first the forwarded copy, then an empty slot, then the exchanged token -->
+  <g class="tx-fwd">
+    <rect class="f-bg s-orange" x="372" y="350" width="216" height="72" rx="10" stroke-width="1.5"/>
+    <rect class="none s-orange" x="382" y="357" width="12" height="9" rx="2" stroke-width="1.5"/><path class="none s-orange" d="M385 361.5h6" stroke-width="1.5"/>
+    <text class="tiny sb f-orange" x="400" y="365">the same token, forwarded</text>
+    <path class="none s-line" d="M380 371.5H580" stroke-width="1"/>
+    <text class="tiny mono" x="382" y="386">aud</text><text class="tiny mono f-ink" x="464" y="386">orders-api</text>
+    <text class="tiny mono" x="382" y="400">sub</text><text class="tiny mono f-ink" x="464" y="400">ana</text>
+    <text class="tiny mono" x="382" y="414">scope</text><text class="tiny mono f-ink" x="464" y="414">orders:write</text>
+  </g>
+  <g class="tx-bad">
+    <rect class="f-red-soft" x="377" y="375.5" width="206" height="14" rx="3"/>
+    <rect class="none s-red" x="372" y="350" width="216" height="72" rx="10" stroke-width="1.5"/>
+    <circle class="f-red" cx="574" cy="382" r="6"/><path class="none s-bg" d="M571.4 379.4l5.2 5.2M576.6 379.4l-5.2 5.2" stroke-width="1.8" stroke-linecap="round"/>
+    <text class="tiny mid sb f-red" x="480" y="437">refused by the Inventory API</text>
+  </g>
+  <g class="tx-w tx-slot2">
+    <rect class="f-bg s-wire" x="372" y="350" width="216" height="86" rx="10" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text class="tiny mid" x="480" y="390">this hop needs a token</text>
+    <text class="tiny mid" x="480" y="405">made for <tspan class="mono b f-ink">inventory-api</tspan></text>
+  </g>
+  <g class="tx-w tx-t2">
+    <rect class="f-bg s-orange" x="372" y="350" width="216" height="86" rx="10" stroke-width="1.5"/>
+    <rect class="f-orange-soft" x="377" y="375.5" width="206" height="14" rx="3"/>
+    <rect class="f-orange-soft" x="377" y="403.5" width="206" height="14" rx="3"/>
+    <rect class="f-orange-soft" x="377" y="417.5" width="206" height="14" rx="3"/>
+    <rect class="none s-orange" x="382" y="357" width="12" height="9" rx="2" stroke-width="1.5"/><path class="none s-orange" d="M385 361.5h6" stroke-width="1.5"/>
+    <text class="tiny sb f-orange" x="400" y="365">exchanged token</text>
+    <text class="tiny end" x="578" y="365">valid 5 min</text>
+    <path class="none s-line" d="M380 371.5H580" stroke-width="1"/>
+    <text class="tiny mono" x="382" y="386">aud</text><text class="tiny mono f-ink" x="464" y="386">inventory-api</text>
+    <text class="tiny mono" x="382" y="400">sub</text><text class="tiny mono f-ink" x="464" y="400">ana</text><text class="tiny end" x="578" y="400">same user</text>
+    <text class="tiny mono" x="382" y="414">scope</text><text class="tiny mono f-ink" x="464" y="414">inventory:read</text>
+    <text class="tiny mono" x="382" y="428">act.sub</text><text class="tiny mono f-ink" x="464" y="428">orders-api</text>
+  </g>
+  <g class="tx-w tx-ok2">
+    <circle class="f-green" cx="574" cy="382" r="6"/><path class="none s-bg" d="M570.8 382l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="tiny mid sb f-green" x="480" y="451">valid only at the Inventory API</text>
+  </g>
+
+  <!-- hop 3 (step 4): exchanged again -->
+  <g class="tx-w tx-slot3">
+    <rect class="f-bg s-wire" x="622" y="350" width="216" height="100" rx="10" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text class="tiny mid" x="730" y="397">this hop needs a token</text>
+    <text class="tiny mid" x="730" y="412">made for <tspan class="mono b f-ink">pricing-api</tspan></text>
+  </g>
+  <g class="tx-w tx-t3">
+    <rect class="f-bg s-orange" x="622" y="350" width="216" height="100" rx="10" stroke-width="1.5"/>
+    <rect class="f-orange-soft" x="627" y="375.5" width="206" height="14" rx="3"/>
+    <rect class="f-orange-soft" x="627" y="403.5" width="206" height="14" rx="3"/>
+    <rect class="f-orange-soft" x="627" y="417.5" width="206" height="14" rx="3"/>
+    <rect class="f-orange-soft" x="627" y="431.5" width="206" height="14" rx="3"/>
+    <rect class="none s-orange" x="632" y="357" width="12" height="9" rx="2" stroke-width="1.5"/><path class="none s-orange" d="M635 361.5h6" stroke-width="1.5"/>
+    <text class="tiny sb f-orange" x="650" y="365">exchanged again</text>
+    <text class="tiny end" x="828" y="365">valid 5 min</text>
+    <path class="none s-line" d="M630 371.5H830" stroke-width="1"/>
+    <text class="tiny mono" x="632" y="386">aud</text><text class="tiny mono f-ink" x="714" y="386">pricing-api</text>
+    <text class="tiny mono" x="632" y="400">sub</text><text class="tiny mono f-ink" x="714" y="400">ana</text><text class="tiny end" x="828" y="400">same user</text>
+    <text class="tiny mono" x="632" y="414">scope</text><text class="tiny mono f-ink" x="714" y="414">pricing:read</text>
+    <text class="tiny mono" x="632" y="428">act.sub</text><text class="tiny mono f-ink" x="714" y="428">inventory-api</text><text class="tiny end" x="828" y="428">now</text>
+    <text class="tiny mono" x="632" y="442">act.act.sub</text><text class="tiny mono f-ink" x="714" y="442">orders-api</text><text class="tiny end" x="828" y="442">earlier</text>
+  </g>
+  <g class="tx-w tx-ok3">
+    <circle class="f-green" cx="824" cy="382" r="6"/><path class="none s-bg" d="M820.8 382l2.3 2.3 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="tiny mid sb f-green" x="730" y="465">valid only at the Pricing API</text>
+  </g>
+
+  <!-- traffic: a call carrying a token (blue + orange), the exchange (two tokens up, one down), results -->
+  <g class="tx-t tx-req"><circle class="pkt f-blue" r="7"/><circle class="f-orange s-bg" cx="6.5" cy="-5.5" r="4" stroke-width="1.5"/></g>
+  <g class="tx-t tx-up"><circle class="pkt f-blue" r="7"/><circle class="f-orange s-bg" cx="6.5" cy="-5.5" r="4" stroke-width="1.5"/><circle class="f-orange s-bg" cx="6.5" cy="5.5" r="4" stroke-width="1.5"/></g>
+  <circle class="pkt f-orange tx-t tx-down" r="7"/>
+  <g class="tx-t tx-err"><rect class="pkt f-red" x="-19" y="-8" width="38" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">401</text></g>
+  <g class="tx-t tx-ok"><rect class="pkt f-green" x="-19" y="-8" width="38" height="16" rx="8"/><text class="tiny mid sb f-bg" y="4">200</text></g>
+</g>
+</svg>

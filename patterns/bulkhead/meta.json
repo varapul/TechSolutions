@@ -1,0 +1,49 @@
+{
+  "aka": ["Bulkhead isolation", "Concurrency limiter"],
+  "steps": [
+    {
+      "title": "One shared pool",
+      "caption": "Every call to a dependency takes one of 12 shared slots and frees it when the answer arrives.",
+      "body": "The Storefront service has one pool of 12 workers, drawn as slots. A request holds a slot for as long as its call to a dependency is in flight (Catalog for browsing, Payments for checkout, Recommendations for the \"you may also like\" panel) and gives it back when the answer arrives. All three dependencies answer quickly, so slots turn over and only a few are busy at any moment."
+    },
+    {
+      "title": "A slow dependency sinks it",
+      "caption": "Recommendations hangs: its calls end up holding all 12 slots, so browse and checkout time out too.",
+      "body": "Recommendations starts to **hang**. It does not fail, it just takes 30 seconds to answer. Every call to it now keeps its slot, new ones keep arriving, and one by one all 12 slots end up waiting on the same dependency. Browse and checkout requests never needed Recommendations, yet they find no free slot and time out. A non-critical feature has taken the whole service down while Catalog and Payments sit idle and healthy."
+    },
+    {
+      "title": "Partition the pool",
+      "caption": "Split 5 / 5 / 2: Recommendations fills its 2 slots, extra calls are rejected, the others flow on.",
+      "body": "Divide the pool so that each dependency gets its own bounded compartment: 5 slots for Catalog, 5 for Payments and 2 for Recommendations. When Recommendations hangs again, its 2 slots fill and every further call to it is **rejected at once**, so the page renders without recommendations instead of waiting for them. The other two compartments are untouched and keep serving. The failure is contained, like water behind a ship's bulkhead."
+    },
+    {
+      "title": "Size it and pair it",
+      "caption": "A bulkhead caps how many calls wait, not how long: add a timeout, watch the counters, size by load.",
+      "body": "A bulkhead limits how many calls can be stuck at once. It does not make the dependency faster. Pair it with a **timeout**, which here frees the two stuck slots after a second, and export **usage per compartment** and a **rejected-calls counter** so that a full compartment shows up on a dashboard. Size each compartment from its load: slots ≈ peak calls per second × latency, plus headroom (Catalog: 40 × 0.1 s = 4, so 5). The same idea works at other levels: separate instances or pods per tenant or per consumer, separate connection pools, separate queues."
+    }
+  ],
+  "related": ["circuit-breaker", "timeout-and-fallback", "retry-with-backoff", "rate-limiting", "queue-based-load-leveling", "cell-based-architecture", "service-mesh", "health-endpoint-monitoring"],
+  "references": [
+    { "title": "Azure Architecture Center — Bulkhead pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead" },
+    { "title": "Michael Nygard — Release It! (2nd edition)", "url": "https://pragprog.com/titles/mnee2/release-it-second-edition/" },
+    { "title": "Netflix Hystrix wiki — How it Works: isolation with thread pools and semaphores", "url": "https://github.com/Netflix/Hystrix/wiki/How-it-Works#isolation" },
+    { "title": "Netflix Hystrix wiki — Configuration: thread-pool properties and sizing", "url": "https://github.com/Netflix/Hystrix/wiki/Configuration#threadpool-properties" },
+    { "title": "Netflix Hystrix — README: Hystrix Status (in maintenance mode)", "url": "https://github.com/Netflix/Hystrix#hystrix-status" },
+    { "title": "Resilience4j — Bulkhead", "url": "https://resilience4j.readme.io/docs/bulkhead" },
+    { "title": "Resilience4j — Getting Started with Spring Boot (annotations and aspect order)", "url": "https://resilience4j.readme.io/docs/getting-started-3" },
+    { "title": "Envoy — Circuit breaking (limits on connections, pending requests and requests)", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking" },
+    { "title": "Envoy — Adaptive Concurrency filter", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/adaptive_concurrency_filter" },
+    { "title": "Istio — Destination Rule (connection pool settings)", "url": "https://istio.io/latest/docs/reference/config/networking/destination-rule/" },
+    { "title": "Google SRE Book — Addressing Cascading Failures", "url": "https://sre.google/sre-book/addressing-cascading-failures/" },
+    { "title": "AWS Well-Architected Reliability Pillar — REL10-BP03 Use bulkhead architectures to limit scope of impact", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_fault_isolation_use_bulkhead.html" },
+    { "title": "AWS Builder Center — Workload isolation using shuffle-sharding (first published in the Amazon Builders' Library)", "url": "https://builder.aws.com/content/3F06NpJ8YeoIGP8VHTw4n81pFn8/workload-isolation-using-shuffle-sharding" },
+    { "title": "AWS Lambda — Configuring reserved concurrency for a function", "url": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html" },
+    { "title": "Kubernetes — API Priority and Fairness", "url": "https://kubernetes.io/docs/concepts/cluster-administration/flow-control/" },
+    { "title": "Kubernetes — Resource Management for Pods and Containers", "url": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/" },
+    { "title": "Kubernetes — Taints and Tolerations", "url": "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/" },
+    { "title": "OpenJDK — JEP 444: Virtual Threads", "url": "https://openjdk.org/jeps/444" },
+    { "title": "Polly — Migration guide from v7 to v8: migrating bulkhead policies", "url": "https://www.pollydocs.org/migration-v8.html#migrating-bulkhead-policies" },
+    { "title": "MicroProfile Fault Tolerance 4.1 — specification (Bulkhead)", "url": "https://download.eclipse.org/microprofile/microprofile-fault-tolerance-4.1/microprofile-fault-tolerance-spec-4.1.html" },
+    { "title": "Node.js — HTTP: agent.maxSockets", "url": "https://nodejs.org/api/http.html" }
+  ]
+}

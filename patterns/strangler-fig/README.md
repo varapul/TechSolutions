@@ -53,7 +53,7 @@ The migration becomes a long series of small, reversible releases instead of one
 ## Related patterns
 
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
-- Branch by Abstraction *(planned)* — Introduce an abstraction, build the new implementation behind it, then switch over.
+- [Branch by Abstraction](../branch-by-abstraction/) — Introduce an abstraction, build the new implementation behind it, then switch over.
 - Parallel Run *(planned)* — Run old and new side by side on the same inputs and compare results before cutting over.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.

@@ -105,7 +105,7 @@ It is overkill when:
 - Materialized View *(planned)* — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
-- Read Replicas *(planned)* — Send writes to the primary and spread reads across asynchronously updated replicas.
+- [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 - [Cache-Aside](../cache-aside/) — Read from the cache first; on a miss load from the database and populate the cache.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 

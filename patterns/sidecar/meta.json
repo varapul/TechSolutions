@@ -1,0 +1,59 @@
+{
+  "aka": ["Sidekick"],
+  "steps": [
+    {
+      "title": "One unit, two processes",
+      "caption": "One pod, two containers: shared network, volume and lifecycle; separate image, language and limits.",
+      "body": "A **sidecar** is a helper that runs next to the application inside the same deployment unit: a pod in Kubernetes, a task or a host elsewhere. The two are deployed, started, scaled and stopped together and share the pod's network (so they talk over `localhost`) and any volume mounted into both, yet each is a separate container with its own image, language and resource limits. The application's own code carries none of the helper's logic."
+    },
+    {
+      "title": "Three classic jobs",
+      "caption": "A proxy carries the app's calls, a log shipper tails its file, a config agent keeps a file fresh.",
+      "body": "Three jobs come up again and again. A **proxy** sidecar carries the application's outbound and inbound calls and adds TLS and retries. A **log shipper** tails the file the application writes and sends the lines to the log store. A **config agent** fetches secrets and settings and keeps a file on the shared volume up to date, which the application simply reads."
+    },
+    {
+      "title": "Update and reuse",
+      "caption": "A new proxy version rolls out to every pod: no application image is rebuilt, in any language.",
+      "body": "The platform team ships a new version of the proxy image and rolls it out pod by pod. The pods restart with the new sidecar, but no application image is rebuilt. The same image runs next to a Java, a Go and a Python service: one implementation for every language, where a library would need one per language and a rebuild of every service for every fix."
+    },
+    {
+      "title": "The price",
+      "caption": "The price: extra containers in every pod, one more hop per call, and start and stop order matters.",
+      "body": "Every pod now runs extra containers, so their CPU and memory are multiplied by the number of pods (the figures in the animation are examples), and each call through the proxy takes one more hop. Order matters too: the sidecar has to be running before the application starts and has to outlive it at shutdown. Kubernetes' native sidecar containers (stable since v1.33) give exactly that order. The alternatives to a sidecar are a library, one agent per node, or a feature of the platform."
+    }
+  ],
+  "related": ["service-mesh", "ambassador", "telemetry-pipeline", "mutual-tls", "centralized-logging", "external-configuration-store", "gateway-offloading", "microservices"],
+  "references": [
+    { "title": "Azure Architecture Center — Sidecar pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar" },
+    { "title": "Azure Architecture Center — Ambassador pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/ambassador" },
+    { "title": "Brendan Burns, David Oppenheimer — Design Patterns for Container-based Distributed Systems (HotCloud '16)", "url": "https://www.usenix.org/conference/hotcloud16/workshop-program/presentation/burns" },
+    { "title": "Brendan Burns — The Distributed System ToolKit: Patterns for Composite Containers (Kubernetes blog, 2015)", "url": "https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/" },
+    { "title": "Kubernetes — Sidecar Containers", "url": "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/" },
+    { "title": "Kubernetes blog — Kubernetes v1.28: Introducing native sidecar containers", "url": "https://kubernetes.io/blog/2023/08/25/native-sidecar-containers/" },
+    { "title": "Kubernetes blog — Kubernetes v1.33: Octarine (sidecar containers become stable)", "url": "https://kubernetes.io/blog/2025/04/23/kubernetes-v1-33-release/" },
+    { "title": "Kubernetes — Adopting Sidecar Containers", "url": "https://kubernetes.io/docs/tutorials/configuration/pod-sidecar-containers/" },
+    { "title": "Kubernetes — Pod Lifecycle (termination order with sidecar containers)", "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
+    { "title": "Kubernetes — Pods (shared network and storage, Pod update and replacement)", "url": "https://kubernetes.io/docs/concepts/workloads/pods/" },
+    { "title": "Kubernetes — Share Process Namespace between Containers in a Pod", "url": "https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/" },
+    { "title": "Kubernetes — Logging Architecture", "url": "https://kubernetes.io/docs/concepts/cluster-administration/logging/" },
+    { "title": "Kubernetes — Resource Management for Pods and Containers (Pod-level resources)", "url": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/" },
+    { "title": "Kubernetes — Pod Quality of Service Classes", "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/" },
+    { "title": "Kubernetes — Horizontal Pod Autoscaling (container resource metrics)", "url": "https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/" },
+    { "title": "Kubernetes — Debug Running Pods (ephemeral containers)", "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/" },
+    { "title": "Istio — Installing the Sidecar", "url": "https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/" },
+    { "title": "Istio — Istio 1.27 Upgrade Notes (native sidecars enabled by default)", "url": "https://istio.io/latest/news/releases/1.27.x/announcing-1.27/upgrade-notes/" },
+    { "title": "Istio — Install the Istio CNI node agent", "url": "https://istio.io/latest/docs/setup/additional-setup/cni/" },
+    { "title": "Istio — Performance and Scalability", "url": "https://istio.io/latest/docs/ops/deployment/performance-and-scalability/" },
+    { "title": "Istio — Sidecar or ambient?", "url": "https://istio.io/latest/docs/overview/dataplane-modes/" },
+    { "title": "Linkerd — Automatic Proxy Injection", "url": "https://linkerd.io/docs/features/proxy-injection/" },
+    { "title": "OpenTelemetry — Agent deployment pattern", "url": "https://opentelemetry.io/docs/collector/deploy/agent/" },
+    { "title": "OpenTelemetry Operator — Sidecar injection", "url": "https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/collector/sidecar-injection.md" },
+    { "title": "HashiCorp Vault — Vault Agent Injector", "url": "https://developer.hashicorp.com/vault/docs/deploy/kubernetes/injector" },
+    { "title": "Secrets Store CSI Driver — Concepts", "url": "https://secrets-store-csi-driver.sigs.k8s.io/concepts" },
+    { "title": "Dapr — Dapr sidecar (daprd) overview", "url": "https://docs.dapr.io/concepts/dapr-services/sidecar/" },
+    { "title": "Amazon ECS — Task definition parameters for Fargate (essential, dependsOn)", "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html" },
+    { "title": "HashiCorp Nomad — lifecycle block in the job specification", "url": "https://developer.hashicorp.com/nomad/docs/job-specification/lifecycle" },
+    { "title": "Google Cloud — Deploy container images to Cloud Run services (sidecars)", "url": "https://docs.cloud.google.com/run/docs/deploying" },
+    { "title": "OpenKruise — SidecarSet", "url": "https://openkruise.io/docs/user-manuals/sidecarset" }
+  ]
+}

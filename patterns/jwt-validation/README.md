@@ -94,7 +94,7 @@ Any failure in steps 1 to 6 is a **401** with `WWW-Authenticate: Bearer error="i
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 - [Refresh Token Rotation](../refresh-token-rotation/) — Short-lived access tokens, single-use refresh tokens, and reuse detection that revokes the whole family.
-- Token Exchange (On-Behalf-Of) *(planned)* — Swap an incoming user token for a narrowly scoped one before calling a downstream API.
+- [Token Exchange (On-Behalf-Of)](../token-exchange/) — Swap an incoming user token for a narrowly scoped one before calling a downstream API.
 - [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
 
 ## References

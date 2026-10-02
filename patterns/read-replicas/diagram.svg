@@ -1,0 +1,1031 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Read Replicas</title>
+<desc id="dg-desc">Read Replicas. Send writes to the primary and spread reads across asynchronously updated replicas. Step 1, Split reads from writes: Writes go to the primary; reads are spread over replicas that replay its log a moment later. Step 2, Replication lag: A user upgrades to Pro and reloads at once: replica 2 has not replayed it yet and answers Free. Step 3, Read your own writes: The fix: that user's next read carries position 43 and is held until the replica has replayed it. Step 4, Lagging or failed replicas: A long report stalls replica 3 past the lag limit and replica 1 fails: both leave the rotation.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATA MANAGEMENT</text>
+  <text class="title" x="40" y="64">Read Replicas</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Split reads from writes</text>
+  <text class="step on p1" x="40" y="518">1 · Split reads from writes</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Replication lag</text>
+  <text class="step on p2" x="262" y="518">2 · Replication lag</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Read your own writes</text>
+  <text class="step on p3" x="484" y="518">3 · Read your own writes</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Lagging or failed replicas</text>
+  <text class="step on p4" x="706" y="518">4 · Lagging or failed replicas</text>
+  <text class="caption p1" x="40" y="552">Writes go to the primary; reads are spread over replicas that replay its log a moment later.</text>
+  <text class="caption p2" x="40" y="552">A user upgrades to Pro and reloads at once: replica 2 has not replayed it yet and answers Free.</text>
+  <text class="caption p3" x="40" y="552">The fix: that user's next read carries position 43 and is held until the replica has replayed it.</text>
+  <text class="caption p4" x="40" y="552">A long report stalls replica 3 past the lag limit and replica 1 fails: both leave the rotation.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Read Replicas. Timeline (20s loop, 1s = 5%):
+   0-25%   split: a write goes to the primary (0.5 s), log position 42 is acknowledged (1.1 s) and only then shipped
+           to the replicas (1.8-2.5 s); three reads go through the reader endpoint, one to each replica
+   25-50%  lag: user A upgrades to Pro (write 5.3 s, commit 43 at 5.8 s, ack 5.9 s); record 43 is still on its way when
+           the reload reads replica 2 (6.6 s), which is at 42 and answers Free (7.5 s, on screen at 8.5 s)
+   50-75%  read your own writes: the next read carries position 43 (10.4 s) and is held under replica 2 until 43 is
+           replayed (12.4 s), then answers Pro (12.7 s, on screen at 13.7 s); another user's read uses replica 1 at once
+   75-100% a report query stalls replay on replica 3: record 44 queues (16.2 s), lag 2 s then 8 s, out of rotation at
+           17.2 s; replica 1 fails (17.6 s) and is dropped (18.0 s); reads go to replica 2.
+           19.5-20 s: everything fades back to the step-1 state. */
+.diagram .cell { font-size: 11px; }
+.diagram .th { font-size: 10px; fill: var(--faint); }
+.diagram .val { font-size: 13px; font-weight: 600; }
+.diagram .rec { fill: var(--teal); stroke: var(--bg); stroke-width: 2; }
+.diagram .recn { font-size: 10.5px; font-weight: 700; fill: var(--bg); }
+.diagram .rr-w { opacity: 0; animation: rr-w var(--T) linear infinite; }
+.diagram .rr-ack { opacity: 0; animation: rr-ack var(--T) linear infinite; }
+.diagram .rr-rd { opacity: 0; animation: rr-rd var(--T) linear infinite; }
+.diagram .rr-ro { opacity: 0; animation: rr-ro var(--T) linear infinite; }
+.diagram .rr-rs { opacity: 0; animation: rr-rs var(--T) linear infinite; }
+.diagram .rr-stale { opacity: 0; animation: rr-stale var(--T) linear infinite; }
+.diagram .rr-rdw { opacity: 0; animation: rr-rdw var(--T) linear infinite; }
+.diagram .rr-pro { opacity: 0; animation: rr-pro var(--T) linear infinite; }
+.diagram .rr-rec42 { opacity: 0; animation: rr-rec42 var(--T) linear infinite; }
+.diagram .rr-rec43 { opacity: 0; animation: rr-rec43 var(--T) linear infinite; }
+.diagram .rr-rec44 { opacity: 0; animation: rr-rec44 var(--T) linear infinite; }
+.diagram .rr-rec44p { opacity: 0; animation: rr-rec44p var(--T) linear infinite; }
+.diagram .rr-pfree { animation: rr-pfree var(--T) linear infinite; }
+.diagram .rr-ppro { opacity: 0; animation: rr-ppro var(--T) linear infinite; }
+.diagram .rr-pflash { opacity: 0; animation: rr-pflash var(--T) linear infinite; }
+.diagram .rr-c41 { animation: rr-c41 var(--T) linear infinite; }
+.diagram .rr-c42 { opacity: 0; animation: rr-c42 var(--T) linear infinite; }
+.diagram .rr-c43 { opacity: 0; animation: rr-c43 var(--T) linear infinite; }
+.diagram .rr-c44 { opacity: 0; animation: rr-c44 var(--T) linear infinite; }
+.diagram .rr-l42 { opacity: 0; animation: rr-l42 var(--T) linear infinite; }
+.diagram .rr-l43 { opacity: 0; animation: rr-l43 var(--T) linear infinite; }
+.diagram .rr-l44 { opacity: 0; animation: rr-l44 var(--T) linear infinite; }
+.diagram .rr-n42 { opacity: 0; animation: rr-n42 var(--T) linear infinite; }
+.diagram .rr-n43 { opacity: 0; animation: rr-n43 var(--T) linear infinite; }
+.diagram .rr-n44 { opacity: 0; animation: rr-n44 var(--T) linear infinite; }
+.diagram .rr-rfree { animation: rr-rfree var(--T) linear infinite; }
+.diagram .rr-rpro { opacity: 0; animation: rr-rpro var(--T) linear infinite; }
+.diagram .rr-rflash { opacity: 0; animation: rr-rflash var(--T) linear infinite; }
+.diagram .rr-p41 { animation: rr-p41 var(--T) linear infinite; }
+.diagram .rr-p42 { opacity: 0; animation: rr-p42 var(--T) linear infinite; }
+.diagram .rr-p43 { opacity: 0; animation: rr-p43 var(--T) linear infinite; }
+.diagram .rr-p43c { opacity: 0; animation: rr-p43c var(--T) linear infinite; }
+.diagram .rr-p44 { opacity: 0; animation: rr-p44 var(--T) linear infinite; }
+.diagram .rr-lag { opacity: 0; animation: rr-lag var(--T) linear infinite; }
+.diagram .rr-lag3 { opacity: 0; animation: rr-lag3 var(--T) linear infinite; }
+.diagram .rr-lag2s { opacity: 0; animation: rr-lag2s var(--T) linear infinite; }
+.diagram .rr-lag8s { opacity: 0; animation: rr-lag8s var(--T) linear infinite; }
+.diagram .rr-rep3 { opacity: 0; animation: rr-rep3 var(--T) linear infinite; }
+.diagram .rr-down1 { opacity: 0; animation: rr-down1 var(--T) linear infinite; }
+.diagram .rr-stalerow { opacity: 0; animation: rr-stalerow var(--T) linear infinite; }
+.diagram .rr-waitpos { opacity: 0; animation: rr-waitpos var(--T) linear infinite; }
+.diagram .rr-rot3 { animation: rr-rot3 var(--T) linear infinite; }
+.diagram .rr-rot2 { opacity: 0; animation: rr-rot2 var(--T) linear infinite; }
+.diagram .rr-rot1 { opacity: 0; animation: rr-rot1 var(--T) linear infinite; }
+.diagram .rr-out3 { opacity: 0; animation: rr-out3 var(--T) linear infinite; }
+.diagram .rr-out1 { opacity: 0; animation: rr-out1 var(--T) linear infinite; }
+.diagram .rr-ufree { animation: rr-ufree var(--T) linear infinite; }
+.diagram .rr-ustale { opacity: 0; animation: rr-ustale var(--T) linear infinite; }
+.diagram .rr-upro { opacity: 0; animation: rr-upro var(--T) linear infinite; }
+.diagram .rr-press { opacity: 0; animation: rr-press var(--T) linear infinite; }
+.diagram .rr-saved { opacity: 0; animation: rr-saved var(--T) linear infinite; }
+.diagram .rr-tstale { opacity: 0; animation: rr-tstale var(--T) linear infinite; }
+.diagram .rr-tpro { opacity: 0; animation: rr-tpro var(--T) linear infinite; }
+.diagram .rr-inflight { opacity: 0; animation: rr-inflight var(--T) linear infinite; }
+.diagram .rr-wnote { opacity: 0; animation: rr-wnote var(--T) linear infinite; }
+.diagram .rr-anote { opacity: 0; animation: rr-anote var(--T) linear infinite; }
+@keyframes rr-w {
+  0% { transform: translate(252px, 154px); opacity: 0; }
+  2.5% { transform: translate(252px, 154px); opacity: 0; }
+  2.75% { opacity: 1; }
+  4.875% { transform: translate(480px, 154px); opacity: 1; }
+  5.125% { transform: translate(480px, 154px); opacity: 0; }
+  26.5% { transform: translate(252px, 154px); opacity: 0; }
+  26.75% { opacity: 1; }
+  28.875% { transform: translate(480px, 154px); opacity: 1; }
+  29.125% { transform: translate(480px, 154px); opacity: 0; }
+  76% { transform: translate(252px, 154px); opacity: 0; }
+  76.25% { opacity: 1; }
+  78.375% { transform: translate(480px, 154px); opacity: 1; }
+  78.625% { transform: translate(480px, 154px); opacity: 0; }
+  100% { transform: translate(480px, 154px); opacity: 0; }
+}
+@keyframes rr-ack {
+  0% { transform: translate(480px, 154px); opacity: 0; }
+  5.5% { transform: translate(480px, 154px); opacity: 0; }
+  5.75% { opacity: 1; }
+  7.875% { transform: translate(252px, 154px); opacity: 1; }
+  8.125% { transform: translate(252px, 154px); opacity: 0; }
+  29.5% { transform: translate(480px, 154px); opacity: 0; }
+  29.75% { opacity: 1; }
+  31.875% { transform: translate(252px, 154px); opacity: 1; }
+  32.125% { transform: translate(252px, 154px); opacity: 0; }
+  79% { transform: translate(480px, 154px); opacity: 0; }
+  79.25% { opacity: 1; }
+  81.375% { transform: translate(252px, 154px); opacity: 1; }
+  81.625% { transform: translate(252px, 154px); opacity: 0; }
+  100% { transform: translate(252px, 154px); opacity: 0; }
+}
+@keyframes rr-rd {
+  0% { transform: translate(252px, 416px); opacity: 0; }
+  1.5% { transform: translate(252px, 416px); opacity: 0; }
+  1.75% { opacity: 1; }
+  3.708% { transform: translate(539px, 416px); }
+  4.031% { transform: translate(539px, 374px); opacity: 1; }
+  4.281% { transform: translate(539px, 374px); opacity: 0; }
+  6% { transform: translate(252px, 416px); opacity: 0; }
+  6.25% { opacity: 1; }
+  9.415% { transform: translate(696px, 416px); }
+  9.738% { transform: translate(696px, 374px); opacity: 1; }
+  9.988% { transform: translate(696px, 374px); opacity: 0; }
+  12% { transform: translate(252px, 416px); opacity: 0; }
+  12.25% { opacity: 1; }
+  16.623% { transform: translate(853px, 416px); }
+  16.946% { transform: translate(853px, 374px); opacity: 1; }
+  17.196% { transform: translate(853px, 374px); opacity: 0; }
+  33% { transform: translate(252px, 416px); opacity: 0; }
+  33.25% { opacity: 1; }
+  36.415% { transform: translate(696px, 416px); }
+  36.738% { transform: translate(696px, 374px); opacity: 1; }
+  36.988% { transform: translate(696px, 374px); opacity: 0; }
+  100% { transform: translate(696px, 374px); opacity: 0; }
+}
+@keyframes rr-ro {
+  0% { transform: translate(252px, 416px); opacity: 0; }
+  56% { transform: translate(252px, 416px); opacity: 0; }
+  56.25% { opacity: 1; }
+  58.208% { transform: translate(539px, 416px); }
+  58.531% { transform: translate(539px, 374px); opacity: 1; }
+  58.781% { transform: translate(539px, 374px); opacity: 0; }
+  75.75% { transform: translate(252px, 416px); opacity: 0; }
+  76% { opacity: 1; }
+  77.958% { transform: translate(539px, 416px); }
+  78.281% { transform: translate(539px, 374px); opacity: 1; }
+  78.531% { transform: translate(539px, 374px); opacity: 0; }
+  82% { transform: translate(252px, 416px); opacity: 0; }
+  82.25% { opacity: 1; }
+  85.415% { transform: translate(696px, 416px); }
+  85.738% { transform: translate(696px, 374px); opacity: 1; }
+  85.988% { transform: translate(696px, 374px); opacity: 0; }
+  88.5% { transform: translate(252px, 416px); opacity: 0; }
+  88.75% { opacity: 1; }
+  91.915% { transform: translate(696px, 416px); }
+  92.238% { transform: translate(696px, 374px); opacity: 1; }
+  92.488% { transform: translate(696px, 374px); opacity: 0; }
+  100% { transform: translate(696px, 374px); opacity: 0; }
+}
+@keyframes rr-rs {
+  0% { transform: translate(539px, 374px); opacity: 0; }
+  4.5% { transform: translate(539px, 374px); opacity: 0; }
+  4.75% { opacity: 1; }
+  4.823% { transform: translate(539px, 416px); }
+  7.031% { transform: translate(252px, 416px); opacity: 1; }
+  7.281% { transform: translate(252px, 416px); opacity: 0; }
+  10.25% { transform: translate(696px, 374px); opacity: 0; }
+  10.5% { opacity: 1; }
+  10.573% { transform: translate(696px, 416px); }
+  13.988% { transform: translate(252px, 416px); opacity: 1; }
+  14.238% { transform: translate(252px, 416px); opacity: 0; }
+  17.5% { transform: translate(853px, 374px); opacity: 0; }
+  17.75% { opacity: 1; }
+  17.823% { transform: translate(853px, 416px); }
+  22.446% { transform: translate(252px, 416px); opacity: 1; }
+  22.696% { transform: translate(252px, 416px); opacity: 0; }
+  59% { transform: translate(539px, 374px); opacity: 0; }
+  59.25% { opacity: 1; }
+  59.323% { transform: translate(539px, 416px); }
+  61.531% { transform: translate(252px, 416px); opacity: 1; }
+  61.781% { transform: translate(252px, 416px); opacity: 0; }
+  78.75% { transform: translate(539px, 374px); opacity: 0; }
+  79% { opacity: 1; }
+  79.073% { transform: translate(539px, 416px); }
+  81.281% { transform: translate(252px, 416px); opacity: 1; }
+  81.531% { transform: translate(252px, 416px); opacity: 0; }
+  86.25% { transform: translate(696px, 374px); opacity: 0; }
+  86.5% { opacity: 1; }
+  86.573% { transform: translate(696px, 416px); }
+  89.988% { transform: translate(252px, 416px); opacity: 1; }
+  90.238% { transform: translate(252px, 416px); opacity: 0; }
+  92.75% { transform: translate(696px, 374px); opacity: 0; }
+  93% { opacity: 1; }
+  93.073% { transform: translate(696px, 416px); }
+  96.488% { transform: translate(252px, 416px); opacity: 1; }
+  96.738% { transform: translate(252px, 416px); opacity: 0; }
+  100% { transform: translate(252px, 416px); opacity: 0; }
+}
+@keyframes rr-stale {
+  0% { transform: translate(696px, 374px); opacity: 0; }
+  37.5% { transform: translate(696px, 374px); opacity: 0; }
+  37.75% { opacity: 1; }
+  37.92% { transform: translate(696px, 416px); }
+  42.36% { transform: translate(252px, 416px); opacity: 1; }
+  42.61% { transform: translate(252px, 416px); opacity: 0; }
+  100% { transform: translate(252px, 416px); opacity: 0; }
+}
+@keyframes rr-rdw {
+  0% { transform: translate(252px, 416px); opacity: 0; }
+  52% { transform: translate(252px, 416px); opacity: 0; }
+  52.25% { opacity: 1; }
+  55.415% { transform: translate(696px, 416px); }
+  55.554% { transform: translate(696px, 398px); }
+  62.5% { transform: translate(696px, 398px); }
+  63% { transform: translate(696px, 374px); opacity: 1; }
+  63.25% { transform: translate(696px, 374px); opacity: 0; }
+  100% { transform: translate(696px, 374px); opacity: 0; }
+}
+@keyframes rr-pro {
+  0% { transform: translate(696px, 374px); opacity: 0; }
+  63.5% { transform: translate(696px, 374px); opacity: 0; }
+  63.75% { opacity: 1; }
+  63.92% { transform: translate(696px, 416px); }
+  68.36% { transform: translate(252px, 416px); opacity: 1; }
+  68.61% { transform: translate(252px, 416px); opacity: 0; }
+  100% { transform: translate(252px, 416px); opacity: 0; }
+}
+@keyframes rr-rec42 {
+  0% { transform: translate(0px, 200px); opacity: 0; }
+  9% { transform: translate(0px, 200px); opacity: 0; }
+  9.25% { opacity: 1; }
+  12.5% { transform: translate(0px, 284px); opacity: 1; }
+  12.75% { transform: translate(0px, 284px); opacity: 0; }
+  100% { transform: translate(0px, 284px); opacity: 0; }
+}
+@keyframes rr-rec43 {
+  0% { transform: translate(0px, 200px); opacity: 0; }
+  30% { transform: translate(0px, 200px); opacity: 0; }
+  30.25% { opacity: 1; }
+  32.5% { transform: translate(0px, 230px); }
+  59% { transform: translate(0px, 244px); }
+  62% { transform: translate(0px, 284px); opacity: 1; }
+  62.25% { transform: translate(0px, 284px); opacity: 0; }
+  100% { transform: translate(0px, 284px); opacity: 0; }
+}
+@keyframes rr-rec44 {
+  0% { transform: translate(0px, 200px); opacity: 0; }
+  79.5% { transform: translate(0px, 200px); opacity: 0; }
+  79.75% { opacity: 1; }
+  82.25% { transform: translate(0px, 284px); opacity: 1; }
+  82.5% { transform: translate(0px, 284px); opacity: 0; }
+  100% { transform: translate(0px, 284px); opacity: 0; }
+}
+@keyframes rr-rec44p {
+  0% { transform: translate(0px, 200px); opacity: 0; }
+  79.5% { transform: translate(0px, 200px); opacity: 0; }
+  81% { opacity: 1; transform: translate(0px, 244px); }
+  97.5% { transform: translate(0px, 244px); opacity: 1; }
+  99% { transform: translate(0px, 244px); opacity: 0; }
+  100% { transform: translate(0px, 244px); opacity: 0; }
+}
+@keyframes rr-pfree {
+  0% { opacity: 1; }
+  29% { opacity: 1; }
+  30% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rr-ppro {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-pflash {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30% { opacity: 1; }
+  37% { opacity: 1; }
+  38% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-c41 {
+  0% { opacity: 1; }
+  5% { opacity: 1; }
+  6% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rr-c42 {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  6% { opacity: 1; }
+  29% { opacity: 1; }
+  30% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-c43 {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30% { opacity: 1; }
+  78.5% { opacity: 1; }
+  79.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-c44 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-l42 {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-l43 {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-l44 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-n42 {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  6% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-n43 {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-n44 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-rfree {
+  0% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rr-rpro {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  63% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-rflash {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  63% { opacity: 1; }
+  69% { opacity: 1; }
+  70% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-p41 {
+  0% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rr-p42 {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.5% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-p43 {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  63% { opacity: 1; }
+  82.25% { opacity: 1; }
+  83.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-p43c {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  63% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-p44 {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  83.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-lag {
+  0% { opacity: 0; }
+  5.25% { opacity: 0; }
+  6.25% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13.5% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.25% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  78.75% { opacity: 0; }
+  79.75% { opacity: 1; }
+  82.25% { opacity: 1; }
+  83.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-lag3 {
+  0% { opacity: 0; }
+  5.25% { opacity: 0; }
+  6.25% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13.5% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.25% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  78.75% { opacity: 0; }
+  79.75% { opacity: 1; }
+  81.5% { opacity: 1; }
+  82.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-lag2s {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  82.5% { opacity: 1; }
+  85% { opacity: 1; }
+  86% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-lag8s {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-rep3 {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-down1 {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  89% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-stalerow {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  37.75% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-waitpos {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.5% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-rot3 {
+  0% { opacity: 1; }
+  86% { opacity: 1; }
+  87% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rr-rot2 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87% { opacity: 1; }
+  90% { opacity: 1; }
+  91% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-rot1 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-out3 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-out1 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-ufree {
+  0% { opacity: 1; }
+  42.5% { opacity: 1; }
+  43.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rr-ustale {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  43.5% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-upro {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-press {
+  0% { opacity: 0; }
+  25.25% { opacity: 0; }
+  26.25% { opacity: 1; }
+  27.25% { opacity: 1; }
+  28.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-saved {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  33% { opacity: 1; }
+  42.5% { opacity: 1; }
+  43.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-tstale {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  43.5% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-tpro {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-inflight {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  32% { opacity: 1; }
+  62% { opacity: 1; }
+  63% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-wnote {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.5% { opacity: 1; }
+  62.5% { opacity: 1; }
+  63.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rr-anote {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- wires: writes to the primary, reads through the reader endpoint to each replica, one replication stream per replica -->
+  <line class="wire" x1="262" y1="154" x2="466" y2="154" marker-end="url(#ah)"/>
+  <line class="wire" x1="262" y1="416" x2="290" y2="416" marker-end="url(#ah)"/>
+  <path class="wire" d="M440 416H539V384" marker-end="url(#ah)"/>
+  <path class="wire" d="M440 416H696V384" marker-end="url(#ah)"/>
+  <path class="wire" d="M440 416H853V384" marker-end="url(#ah)"/>
+  <line class="s-teal" x1="539" y1="210" x2="539" y2="270" stroke-width="2" marker-end="url(#ah-teal)"/>
+  <line class="s-teal" x1="696" y1="210" x2="696" y2="270" stroke-width="2" marker-end="url(#ah-teal)"/>
+  <line class="s-teal" x1="853" y1="210" x2="853" y2="270" stroke-width="2" marker-end="url(#ah-teal)"/>
+  <text class="tiny mid sb f-teal" x="617.5" y="237">async replication</text>
+  <text class="tiny mid" x="617.5" y="252">of the log</text>
+
+  <!-- under the write wire: what counts as a write (steps 1 and 4), the user's write (step 2), the other way to read your own write (step 3) -->
+  <g class="p14"><text class="tiny mono f-blue" x="272" y="172">INSERT · UPDATE · DELETE</text></g>
+  <g class="p2"><text class="tiny mono f-blue" x="272" y="172">UPDATE … SET plan = 'Pro'</text></g>
+  <g class="p3">
+    <line class="none s-blue" x1="262" y1="178" x2="466" y2="178" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#ah-blue)"/>
+    <text class="tiny mid f-blue" x="365" y="195">or: this read goes to the primary</text>
+  </g>
+
+  <!-- traffic (drawn under the boxes, so tokens emerge from and sink into them) -->
+  <g class="rr-w"><circle class="pkt f-blue" r="7"/><text class="tiny mid sb f-blue" y="-12">write</text></g>
+  <g class="rr-ack"><circle class="pkt f-green" r="7"/><path class="none s-bg" d="M-3.2 0l2.2 2.2 4.2-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="rr-rd"><circle class="pkt f-blue" r="7"/><text class="tiny mid sb f-blue" y="-12">read</text></g>
+  <circle class="pkt f-blue rr-ro" r="7"/>
+  <circle class="pkt f-teal rr-rs" r="7"/>
+  <g class="rr-stale"><circle class="pkt f-amber" r="7"/><text class="tiny mid sb f-amber-ink" y="-12">Free</text></g>
+  <g class="rr-rdw"><circle class="pkt f-blue" r="7"/><text class="tiny sb f-blue" x="12" y="-5">read ≥ 43</text></g>
+  <g class="rr-pro"><circle class="pkt f-teal" r="7"/><text class="tiny mid sb f-teal" y="-12">Pro</text></g>
+  <g transform="translate(539 0)"><g class="rr-rec42"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">42</text></g></g>
+  <g transform="translate(696 0)"><g class="rr-rec42"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">42</text></g></g>
+  <g transform="translate(853 0)"><g class="rr-rec42"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">42</text></g></g>
+  <g transform="translate(539 0)"><g class="rr-rec43"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">43</text></g></g>
+  <g transform="translate(696 0)"><g class="rr-rec43"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">43</text></g></g>
+  <g transform="translate(853 0)"><g class="rr-rec43"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">43</text></g></g>
+  <g transform="translate(539 0)"><g class="rr-rec44"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">44</text></g></g>
+  <g transform="translate(696 0)"><g class="rr-rec44"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">44</text></g></g>
+  <g transform="translate(853 0)"><g class="rr-rec44p"><rect class="rec" x="-13" y="-10" width="26" height="20" rx="5"/><text class="recn mid mono" y="4">44</text></g></g>
+
+  <!-- application: one user's screen, the read/write router, everyone else -->
+  <rect class="box" x="36" y="94" width="226" height="346" rx="14"/>
+  <text class="label" x="50" y="116">Application</text>
+  <path class="none s-wire" d="M212 302H233M262 154H233V416H262" stroke-width="1.5"/>
+  <circle class="f-bg s-wire" cx="262" cy="154" r="4" stroke-width="1.5"/>
+  <circle class="f-bg s-wire" cx="262" cy="416" r="4" stroke-width="1.5"/>
+
+  <rect class="f-bg s-line" x="46" y="126" width="166" height="92" rx="8" stroke-width="1"/>
+  <text class="tiny sb f-ink" x="56" y="143">User A</text>
+  <text class="tiny end" x="202" y="143">account page</text>
+  <line class="s-line" x1="52" y1="150" x2="206" y2="150"/>
+  <text class="tiny" x="56" y="170">Plan</text>
+  <text class="val rr-ufree" x="92" y="171">Free</text>
+  <g class="rr-ustale"><rect class="f-amber-soft s-amber" x="86" y="158" width="46" height="18" rx="4" stroke-width="1"/><text class="val f-amber-ink" x="92" y="171">Free</text></g>
+  <text class="val f-green rr-upro" x="92" y="171">Pro</text>
+  <rect class="f-panel-2 s-line" x="56" y="184" width="146" height="24" rx="12" stroke-width="1.5"/>
+  <text class="tiny mid sb f-ink" x="129" y="200">Upgrade to Pro</text>
+  <rect class="f-blue-soft s-blue rr-press" x="56" y="184" width="146" height="24" rx="12" stroke-width="1.5"/>
+  <g class="rr-saved"><rect class="f-bg" x="56" y="184" width="146" height="24" rx="12"/><rect class="f-green-soft s-green" x="56" y="184" width="146" height="24" rx="12" stroke-width="1.5"/><text class="tiny mid sb f-green" x="129" y="200">✓ saved</text></g>
+  <g class="rr-tstale"><rect class="f-bg" x="56" y="184" width="146" height="24" rx="12"/><rect class="f-amber-soft s-amber" x="56" y="184" width="146" height="24" rx="12" stroke-width="1.5"/><text class="tiny mid sb f-amber-ink" x="129" y="200">reload: still Free</text></g>
+  <g class="rr-tpro"><rect class="f-bg" x="56" y="184" width="146" height="24" rx="12"/><rect class="f-green-soft s-green" x="56" y="184" width="146" height="24" rx="12" stroke-width="1.5"/><text class="tiny mid sb f-green" x="129" y="200">✓ reload shows Pro</text></g>
+
+  <g class="p3">
+    <rect class="f-teal-soft s-teal" x="46" y="228" width="166" height="22" rx="11" stroke-width="1.2"/>
+    <text class="tiny mid sb f-teal" x="129" y="243">last write: position 43</text>
+  </g>
+
+  <rect class="f-bg s-line" x="46" y="262" width="166" height="80" rx="8" stroke-width="1"/>
+  <text class="tiny sb f-ink" x="56" y="280">read/write router</text>
+  <text class="tiny" x="56" y="298"><tspan class="sb f-blue">write</tspan> → primary</text>
+  <text class="tiny" x="56" y="314"><tspan class="sb f-blue">read</tspan> → reader endpoint</text>
+  <g class="p3"><text class="tiny" x="56" y="331"><tspan class="sb f-teal">read ≥ 43</tspan> after a write</text></g>
+
+  <rect class="f-bg s-line" x="46" y="384" width="166" height="44" rx="8" stroke-width="1"/>
+  <text class="tiny sb f-ink" x="56" y="402">Other users</text>
+  <text class="tiny" x="56" y="418">read from any replica</text>
+
+  <!-- primary: one row of one table, and the log every replica follows -->
+  <rect class="box" x="468" y="94" width="456" height="116" rx="14"/>
+  <path class="f-teal-soft s-teal" d="M480 106v11a8 3 0 0 0 16 0v-11" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="488" cy="106" rx="8" ry="3" stroke-width="1.5"/>
+  <text class="label" x="504" y="118">Primary</text>
+  <text class="sub end" x="912" y="118">the only node that takes writes</text>
+  <rect class="f-panel-2" x="480" y="126" width="230" height="16" rx="4"/>
+  <text class="th" x="490" y="138">id</text><text class="th" x="520" y="138">name</text><text class="th" x="590" y="138">plan</text>
+  <rect class="f-bg s-line" x="480" y="144" width="230" height="20" rx="4" stroke-width="1"/>
+  <rect class="f-teal-soft rr-pflash" x="584" y="146.5" width="122" height="15" rx="3"/>
+  <text class="cell mono" x="490" y="158">7</text><text class="cell mono" x="520" y="158">Ada</text>
+  <text class="cell mono rr-pfree" x="590" y="158">Free</text>
+  <text class="cell mono b f-teal rr-ppro" x="590" y="158">Pro</text>
+  <text class="tiny" x="722" y="138">table <tspan class="mono f-ink">accounts</tspan></text>
+  <text class="tiny rr-c41" x="722" y="158">committed up to <tspan class="cell mono b f-ink">41</tspan></text>
+  <text class="tiny rr-c42" x="722" y="158">committed up to <tspan class="cell mono b f-ink">42</tspan></text>
+  <text class="tiny rr-c43" x="722" y="158">committed up to <tspan class="cell mono b f-ink">43</tspan></text>
+  <text class="tiny rr-c44" x="722" y="158">committed up to <tspan class="cell mono b f-ink">44</tspan></text>
+  <text class="tiny" x="480" y="179"><tspan class="sb f-ink">transaction log</tspan> · PostgreSQL WAL, MySQL binary log</text>
+  <text class="tiny end" x="912" y="179">append-only</text>
+  <rect class="none s-line dash" x="480" y="184" width="432" height="20" rx="5" stroke-width="1.5"/>
+  <path class="none s-muted" d="M891 194h10M897 190l4 4-4 4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="f-bg s-line" x="480" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><text class="cell mono mid f-muted" x="502" y="198">39</text>
+  <rect class="f-bg s-line" x="524" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><text class="cell mono mid f-muted" x="546" y="198">40</text>
+  <rect class="f-bg s-line" x="568" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><text class="cell mono mid f-muted" x="590" y="198">41</text>
+  <g class="rr-l42"><rect class="f-bg s-line" x="612" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><rect class="f-teal-soft s-teal rr-n42" x="612" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><text class="cell mono mid b" x="634" y="198">42</text></g>
+  <g class="rr-l43"><rect class="f-bg s-line" x="656" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><rect class="f-amber-soft s-amber rr-n43" x="656" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><text class="cell mono mid b" x="678" y="198">43</text></g>
+  <g class="rr-l44"><rect class="f-bg s-line" x="700" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><rect class="f-amber-soft s-amber rr-n44" x="700" y="184" width="44" height="20" rx="5" stroke-width="1.5"/><text class="cell mono mid b" x="722" y="198">44</text></g>
+
+  <!-- replica 1 -->
+  <rect class="box" x="468" y="272" width="142" height="110" rx="12"/>
+  <rect class="f-red-soft s-red rr-down1" x="468" y="272" width="142" height="110" rx="12" stroke-width="1.5"/>
+  <path class="f-teal-soft s-teal" d="M480 285v9a7 2.6 0 0 0 14 0v-9" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="487" cy="285" rx="7" ry="2.6" stroke-width="1.5"/>
+  <text class="label" x="502" y="296">Replica 1</text>
+  <rect class="f-bg s-line" x="478" y="304" width="122" height="20" rx="4" stroke-width="1"/>
+  <rect class="f-teal-soft rr-rflash" x="540" y="306.5" width="56" height="15" rx="3"/>
+  <text class="cell mono" x="486" y="318">7</text>
+  <text class="cell mono" x="504" y="318">Ada</text>
+  <text class="cell mono rr-rfree" x="546" y="318">Free</text>
+  <text class="cell mono b f-teal rr-rpro" x="546" y="318">Pro</text>
+  <text class="tiny" x="480" y="342">replayed up to</text>
+  <text class="cell mono b end rr-p41" x="598" y="342">41</text>
+  <text class="cell mono b end rr-p42" x="598" y="342">42</text>
+  <text class="cell mono b end rr-p43" x="598" y="342">43</text>
+  <text class="cell mono b end rr-p44" x="598" y="342">44</text>
+  <rect class="f-green-soft s-green" x="478" y="350" width="122" height="22" rx="11" stroke-width="1.2"/>
+  <text class="tiny mid sb f-green" x="539" y="365">lag 0 ms</text>
+  <g class="rr-lag"><rect class="f-bg" x="478" y="350" width="122" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="478" y="350" width="122" height="22" rx="11" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="539" y="365">lag 200 ms</text></g>
+  <g class="rr-down1"><rect class="f-bg" x="478" y="350" width="122" height="22" rx="11"/><rect class="f-red-soft s-red" x="478" y="350" width="122" height="22" rx="11" stroke-width="1.2"/><text class="tiny mid sb f-red" x="539" y="365">✕ not responding</text></g>
+
+  <!-- replica 2 -->
+  <rect class="box" x="625" y="272" width="142" height="110" rx="12"/>
+  <path class="f-teal-soft s-teal" d="M637 285v9a7 2.6 0 0 0 14 0v-9" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="644" cy="285" rx="7" ry="2.6" stroke-width="1.5"/>
+  <text class="label" x="659" y="296">Replica 2</text>
+  <rect class="f-bg s-line" x="635" y="304" width="122" height="20" rx="4" stroke-width="1"/>
+  <rect class="f-teal-soft rr-rflash" x="697" y="306.5" width="56" height="15" rx="3"/>
+  <text class="cell mono" x="643" y="318">7</text>
+  <text class="cell mono" x="661" y="318">Ada</text>
+  <text class="cell mono rr-rfree" x="703" y="318">Free</text>
+  <text class="cell mono b f-teal rr-rpro" x="703" y="318">Pro</text>
+  <text class="tiny" x="637" y="342">replayed up to</text>
+  <text class="cell mono b end rr-p41" x="755" y="342">41</text>
+  <text class="cell mono b end rr-p42" x="755" y="342">42</text>
+  <text class="cell mono b end rr-p43" x="755" y="342">43</text>
+  <text class="cell mono b end rr-p44" x="755" y="342">44</text>
+  <rect class="f-green-soft s-green" x="635" y="350" width="122" height="22" rx="11" stroke-width="1.2"/>
+  <text class="tiny mid sb f-green" x="696" y="365">lag 0 ms</text>
+  <g class="rr-lag"><rect class="f-bg" x="635" y="350" width="122" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="635" y="350" width="122" height="22" rx="11" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="696" y="365">lag 200 ms</text></g>
+  <rect class="none s-amber rr-stalerow" x="635" y="304" width="122" height="20" rx="4" stroke-width="2"/>
+  <rect class="none s-amber rr-waitpos" x="632" y="330" width="128" height="17" rx="5" stroke-width="1.5"/>
+
+  <!-- replica 3 -->
+  <rect class="box" x="782" y="272" width="142" height="110" rx="12"/>
+  <g class="rr-rep3">
+    <rect class="f-amber-soft s-amber" x="782" y="272" width="142" height="110" rx="12" stroke-width="1.5"/>
+    <circle class="none s-line" cx="906" cy="291" r="7" stroke-width="2.5"/>
+    <circle class="none s-amber spin" cx="906" cy="291" r="7" stroke-width="2.5" stroke-dasharray="11 33" stroke-linecap="round"/>
+  </g>
+  <path class="f-teal-soft s-teal" d="M794 285v9a7 2.6 0 0 0 14 0v-9" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="801" cy="285" rx="7" ry="2.6" stroke-width="1.5"/>
+  <text class="label" x="816" y="296">Replica 3</text>
+  <rect class="f-bg s-line" x="792" y="304" width="122" height="20" rx="4" stroke-width="1"/>
+  <rect class="f-teal-soft rr-rflash" x="854" y="306.5" width="56" height="15" rx="3"/>
+  <text class="cell mono" x="800" y="318">7</text>
+  <text class="cell mono" x="818" y="318">Ada</text>
+  <text class="cell mono rr-rfree" x="860" y="318">Free</text>
+  <text class="cell mono b f-teal rr-rpro" x="860" y="318">Pro</text>
+  <text class="tiny" x="794" y="342">replayed up to</text>
+  <text class="cell mono b end rr-p41" x="912" y="342">41</text>
+  <text class="cell mono b end rr-p42" x="912" y="342">42</text>
+  <text class="cell mono b end rr-p43c" x="912" y="342">43</text>
+  <rect class="f-green-soft s-green" x="792" y="350" width="122" height="22" rx="11" stroke-width="1.2"/>
+  <text class="tiny mid sb f-green" x="853" y="365">lag 0 ms</text>
+  <g class="rr-lag3"><rect class="f-bg" x="792" y="350" width="122" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="792" y="350" width="122" height="22" rx="11" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="853" y="365">lag 200 ms</text></g>
+  <g class="rr-lag2s"><rect class="f-bg" x="792" y="350" width="122" height="22" rx="11"/><rect class="f-amber-soft s-amber" x="792" y="350" width="122" height="22" rx="11" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="853" y="365">lag 2 s</text></g>
+  <g class="rr-lag8s"><rect class="f-bg" x="792" y="350" width="122" height="22" rx="11"/><rect class="f-red-soft s-red" x="792" y="350" width="122" height="22" rx="11" stroke-width="1.2"/><text class="tiny mid sb f-red" x="853" y="365">lag 8 s</text></g>
+
+  <!-- reader endpoint: spreads reads over the replicas that are in rotation -->
+  <rect class="box" x="292" y="394" width="148" height="44" rx="12"/>
+  <text class="label mid" x="366" y="413">Reader endpoint</text>
+  <text class="tiny mid rr-rot3" x="366" y="429">3 of 3 in rotation</text>
+  <text class="tiny mid sb f-amber-ink rr-rot2" x="366" y="429">2 of 3 in rotation</text>
+  <text class="tiny mid sb f-amber-ink rr-rot1" x="366" y="429">1 of 3 in rotation</text>
+  <g class="rr-out3">
+    <path class="none s-bg" d="M853 412V385" stroke-width="12"/>
+    <path class="none s-amber" d="M853 415V400" stroke-width="2" stroke-dasharray="4 4"/>
+    <circle class="f-amber" cx="853" cy="392" r="7"/><path class="s-bg" d="M850 389l6 6M856 389l-6 6" stroke-width="2" stroke-linecap="round"/>
+    <text class="tiny mid sb f-amber-ink" x="853" y="434">out: lag &gt; 5 s limit</text>
+  </g>
+  <g class="rr-out1">
+    <path class="none s-bg" d="M539 412V385" stroke-width="12"/>
+    <path class="none s-red" d="M539 415V400" stroke-width="2" stroke-dasharray="4 4"/>
+    <circle class="f-red" cx="539" cy="392" r="7"/><path class="s-bg" d="M536 389l6 6M542 389l-6 6" stroke-width="2" stroke-linecap="round"/>
+    <text class="tiny mid sb f-red" x="539" y="434">out: health check failed</text>
+  </g>
+
+  <!-- notes in the replication band and under the read wire -->
+  <g class="rr-inflight">
+    <text class="tiny mid sb f-amber-ink" x="774.5" y="237">43 is committed,</text>
+    <text class="tiny mid" x="774.5" y="252">not yet replayed</text>
+  </g>
+  <g class="rr-rep3">
+    <text class="tiny mid sb f-amber-ink" x="772" y="237">long report query:</text>
+    <text class="tiny mid" x="772" y="252">replay has to wait</text>
+  </g>
+  <text class="tiny mid sb f-amber-ink rr-wnote" x="696" y="434">held: replica 2 is still at 42</text>
+  <text class="tiny mid sb f-green rr-anote" x="696" y="434">✓ replica 2 replayed 43, then answered</text>
+
+  <!-- step notes -->
+  <g class="p1">
+    <text class="tiny sb f-ink" x="282" y="228">Split reads from writes</text>
+    <text class="tiny" x="282" y="246">Replicas replay the log a</text>
+    <text class="tiny" x="282" y="262">moment after each commit.</text>
+    <text class="tiny sb f-ink" x="282" y="286">Scale reads, not writes</text>
+    <text class="tiny" x="282" y="304">More replicas add read</text>
+    <text class="tiny" x="282" y="320">capacity. Every write still</text>
+    <text class="tiny" x="282" y="336">goes through one primary.</text>
+  </g>
+  <g class="p2">
+    <text class="tiny sb f-amber-ink" x="282" y="228">Replication lag</text>
+    <text class="tiny" x="282" y="246">The commit is acknowledged</text>
+    <text class="tiny" x="282" y="262">before any replica has it.</text>
+    <text class="tiny sb f-ink" x="282" y="286">Stale read</text>
+    <text class="tiny" x="282" y="304">A read that gets there</text>
+    <text class="tiny" x="282" y="320">first is answered from</text>
+    <text class="tiny" x="282" y="336">the old row.</text>
+  </g>
+  <g class="p3">
+    <text class="tiny sb f-ink" x="282" y="228">Read your own writes</text>
+    <text class="tiny" x="282" y="246">After a write, this user's</text>
+    <text class="tiny" x="282" y="262">reads carry its position.</text>
+    <text class="tiny" x="282" y="278">A replica answers once it</text>
+    <text class="tiny" x="282" y="294">has replayed that far.</text>
+    <text class="tiny sb f-ink" x="282" y="318">Everyone else</text>
+    <text class="tiny" x="282" y="336">reads any replica, no wait.</text>
+  </g>
+  <g class="p4">
+    <text class="tiny sb f-ink" x="282" y="228">Out of rotation</text>
+    <text class="tiny" x="282" y="246">Over the lag limit, or</text>
+    <text class="tiny" x="282" y="262">failing its health check:</text>
+    <text class="tiny" x="282" y="278">the endpoint skips it.</text>
+    <text class="tiny sb f-ink" x="282" y="302">Keep headroom</text>
+    <text class="tiny" x="282" y="320">The replicas left must</text>
+    <text class="tiny" x="282" y="336">carry all the reads.</text>
+  </g>
+
+  <!-- legend -->
+  <circle class="f-blue" cx="44" cy="458" r="5"/><text class="tiny" x="54" y="462">request</text>
+  <circle class="f-green" cx="108" cy="458" r="5"/><text class="tiny" x="118" y="462">ack</text>
+  <rect class="f-teal" x="146" y="453" width="12" height="10" rx="2.5"/><text class="tiny" x="164" y="462">log record</text>
+  <circle class="f-teal" cx="234" cy="458" r="5"/><text class="tiny" x="244" y="462">rows</text>
+  <circle class="f-amber" cx="284" cy="458" r="5"/><text class="tiny" x="294" y="462">stale rows</text>
+  <text class="tiny end" x="924" y="462">Every node has the same schema and data. Only the primary takes writes.</text>
+</g>
+</svg>

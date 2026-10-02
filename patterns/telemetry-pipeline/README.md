@@ -168,7 +168,7 @@ Add the second tier when something has to be done centrally: tail sampling over 
 - Centralized Logging *(planned)* — Ship structured logs from every service to one searchable store, correlated by request ID.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
-- Sidecar *(planned)* — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
+- [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 

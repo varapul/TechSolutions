@@ -1,0 +1,37 @@
+{
+  "aka": ["Choreography-based saga", "Choreographed saga"],
+  "steps": [
+    {
+      "title": "An event starts it",
+      "caption": "Orders saves order #1042 as PENDING and publishes OrderPlaced. It tells nobody what to do next.",
+      "body": "Orders commits the new order as **PENDING** in its own database and publishes *OrderPlaced* to the topic. That is all it does: it sends no command and does not know who will react. The other services have each subscribed to the events they care about, and Payments is the one that listens for this one."
+    },
+    {
+      "title": "React and publish",
+      "caption": "Each service reacts, commits locally and publishes the next event, until Orders marks CONFIRMED.",
+      "body": "Payments consumes *OrderPlaced*, charges the card in a local transaction and publishes *PaymentCompleted*. Inventory reacts to that by reserving stock and publishing *StockReserved*, Shipping reacts by booking a courier and publishing *ShipmentBooked*, and Orders reacts by marking the order **CONFIRMED**. No component ran this sequence: the workflow exists only as the chain of subscriptions."
+    },
+    {
+      "title": "A failure is an event too",
+      "caption": "Out of stock: Inventory publishes StockReservationFailed. Payments refunds; Orders cancels.",
+      "body": "On order #1043 the card has already been charged, but Inventory has nothing left to reserve, so it publishes *StockReservationFailed*. Payments listens for that event too: it refunds the charge in a new local transaction and publishes *PaymentRefunded*, and Orders reacts by marking the order **CANCELLED**. Each service undoes its own step; there is no global rollback."
+    },
+    {
+      "title": "Nobody sees the whole flow",
+      "caption": "Every event carries the order ID, so a tracking view can rebuild a saga and flag a stuck one.",
+      "body": "The flow is written down nowhere, so when Inventory's consumer is down, order #1044 simply stops after the charge and no service reports it. Teams add what the pattern leaves out: every event carries the order ID as a **correlation ID**, a tracking view subscribes to the topic and assembles each saga's state from its events, and a **timeout** flags a saga that has gone quiet half-way. As steps and branches grow, the subscriptions become hard to follow and an orchestrator pays off."
+    }
+  ],
+  "related": ["saga-orchestration", "event-driven-architecture", "transactional-outbox", "idempotent-consumer", "compensating-transaction", "dead-letter-queue", "publish-subscribe", "database-per-service"],
+  "references": [
+    { "title": "Chris Richardson — Pattern: Saga (microservices.io)", "url": "https://microservices.io/patterns/data/saga.html" },
+    { "title": "Hector Garcia-Molina & Kenneth Salem — Sagas (SIGMOD 1987)", "url": "https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf" },
+    { "title": "Azure Architecture Center — Saga design pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga" },
+    { "title": "Azure Architecture Center — Choreography pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/choreography" },
+    { "title": "AWS Prescriptive Guidance — Saga choreography pattern", "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-choreography.html" },
+    { "title": "Martin Fowler — What do you mean by \"Event-Driven\"?", "url": "https://martinfowler.com/articles/201701-event-driven.html" },
+    { "title": "Bernd Ruecker & Martin Schimak — Know the Flow! Microservices and Event Choreographies (InfoQ)", "url": "https://www.infoq.com/articles/microservice-event-choreographies/" },
+    { "title": "Bernd Ruecker — Monitoring and Managing Workflows across Collaborating Microservices (InfoQ)", "url": "https://www.infoq.com/articles/monitor-workflow-collaborating-microservices/" },
+    { "title": "Azure Architecture Center — Compensating Transaction pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction" }
+  ]
+}

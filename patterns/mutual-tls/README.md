@@ -107,7 +107,7 @@ The diagram's one-hour certificates, replaced at two-thirds of their life, are o
 - Zero Trust Access *(planned)* — No implicit trust from network location: verify identity, device and context on every request.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
-- Sidecar *(planned)* — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
+- [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 - Gateway Offloading *(planned)* — Move TLS termination, authentication and compression out of every service into the gateway.
 
 ## References

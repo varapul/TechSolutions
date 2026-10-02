@@ -109,7 +109,7 @@ The idea scales up and down. A [strangler fig](../strangler-fig/) migration appl
 - [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
 - [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
-- Branch by Abstraction *(planned)* — Introduce an abstraction, build the new implementation behind it, then switch over.
+- [Branch by Abstraction](../branch-by-abstraction/) — Introduce an abstraction, build the new implementation behind it, then switch over.
 - Parallel Run *(planned)* — Run old and new side by side on the same inputs and compare results before cutting over.
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 

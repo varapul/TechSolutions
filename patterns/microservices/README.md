@@ -73,7 +73,7 @@ You trade complexity inside one codebase for complexity between many processes, 
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Modular Monolith *(planned)* — One deployable unit built from strongly bounded modules that talk through explicit interfaces.
+- [Modular Monolith](../modular-monolith/) — One deployable unit built from strongly bounded modules that talk through explicit interfaces.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - Database per Service *(planned)* — Each service owns its data; others go through its API or events, never its tables.

@@ -1,0 +1,39 @@
+{
+  "aka": ["Modulith"],
+  "steps": [
+    {
+      "title": "One unit, clear modules",
+      "caption": "One application, built and deployed as a unit. Orders calls Catalog's API in-process: no network.",
+      "body": "The whole application is built, released and run as **one unit**. Inside it, each module (Orders, Catalog, Shipping, Payments) owns one business capability, its code and its own tables. When Orders needs something from Catalog it calls Catalog's public API, and that is an ordinary in-process call: no network hop and no serialisation."
+    },
+    {
+      "title": "Boundaries are enforced",
+      "caption": "Shortcuts into Catalog's internals and tables fail the build; the call through its API passes.",
+      "body": "Two shortcuts are tried: code in Orders reaches into Catalog's internals, and a query in Orders joins Catalog's tables. Inside one codebase and one database both would simply work, so the boundary is checked in the **build**: both are reported as violations and the build fails, while the call through Catalog's public API passes. Without that check the modules decay, one convenient shortcut at a time, into a tangle."
+    },
+    {
+      "title": "Interfaces and events",
+      "caption": "Orders asks Catalog through its API, then announces OrderPlaced: Shipping and Payments react.",
+      "body": "Modules work together in the same two styles that services use. Orders **asks** Catalog a question through its API and waits for the answer. Then it **announces** `OrderPlaced` as an in-process event; Shipping and Payments have subscribed and react, and Orders does not know who is listening. There is no network and no broker in between."
+    },
+    {
+      "title": "Extract only for a reason",
+      "caption": "Payments must scale alone, so it moves out: a network API and its own database. The rest stay.",
+      "body": "Payments now has to scale and be released on its own. Because its boundary is already clean, it can move out: its API becomes a network API, its schema becomes its own database, and calls to it now cross the network. The other three modules stay together in one deployment. Most modules never need this step: extraction answers a concrete need, it is not the goal."
+    }
+  ],
+  "related": ["microservices", "layered-architecture", "hexagonal-architecture", "strangler-fig", "database-per-service", "event-driven-architecture", "branch-by-abstraction"],
+  "references": [
+    { "title": "Martin Fowler — Monolith First", "url": "https://martinfowler.com/bliki/MonolithFirst.html" },
+    { "title": "Simon Brown — Modular monolith and \"package by component\"", "url": "https://simonbrown.je/modular-monolith/" },
+    { "title": "Kamil Grzybek — Modular Monolith: A Primer", "url": "https://www.kamilgrzybek.com/blog/posts/modular-monolith-primer" },
+    { "title": "Shopify Engineering — Deconstructing the Monolith: Designing Software that Maximizes Developer Productivity", "url": "https://shopify.engineering/deconstructing-monolith-designing-software-maximizes-developer-productivity" },
+    { "title": "Shopify Engineering — Under Deconstruction: The State of Shopify's Monolith", "url": "https://shopify.engineering/shopify-monolith" },
+    { "title": "Shopify Engineering — A Packwerk Retrospective", "url": "https://shopify.engineering/a-packwerk-retrospective" },
+    { "title": "Spring Modulith — Reference documentation", "url": "https://docs.spring.io/spring-modulith/reference/" },
+    { "title": "ArchUnit — User Guide", "url": "https://www.archunit.org/userguide/html/000_Index.html" },
+    { "title": "PostgreSQL documentation — Schemas", "url": "https://www.postgresql.org/docs/current/ddl-schemas.html" },
+    { "title": "Ghemawat et al. — Towards Modern Development of Cloud Applications (HotOS 2023)", "url": "https://sigops.org/s/conferences/hotos/2023/papers/ghemawat.pdf" },
+    { "title": "Sam Newman — Monolith to Microservices", "url": "https://samnewman.io/books/monolith-to-microservices/" }
+  ]
+}
