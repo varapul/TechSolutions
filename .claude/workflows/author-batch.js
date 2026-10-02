@@ -61,7 +61,7 @@ ${p.brief}
 
 PROCESS
 - cd ${REPO} && npm run new -- ${p.slug}   (the slug is already in catalog.json)
-- Write the pattern's files early and in small steps (meta.json, then the SVG stage, then the README), so that progress survives a response that is cut off.
+- Every tool call re-reads your whole context, so work in few, larger steps: send independent tool calls together in one turn, read only the parts of files you need, pull facts out of web pages with grep or a narrow fetch prompt instead of loading whole pages, and don't re-view a snapshot that hasn't changed.
 - Write your keyframe generator in ${SCRATCH}/${p.slug}/ (import ${REPO}/scripts/lib/motion.mjs by absolute path) and paste its output into the diagram's <style>. Keep scratch files out of the repo.
 - Only create or modify files inside patterns/${p.slug}/. Other agents work in the same repo in parallel: do not edit anything else, and do not run npm run build or a full npm run sync / npm run check. If a shared file needs a change, say so in compromises.
 - After edits: node scripts/sync.mjs ${p.slug} && node scripts/check.mjs ${p.slug} (0 errors required).
