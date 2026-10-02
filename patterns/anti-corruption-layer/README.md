@@ -81,7 +81,7 @@ Don't use an anti-corruption layer when the two models are already close (there 
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
 - Branch by Abstraction *(planned)* — Introduce an abstraction, build the new implementation behind it, then switch over.
 - Parallel Run *(planned)* — Run old and new side by side on the same inputs and compare results before cutting over.
-- Hexagonal (Ports & Adapters) *(planned)* — Domain logic at the core; UIs, databases and queues plug in through ports and adapters.
+- [Hexagonal (Ports & Adapters)](../hexagonal-architecture/) — Domain logic at the core; UIs, databases and queues plug in through ports and adapters.
 - [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 - Database per Service *(planned)* — Each service owns its data; others go through its API or events, never its tables.

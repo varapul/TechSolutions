@@ -61,7 +61,7 @@ Adding a new capability usually means adding a new subscriber, with no change to
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - Saga (Choreography) *(planned)* — Services react to each other's events to complete a workflow, with no central coordinator.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
-- Dead-Letter Queue *(planned)* — Park messages that keep failing so they stop blocking the queue and can be inspected.
+- [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 
 ## References

@@ -79,7 +79,7 @@ Rotation makes every refresh token **single-use**, and treats the second appeara
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 - [Backends for Frontends (BFF)](../backends-for-frontends/) — A dedicated backend per client type, shaped for exactly what that UI needs.
 - Token Exchange (On-Behalf-Of) *(planned)* — Swap an incoming user token for a narrowly scoped one before calling a downstream API.
-- OAuth 2.0 Client Credentials *(planned)* — Machine-to-machine access tokens, with no user involved.
+- [OAuth 2.0 Client Credentials](../oauth2-client-credentials/) — Machine-to-machine access tokens, with no user involved.
 
 ## References
 

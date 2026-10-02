@@ -1,0 +1,50 @@
+{
+  "aka": ["Health Check API", "Liveness and readiness probes"],
+  "steps": [
+    {
+      "title": "Three questions",
+      "caption": "While A boots, the startup check holds the other two off; traffic starts only once /readyz passes.",
+      "body": "An instance exposes three small endpoints, and each answers one question for one consumer. While it boots (loading configuration, warming its cache) the **startup** check says *not yet* and holds the other two off, so a slow start is not mistaken for a hang. Once it passes, **liveness** (`/livez`) asks only whether the process can still make progress and **readiness** (`/readyz`) asks whether this instance can serve requests right now. The load balancer sends traffic only after readiness passes."
+    },
+    {
+      "title": "Not ready: no traffic",
+      "caption": "A loses its database connections: /readyz says 503, so it gets no traffic, and nothing restarts it.",
+      "body": "Instance A loses its database connections (it could just as well be saturated). `/readyz` answers **503**, the load balancer takes A **out of rotation**, and B and C carry the traffic. `/livez` still answers 200, so the orchestrator leaves the process alone. When the pool reconnects, readiness passes and traffic returns, with no restart and no cold cache."
+    },
+    {
+      "title": "Not alive: restart",
+      "caption": "The process deadlocks and /livez stops answering: after 3 failed probes the orchestrator restarts A.",
+      "body": "The process deadlocks: it is still running but can no longer make progress, so `/livez` stops answering. After **three unanswered probes in a row** (an illustrative threshold) the orchestrator **restarts** the instance, which boots, passes its startup check and rejoins. Liveness must not look at dependencies: restarting an instance does not repair a database, and a liveness check that tests one would restart every healthy instance together."
+    },
+    {
+      "title": "Don't fail all at once",
+      "caption": "A shared database browns out: deep checks fail everywhere at once. Stay shallow, alert from outside.",
+      "body": "The database that every instance shares has a **brownout**. If each `/readyz` also tests that database, A, B and C fail in the same second and the load balancer has nowhere to send traffic: a partial problem becomes a total outage. Keep checks **shallow** for shared dependencies (or use a balancer that **fails open** when every target looks unhealthy) and let the instances keep serving what they can. The **external monitor**, which probes the public endpoint from outside, is what raises the alert."
+    }
+  ],
+  "related": ["load-balancing", "rolling-update", "autoscaling", "circuit-breaker", "slo-error-budgets", "multi-region-active-active", "service-mesh"],
+  "references": [
+    { "title": "Azure Architecture Center — Health Endpoint Monitoring pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/health-endpoint-monitoring" },
+    { "title": "microservices.io — Pattern: Health Check API", "url": "https://microservices.io/patterns/observability/health-check-api.html" },
+    { "title": "Kubernetes — Liveness, Readiness, and Startup Probes", "url": "https://kubernetes.io/docs/concepts/workloads/pods/probes/" },
+    { "title": "Kubernetes — Kubernetes API health endpoints (/livez, /readyz)", "url": "https://kubernetes.io/docs/reference/using-api/health-checks/" },
+    { "title": "Kubernetes — Pod Lifecycle (termination of Pods)", "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" },
+    { "title": "AWS Builder Center — Implementing health checks (first published in the Amazon Builders' Library)", "url": "https://builder.aws.com/content/3Ev53O39izHCtWLzp4XU6t8PC1O/implementing-health-checks" },
+    { "title": "Google SRE Book — Load Balancing in the Datacenter (chapter 20, lame duck state)", "url": "https://sre.google/sre-book/load-balancing-datacenter/" },
+    { "title": "Google SRE Book — Addressing Cascading Failures (chapter 22)", "url": "https://sre.google/sre-book/addressing-cascading-failures/" },
+    { "title": "Google SRE Workbook — Implementing SLOs (chapter 2)", "url": "https://sre.google/workbook/implementing-slos/" },
+    { "title": "gRPC — Health Checking", "url": "https://grpc.io/docs/guides/health-checking/" },
+    { "title": "Spring Boot — Actuator endpoints (health groups, Kubernetes probes)", "url": "https://docs.spring.io/spring-boot/reference/actuator/endpoints.html" },
+    { "title": "Microsoft Learn — Health checks in ASP.NET Core", "url": "https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks" },
+    { "title": "RFC 9110 — HTTP Semantics, section 15.6.4 (503 Service Unavailable)", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.6.4" },
+    { "title": "IETF Datatracker — Health Check Response Format for HTTP APIs (expired Internet-Draft)", "url": "https://datatracker.ietf.org/doc/draft-inadarei-api-health-check/" },
+    { "title": "AWS — Health checks for Application Load Balancer target groups", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html" },
+    { "title": "Envoy — Panic threshold", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/panic_threshold" },
+    { "title": "HAProxy 3.4 — Configuration Manual (HTTP status codes generated by HAProxy)", "url": "https://docs.haproxy.org/3.4/configuration.html" },
+    { "title": "Azure — Azure Load Balancer health probes", "url": "https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-custom-probe-overview" },
+    { "title": "Amazon EC2 Auto Scaling — Health checks for instances in an Auto Scaling group", "url": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html" },
+    { "title": "Google Cloud — Set up an application-based health check and autohealing", "url": "https://docs.cloud.google.com/compute/docs/instance-groups/autohealing-instances-in-migs" },
+    { "title": "Google Cloud — Create public uptime checks", "url": "https://docs.cloud.google.com/monitoring/uptime-checks" },
+    { "title": "Azure Monitor — Application Insights availability tests", "url": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability" }
+  ]
+}

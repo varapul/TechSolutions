@@ -1,0 +1,902 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Hexagonal (Ports &amp; Adapters)</title>
+<desc id="dg-desc">Hexagonal (Ports &amp; Adapters). Domain logic at the core; UIs, databases and queues plug in through ports and adapters. Step 1, In through an adapter: POST /orders reaches the REST controller, which calls the PlaceOrder port; the core runs its rule. Step 2, Out through driven ports: The core calls ports it owns to save, charge and publish; adapters implement them and depend on it. Step 3, Swap and add adapters: Swap SQL for a document store, add a queue consumer on the PlaceOrder port: the core is untouched. Step 4, Test the core on its own: Unplug production, plug in a test driver and in-memory fakes: the rules run in milliseconds.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">APPLICATION ARCHITECTURE</text>
+  <text class="title" x="40" y="64">Hexagonal (Ports &amp; Adapters)</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · In through an adapter</text>
+  <text class="step on p1" x="40" y="518">1 · In through an adapter</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Out through driven ports</text>
+  <text class="step on p2" x="262" y="518">2 · Out through driven ports</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Swap and add adapters</text>
+  <text class="step on p3" x="484" y="518">3 · Swap and add adapters</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Test the core on its own</text>
+  <text class="step on p4" x="706" y="518">4 · Test the core on its own</text>
+  <text class="caption p1" x="40" y="552">POST /orders reaches the REST controller, which calls the PlaceOrder port; the core runs its rule.</text>
+  <text class="caption p2" x="40" y="552">The core calls ports it owns to save, charge and publish; adapters implement them and depend on it.</text>
+  <text class="caption p3" x="40" y="552">Swap SQL for a document store, add a queue consumer on the PlaceOrder port: the core is untouched.</text>
+  <text class="caption p4" x="40" y="552">Unplug production, plug in a test driver and in-memory fakes: the rules run in milliseconds.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Hexagonal (Ports and Adapters). Timeline (20s loop, 1s = 5%):
+   0-25%   POST /orders: browser -> REST controller (3-7.5%), which calls the PlaceOrder port (10.5-17%);
+           the core checks its rule (17-20%)
+   25-50%  the core calls its three driven ports in turn: save (26.5%), charge (32.5%), publish (37%);
+           each adapter translates and talks to the real thing. The dependency arrows are highlighted
+           all step: on the driven side the calls flow outward while the arrows still point inward
+   50-75%  the SQL adapter is unplugged (50-53%) and a document-store adapter plugged into the same port
+           (52.5-55%); a message consumer is plugged into the PlaceOrder port (54.5-57%); a queue message
+           enters through it (58-66.5%) and is saved through the new adapter (67-72%)
+   75-100% production adapters out (75-78.5%), test driver and in-memory fakes in (78-81.5%); three
+           test runs (82.5%, 87%, 91.5%) hit the core and the fakes. 97.5-100% unplugs the test
+           adapters and plugs production back in, so the loop restarts as step 1.
+   Blue circle = a call or request, teal circle = SQL / store API, purple square = a message.
+   Keyframes generated with scripts/lib/motion.mjs (track, windows, keys, route). */
+.diagram .hx-side { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .hx-side-sub { font-weight: 400; letter-spacing: 0; }
+.diagram .hx-port { stroke: var(--ink); stroke-width: 6; stroke-linecap: round; }
+.diagram .hx-pn { font-size: 11px; font-weight: 700; }
+.diagram .hx-brace { font-size: 12px; font-weight: 700; }
+.diagram .hx-t-http { opacity: 0; animation: hx-t-http var(--T) linear infinite; }
+.diagram .hx-t-in { opacity: 0; animation: hx-t-in var(--T) linear infinite; }
+.diagram .hx-t-repo { opacity: 0; animation: hx-t-repo var(--T) linear infinite; }
+.diagram .hx-t-pay { opacity: 0; animation: hx-t-pay var(--T) linear infinite; }
+.diagram .hx-t-pub { opacity: 0; animation: hx-t-pub var(--T) linear infinite; }
+.diagram .hx-t-sql { opacity: 0; animation: hx-t-sql var(--T) linear infinite; }
+.diagram .hx-t-https { opacity: 0; animation: hx-t-https var(--T) linear infinite; }
+.diagram .hx-t-ev { opacity: 0; animation: hx-t-ev var(--T) linear infinite; }
+.diagram .hx-t-msg { opacity: 0; animation: hx-t-msg var(--T) linear infinite; }
+.diagram .hx-g-rest { opacity: 0; animation: hx-g-rest var(--T) linear infinite; }
+.diagram .hx-g-cons { opacity: 0; animation: hx-g-cons var(--T) linear infinite; }
+.diagram .hx-g-sql { opacity: 0; animation: hx-g-sql var(--T) linear infinite; }
+.diagram .hx-g-doc { opacity: 0; animation: hx-g-doc var(--T) linear infinite; }
+.diagram .hx-g-pay { opacity: 0; animation: hx-g-pay var(--T) linear infinite; }
+.diagram .hx-g-brk { opacity: 0; animation: hx-g-brk var(--T) linear infinite; }
+.diagram .hx-g-test { opacity: 0; animation: hx-g-test var(--T) linear infinite; }
+.diagram .hx-g-fake { opacity: 0; animation: hx-g-fake var(--T) linear infinite; }
+.diagram .hx-c-run { opacity: 0; animation: hx-c-run var(--T) linear infinite; }
+.diagram .hx-c-ok { opacity: 0; animation: hx-c-ok var(--T) linear infinite; }
+.diagram .hx-ok-db { opacity: 0; animation: hx-ok-db var(--T) linear infinite; }
+.diagram .hx-ok-pay { opacity: 0; animation: hx-ok-pay var(--T) linear infinite; }
+.diagram .hx-ok-brk { opacity: 0; animation: hx-ok-brk var(--T) linear infinite; }
+.diagram .hx-ok-doc { opacity: 0; animation: hx-ok-doc var(--T) linear infinite; }
+.diagram .hx-n-doc { opacity: 0; animation: hx-n-doc var(--T) linear infinite; }
+.diagram .hx-n-cons { opacity: 0; animation: hx-n-cons var(--T) linear infinite; }
+.diagram .hx-r1 { opacity: 0; animation: hx-r1 var(--T) linear infinite; }
+.diagram .hx-r2 { opacity: 0; animation: hx-r2 var(--T) linear infinite; }
+.diagram .hx-r3 { opacity: 0; animation: hx-r3 var(--T) linear infinite; }
+.diagram .hx-a-rest { animation: hx-a-rest var(--T) linear infinite; }
+.diagram .hx-a-cons { opacity: 0; animation: hx-a-cons var(--T) linear infinite; }
+.diagram .hx-a-right { animation: hx-a-right var(--T) linear infinite; }
+.diagram .hx-a-sql { animation: hx-a-sql var(--T) linear infinite; }
+.diagram .hx-a-doc { opacity: 0; animation: hx-a-doc var(--T) linear infinite; }
+.diagram .hx-a-tl { opacity: 0; animation: hx-a-tl var(--T) linear infinite; }
+.diagram .hx-a-tr { opacity: 0; animation: hx-a-tr var(--T) linear infinite; }
+.diagram .hx-ext { animation: hx-ext var(--T) linear infinite; }
+.diagram .hx-xw { animation: hx-xw var(--T) linear infinite; }
+.diagram .hx-db-sql { animation: hx-db-sql var(--T) linear infinite; }
+.diagram .hx-db-doc { opacity: 0; animation: hx-db-doc var(--T) linear infinite; }
+.diagram .hx-q { opacity: 0; animation: hx-q var(--T) linear infinite; }
+.diagram .hx-qw { opacity: 0; animation: hx-qw var(--T) linear infinite; }
+@keyframes hx-t-http {
+  0% { transform: translate(72px, 250px); opacity: 0; }
+  3% { transform: translate(72px, 250px); opacity: 0; }
+  3.25% { opacity: 1; }
+  7.5% { transform: translate(112px, 250px); opacity: 1; }
+  7.75% { transform: translate(112px, 250px); opacity: 0; }
+  100% { transform: translate(112px, 250px); opacity: 0; }
+}
+@keyframes hx-t-in {
+  0% { transform: translate(236px, 250px); opacity: 0; }
+  10.5% { transform: translate(236px, 250px); opacity: 0; }
+  10.75% { opacity: 1; }
+  13.007% { transform: translate(310px, 250px); }
+  17% { transform: translate(424px, 280px); opacity: 1; }
+  17.25% { transform: translate(424px, 280px); opacity: 0; }
+  62.5% { transform: translate(236px, 326px); opacity: 0; }
+  62.75% { opacity: 1; }
+  64.003% { transform: translate(310px, 326px); }
+  66.5% { transform: translate(424px, 280px); opacity: 1; }
+  66.75% { transform: translate(424px, 280px); opacity: 0; }
+  82.5% { transform: translate(236px, 280px); opacity: 0; }
+  82.75% { opacity: 1; }
+  84.25% { transform: translate(424px, 280px); opacity: 1; }
+  84.5% { transform: translate(424px, 280px); opacity: 0; }
+  87% { transform: translate(236px, 280px); opacity: 0; }
+  87.25% { opacity: 1; }
+  88.75% { transform: translate(424px, 280px); opacity: 1; }
+  89% { transform: translate(424px, 280px); opacity: 0; }
+  91.5% { transform: translate(236px, 280px); opacity: 0; }
+  91.75% { opacity: 1; }
+  93.25% { transform: translate(424px, 280px); opacity: 1; }
+  93.5% { transform: translate(424px, 280px); opacity: 0; }
+  100% { transform: translate(424px, 280px); opacity: 0; }
+}
+@keyframes hx-t-repo {
+  0% { transform: translate(536px, 252px); opacity: 0; }
+  26.5% { transform: translate(536px, 252px); opacity: 0; }
+  26.75% { opacity: 1; }
+  28.349% { transform: translate(565px, 145px); }
+  31% { transform: translate(724px, 145px); opacity: 1; }
+  31.25% { transform: translate(724px, 145px); opacity: 0; }
+  66.75% { transform: translate(536px, 252px); opacity: 0; }
+  67% { opacity: 1; }
+  68.188% { transform: translate(565px, 145px); }
+  70.25% { transform: translate(724px, 145px); opacity: 1; }
+  70.5% { transform: translate(724px, 145px); opacity: 0; }
+  84.25% { transform: translate(536px, 252px); opacity: 0; }
+  84.5% { opacity: 1; }
+  85.072% { transform: translate(565px, 145px); }
+  86.25% { transform: translate(724px, 145px); opacity: 1; }
+  86.5% { transform: translate(724px, 145px); opacity: 0; }
+  88.75% { transform: translate(536px, 252px); opacity: 0; }
+  89% { opacity: 1; }
+  89.572% { transform: translate(565px, 145px); }
+  90.75% { transform: translate(724px, 145px); opacity: 1; }
+  91% { transform: translate(724px, 145px); opacity: 0; }
+  93.25% { transform: translate(536px, 252px); opacity: 0; }
+  93.5% { opacity: 1; }
+  94.072% { transform: translate(565px, 145px); }
+  95.25% { transform: translate(724px, 145px); opacity: 1; }
+  95.5% { transform: translate(724px, 145px); opacity: 0; }
+  100% { transform: translate(724px, 145px); opacity: 0; }
+}
+@keyframes hx-t-pay {
+  0% { transform: translate(536px, 280px); opacity: 0; }
+  32.5% { transform: translate(536px, 280px); opacity: 0; }
+  32.75% { opacity: 1; }
+  34.471% { transform: translate(650px, 280px); }
+  35.75% { transform: translate(724px, 280px); opacity: 1; }
+  36% { transform: translate(724px, 280px); opacity: 0; }
+  84.25% { transform: translate(536px, 280px); opacity: 0; }
+  84.5% { opacity: 1; }
+  85.463% { transform: translate(650px, 280px); }
+  86.25% { transform: translate(724px, 280px); opacity: 1; }
+  86.5% { transform: translate(724px, 280px); opacity: 0; }
+  88.75% { transform: translate(536px, 280px); opacity: 0; }
+  89% { opacity: 1; }
+  89.963% { transform: translate(650px, 280px); }
+  90.75% { transform: translate(724px, 280px); opacity: 1; }
+  91% { transform: translate(724px, 280px); opacity: 0; }
+  93.25% { transform: translate(536px, 280px); opacity: 0; }
+  93.5% { opacity: 1; }
+  94.463% { transform: translate(650px, 280px); }
+  95.25% { transform: translate(724px, 280px); opacity: 1; }
+  95.5% { transform: translate(724px, 280px); opacity: 0; }
+  100% { transform: translate(724px, 280px); opacity: 0; }
+}
+@keyframes hx-t-pub {
+  0% { transform: translate(536px, 308px); opacity: 0; }
+  37% { transform: translate(536px, 308px); opacity: 0; }
+  37.25% { opacity: 1; }
+  38.849% { transform: translate(565px, 415px); }
+  41.5% { transform: translate(724px, 415px); opacity: 1; }
+  41.75% { transform: translate(724px, 415px); opacity: 0; }
+  84.25% { transform: translate(536px, 308px); opacity: 0; }
+  84.5% { opacity: 1; }
+  85.072% { transform: translate(565px, 415px); }
+  86.25% { transform: translate(724px, 415px); opacity: 1; }
+  86.5% { transform: translate(724px, 415px); opacity: 0; }
+  88.75% { transform: translate(536px, 308px); opacity: 0; }
+  89% { opacity: 1; }
+  89.572% { transform: translate(565px, 415px); }
+  90.75% { transform: translate(724px, 415px); opacity: 1; }
+  91% { transform: translate(724px, 415px); opacity: 0; }
+  93.25% { transform: translate(536px, 308px); opacity: 0; }
+  93.5% { opacity: 1; }
+  94.072% { transform: translate(565px, 415px); }
+  95.25% { transform: translate(724px, 415px); opacity: 1; }
+  95.5% { transform: translate(724px, 415px); opacity: 0; }
+  100% { transform: translate(724px, 415px); opacity: 0; }
+}
+@keyframes hx-t-sql {
+  0% { transform: translate(848px, 145px); opacity: 0; }
+  31.75% { transform: translate(848px, 145px); opacity: 0; }
+  32% { opacity: 1; }
+  34.25% { transform: translate(887px, 145px); opacity: 1; }
+  34.5% { transform: translate(887px, 145px); opacity: 0; }
+  70.25% { transform: translate(848px, 145px); opacity: 0; }
+  70.5% { opacity: 1; }
+  71.75% { transform: translate(887px, 145px); opacity: 1; }
+  72% { transform: translate(887px, 145px); opacity: 0; }
+  100% { transform: translate(887px, 145px); opacity: 0; }
+}
+@keyframes hx-t-https {
+  0% { transform: translate(848px, 280px); opacity: 0; }
+  36.25% { transform: translate(848px, 280px); opacity: 0; }
+  36.5% { opacity: 1; }
+  38.75% { transform: translate(887px, 280px); opacity: 1; }
+  39% { transform: translate(887px, 280px); opacity: 0; }
+  100% { transform: translate(887px, 280px); opacity: 0; }
+}
+@keyframes hx-t-ev {
+  0% { transform: translate(848px, 415px); opacity: 0; }
+  42.25% { transform: translate(848px, 415px); opacity: 0; }
+  42.5% { opacity: 1; }
+  44.75% { transform: translate(887px, 415px); opacity: 1; }
+  45% { transform: translate(887px, 415px); opacity: 0; }
+  100% { transform: translate(887px, 415px); opacity: 0; }
+}
+@keyframes hx-t-msg {
+  0% { transform: translate(75px, 326px); opacity: 0; }
+  58% { transform: translate(75px, 326px); opacity: 0; }
+  58.25% { opacity: 1; }
+  61% { transform: translate(112px, 326px); opacity: 1; }
+  61.25% { transform: translate(112px, 326px); opacity: 0; }
+  100% { transform: translate(112px, 326px); opacity: 0; }
+}
+@keyframes hx-g-rest {
+  0% { opacity: 0; }
+  7.5% { opacity: 0; }
+  8% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-g-cons {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  61.5% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-g-sql {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  31.5% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-g-doc {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  70.75% { opacity: 1; }
+  72% { opacity: 1; }
+  72.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-g-pay {
+  0% { opacity: 0; }
+  35.75% { opacity: 0; }
+  36.25% { opacity: 1; }
+  39% { opacity: 1; }
+  39.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-g-brk {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42% { opacity: 1; }
+  45% { opacity: 1; }
+  45.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-g-test {
+  0% { opacity: 0; }
+  81.75% { opacity: 0; }
+  82.15% { opacity: 1; }
+  83.5% { opacity: 1; }
+  83.9% { opacity: 0; }
+  86.25% { opacity: 0; }
+  86.65% { opacity: 1; }
+  88% { opacity: 1; }
+  88.4% { opacity: 0; }
+  90.75% { opacity: 0; }
+  91.15% { opacity: 1; }
+  92.5% { opacity: 1; }
+  92.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-g-fake {
+  0% { opacity: 0; }
+  86.25% { opacity: 0; }
+  86.55% { opacity: 1; }
+  86.85% { opacity: 1; }
+  87.35% { opacity: 0; }
+  90.75% { opacity: 0; }
+  91.05% { opacity: 1; }
+  91.35% { opacity: 1; }
+  91.85% { opacity: 0; }
+  95.25% { opacity: 0; }
+  95.55% { opacity: 1; }
+  95.85% { opacity: 1; }
+  96.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-c-run {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  17.5% { opacity: 1; }
+  20% { opacity: 1; }
+  20.5% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67% { opacity: 1; }
+  67.25% { opacity: 1; }
+  67.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-c-ok {
+  0% { opacity: 0; }
+  20% { opacity: 0; }
+  20.4% { opacity: 1; }
+  49.5% { opacity: 1; }
+  49.9% { opacity: 0; }
+  67.25% { opacity: 0; }
+  67.65% { opacity: 1; }
+  75% { opacity: 1; }
+  75.4% { opacity: 0; }
+  84.25% { opacity: 0; }
+  84.65% { opacity: 1; }
+  86.35% { opacity: 1; }
+  86.75% { opacity: 0; }
+  88.75% { opacity: 0; }
+  89.15% { opacity: 1; }
+  90.85% { opacity: 1; }
+  91.25% { opacity: 0; }
+  93.25% { opacity: 0; }
+  93.65% { opacity: 1; }
+  97.5% { opacity: 1; }
+  97.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-ok-db {
+  0% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-ok-pay {
+  0% { opacity: 0; }
+  39% { opacity: 0; }
+  39.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-ok-brk {
+  0% { opacity: 0; }
+  45% { opacity: 0; }
+  45.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-ok-doc {
+  0% { opacity: 0; }
+  71.75% { opacity: 0; }
+  72.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-n-doc {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  55.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-n-cons {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  57.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-r1 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  86.9% { opacity: 1; }
+  90.75% { opacity: 1; }
+  91.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-r2 {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  91.4% { opacity: 1; }
+  95.25% { opacity: 1; }
+  95.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-r3 {
+  0% { opacity: 0; }
+  95.5% { opacity: 0; }
+  95.9% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-a-rest {
+  0% { opacity: 1; transform: translate(0px, 0px); }
+  75% { opacity: 1; transform: translate(0px, 0px); }
+  78.5% { opacity: 0; transform: translate(-18px, 0px); }
+  98.5% { opacity: 0; transform: translate(-18px, 0px); }
+  100% { opacity: 1; transform: translate(0px, 0px); }
+}
+@keyframes hx-a-cons {
+  0% { opacity: 0; transform: translate(-18px, 0px); }
+  54.5% { opacity: 0; transform: translate(-18px, 0px); }
+  57% { opacity: 1; transform: translate(0px, 0px); }
+  75% { opacity: 1; transform: translate(0px, 0px); }
+  78.5% { opacity: 0; transform: translate(-18px, 0px); }
+  100% { opacity: 0; transform: translate(-18px, 0px); }
+}
+@keyframes hx-a-right {
+  0% { opacity: 1; transform: translate(0px, 0px); }
+  75% { opacity: 1; transform: translate(0px, 0px); }
+  78.5% { opacity: 0; transform: translate(18px, 0px); }
+  98.5% { opacity: 0; transform: translate(18px, 0px); }
+  100% { opacity: 1; transform: translate(0px, 0px); }
+}
+@keyframes hx-a-sql {
+  0% { opacity: 1; transform: translate(0px, 0px); }
+  50.25% { opacity: 1; transform: translate(0px, 0px); }
+  53% { opacity: 0; transform: translate(18px, 0px); }
+  98.5% { opacity: 0; transform: translate(18px, 0px); }
+  100% { opacity: 1; transform: translate(0px, 0px); }
+}
+@keyframes hx-a-doc {
+  0% { opacity: 0; transform: translate(18px, 0px); }
+  52.5% { opacity: 0; transform: translate(18px, 0px); }
+  55% { opacity: 1; transform: translate(0px, 0px); }
+  75% { opacity: 1; transform: translate(0px, 0px); }
+  78.5% { opacity: 0; transform: translate(18px, 0px); }
+  100% { opacity: 0; transform: translate(18px, 0px); }
+}
+@keyframes hx-a-tl {
+  0% { opacity: 0; transform: translate(-18px, 0px); }
+  78% { opacity: 0; transform: translate(-18px, 0px); }
+  81.5% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  98.7% { opacity: 0; transform: translate(-18px, 0px); }
+  100% { opacity: 0; transform: translate(-18px, 0px); }
+}
+@keyframes hx-a-tr {
+  0% { opacity: 0; transform: translate(18px, 0px); }
+  78% { opacity: 0; transform: translate(18px, 0px); }
+  81.5% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  98.7% { opacity: 0; transform: translate(18px, 0px); }
+  100% { opacity: 0; transform: translate(18px, 0px); }
+}
+@keyframes hx-ext {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  78.5% { opacity: 0.3; }
+  97.5% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+@keyframes hx-xw {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  78.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes hx-db-sql {
+  0% { opacity: 1; }
+  50.25% { opacity: 1; }
+  53% { opacity: 0; }
+  98.5% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes hx-db-doc {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  55% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-q {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  57% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes hx-qw {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  57% { opacity: 1; }
+  75% { opacity: 1; }
+  78.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- the two sides -->
+  <text class="hx-side" x="30" y="106">DRIVING SIDE<tspan class="hx-side-sub"> · what the application offers</tspan></text>
+  <text class="hx-side end" x="930" y="106">DRIVEN SIDE<tspan class="hx-side-sub"> · what the application needs</tspan></text>
+
+  <!-- the real things outside (dimmed in step 4: none of them is started) -->
+  <g class="hx-ext">
+    <rect class="f-bg s-muted" x="38" y="237" width="32" height="26" rx="4" stroke-width="1.5"/>
+    <line class="s-muted" x1="38" y1="245" x2="70" y2="245" stroke-width="1.5"/>
+    <circle class="f-muted" cx="43" cy="241" r="1.2"/><circle class="f-muted" cx="47.5" cy="241" r="1.2"/><circle class="f-muted" cx="52" cy="241" r="1.2"/>
+    <text class="tiny mid" x="54" y="280">browser</text>
+
+    <!-- the queue arrives in step 3, with its consumer -->
+    <g class="hx-q">
+      <rect class="f-bg s-muted" x="35" y="315" width="38" height="22" rx="5" stroke-width="1.5"/>
+      <rect class="f-purple" x="40" y="322" width="8" height="8" rx="2"/><rect class="f-purple" x="50" y="322" width="8" height="8" rx="2"/><rect class="f-purple" x="60" y="322" width="8" height="8" rx="2"/>
+      <text class="tiny mid" x="54" y="354">queue</text>
+    </g>
+
+    <g class="hx-db-sql">
+      <path class="f-bg s-teal" d="M889 136v18c0 3.3 6.3 6 14 6s14-2.7 14-6v-18" stroke-width="1.5"/>
+      <ellipse class="f-bg s-teal" cx="903" cy="136" rx="14" ry="5.5" stroke-width="1.5"/>
+      <path class="none s-teal" d="M889 145c0 3.3 6.3 6 14 6s14-2.7 14-6" stroke-width="1.5"/>
+      <text class="tiny mid" x="903" y="178">SQL</text>
+      <text class="tiny mid" x="903" y="191">database</text>
+    </g>
+    <g class="hx-db-doc">
+      <rect class="f-bg s-teal" x="894" y="129" width="22" height="26" rx="3" stroke-width="1.5"/>
+      <rect class="f-bg s-teal" x="890" y="134" width="22" height="26" rx="3" stroke-width="1.5"/>
+      <text class="hx-brace mid mono f-teal" x="901" y="151">{}</text>
+      <text class="tiny mid" x="903" y="178">document</text>
+      <text class="tiny mid" x="903" y="191">store</text>
+    </g>
+
+    <rect class="f-bg s-muted" x="886" y="268" width="34" height="24" rx="4" stroke-width="1.5"/>
+    <rect class="f-muted" x="886" y="273.5" width="34" height="4.5"/>
+    <rect class="f-muted" x="891" y="283" width="10" height="3.5" rx="1.5"/>
+    <text class="tiny mid" x="903" y="310">payment</text>
+    <text class="tiny mid" x="903" y="323">provider</text>
+
+    <rect class="f-bg s-muted" x="884" y="404" width="38" height="22" rx="5" stroke-width="1.5"/>
+    <rect class="f-purple" x="889" y="411" width="8" height="8" rx="2"/><rect class="f-purple" x="899" y="411" width="8" height="8" rx="2"/><rect class="f-purple" x="909" y="411" width="8" height="8" rx="2"/>
+    <text class="tiny mid" x="903" y="444">message</text>
+    <text class="tiny mid" x="903" y="457">broker</text>
+  </g>
+
+  <!-- adapter to real thing: plain connectors, gone while the tests run -->
+  <g class="hx-xw">
+    <line class="wire" x1="71" y1="250" x2="112" y2="250"/>
+    <line class="wire" x1="848" y1="145" x2="888" y2="145"/>
+    <line class="wire" x1="848" y1="280" x2="885" y2="280"/>
+    <line class="wire" x1="848" y1="415" x2="883" y2="415"/>
+  </g>
+
+  <line class="wire hx-qw" x1="74" y1="326" x2="112" y2="326"/>
+
+  <!-- step 1: what the browser sends -->
+  <g class="p1">
+    <text class="tiny mono sb f-blue" x="32" y="200">POST /orders</text>
+    <text class="tiny mono" x="32" y="214">{"sku":"A-7","qty":2}</text>
+  </g>
+
+  <!-- the application core -->
+  <path class="f-panel s-muted" d="M480 100L650 190V370L480 460L310 370V190Z" stroke-width="2" stroke-linejoin="round"/>
+  <path class="none s-green p3" d="M480 100L650 190V370L480 460L310 370V190Z" stroke-width="3" stroke-linejoin="round"/>
+  <text class="label mid" x="480" y="190">Application core</text>
+  <text class="sub mid" x="480" y="206">domain + use cases</text>
+
+  <!-- ports: interfaces the core owns, in its own language, one per face of the hexagon -->
+  <line class="hx-port" x1="310" y1="206" x2="310" y2="354"/>
+  <line class="hx-port" x1="536.7" y1="130" x2="593.3" y2="160"/>
+  <line class="hx-port" x1="650" y1="248" x2="650" y2="312"/>
+  <line class="hx-port" x1="593.3" y1="400" x2="536.7" y2="430"/>
+  <text class="hx-pn mono" x="322" y="216">PlaceOrder</text>
+  <text class="tiny mono" x="322" y="230">place(order)</text>
+  <text class="hx-pn mono end" x="543" y="150">OrderRepository</text>
+  <text class="tiny mono end" x="543" y="164">save(order)</text>
+  <text class="hx-pn mono end" x="640" y="304">PaymentGateway</text>
+  <text class="tiny mono end" x="640" y="318">charge(total)</text>
+  <text class="hx-pn mono end" x="540" y="404">EventPublisher</text>
+  <text class="tiny mono end" x="540" y="418">publish(event)</text>
+
+  <!-- the business rule -->
+  <rect class="f-bg s-line" x="424" y="252" width="112" height="56" rx="10" stroke-width="1.5"/>
+  <rect class="none s-blue hx-c-run" x="424" y="252" width="112" height="56" rx="10" stroke-width="2.5"/>
+  <rect class="f-green-soft s-green hx-c-ok" x="424" y="252" width="112" height="56" rx="10" stroke-width="2"/>
+  <text class="sub sb mid f-ink" x="480" y="276">business rule</text>
+  <text class="tiny mid" x="480" y="293">total ≤ credit limit</text>
+  <g class="hx-c-ok"><circle class="f-green" cx="536" cy="252" r="8"/><path class="none s-bg" d="M532.4 252l2.7 2.7 4.5-5.4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+  <!-- what the core is, step by step -->
+  <g class="p1">
+    <text class="sub sb mid f-ink" x="425" y="348">plain objects and rules</text>
+    <text class="tiny mid" x="425" y="364">no HTTP, no JSON, no framework</text>
+  </g>
+  <g class="p2">
+    <text class="sub sb mid f-ink" x="425" y="348">it owns the ports</text>
+    <text class="tiny mid" x="425" y="364">interfaces in its own language</text>
+  </g>
+  <g class="p3">
+    <text class="sub sb mid f-green" x="425" y="348">nothing changed in here</text>
+    <text class="tiny mid" x="425" y="364">same core, same ports</text>
+  </g>
+  <g class="p4">
+    <text class="sub sb mid f-green" x="425" y="348">rules run in milliseconds</text>
+    <text class="tiny mid" x="425" y="364">no network, database or framework</text>
+  </g>
+
+  <!-- production driving adapters: each arrow is a source-code dependency on a port -->
+  <g class="hx-a-rest">
+    <line class="wire" x1="236" y1="250" x2="305" y2="250" marker-end="url(#ah)"/>
+    <rect class="box" x="112" y="225" width="124" height="50" rx="10"/>
+    <text class="sub sb mid f-ink" x="174" y="246">REST controller</text>
+    <text class="tiny mid" x="174" y="263">HTTP + JSON → call</text>
+    <rect class="none s-blue hx-g-rest" x="112" y="225" width="124" height="50" rx="10" stroke-width="2.5"/>
+  </g>
+  <!-- step 3: a second driving adapter on the same port -->
+  <g class="hx-a-cons">
+    <line class="wire" x1="236" y1="326" x2="305" y2="326" marker-end="url(#ah)"/>
+    <rect class="f-bg" x="112" y="301" width="124" height="50" rx="10"/>
+    <rect class="f-green-soft s-green" x="112" y="301" width="124" height="50" rx="10" stroke-width="1.5"/>
+    <text class="sub sb mid f-ink" x="174" y="322">Message consumer</text>
+    <text class="tiny mid" x="174" y="339">message → call</text>
+    <rect class="none s-blue hx-g-cons" x="112" y="301" width="124" height="50" rx="10" stroke-width="2.5"/>
+  </g>
+
+  <!-- production driven adapters -->
+  <g class="hx-a-sql">
+    <line class="wire" x1="724" y1="145" x2="573" y2="145" marker-end="url(#ah)"/>
+    <rect class="box" x="724" y="120" width="124" height="50" rx="10"/>
+    <text class="sub sb mid f-ink" x="786" y="141">SQL adapter</text>
+    <text class="tiny mid" x="786" y="158">call → SQL</text>
+    <rect class="none s-blue hx-g-sql" x="724" y="120" width="124" height="50" rx="10" stroke-width="2.5"/>
+  </g>
+  <g class="hx-a-doc">
+    <line class="wire" x1="724" y1="145" x2="573" y2="145" marker-end="url(#ah)"/>
+    <rect class="f-bg" x="724" y="120" width="124" height="50" rx="10"/>
+    <rect class="f-green-soft s-green" x="724" y="120" width="124" height="50" rx="10" stroke-width="1.5"/>
+    <text class="sub sb mid f-ink" x="786" y="141">Document adapter</text>
+    <text class="tiny mid" x="786" y="158">call → document API</text>
+    <rect class="none s-blue hx-g-doc" x="724" y="120" width="124" height="50" rx="10" stroke-width="2.5"/>
+  </g>
+  <g class="hx-a-right">
+    <line class="wire" x1="724" y1="280" x2="655" y2="280" marker-end="url(#ah)"/>
+    <line class="wire" x1="724" y1="415" x2="573" y2="415" marker-end="url(#ah)"/>
+    <rect class="box" x="724" y="255" width="124" height="50" rx="10"/>
+    <text class="sub sb mid f-ink" x="786" y="276">Payment adapter</text>
+    <text class="tiny mid" x="786" y="293">call → HTTPS API</text>
+    <rect class="none s-blue hx-g-pay" x="724" y="255" width="124" height="50" rx="10" stroke-width="2.5"/>
+    <rect class="box" x="724" y="390" width="124" height="50" rx="10"/>
+    <text class="sub sb mid f-ink" x="786" y="411">Broker adapter</text>
+    <text class="tiny mid" x="786" y="428">event → message</text>
+    <rect class="none s-blue hx-g-brk" x="724" y="390" width="124" height="50" rx="10" stroke-width="2.5"/>
+  </g>
+
+  <!-- step 4: test adapters on the same ports -->
+  <g class="hx-a-tl">
+    <line class="wire" x1="236" y1="280" x2="305" y2="280" marker-end="url(#ah)"/>
+    <rect class="f-bg" x="112" y="255" width="124" height="50" rx="10"/>
+    <rect class="f-amber-soft s-amber" x="112" y="255" width="124" height="50" rx="10" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="sub sb mid f-ink" x="174" y="276">Test driver</text>
+    <text class="tiny mid" x="174" y="293">test case → call</text>
+    <rect class="none s-blue hx-g-test" x="112" y="255" width="124" height="50" rx="10" stroke-width="2.5"/>
+  </g>
+  <g class="hx-a-tr">
+    <line class="wire" x1="724" y1="145" x2="573" y2="145" marker-end="url(#ah)"/>
+    <line class="wire" x1="724" y1="280" x2="655" y2="280" marker-end="url(#ah)"/>
+    <line class="wire" x1="724" y1="415" x2="573" y2="415" marker-end="url(#ah)"/>
+    <rect class="f-bg" x="724" y="120" width="124" height="50" rx="10"/>
+    <rect class="f-amber-soft s-amber" x="724" y="120" width="124" height="50" rx="10" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="sub sb mid f-ink" x="786" y="141">In-memory repo</text>
+    <text class="tiny mid" x="786" y="158">a map, no database</text>
+    <rect class="f-bg" x="724" y="255" width="124" height="50" rx="10"/>
+    <rect class="f-amber-soft s-amber" x="724" y="255" width="124" height="50" rx="10" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="sub sb mid f-ink" x="786" y="276">Fake gateway</text>
+    <text class="tiny mid" x="786" y="293">always approves</text>
+    <rect class="f-bg" x="724" y="390" width="124" height="50" rx="10"/>
+    <rect class="f-amber-soft s-amber" x="724" y="390" width="124" height="50" rx="10" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="sub sb mid f-ink" x="786" y="411">Fake publisher</text>
+    <text class="tiny mid" x="786" y="428">records events</text>
+    <g class="hx-g-fake">
+      <rect class="none s-blue" x="724" y="120" width="124" height="50" rx="10" stroke-width="2.5"/>
+      <rect class="none s-blue" x="724" y="255" width="124" height="50" rx="10" stroke-width="2.5"/>
+      <rect class="none s-blue" x="724" y="390" width="124" height="50" rx="10" stroke-width="2.5"/>
+    </g>
+  </g>
+
+  <!-- step 2: the dependency direction. Calls leave through the driven ports, the arrows still point in -->
+  <g class="p2">
+    <line class="s-ink" x1="236" y1="250" x2="305" y2="250" stroke-width="2.5" marker-end="url(#ah-ink)"/>
+    <line class="s-ink" x1="724" y1="145" x2="573" y2="145" stroke-width="2.5" marker-end="url(#ah-ink)"/>
+    <line class="s-ink" x1="724" y1="280" x2="655" y2="280" stroke-width="2.5" marker-end="url(#ah-ink)"/>
+    <line class="s-ink" x1="724" y1="415" x2="573" y2="415" stroke-width="2.5" marker-end="url(#ah-ink)"/>
+    <text class="tiny sb mid f-ink" x="270.5" y="239">calls</text>
+    <text class="tiny sb mid f-ink" x="648.5" y="134">implements</text>
+    <text class="tiny sb mid f-ink" x="690.5" y="269">implements</text>
+    <text class="tiny sb mid f-ink" x="648.5" y="404">implements</text>
+  </g>
+
+  <!-- done marks -->
+  <g class="hx-ok-db"><circle class="f-green" cx="918" cy="131" r="7"/><path class="none s-bg" d="M914.4 131l2.7 2.7 4.5-5.4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="hx-ok-doc"><circle class="f-green" cx="918" cy="131" r="7"/><path class="none s-bg" d="M914.4 131l2.7 2.7 4.5-5.4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="hx-ok-pay"><circle class="f-green" cx="921" cy="268" r="7"/><path class="none s-bg" d="M917.4 268l2.7 2.7 4.5-5.4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="hx-ok-brk"><circle class="f-green" cx="923" cy="404" r="7"/><path class="none s-bg" d="M919.4 404l2.7 2.7 4.5-5.4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+  <!-- step 3 notes -->
+  <text class="tiny sb mid f-green hx-n-doc" x="786" y="187">new adapter, same port</text>
+  <text class="tiny sb mid f-green hx-n-cons" x="174" y="369">second adapter, same port</text>
+
+  <!-- step 4: test results -->
+  <text class="tiny sb mid f-green hx-r1" x="174" y="323">✓ 1 passed</text>
+  <text class="tiny sb mid f-green hx-r2" x="174" y="323">✓ 2 passed</text>
+  <text class="tiny sb mid f-green hx-r3" x="174" y="323">✓ 3 passed in 12 ms</text>
+
+  <!-- the lesson of each step -->
+  <g class="p1">
+    <rect class="f-blue-soft s-blue" x="30" y="388" width="270" height="26" rx="13" stroke-width="1.5"/>
+    <text class="tiny mid sb f-blue" x="165" y="405">HTTP and JSON stop at the adapter</text>
+  </g>
+  <g class="p2">
+    <rect class="f-panel-2 s-ink" x="30" y="388" width="270" height="26" rx="13" stroke-width="1.5"/>
+    <text class="tiny mid sb f-ink" x="165" y="405">calls go out, every dependency points in</text>
+  </g>
+  <g class="p3">
+    <rect class="f-green-soft s-green" x="30" y="388" width="270" height="26" rx="13" stroke-width="1.5"/>
+    <text class="tiny mid sb f-green" x="165" y="405">two changes outside, none inside</text>
+  </g>
+  <g class="p4">
+    <rect class="f-amber-soft s-amber" x="30" y="388" width="270" height="26" rx="13" stroke-width="1.5"/>
+    <text class="tiny mid sb f-amber-ink" x="165" y="405">each real adapter: its own integration test</text>
+  </g>
+
+  <!-- legend -->
+  <circle class="f-blue" cx="37" cy="444" r="5"/>
+  <rect class="f-purple" x="46" y="439" width="10" height="10" rx="2.5"/>
+  <text class="tiny" x="64" y="448">call or message at run time</text>
+  <line class="wire" x1="226" y1="444" x2="252" y2="444" marker-end="url(#ah)"/>
+  <text class="tiny" x="260" y="448">source-code dependency</text>
+  <line class="hx-port" x1="33" y1="462" x2="53" y2="462"/>
+  <text class="tiny" x="62" y="466">port: an interface the core owns</text>
+
+  <!-- traffic: a circle is a call or request, a square is a message -->
+  <circle class="pkt f-blue hx-t-http" r="6.5"/>
+  <rect class="pkt f-purple hx-t-msg" x="-6.5" y="-6.5" width="13" height="13" rx="3"/>
+  <circle class="pkt f-blue hx-t-in" r="6.5"/>
+  <circle class="pkt f-blue hx-t-repo" r="6.5"/>
+  <circle class="pkt f-blue hx-t-pay" r="6.5"/>
+  <circle class="pkt f-blue hx-t-pub" r="6.5"/>
+  <circle class="pkt f-teal hx-t-sql" r="6.5"/>
+  <circle class="pkt f-blue hx-t-https" r="6.5"/>
+  <rect class="pkt f-purple hx-t-ev" x="-6.5" y="-6.5" width="13" height="13" rx="3"/>
+</g>
+</svg>

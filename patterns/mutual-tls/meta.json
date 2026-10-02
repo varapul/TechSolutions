@@ -1,0 +1,45 @@
+{
+  "aka": ["Two-way TLS", "TLS client authentication", "Client certificate authentication"],
+  "steps": [
+    {
+      "title": "One-way TLS",
+      "caption": "One-way TLS: the server proves who it is and the channel is encrypted, but the client is anonymous.",
+      "body": "In ordinary TLS only the server presents a certificate. It sends `Certificate` and a `CertificateVerify` signature that proves it holds the matching private key, and the client checks the chain against its trust store. The channel is encrypted and the client knows who the server is, but the server has learnt nothing about the caller: at this layer the client is anonymous."
+    },
+    {
+      "title": "Both sides authenticate",
+      "caption": "Mutual TLS: the server also asks for a certificate, checks it and reads who the caller is.",
+      "body": "With mutual TLS the server adds a `CertificateRequest` to its flight. The client answers with its own `Certificate` and a `CertificateVerify` signed with its private key, which proves possession. The server checks the chain to a trusted CA, the validity dates and revocation, then reads the caller's identity from the subject alternative name (here `spiffe://example.org/orders`)."
+    },
+    {
+      "title": "Rejected at the handshake",
+      "caption": "No certificate, an expired one or an unknown CA: the handshake fails before any request is read.",
+      "body": "Three other clients try in turn: one has no certificate, one presents a certificate that expired hours ago, one presents a certificate issued by a CA the server does not trust. Each handshake ends with a TLS alert (`certificate_required`, `certificate_expired`, `unknown_ca`) and the connection is closed before any application request is read."
+    },
+    {
+      "title": "Short-lived, auto-rotated",
+      "caption": "Certificates last an hour and are reissued automatically, so a stolen key soon stops working.",
+      "body": "Certificates are issued for hours or days, and an automated issuer replaces each one well before it expires, so nobody renews anything by hand and a stolen key is soon useless. Mutual TLS only answers **who is calling**: an authorization policy still has to decide what that identity may do."
+    }
+  ],
+  "related": ["service-mesh", "oauth2-client-credentials", "zero-trust-access", "jwt-validation", "api-gateway", "sidecar", "gateway-offloading"],
+  "references": [
+    { "title": "RFC 9846 — The Transport Layer Security (TLS) Protocol Version 1.3 (replaces RFC 8446)", "url": "https://www.rfc-editor.org/rfc/rfc9846" },
+    { "title": "RFC 5280 — Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile", "url": "https://www.rfc-editor.org/rfc/rfc5280" },
+    { "title": "RFC 9525 — Service Identity in TLS", "url": "https://www.rfc-editor.org/rfc/rfc9525" },
+    { "title": "RFC 9608 — No Revocation Available for X.509 Public Key Certificates", "url": "https://www.rfc-editor.org/rfc/rfc9608" },
+    { "title": "RFC 8705 — OAuth 2.0 Mutual-TLS Client Authentication and Certificate-Bound Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc8705" },
+    { "title": "RFC 9440 — Client-Cert HTTP Header Field", "url": "https://www.rfc-editor.org/rfc/rfc9440" },
+    { "title": "RFC 9113 — HTTP/2 (§9.2.3 TLS 1.3 Features)", "url": "https://www.rfc-editor.org/rfc/rfc9113.html#section-9.2.3" },
+    { "title": "RFC 8555 — Automatic Certificate Management Environment (ACME)", "url": "https://www.rfc-editor.org/rfc/rfc8555" },
+    { "title": "SPIFFE — The X.509 SPIFFE Verifiable Identity Document (X509-SVID)", "url": "https://github.com/spiffe/spiffe/blob/main/standards/X509-SVID.md" },
+    { "title": "SPIFFE — SPIRE Concepts", "url": "https://spiffe.io/docs/latest/spire-about/spire-concepts/" },
+    { "title": "cert-manager — Certificate resource", "url": "https://cert-manager.io/docs/usage/certificate/" },
+    { "title": "Istio — Security (identity, mutual TLS, authorization)", "url": "https://istio.io/latest/docs/concepts/security/" },
+    { "title": "Linkerd — Automatic mTLS", "url": "https://linkerd.io/docs/features/automatic-mtls/" },
+    { "title": "Chrome Root Program Policy, Version 1.8", "url": "https://googlechrome.github.io/chromerootprogram/crp/policy/" },
+    { "title": "Let's Encrypt — Ending TLS Client Authentication Certificate Support in 2026", "url": "https://letsencrypt.org/2025/05/14/ending-tls-client-authentication" },
+    { "title": "OpenID Foundation — FAPI 2.0 Security Profile", "url": "https://openid.net/specs/fapi-security-profile-2_0-final.html" },
+    { "title": "NIST SP 800-207 — Zero Trust Architecture", "url": "https://csrc.nist.gov/pubs/sp/800/207/final" }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "aka": ["Content delivery network", "Edge caching"],
+  "steps": [
+    {
+      "title": "First request: a miss",
+      "caption": "Bangkok's edge has no copy of /app.9f3c.js: a MISS. It fetches it from the far origin and stores it.",
+      "body": "A user in Bangkok asks for `/app.9f3c.js`. The request lands on the nearest **edge location**, which already holds the page but has no copy of this script: a **MISS**. The edge fetches the file from the origin on another continent (the slow leg, about 230 ms here), stores it for as long as the origin's `Cache-Control` header allows, and passes it on."
+    },
+    {
+      "title": "Hits near the user",
+      "caption": "Bangkok's next requests are HITs from the edge in ~15 ms. Every other edge fills its own cache.",
+      "body": "The next Bangkok users get the edge's copy in about 15 ms: a **HIT**, sent with an `Age` header that says how long ago the copy came from the origin. The origin sees none of those requests. Frankfurt and São Paulo each miss on their own first request, because **every edge location fills its cache independently**."
+    },
+    {
+      "title": "Expiry and revalidation",
+      "caption": "The page's max-age runs out. The edge revalidates with its ETag: 304, no body, fresh again.",
+      "body": "`/index.html` was cached with `max-age=600`. Once its age passes that, the copy is **stale**, and the edge has to check it before using it again: it sends a **conditional request** with the copy's `ETag` in `If-None-Match`. The page hasn't changed, so the origin answers **304 Not Modified** with headers and no body, and the same copy is fresh for another 600 s. The user who triggered the check still waited for the origin; with `stale-while-revalidate` the edge answers at once from the stale copy and refreshes it in the background."
+    },
+    {
+      "title": "Changing content",
+      "caption": "Deploy: the new script has a new URL, so no purge. The page keeps its URL: purged, then a MISS.",
+      "body": "A new build ships and the page now loads `/app.a71b.js`. **A new URL is a new cache key**: its first request simply misses and fills, nothing has to be invalidated, and that is why fingerprinted files can be cached for a year and marked `immutable`. `/index.html` keeps its URL, so the deploy **purges** it from every edge, and the next request for it is a miss that brings in the new page. A purge clears the CDN's copies, not the ones already in browsers."
+    }
+  ],
+  "related": ["cache-aside", "load-balancing", "multi-region-active-active", "api-gateway", "rate-limiting", "gateway-offloading", "valet-key"],
+  "references": [
+    { "title": "RFC 9111 — HTTP Caching", "url": "https://www.rfc-editor.org/rfc/rfc9111.html" },
+    { "title": "RFC 9110 — HTTP Semantics (validators, conditional requests, 304 Not Modified)", "url": "https://www.rfc-editor.org/rfc/rfc9110.html" },
+    { "title": "RFC 5861 — HTTP Cache-Control Extensions for Stale Content", "url": "https://www.rfc-editor.org/rfc/rfc5861.html" },
+    { "title": "RFC 8246 — HTTP Immutable Responses", "url": "https://www.rfc-editor.org/rfc/rfc8246.html" },
+    { "title": "RFC 9213 — Targeted HTTP Cache Control", "url": "https://www.rfc-editor.org/rfc/rfc9213.html" },
+    { "title": "RFC 9211 — The Cache-Status HTTP Response Header Field", "url": "https://www.rfc-editor.org/rfc/rfc9211.html" },
+    { "title": "MDN — HTTP caching", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching" },
+    { "title": "Azure Architecture Center — CDN guidance", "url": "https://learn.microsoft.com/en-us/azure/architecture/best-practices/cdn" },
+    { "title": "Amazon CloudFront Developer Guide — Manage how long content stays in the cache (expiration)", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Expiration.html" },
+    { "title": "Amazon CloudFront Developer Guide — Understand the cache key", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-the-cache-key.html" },
+    { "title": "Amazon CloudFront Developer Guide — Invalidate files to remove content", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html" },
+    { "title": "Amazon CloudFront Developer Guide — Use Amazon CloudFront Origin Shield", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html" },
+    { "title": "Amazon CloudFront Developer Guide — Request and response behavior for custom origins (request collapsing)", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html" },
+    { "title": "Cloudflare Cache docs — Default Cache Behavior", "url": "https://developers.cloudflare.com/cache/concepts/default-cache-behavior/" },
+    { "title": "Cloudflare Cache docs — CDN-Cache-Control", "url": "https://developers.cloudflare.com/cache/concepts/cdn-cache-control/" },
+    { "title": "Cloudflare Cache docs — Revalidation", "url": "https://developers.cloudflare.com/cache/concepts/revalidation/" },
+    { "title": "Cloudflare Cache docs — Purge cache", "url": "https://developers.cloudflare.com/cache/how-to/purge-cache/" },
+    { "title": "Cloudflare Cache docs — Tiered Cache", "url": "https://developers.cloudflare.com/cache/how-to/tiered-cache/" },
+    { "title": "Cloudflare Cache docs — Cache Deception Armor", "url": "https://developers.cloudflare.com/cache/cache-security/cache-deception-armor/" },
+    { "title": "Fastly Documentation — Purging", "url": "https://www.fastly.com/documentation/guides/concepts/cache/purging/" },
+    { "title": "Fastly Documentation — Shielding", "url": "https://www.fastly.com/documentation/guides/getting-started/hosts/shielding/" },
+    { "title": "Fastly Documentation — Request collapsing", "url": "https://www.fastly.com/documentation/guides/concepts/cache/request-collapsing/" },
+    { "title": "James Kettle (PortSwigger Research) — Practical Web Cache Poisoning (2018)", "url": "https://portswigger.net/research/practical-web-cache-poisoning" },
+    { "title": "Mirheidari et al. — Cached and Confused: Web Cache Deception in the Wild (USENIX Security 2020)", "url": "https://www.usenix.org/conference/usenixsecurity20/presentation/mirheidari" }
+  ]
+}

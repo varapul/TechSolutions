@@ -1,0 +1,36 @@
+{
+  "aka": ["Ports and Adapters"],
+  "steps": [
+    {
+      "title": "In through an adapter",
+      "caption": "POST /orders reaches the REST controller, which calls the PlaceOrder port; the core runs its rule.",
+      "body": "An HTTP `POST /orders` reaches the **REST controller**, a driving adapter. It parses the request and turns it into a plain call on the `PlaceOrder` port. The core checks its business rule on its own objects: it knows nothing about HTTP, JSON or the web framework."
+    },
+    {
+      "title": "Out through driven ports",
+      "caption": "The core calls ports it owns to save, charge and publish; adapters implement them and depend on it.",
+      "body": "To finish the job the core calls `OrderRepository`, `PaymentGateway` and `EventPublisher`. These **driven ports** are interfaces the core owns, written in its own language; the SQL, payment and broker adapters implement them and talk to the real database, provider and broker. The calls flow outward, but every source-code dependency points inward: adapters depend on the core, never the reverse."
+    },
+    {
+      "title": "Swap and add adapters",
+      "caption": "Swap SQL for a document store, add a queue consumer on the PlaceOrder port: the core is untouched.",
+      "body": "The SQL adapter is unplugged and a document-store adapter takes its place behind the same `OrderRepository` port. A second driving adapter, a message consumer, is plugged in next to the REST controller: it takes an order from a queue and calls the same `PlaceOrder` port. Both changes happen outside. The hexagon and its ports stay exactly as they were."
+    },
+    {
+      "title": "Test the core on its own",
+      "caption": "Unplug production, plug in a test driver and in-memory fakes: the rules run in milliseconds.",
+      "body": "The production adapters are unplugged. A **test driver** calls the driving port directly and **in-memory fakes** stand behind the driven ports, so the business rules run in milliseconds with no network, database or framework. Each real adapter gets its own integration test against the real technology, and the core that was tested is the core that ships."
+    }
+  ],
+  "related": ["layered-architecture", "modular-monolith", "anti-corruption-layer", "microservices", "microkernel", "branch-by-abstraction", "cqrs"],
+  "references": [
+    { "title": "Alistair Cockburn — Hexagonal Architecture (the original 2005 article)", "url": "https://alistair.cockburn.us/hexagonal-architecture" },
+    { "title": "Juan Manuel Garrido de Paz — Ports and Adapters Pattern (Hexagonal Architecture)", "url": "https://jmgarridopaz.github.io/content/hexagonalarchitecture.html" },
+    { "title": "Jeffrey Palermo — The Onion Architecture: part 1", "url": "https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/" },
+    { "title": "Robert C. Martin — The Clean Architecture", "url": "https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html" },
+    { "title": "Martin Fowler — Presentation Domain Data Layering", "url": "https://martinfowler.com/bliki/PresentationDomainDataLayering.html" },
+    { "title": "AWS Prescriptive Guidance — Hexagonal architecture pattern", "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/hexagonal-architecture.html" },
+    { "title": "Netflix Technology Blog — Ready for changes with Hexagonal Architecture", "url": "https://netflixtechblog.com/ready-for-changes-with-hexagonal-architecture-b315ec967749" },
+    { "title": "ArchUnit User Guide — Onion Architecture", "url": "https://www.archunit.org/userguide/html/000_Index.html#_onion_architecture" }
+  ]
+}

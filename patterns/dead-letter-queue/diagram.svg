@@ -1,0 +1,997 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Dead-Letter Queue</title>
+<desc id="dg-desc">Dead-Letter Queue. Park messages that keep failing so they stop blocking the queue and can be inspected. Step 1, A poison message: m-13 has a field the handler cannot parse: it fails, comes back and fails again, and the rest wait. Step 2, Park it after 3 receives: After 3 failed receives the broker parks m-13 in the dead-letter queue, and the queue flows again. Step 3, Alarm, then inspect: Depth 1 in the dead-letter queue raises an alarm. An engineer reads m-13 and fixes the handler. Step 4, Redrive: After the fix, m-13 is redriven to the source queue and saved. The dead-letter queue is empty again.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">MESSAGING &amp; INTEGRATION</text>
+  <text class="title" x="40" y="64">Dead-Letter Queue</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A poison message</text>
+  <text class="step on p1" x="40" y="518">1 · A poison message</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Park it after 3 receives</text>
+  <text class="step on p2" x="262" y="518">2 · Park it after 3 receives</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Alarm, then inspect</text>
+  <text class="step on p3" x="484" y="518">3 · Alarm, then inspect</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Redrive</text>
+  <text class="step on p4" x="706" y="518">4 · Redrive</text>
+  <text class="caption p1" x="40" y="552">m-13 has a field the handler cannot parse: it fails, comes back and fails again, and the rest wait.</text>
+  <text class="caption p2" x="40" y="552">After 3 failed receives the broker parks m-13 in the dead-letter queue, and the queue flows again.</text>
+  <text class="caption p3" x="40" y="552">Depth 1 in the dead-letter queue raises an alarm. An engineer reads m-13 and fixes the handler.</text>
+  <text class="caption p4" x="40" y="552">After the fix, m-13 is redriven to the source queue and saved. The dead-letter queue is empty again.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Dead-Letter Queue. Timeline (20s loop, 1s = 5%):
+   0-25%   the producer sends m-13 to m-16 (0.15-0.9s). m-13 is received three times (1.3, 2.5, 3.7s); each time
+           the handler fails on an unknown field (1.45, 2.65, 3.85s) and the message returns to the head of the
+           queue (back by 4.45s) with its receive count at 1, 2, 3. m-14 to m-16 wait behind it.
+   25-50%  the dead-letter policy (max receive count 3) fires (5.1s): m-13 moves to the dead-letter queue
+           (5.45-6.25s), depth 0 -> 1, with its metadata (6.4s); the alarm goes to PENDING (6.5s). The queue
+           advances and m-14, m-15, m-16 are handled and saved (7.35, 8.35, 9.35s).
+   50-75%  the alarm's evaluation period ends (10.3-10.6s): ALARM, the bell swings, the engineer is paged (11s),
+           peeks at m-13 (11.5-11.9s), reads the payload, the handler log and the cause (11.9, 12.4, 12.9s)
+           and ships handler v2 (13.4s; deployed at 14s).
+   75-100% redrive (15.2s): m-13 leaves the dead-letter queue, goes up the redrive path and back into the source
+           queue (15.75-17.33s); depth 1 -> 0 (16.3s), alarm OK (16.7s); handler v2 saves it (18.2s, row at 18.55s).
+           The fix, the saved rows and the tool's notes fade out in the last 0.5s; the queue is already empty. */
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .evt { font-size: 12px; font-weight: 700; fill: var(--bg); }
+.diagram .cnt { font-size: 9.5px; }
+.diagram .bang { font-size: 11px; font-weight: 700; fill: var(--bg); }
+.diagram .cell { font-size: 11px; }
+.diagram .badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; }
+.diagram .legend { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .dlq-m13 { transform: translate(478px, 181px); animation: dlq-m13 var(--T) linear infinite; }
+.diagram .dlq-m14 { transform: translate(398px, 181px); animation: dlq-m14 var(--T) linear infinite; }
+.diagram .dlq-m15 { transform: translate(318px, 181px); animation: dlq-m15 var(--T) linear infinite; }
+.diagram .dlq-m16 { transform: translate(238px, 181px); animation: dlq-m16 var(--T) linear infinite; }
+.diagram .dlq-c0 { opacity: 0; animation: dlq-c0 var(--T) linear infinite; }
+.diagram .dlq-c1 { opacity: 0; animation: dlq-c1 var(--T) linear infinite; }
+.diagram .dlq-c1b { opacity: 0; animation: dlq-c1b var(--T) linear infinite; }
+.diagram .dlq-c2 { opacity: 0; animation: dlq-c2 var(--T) linear infinite; }
+.diagram .dlq-c3 { animation: dlq-c3 var(--T) linear infinite; }
+.diagram .dlq-bad { animation: dlq-bad var(--T) linear infinite; }
+.diagram .dlq-a0 { animation: dlq-a0 var(--T) linear infinite; }
+.diagram .dlq-a1 { opacity: 0; animation: dlq-a1 var(--T) linear infinite; }
+.diagram .dlq-b0 { animation: dlq-b0 var(--T) linear infinite; }
+.diagram .dlq-b1 { opacity: 0; animation: dlq-b1 var(--T) linear infinite; }
+.diagram .dlq-d0 { animation: dlq-d0 var(--T) linear infinite; }
+.diagram .dlq-d1 { opacity: 0; animation: dlq-d1 var(--T) linear infinite; }
+.diagram .dlq-w { opacity: 0; animation: dlq-w var(--T) linear infinite; }
+.diagram .dlq-cmd { opacity: 0; animation: dlq-cmd var(--T) linear infinite; }
+.diagram .dlq-met { opacity: 0; animation: dlq-met var(--T) linear infinite; }
+.diagram .dlq-fail { animation: dlq-fail var(--T) linear infinite; }
+.diagram .dlq-sfail { animation: dlq-sfail var(--T) linear infinite; }
+.diagram .dlq-ok { opacity: 0; animation: dlq-ok var(--T) linear infinite; }
+.diagram .dlq-sok { opacity: 0; animation: dlq-sok var(--T) linear infinite; }
+.diagram .dlq-v1 { animation: dlq-v1 var(--T) linear infinite; }
+.diagram .dlq-v2 { opacity: 0; animation: dlq-v2 var(--T) linear infinite; }
+.diagram .dlq-fixd { opacity: 0; animation: dlq-fixd var(--T) linear infinite; }
+.diagram .dlq-wait { animation: dlq-wait var(--T) linear infinite; }
+.diagram .dlq-flow { opacity: 0; animation: dlq-flow var(--T) linear infinite; }
+.diagram .dlq-pol { opacity: 0; animation: dlq-pol var(--T) linear infinite; }
+.diagram .dlq-park { opacity: 0; animation: dlq-park var(--T) linear infinite; }
+.diagram .dlq-n0 { animation: dlq-n0 var(--T) linear infinite; }
+.diagram .dlq-deep { opacity: 0; animation: dlq-deep var(--T) linear infinite; }
+.diagram .dlq-dring { opacity: 0; animation: dlq-dring var(--T) linear infinite; }
+.diagram .dlq-empty { animation: dlq-empty var(--T) linear infinite; }
+.diagram .dlq-tag { opacity: 0; animation: dlq-tag var(--T) linear infinite; }
+.diagram .dlq-rise { opacity: 0; animation: dlq-rise var(--T) linear infinite; }
+.diagram .dlq-lbl { animation: dlq-lbl var(--T) linear infinite; }
+.diagram .dlq-metw { opacity: 0; animation: dlq-metw var(--T) linear infinite; }
+.diagram .dlq-alarm { opacity: 0; animation: dlq-alarm var(--T) linear infinite; }
+.diagram .dlq-still { animation: dlq-still var(--T) linear infinite; }
+.diagram .dlq-calm { animation: dlq-calm var(--T) linear infinite; }
+.diagram .dlq-pend { opacity: 0; animation: dlq-pend var(--T) linear infinite; }
+.diagram .dlq-paged { opacity: 0; animation: dlq-paged var(--T) linear infinite; }
+.diagram .dlq-peek { opacity: 0; animation: dlq-peek var(--T) linear infinite; }
+.diagram .dlq-lpeek { opacity: 0; animation: dlq-lpeek var(--T) linear infinite; }
+.diagram .dlq-lred { opacity: 0; animation: dlq-lred var(--T) linear infinite; }
+.diagram .dlq-idle { animation: dlq-idle var(--T) linear infinite; }
+.diagram .dlq-l1 { opacity: 0; animation: dlq-l1 var(--T) linear infinite; }
+.diagram .dlq-l2 { opacity: 0; animation: dlq-l2 var(--T) linear infinite; }
+.diagram .dlq-l3 { opacity: 0; animation: dlq-l3 var(--T) linear infinite; }
+.diagram .dlq-ship { opacity: 0; animation: dlq-ship var(--T) linear infinite; }
+.diagram .dlq-btn { opacity: 0; animation: dlq-btn var(--T) linear infinite; }
+.diagram .dlq-done { opacity: 0; animation: dlq-done var(--T) linear infinite; }
+.diagram .dlq-btxt { animation: dlq-btxt var(--T) linear infinite; }
+.diagram .dlq-r1 { opacity: 0; animation: dlq-r1 var(--T) linear infinite; }
+.diagram .dlq-r2 { opacity: 0; animation: dlq-r2 var(--T) linear infinite; }
+.diagram .dlq-r3 { opacity: 0; animation: dlq-r3 var(--T) linear infinite; }
+.diagram .dlq-r4 { opacity: 0; animation: dlq-r4 var(--T) linear infinite; }
+.diagram .dlq-ring { transform-box: fill-box; transform-origin: 50% 0; animation: dlq-ring var(--T) linear infinite; }
+@keyframes dlq-m13 {
+  0% { transform: translate(150px, 181px); opacity: 0; }
+  0.75% { transform: translate(150px, 181px); opacity: 0; }
+  1% { opacity: 1; }
+  3.75% { transform: translate(478px, 181px); }
+  4.75% { transform: translate(478px, 181px); }
+  6.5% { transform: translate(628px, 181px); }
+  8.5% { transform: translate(628px, 181px); }
+  10.25% { transform: translate(478px, 181px); }
+  10.75% { transform: translate(478px, 181px); }
+  12.5% { transform: translate(628px, 181px); }
+  14.5% { transform: translate(628px, 181px); }
+  16.25% { transform: translate(478px, 181px); }
+  16.75% { transform: translate(478px, 181px); }
+  18.5% { transform: translate(628px, 181px); }
+  20.5% { transform: translate(628px, 181px); }
+  22.25% { transform: translate(478px, 181px); }
+  27.25% { transform: translate(478px, 181px); }
+  31.25% { transform: translate(478px, 325px); }
+  78.75% { transform: translate(478px, 325px); }
+  81.991% { transform: translate(150px, 325px); }
+  83.414% { transform: translate(150px, 181px); }
+  86.655% { transform: translate(478px, 181px); }
+  87.25% { transform: translate(478px, 181px); }
+  89% { transform: translate(628px, 181px); }
+  91.5% { transform: translate(628px, 181px); opacity: 1; }
+  91.75% { transform: translate(628px, 181px); opacity: 0; }
+  100% { transform: translate(628px, 181px); opacity: 0; }
+}
+@keyframes dlq-m14 {
+  0% { transform: translate(150px, 181px); opacity: 0; }
+  1.5% { transform: translate(150px, 181px); opacity: 0; }
+  1.75% { opacity: 1; }
+  4% { transform: translate(398px, 181px); }
+  29.5% { transform: translate(398px, 181px); }
+  31% { transform: translate(478px, 181px); }
+  31.75% { transform: translate(478px, 181px); }
+  33.5% { transform: translate(628px, 181px); }
+  35.5% { transform: translate(628px, 181px); opacity: 1; }
+  35.75% { transform: translate(628px, 181px); opacity: 0; }
+  100% { transform: translate(628px, 181px); opacity: 0; }
+}
+@keyframes dlq-m15 {
+  0% { transform: translate(150px, 181px); opacity: 0; }
+  2.25% { transform: translate(150px, 181px); opacity: 0; }
+  2.5% { opacity: 1; }
+  4.25% { transform: translate(318px, 181px); }
+  29.5% { transform: translate(318px, 181px); }
+  31% { transform: translate(398px, 181px); }
+  33.75% { transform: translate(398px, 181px); }
+  35.25% { transform: translate(478px, 181px); }
+  36.75% { transform: translate(478px, 181px); }
+  38.5% { transform: translate(628px, 181px); }
+  40.5% { transform: translate(628px, 181px); opacity: 1; }
+  40.75% { transform: translate(628px, 181px); opacity: 0; }
+  100% { transform: translate(628px, 181px); opacity: 0; }
+}
+@keyframes dlq-m16 {
+  0% { transform: translate(150px, 181px); opacity: 0; }
+  3% { transform: translate(150px, 181px); opacity: 0; }
+  3.25% { opacity: 1; }
+  4.5% { transform: translate(238px, 181px); }
+  29.5% { transform: translate(238px, 181px); }
+  31% { transform: translate(318px, 181px); }
+  33.75% { transform: translate(318px, 181px); }
+  35.25% { transform: translate(398px, 181px); }
+  38.75% { transform: translate(398px, 181px); }
+  40.25% { transform: translate(478px, 181px); }
+  41.75% { transform: translate(478px, 181px); }
+  43.5% { transform: translate(628px, 181px); }
+  45.5% { transform: translate(628px, 181px); opacity: 1; }
+  45.75% { transform: translate(628px, 181px); opacity: 0; }
+  100% { transform: translate(628px, 181px); opacity: 0; }
+}
+@keyframes dlq-c0 {
+  0% { opacity: 1; }
+  6.5% { opacity: 1; }
+  6.8% { opacity: 0; }
+  81.75% { opacity: 0; }
+  82.05% { opacity: 1; }
+  89% { opacity: 1; }
+  89.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-c1 {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  6.8% { opacity: 1; }
+  12.5% { opacity: 1; }
+  12.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-c1b {
+  0% { opacity: 0; }
+  89% { opacity: 0; }
+  89.3% { opacity: 1; }
+  93% { opacity: 1; }
+  93.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-c2 {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  12.8% { opacity: 1; }
+  18.5% { opacity: 1; }
+  18.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-c3 {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  18.8% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.05% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-bad {
+  0% { opacity: 0; }
+  7.25% { opacity: 0; }
+  7.75% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-a0 {
+  0% { opacity: 1; }
+  33.5% { opacity: 1; }
+  33.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-a1 {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  33.8% { opacity: 1; }
+  37% { opacity: 1; }
+  37.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-b0 {
+  0% { opacity: 1; }
+  38.5% { opacity: 1; }
+  38.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-b1 {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  38.8% { opacity: 1; }
+  42% { opacity: 1; }
+  42.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-d0 {
+  0% { opacity: 1; }
+  43.5% { opacity: 1; }
+  43.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-d1 {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  43.8% { opacity: 1; }
+  47% { opacity: 1; }
+  47.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-w {
+  0% { transform: translate(756px, 181px); opacity: 0; }
+  35.25% { transform: translate(756px, 181px); opacity: 0; }
+  35.5% { opacity: 1; }
+  36.75% { transform: translate(798px, 181px); opacity: 1; }
+  37% { transform: translate(798px, 181px); opacity: 0; }
+  40.25% { transform: translate(756px, 181px); opacity: 0; }
+  40.5% { opacity: 1; }
+  41.75% { transform: translate(798px, 181px); opacity: 1; }
+  42% { transform: translate(798px, 181px); opacity: 0; }
+  45.25% { transform: translate(756px, 181px); opacity: 0; }
+  45.5% { opacity: 1; }
+  46.75% { transform: translate(798px, 181px); opacity: 1; }
+  47% { transform: translate(798px, 181px); opacity: 0; }
+  91.25% { transform: translate(756px, 181px); opacity: 0; }
+  91.5% { opacity: 1; }
+  92.75% { transform: translate(798px, 181px); opacity: 1; }
+  93% { transform: translate(798px, 181px); opacity: 0; }
+  100% { transform: translate(798px, 181px); opacity: 0; }
+}
+@keyframes dlq-cmd {
+  0% { transform: translate(568px, 408px); opacity: 0; }
+  57.5% { transform: translate(568px, 408px); opacity: 0; }
+  57.75% { opacity: 1; }
+  58.786% { transform: translate(478px, 408px); }
+  59.5% { transform: translate(478px, 358px); opacity: 1; }
+  59.75% { transform: translate(478px, 358px); opacity: 0; }
+  76.25% { transform: translate(568px, 408px); opacity: 0; }
+  76.5% { opacity: 1; }
+  77.536% { transform: translate(478px, 408px); }
+  78.25% { transform: translate(478px, 358px); opacity: 1; }
+  78.5% { transform: translate(478px, 358px); opacity: 0; }
+  100% { transform: translate(478px, 358px); opacity: 0; }
+}
+@keyframes dlq-met {
+  0% { transform: translate(524px, 325px); opacity: 0; }
+  51.5% { transform: translate(524px, 325px); opacity: 0; }
+  51.75% { opacity: 1; }
+  53% { transform: translate(566px, 325px); opacity: 1; }
+  53.25% { transform: translate(566px, 325px); opacity: 0; }
+  100% { transform: translate(566px, 325px); opacity: 0; }
+}
+@keyframes dlq-fail {
+  0% { opacity: 0; }
+  7.25% { opacity: 0; }
+  7.65% { opacity: 1; }
+  9.25% { opacity: 1; }
+  9.65% { opacity: 0; }
+  13.25% { opacity: 0; }
+  13.65% { opacity: 1; }
+  15.25% { opacity: 1; }
+  15.65% { opacity: 0; }
+  19.25% { opacity: 0; }
+  19.65% { opacity: 1; }
+  28% { opacity: 1; }
+  28.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-sfail {
+  0% { opacity: 0; }
+  7.25% { opacity: 0; }
+  7.75% { opacity: 1; }
+  33% { opacity: 1; }
+  33.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-ok {
+  0% { opacity: 0; }
+  35% { opacity: 0; }
+  35.4% { opacity: 1; }
+  37% { opacity: 1; }
+  37.4% { opacity: 0; }
+  40% { opacity: 0; }
+  40.4% { opacity: 1; }
+  42% { opacity: 1; }
+  42.4% { opacity: 0; }
+  45% { opacity: 0; }
+  45.4% { opacity: 1; }
+  47% { opacity: 1; }
+  47.4% { opacity: 0; }
+  70% { opacity: 0; }
+  70.4% { opacity: 1; }
+  72.25% { opacity: 1; }
+  72.65% { opacity: 0; }
+  91% { opacity: 0; }
+  91.4% { opacity: 1; }
+  93.5% { opacity: 1; }
+  93.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-sok {
+  0% { opacity: 0; }
+  35% { opacity: 0; }
+  35.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  51% { opacity: 0; }
+  91% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-v1 {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  70.5% { opacity: 0; }
+  98% { opacity: 0; }
+  98.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-v2 {
+  0% { opacity: 0; }
+  70% { opacity: 0; }
+  70.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-fixd {
+  0% { opacity: 0; }
+  70% { opacity: 0; }
+  70.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-wait {
+  0% { opacity: 0; }
+  7.5% { opacity: 0; }
+  8% { opacity: 1; }
+  28.5% { opacity: 1; }
+  29% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-flow {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-pol {
+  0% { opacity: 0; }
+  25.5% { opacity: 0; }
+  26% { opacity: 1; }
+  33% { opacity: 1; }
+  33.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-park {
+  0% { opacity: 0; }
+  27% { opacity: 0; }
+  27.5% { opacity: 1; }
+  32% { opacity: 1; }
+  32.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-n0 {
+  0% { opacity: 1; }
+  31.25% { opacity: 1; }
+  31.55% { opacity: 0; }
+  81.5% { opacity: 0; }
+  81.8% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-deep {
+  0% { opacity: 0; }
+  31.25% { opacity: 0; }
+  31.55% { opacity: 1; }
+  81.5% { opacity: 1; }
+  81.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-dring {
+  0% { opacity: 0; }
+  50.5% { opacity: 0; }
+  51% { opacity: 1; }
+  58% { opacity: 1; }
+  58.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-empty {
+  0% { opacity: 1; }
+  29.5% { opacity: 1; }
+  30% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-tag {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.5% { opacity: 1; }
+  78% { opacity: 1; }
+  78.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-rise {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79% { opacity: 1; }
+  86.75% { opacity: 1; }
+  87.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-lbl {
+  0% { opacity: 1; }
+  80.5% { opacity: 1; }
+  81% { opacity: 0; }
+  85% { opacity: 0; }
+  85.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-metw {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  51.5% { opacity: 1; }
+  54.5% { opacity: 1; }
+  55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-alarm {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  83.5% { opacity: 1; }
+  84% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-still {
+  0% { opacity: 1; }
+  53% { opacity: 1; }
+  53.5% { opacity: 0; }
+  83.5% { opacity: 0; }
+  84% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-calm {
+  0% { opacity: 1; }
+  32.5% { opacity: 1; }
+  33% { opacity: 0; }
+  83.5% { opacity: 0; }
+  84% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-pend {
+  0% { opacity: 0; }
+  32.5% { opacity: 0; }
+  33% { opacity: 1; }
+  53% { opacity: 1; }
+  53.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-paged {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  55.5% { opacity: 1; }
+  83.5% { opacity: 1; }
+  84% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-peek {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60% { opacity: 1; }
+  67% { opacity: 1; }
+  67.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-lpeek {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58% { opacity: 1; }
+  67% { opacity: 1; }
+  67.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-lred {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  86.75% { opacity: 1; }
+  87.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-idle {
+  0% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-l1 {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-l2 {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  62.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-l3 {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-ship {
+  0% { opacity: 0; }
+  67% { opacity: 0; }
+  67.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-btn {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  86.5% { opacity: 1; }
+  87% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-done {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-btxt {
+  0% { opacity: 1; }
+  76% { opacity: 1; }
+  76.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dlq-r1 {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  37.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-r2 {
+  0% { opacity: 0; }
+  41.75% { opacity: 0; }
+  42.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-r3 {
+  0% { opacity: 0; }
+  46.75% { opacity: 0; }
+  47.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-r4 {
+  0% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dlq-ring {
+  0% { transform: rotate(0deg); }
+  53% { transform: rotate(0deg); }
+  53.5% { transform: rotate(16deg); }
+  54.5% { transform: rotate(-16deg); }
+  55.5% { transform: rotate(16deg); }
+  56.5% { transform: rotate(-16deg); }
+  57.5% { transform: rotate(12deg); }
+  58.5% { transform: rotate(-12deg); }
+  59.5% { transform: rotate(8deg); }
+  60.5% { transform: rotate(-8deg); }
+  61% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+</style>
+<g class="stage">
+  <!-- producer -->
+  <rect class="box" x="30" y="150" width="82" height="62" rx="12"/>
+  <text class="sb mid" x="71" y="177">Order API</text>
+  <text class="sub mid" x="71" y="196">producer</text>
+  <line class="wire" x1="112" y1="181" x2="188" y2="181" marker-end="url(#ah)"/>
+
+  <!-- the two ways out of the dead-letter queue: redrive to the source queue, or archive / discard -->
+  <path class="wire dash" d="M190 325H150V184" marker-end="url(#ah)"/>
+  <path class="none s-purple dlq-rise" d="M190 325H150V184" stroke-width="2.5" marker-end="url(#ah-purple)"/>
+  <path class="wire dash" d="M150 325H114" marker-end="url(#ah)"/>
+  <circle class="f-wire" cx="150" cy="325" r="3"/>
+  <text class="tiny end dlq-lbl" x="142" y="262">redrive</text>
+  <rect class="box" x="30" y="298" width="82" height="54" rx="12"/>
+  <text class="sb mid" x="71" y="322">Archive</text>
+  <text class="sub mid" x="71" y="340">or discard</text>
+  <g class="p4">
+    <text class="tiny" x="30" y="374">Invalid for good?</text>
+    <text class="tiny" x="30" y="390">Remove it on purpose,</text>
+    <text class="tiny" x="30" y="406">not by expiry.</text>
+  </g>
+
+  <!-- message broker: the source queue and its dead-letter queue -->
+  <rect class="zone" x="176" y="98" width="362" height="368" rx="16"/>
+  <text class="tiny sb" x="190" y="117">message broker</text>
+  <text class="tiny" x="190" y="144"><tspan class="sb f-ink">source queue</tspan> <tspan class="mono">orders</tspan> · delivered in order</text>
+  <rect class="box" x="190" y="152" width="334" height="58" rx="10"/>
+  <line class="wire" x1="524" y1="181" x2="574" y2="181" marker-end="url(#ah)"/>
+  <text class="tiny mid sb f-amber-ink dlq-wait" x="318" y="227">m-14, m-15 and m-16 wait behind m-13</text>
+  <text class="tiny mid sb f-green dlq-flow" x="318" y="227">✓ the queue flows again</text>
+
+  <!-- the dead-letter policy sits on the way down -->
+  <line class="wire" x1="478" y1="210" x2="478" y2="294" marker-end="url(#ah)"/>
+  <line class="s-purple dlq-park" x1="478" y1="210" x2="478" y2="294" stroke-width="2.5" marker-end="url(#ah-purple)"/>
+  <line class="s-line" x1="438" y1="247" x2="478" y2="247" stroke-width="1.5"/>
+  <circle class="f-wire" cx="478" cy="247" r="3.5"/>
+  <text class="tiny" x="190" y="251">dead-letter policy</text>
+  <rect class="f-panel s-line" x="298" y="236" width="140" height="22" rx="11" stroke-width="1.5"/>
+  <rect class="f-amber-soft s-amber dlq-pol" x="298" y="236" width="140" height="22" rx="11" stroke-width="1.5"/>
+  <text class="tiny mid sb f-ink" x="368" y="251">max receive count 3</text>
+
+  <!-- dead-letter queue, with its depth -->
+  <text class="tiny sb f-ink" x="190" y="285">dead-letter queue</text>
+  <rect class="f-panel s-line" x="364" y="271" width="70" height="20" rx="10" stroke-width="1.5"/>
+  <rect class="f-red-soft s-red dlq-deep" x="364" y="271" width="70" height="20" rx="10" stroke-width="1.5"/>
+  <rect class="none s-red dlq-dring" x="360.5" y="267.5" width="77" height="27" rx="13.5" stroke-width="2"/>
+  <text class="tiny" x="376" y="285">depth</text>
+  <text class="tiny mono b f-green dlq-n0" x="414" y="285">0</text>
+  <text class="tiny mono b f-red dlq-deep" x="414" y="285">1</text>
+  <rect class="box" x="190" y="296" width="334" height="58" rx="10"/>
+  <text class="tiny mid f-faint dlq-empty" x="318" y="329">empty</text>
+  <g class="dlq-tag">
+    <line class="s-line" x1="430" y1="325" x2="442" y2="325" stroke-width="1.5"/>
+    <rect class="f-bg s-line" x="198" y="303" width="232" height="44" rx="6" stroke-width="1"/>
+    <text class="tiny" x="208" y="317">reason</text>
+    <text class="tiny mono f-ink" x="264" y="317">receive limit reached</text>
+    <text class="tiny" x="208" y="330">receives</text>
+    <text class="tiny mono f-ink" x="264" y="330">3</text>
+    <text class="tiny" x="208" y="343">source</text>
+    <text class="tiny mono f-ink" x="264" y="343">orders</text>
+  </g>
+
+  <!-- what this step teaches -->
+  <rect class="f-panel s-line" x="190" y="366" width="266" height="90" rx="10" stroke-width="1"/>
+  <g class="p1">
+    <text class="legend" x="202" y="385">A PERMANENT FAILURE</text>
+    <text class="tiny" x="202" y="404">Same message, same code, same error:</text>
+    <text class="tiny" x="202" y="420">a retry cannot fix it. Each one only</text>
+    <text class="tiny" x="202" y="436">holds up the messages behind m-13.</text>
+  </g>
+  <g class="p2">
+    <text class="legend" x="202" y="385">PARKED, NOT LOST</text>
+    <text class="tiny" x="202" y="404">The broker counts receives per message.</text>
+    <text class="tiny" x="202" y="420">At the limit it sets m-13 aside, with</text>
+    <text class="tiny" x="202" y="436">its history, and the queue moves on.</text>
+  </g>
+  <g class="p3">
+    <text class="legend" x="202" y="385">SOMEONE HAS TO LOOK</text>
+    <text class="tiny" x="202" y="404">Nothing consumes a dead-letter queue.</text>
+    <text class="tiny" x="202" y="420">Many brokers delete its messages when</text>
+    <text class="tiny" x="202" y="436">retention runs out: silent data loss.</text>
+  </g>
+  <g class="p4">
+    <text class="legend" x="202" y="385">REDRIVE WITH CARE</text>
+    <text class="tiny" x="202" y="404">Fix first, or m-13 just fails again.</text>
+    <text class="tiny" x="202" y="420">Its work may be half done already, so</text>
+    <text class="tiny" x="202" y="436">the handler must be idempotent.</text>
+  </g>
+
+  <!-- consumer: the order handler, with the message it has in hand -->
+  <rect class="box" x="576" y="104" width="180" height="141" rx="12"/>
+  <rect class="f-red-soft s-red dlq-fail" x="576" y="104" width="180" height="141" rx="12" stroke-width="2"/>
+  <rect class="f-green-soft s-green dlq-ok" x="576" y="104" width="180" height="141" rx="12" stroke-width="2"/>
+  <text class="label mid" x="666" y="128">Order handler</text>
+  <text class="sub mid" x="650" y="146">consumer</text>
+  <g class="dlq-v1"><rect class="f-panel-2" x="684" y="135" width="28" height="15" rx="7.5"/><text class="badge mid f-muted" x="698" y="146">v1</text></g>
+  <g class="dlq-v2"><rect class="f-green" x="684" y="135" width="28" height="15" rx="7.5"/><text class="badge mid f-bg" x="698" y="146">v2</text></g>
+  <rect class="f-bg s-line dash" x="589" y="158" width="78" height="46" rx="9" stroke-width="1.5"/>
+  <text class="sub sb f-red dlq-sfail" x="676" y="186">✕ failed</text>
+  <text class="sub sb f-green dlq-sok" x="676" y="186">✓ saved</text>
+  <text class="tiny mid mono f-red dlq-sfail" x="666" y="229">unknown field "gift"</text>
+  <text class="tiny mid sb f-green dlq-fixd" x="666" y="229">v2 ignores unknown fields</text>
+
+  <!-- its database -->
+  <line class="wire" x1="756" y1="181" x2="798" y2="181" marker-end="url(#ah)"/>
+  <rect class="box" x="800" y="104" width="130" height="141" rx="12"/>
+  <path class="f-teal-soft s-teal" d="M811 118v11a8 3 0 0 0 16 0v-11" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="819" cy="118" rx="8" ry="3" stroke-width="1.5"/>
+  <text class="label" x="834" y="130">Orders DB</text>
+  <rect class="f-bg s-line dash" x="812" y="146" width="106" height="18" rx="4" stroke-width="1"/>
+  <rect class="f-bg s-line dash" x="812" y="168" width="106" height="18" rx="4" stroke-width="1"/>
+  <rect class="f-bg s-line dash" x="812" y="190" width="106" height="18" rx="4" stroke-width="1"/>
+  <rect class="f-bg s-line dash" x="812" y="212" width="106" height="18" rx="4" stroke-width="1"/>
+  <g class="dlq-r1"><rect class="f-bg" x="812" y="146" width="106" height="18" rx="4"/><rect class="f-teal-soft s-teal" x="812" y="146" width="106" height="18" rx="4" stroke-width="1"/><text class="cell f-ink" x="821" y="159">order 14</text><text class="cell end b f-green" x="910" y="159">✓</text></g>
+  <g class="dlq-r2"><rect class="f-bg" x="812" y="168" width="106" height="18" rx="4"/><rect class="f-teal-soft s-teal" x="812" y="168" width="106" height="18" rx="4" stroke-width="1"/><text class="cell f-ink" x="821" y="181">order 15</text><text class="cell end b f-green" x="910" y="181">✓</text></g>
+  <g class="dlq-r3"><rect class="f-bg" x="812" y="190" width="106" height="18" rx="4"/><rect class="f-teal-soft s-teal" x="812" y="190" width="106" height="18" rx="4" stroke-width="1"/><text class="cell f-ink" x="821" y="203">order 16</text><text class="cell end b f-green" x="910" y="203">✓</text></g>
+  <g class="dlq-r4"><rect class="f-bg" x="812" y="212" width="106" height="18" rx="4"/><rect class="f-teal-soft s-teal" x="812" y="212" width="106" height="18" rx="4" stroke-width="1"/><text class="cell f-ink" x="821" y="225">order 13</text><text class="cell end b f-green" x="910" y="225">✓</text></g>
+
+  <!-- operations: an alarm on the dead-letter queue's depth, and the engineer's tool -->
+  <rect class="zone" x="556" y="272" width="374" height="194" rx="16"/>
+  <circle class="f-muted" cx="575" cy="284" r="3.5"/>
+  <path class="f-muted" d="M568.5 294.5q0-6 6.5-6t6.5 6z"/>
+  <text class="tiny sb" x="588" y="293">on-call engineer</text>
+  <text class="tiny end sb f-red dlq-paged" x="918" y="293">paged</text>
+  <g class="dlq-ship">
+    <line class="s-green" x1="666" y1="272" x2="666" y2="248" stroke-width="2.5" marker-end="url(#ah-green)"/>
+    <text class="tiny sb f-green" x="677" y="264">ships the fix: handler v2</text>
+  </g>
+
+  <line class="wire dash" x1="524" y1="325" x2="566" y2="325" marker-end="url(#ah)"/>
+  <line class="s-red dlq-metw" x1="524" y1="325" x2="566" y2="325" stroke-width="2.5" marker-end="url(#ah-red)"/>
+  <rect class="box" x="568" y="304" width="350" height="42" rx="10"/>
+  <rect class="f-red-soft s-red dlq-alarm" x="568" y="304" width="350" height="42" rx="10" stroke-width="1.5"/>
+  <g transform="translate(590 315)">
+    <g class="f-muted dlq-still"><path d="M0 0C-5.5 0 -7.5 4.5 -7.5 9V13L-10 17H10L7.5 13V9C7.5 4.5 5.5 0 0 0Z"/><circle cx="0" cy="-0.5" r="1.7"/><circle cx="0" cy="19.5" r="2.3"/></g>
+    <g class="f-red dlq-alarm"><g class="dlq-ring"><path d="M0 0C-5.5 0 -7.5 4.5 -7.5 9V13L-10 17H10L7.5 13V9C7.5 4.5 5.5 0 0 0Z"/><circle cx="0" cy="-0.5" r="1.7"/><circle cx="0" cy="19.5" r="2.3"/></g></g>
+  </g>
+  <text class="tiny sb f-ink" x="612" y="322">alarm: dead-letter depth &gt; 0</text>
+  <text class="tiny" x="612" y="337">pages the on-call engineer</text>
+  <g class="dlq-calm"><rect class="f-green-soft s-green" x="846" y="315" width="60" height="20" rx="10" stroke-width="1.5"/><text class="badge mid f-green" x="876" y="328.5">OK</text></g>
+  <g class="dlq-pend"><rect class="f-amber-soft s-amber" x="846" y="315" width="60" height="20" rx="10" stroke-width="1.5"/><text class="badge mid f-amber-ink" x="876" y="328.5">PENDING</text></g>
+  <g class="dlq-alarm"><rect class="f-red" x="846" y="315" width="60" height="20" rx="10"/><text class="badge mid f-bg" x="876" y="328.5">ALARM</text></g>
+
+  <path class="wire" d="M568 408H478V356" marker-end="url(#ah)"/>
+  <text class="tiny mid sb f-blue dlq-lpeek" x="510" y="396">peek</text>
+  <text class="tiny mid sb f-blue dlq-lred" x="510" y="396">redrive</text>
+  <rect class="box" x="568" y="356" width="350" height="102" rx="10"/>
+  <text class="tiny sb f-ink" x="580" y="374">inspect and redrive</text>
+  <text class="tiny f-faint dlq-idle" x="580" y="398">no message open</text>
+  <text class="tiny mono f-ink dlq-l1" x="580" y="391">m-13  {"order":13,"gift":true}</text>
+  <text class="tiny mono f-red dlq-l2" x="580" y="406">handler log: unknown field "gift"</text>
+  <text class="tiny dlq-l3" x="580" y="421"><tspan class="sb f-ink">cause:</tspan> a handler bug, the message is valid</text>
+  <rect class="f-bg s-line" x="580" y="432" width="132" height="20" rx="10" stroke-width="1.5"/>
+  <text class="tiny mid sb f-ink dlq-btxt" x="646" y="446">redrive to source</text>
+  <g class="dlq-btn"><rect class="f-blue" x="580" y="432" width="132" height="20" rx="10"/><text class="tiny mid sb f-bg" x="646" y="446">redrive to source</text></g>
+  <g class="dlq-done"><rect class="f-bg" x="580" y="432" width="132" height="20" rx="10"/><rect class="f-green-soft s-green" x="580" y="432" width="132" height="20" rx="10" stroke-width="1.5"/><text class="tiny mid sb f-green" x="646" y="446">✓ redriven</text></g>
+  <rect class="f-bg s-line" x="720" y="432" width="132" height="20" rx="10" stroke-width="1.5"/>
+  <text class="tiny mid" x="786" y="446">archive or discard</text>
+
+  <!-- messages: m-13 is the poison one -->
+  <g class="dlq-m16">
+    <rect class="ev" x="-36" y="-20" width="72" height="40" rx="8"/>
+    <text class="evt mid mono" y="-5">m-16</text>
+    <rect class="f-bg" x="-33" y="2" width="66" height="13" rx="6.5"/>
+    <text class="cnt mid f-muted dlq-d0" y="12">received 0×</text>
+    <text class="cnt mid f-muted dlq-d1" y="12">received 1×</text>
+  </g>
+  <g class="dlq-m15">
+    <rect class="ev" x="-36" y="-20" width="72" height="40" rx="8"/>
+    <text class="evt mid mono" y="-5">m-15</text>
+    <rect class="f-bg" x="-33" y="2" width="66" height="13" rx="6.5"/>
+    <text class="cnt mid f-muted dlq-b0" y="12">received 0×</text>
+    <text class="cnt mid f-muted dlq-b1" y="12">received 1×</text>
+  </g>
+  <g class="dlq-m14">
+    <rect class="ev" x="-36" y="-20" width="72" height="40" rx="8"/>
+    <text class="evt mid mono" y="-5">m-14</text>
+    <rect class="f-bg" x="-33" y="2" width="66" height="13" rx="6.5"/>
+    <text class="cnt mid f-muted dlq-a0" y="12">received 0×</text>
+    <text class="cnt mid f-muted dlq-a1" y="12">received 1×</text>
+  </g>
+  <g class="dlq-m13">
+    <rect class="ev" x="-36" y="-20" width="72" height="40" rx="8"/>
+    <rect class="none s-red dlq-bad" x="-36" y="-20" width="72" height="40" rx="8" stroke-width="2.5"/>
+    <circle class="f-red s-bg" cx="30" cy="-17" r="8" stroke-width="2"/>
+    <text class="bang mid" x="30" y="-13">!</text>
+    <text class="evt mid mono" y="-5">m-13</text>
+    <rect class="f-bg" x="-33" y="2" width="66" height="13" rx="6.5"/>
+    <text class="cnt mid f-muted dlq-c0" y="12">received 0×</text>
+    <text class="cnt mid f-muted dlq-c1b" y="12">received 1×</text>
+    <text class="cnt mid sb f-red dlq-c1" y="12">received 1×</text>
+    <text class="cnt mid sb f-red dlq-c2" y="12">received 2×</text>
+    <text class="cnt mid sb f-red dlq-c3" y="12">received 3×</text>
+  </g>
+  <rect class="none s-blue dlq-peek" x="439" y="302" width="78" height="46" rx="10" stroke-width="2.5"/>
+  <circle class="pkt f-teal dlq-w" r="5.5"/>
+  <circle class="pkt f-blue dlq-cmd" r="5.5"/>
+  <circle class="pkt f-red dlq-met" r="5"/>
+</g>
+</svg>

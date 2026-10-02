@@ -66,7 +66,7 @@ A **trace** records one request as a tree of **spans**. A span is one timed oper
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Telemetry Pipeline (OpenTelemetry) *(planned)* — Receive, process and export traces, metrics and logs through one vendor-neutral collector.
+- [Telemetry Pipeline (OpenTelemetry)](../telemetry-pipeline/) — Receive, process and export traces, metrics and logs through one vendor-neutral collector.
 - Centralized Logging *(planned)* — Ship structured logs from every service to one searchable store, correlated by request ID.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.

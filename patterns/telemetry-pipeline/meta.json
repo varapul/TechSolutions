@@ -1,0 +1,55 @@
+{
+  "aka": ["OpenTelemetry Collector pipeline", "Observability pipeline"],
+  "steps": [
+    {
+      "title": "One protocol in",
+      "caption": "Every service sends traces, metrics and logs over OTLP; one receiver feeds three pipelines.",
+      "body": "Each service is instrumented with the OpenTelemetry API and SDK and exports its **traces, metrics and logs** over **OTLP** (gRPC on port 4317, HTTP on 4318). Application code never imports a backend's agent or client library. In the Collector, one `otlp` receiver accepts all three signals and hands each to its own **pipeline**."
+    },
+    {
+      "title": "Process in the middle",
+      "caption": "Processors tag each item, keep error traces plus 25% of the rest, strip personal data and batch.",
+      "body": "Each pipeline runs its processors in order, with the **memory limiter** first. Here they add resource attributes (`k8s.pod.name`, `deployment.environment.name`) next to the `service.name` set by the SDK, **tail-sample** the traces (every trace that contains an error, plus 25% of the rest), delete a sensitive attribute (`user.email`) and **batch** what is left. Tail sampling judges whole traces, so every span of a trace must reach the same Collector instance."
+    },
+    {
+      "title": "Fan out",
+      "caption": "Each signal goes to its backend, and traces to two vendors at once: a config change, not code.",
+      "body": "Exporters send each signal to its backend, and a pipeline may list several: during a migration the traces pipeline feeds the current tracing backend and the **new vendor** at the same time, each through its own exporter and queue. Adding, replacing or removing a backend is an edit to the Collector's configuration, so no service is rebuilt or redeployed."
+    },
+    {
+      "title": "Stay up under pressure",
+      "caption": "The log store stalls: its queue fills and retries, then the memory limiter refuses new data.",
+      "body": "The log store stops answering, so its exporter holds batches in a **sending queue** and **retries with exponential backoff**. When memory reaches its limit, the **memory limiter** refuses new data in every pipeline rather than let the process die: the receiver answers with a retryable error (gRPC `UNAVAILABLE`, HTTP 503), so the refused data stays with the sender, which retries and loses it only if its own buffer overflows or its retries run out. At scale the same pipeline is split into two tiers: **agents** beside the workloads forward to a load-balanced pool of **gateway** Collectors."
+    }
+  ],
+  "related": ["distributed-tracing", "centralized-logging", "slo-error-budgets", "service-mesh", "sidecar", "queue-based-load-leveling", "microservices"],
+  "references": [
+    { "title": "OpenTelemetry — Collector", "url": "https://opentelemetry.io/docs/collector/" },
+    { "title": "OpenTelemetry — Collector architecture", "url": "https://opentelemetry.io/docs/collector/architecture/" },
+    { "title": "OpenTelemetry — Collector configuration", "url": "https://opentelemetry.io/docs/collector/configuration/" },
+    { "title": "OpenTelemetry — Deploy the Collector (no Collector, agent and gateway patterns)", "url": "https://opentelemetry.io/docs/collector/deploy/" },
+    { "title": "OpenTelemetry — Agent-to-gateway deployment pattern", "url": "https://opentelemetry.io/docs/collector/deploy/other/agent-to-gateway/" },
+    { "title": "OpenTelemetry — Scaling the Collector", "url": "https://opentelemetry.io/docs/collector/scaling/" },
+    { "title": "OpenTelemetry — Collector resiliency", "url": "https://opentelemetry.io/docs/collector/resiliency/" },
+    { "title": "OpenTelemetry — Collector distributions", "url": "https://opentelemetry.io/docs/collector/distributions/" },
+    { "title": "OpenTelemetry — Collector internal telemetry", "url": "https://opentelemetry.io/docs/collector/internal-telemetry/" },
+    { "title": "OpenTelemetry — OTLP Specification", "url": "https://opentelemetry.io/docs/specs/otlp/" },
+    { "title": "OpenTelemetry — Specification Status Summary", "url": "https://opentelemetry.io/docs/specs/status/" },
+    { "title": "OpenTelemetry — OpenTelemetry Profiles Enters Public Alpha (blog, March 2026)", "url": "https://opentelemetry.io/blog/2026/profiles-alpha/" },
+    { "title": "OpenTelemetry Collector — Processors: recommended processors and their order", "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/README.md" },
+    { "title": "OpenTelemetry Collector — Memory Limiter Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiterprocessor/README.md" },
+    { "title": "OpenTelemetry Collector — Batch Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md" },
+    { "title": "OpenTelemetry Collector — Exporter Helper (sending queue, retry, persistent queue)", "url": "https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/exporterhelper/README.md" },
+    { "title": "OpenTelemetry Collector Contrib — Tail Sampling Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md" },
+    { "title": "OpenTelemetry Collector Contrib — Load Balancing Exporter", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/loadbalancingexporter/README.md" },
+    { "title": "OpenTelemetry Collector Contrib — Kubernetes Attributes Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md" },
+    { "title": "OpenTelemetry Collector Contrib — Redaction Processor", "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/redactionprocessor/README.md" },
+    { "title": "OpenTelemetry — Transforming telemetry", "url": "https://opentelemetry.io/docs/collector/transforming-telemetry/" },
+    { "title": "OpenTelemetry — Sampling", "url": "https://opentelemetry.io/docs/concepts/sampling/" },
+    { "title": "OpenTelemetry — Resource semantic conventions", "url": "https://opentelemetry.io/docs/specs/semconv/resource/" },
+    { "title": "OpenTelemetry — Handling sensitive data", "url": "https://opentelemetry.io/docs/security/handling-sensitive-data/" },
+    { "title": "OpenTelemetry — Collector configuration best practices", "url": "https://opentelemetry.io/docs/security/config-best-practices/" },
+    { "title": "OpenTelemetry — OpenTelemetry Operator for Kubernetes", "url": "https://opentelemetry.io/docs/platforms/kubernetes/operator/" },
+    { "title": "CNCF — OpenTelemetry project page", "url": "https://www.cncf.io/projects/opentelemetry/" }
+  ]
+}

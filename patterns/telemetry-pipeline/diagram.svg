@@ -1,0 +1,988 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Telemetry Pipeline (OpenTelemetry)</title>
+<desc id="dg-desc">Telemetry Pipeline (OpenTelemetry). Receive, process and export traces, metrics and logs through one vendor-neutral collector. Step 1, One protocol in: Every service sends traces, metrics and logs over OTLP; one receiver feeds three pipelines. Step 2, Process in the middle: Processors tag each item, keep error traces plus 25% of the rest, strip personal data and batch. Step 3, Fan out: Each signal goes to its backend, and traces to two vendors at once: a config change, not code. Step 4, Stay up under pressure: The log store stalls: its queue fills and retries, then the memory limiter refuses new data.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">OBSERVABILITY &amp; OPERATIONS</text>
+  <text class="title" x="40" y="64">Telemetry Pipeline (OpenTelemetry)</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · One protocol in</text>
+  <text class="step on p1" x="40" y="518">1 · One protocol in</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Process in the middle</text>
+  <text class="step on p2" x="262" y="518">2 · Process in the middle</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Fan out</text>
+  <text class="step on p3" x="484" y="518">3 · Fan out</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Stay up under pressure</text>
+  <text class="step on p4" x="706" y="518">4 · Stay up under pressure</text>
+  <text class="caption p1" x="40" y="552">Every service sends traces, metrics and logs over OTLP; one receiver feeds three pipelines.</text>
+  <text class="caption p2" x="40" y="552">Processors tag each item, keep error traces plus 25% of the rest, strip personal data and batch.</text>
+  <text class="caption p3" x="40" y="552">Each signal goes to its backend, and traces to two vendors at once: a config change, not code.</text>
+  <text class="caption p4" x="40" y="552">The log store stalls: its queue fills and retries, then the memory limiter refuses new data.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Telemetry Pipeline (OpenTelemetry). Timeline (20s loop, 1s = 5%):
+   0-25%   Orders (2%), Payments (7.5%) and Inventory (11.5%) export spans (bars), metric points (dots) and
+           log records (lines) over OTLP; the one otlp receiver sorts them into three pipelines by 21%
+   25-50%  the items cross the processors: memory limiter 26-28%, enrich (teal tab on) 29%, tail sampling
+           35-37.5% (3 of 5 spans dropped), redact (orange tab off) 41%, batch (envelope) 45.5%
+   50-75%  a second tracing vendor appears; batches leave: metrics 54.5%, logs 55.5%, traces to both
+           vendors 60%; all delivered by 67.5%
+   75-100% the log store stalls: four batches queue up (80-88%), retries at 77/80/84.5/91.25% all fail,
+           memory reaches the limit at 88% and the memory limiter refuses a new export at 91%; reset from 97.5% */
+.diagram .tp-col { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .tp-name { font-size: 13px; font-weight: 600; }
+.diagram .tp-band { fill: var(--panel-2); stroke: var(--line); stroke-width: 1; }
+.diagram .tp-slot { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+.diagram .tp-bar { fill: var(--purple); stroke: var(--bg); stroke-width: 1.5; }
+.diagram .tp-err { fill: var(--red); }
+.diagram .tp-log { fill: none; stroke: var(--purple); stroke-width: 3; stroke-linecap: round; }
+.diagram .tp-halo { fill: none; stroke: var(--bg); stroke-width: 6; stroke-linecap: round; }
+.diagram .tp-env { fill: var(--bg); stroke: var(--purple); stroke-width: 1.5; }
+.diagram .tp-qb { fill: var(--amber); stroke: var(--bg); stroke-width: 1.5; }
+.diagram .tp-ico { opacity: 0.6; }
+.diagram .tp-tok { opacity: 0; }
+.diagram .tp-mem { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.3); animation: tp-mem var(--T) linear infinite; }
+.diagram .tp-thin { stroke-width: 1.5; }
+.diagram .tp-tag { opacity: 0; animation: tp-tag var(--T) linear infinite; }
+.diagram .tp-rx { opacity: 0; animation: tp-rx var(--T) linear infinite; }
+.diagram .tp-hl-ml { opacity: 0; animation: tp-hl-ml var(--T) linear infinite; }
+.diagram .tp-hl-en { opacity: 0; animation: tp-hl-en var(--T) linear infinite; }
+.diagram .tp-hl-sa { opacity: 0; animation: tp-hl-sa var(--T) linear infinite; }
+.diagram .tp-hl-re { opacity: 0; animation: tp-hl-re var(--T) linear infinite; }
+.diagram .tp-hl-ba { opacity: 0; animation: tp-hl-ba var(--T) linear infinite; }
+.diagram .tp-kept { opacity: 0; animation: tp-kept var(--T) linear infinite; }
+.diagram .tp-ok-m { opacity: 0; animation: tp-ok-m var(--T) linear infinite; }
+.diagram .tp-ok-l { opacity: 0; animation: tp-ok-l var(--T) linear infinite; }
+.diagram .tp-ok-a { opacity: 0; animation: tp-ok-a var(--T) linear infinite; }
+.diagram .tp-ok-b { opacity: 0; animation: tp-ok-b var(--T) linear infinite; }
+.diagram .tp-down { opacity: 0; animation: tp-down var(--T) linear infinite; }
+.diagram .tp-x { opacity: 0; animation: tp-x var(--T) linear infinite; }
+.diagram .tp-full { opacity: 0; animation: tp-full var(--T) linear infinite; }
+.diagram .tp-refuse { opacity: 0; animation: tp-refuse var(--T) linear infinite; }
+.diagram .tp-xin { opacity: 0; animation: tp-xin var(--T) linear infinite; }
+.diagram .tp-o1 { animation: tp-o1 var(--T) linear infinite; }
+.diagram .tp-o2 { animation: tp-o2 var(--T) linear infinite; }
+.diagram .tp-o3 { animation: tp-o3 var(--T) linear infinite; }
+.diagram .tp-o4 { animation: tp-o4 var(--T) linear infinite; }
+.diagram .tp-p1 { animation: tp-p1 var(--T) linear infinite; }
+.diagram .tp-p2 { animation: tp-p2 var(--T) linear infinite; }
+.diagram .tp-p3 { animation: tp-p3 var(--T) linear infinite; }
+.diagram .tp-p4 { animation: tp-p4 var(--T) linear infinite; }
+.diagram .tp-i1 { animation: tp-i1 var(--T) linear infinite; }
+.diagram .tp-i2 { animation: tp-i2 var(--T) linear infinite; }
+.diagram .tp-i3 { animation: tp-i3 var(--T) linear infinite; }
+.diagram .tp-sec { animation: tp-sec var(--T) linear infinite; }
+.diagram .tp-bm { animation: tp-bm var(--T) linear infinite; }
+.diagram .tp-bl { animation: tp-bl var(--T) linear infinite; }
+.diagram .tp-ba { animation: tp-ba var(--T) linear infinite; }
+.diagram .tp-bb { animation: tp-bb var(--T) linear infinite; }
+.diagram .tp-q1 { animation: tp-q1 var(--T) linear infinite; }
+.diagram .tp-q2 { animation: tp-q2 var(--T) linear infinite; }
+.diagram .tp-q3 { animation: tp-q3 var(--T) linear infinite; }
+.diagram .tp-q4 { animation: tp-q4 var(--T) linear infinite; }
+.diagram .tp-rt { animation: tp-rt var(--T) linear infinite; }
+.diagram .tp-r1 { animation: tp-r1 var(--T) linear infinite; }
+.diagram .tp-r2 { animation: tp-r2 var(--T) linear infinite; }
+.diagram .tp-r3 { animation: tp-r3 var(--T) linear infinite; }
+@keyframes tp-o1 {
+  0% { transform: translate(156px, 174px); opacity: 0; }
+  2% { transform: translate(156px, 174px); opacity: 0; }
+  2.25% { opacity: 1; }
+  2.917% { transform: translate(200px, 174px); }
+  4.708% { transform: translate(200px, 260px); }
+  6.083% { transform: translate(266px, 260px); }
+  6.295% { transform: translate(277px, 260px); }
+  7.449% { transform: translate(277px, 200px); }
+  8.468% { transform: translate(330px, 200px); }
+  9.094% { transform: translate(352px, 176px); }
+  25.75% { transform: translate(352px, 176px); }
+  28.75% { transform: translate(438px, 176px); }
+  31.75% { transform: translate(438px, 176px); }
+  34% { transform: translate(494px, 176px); }
+  38% { transform: translate(494px, 176px); }
+  40.25% { transform: translate(550px, 176px); }
+  43% { transform: translate(550px, 176px); }
+  45.25% { transform: translate(606px, 194px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 194px); }
+  100% { transform: translate(606px, 194px); opacity: 0; }
+}
+@keyframes tp-o2 {
+  0% { transform: translate(156px, 174px); opacity: 0; }
+  2.9% { transform: translate(156px, 174px); opacity: 0; }
+  3.15% { opacity: 1; }
+  3.817% { transform: translate(200px, 174px); }
+  5.608% { transform: translate(200px, 260px); }
+  6.983% { transform: translate(266px, 260px); }
+  7.195% { transform: translate(277px, 260px); }
+  8.118% { transform: translate(277px, 308px); }
+  9.137% { transform: translate(330px, 308px); }
+  9.619% { transform: translate(352px, 296px); }
+  25.75% { transform: translate(352px, 296px); }
+  28.75% { transform: translate(438px, 296px); }
+  31.75% { transform: translate(438px, 296px); }
+  40.25% { transform: translate(550px, 296px); }
+  43% { transform: translate(550px, 296px); }
+  45.25% { transform: translate(606px, 298px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 298px); }
+  100% { transform: translate(606px, 298px); opacity: 0; }
+}
+@keyframes tp-o3 {
+  0% { transform: translate(156px, 174px); opacity: 0; }
+  3.8% { transform: translate(156px, 174px); opacity: 0; }
+  4.05% { opacity: 1; }
+  4.717% { transform: translate(200px, 174px); }
+  6.508% { transform: translate(200px, 260px); }
+  7.883% { transform: translate(266px, 260px); }
+  8.095% { transform: translate(277px, 260px); }
+  10.095% { transform: translate(277px, 364px); }
+  11.114% { transform: translate(330px, 364px); }
+  11.596% { transform: translate(352px, 352px); }
+  25.75% { transform: translate(352px, 352px); }
+  28.75% { transform: translate(438px, 352px); }
+  31.75% { transform: translate(438px, 352px); }
+  40.25% { transform: translate(550px, 352px); }
+  43% { transform: translate(550px, 352px); }
+  45.25% { transform: translate(606px, 354px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 354px); }
+  100% { transform: translate(606px, 354px); opacity: 0; }
+}
+@keyframes tp-o4 {
+  0% { transform: translate(156px, 174px); opacity: 0; }
+  4.7% { transform: translate(156px, 174px); opacity: 0; }
+  4.95% { opacity: 1; }
+  5.617% { transform: translate(200px, 174px); }
+  7.408% { transform: translate(200px, 260px); }
+  8.783% { transform: translate(266px, 260px); }
+  8.995% { transform: translate(277px, 260px); }
+  10.149% { transform: translate(277px, 200px); }
+  11.168% { transform: translate(330px, 200px); }
+  11.65% { transform: translate(352px, 188px); }
+  25.75% { transform: translate(352px, 188px); }
+  28.75% { transform: translate(438px, 188px); }
+  31.75% { transform: translate(438px, 188px); }
+  34% { transform: translate(494px, 188px); }
+  35.25% { transform: translate(494px, 188px); opacity: 1; }
+  37.5% { transform: translate(494px, 196px); opacity: 0; }
+  100% { transform: translate(494px, 196px); opacity: 0; }
+}
+@keyframes tp-p1 {
+  0% { transform: translate(156px, 260px); opacity: 0; }
+  7.5% { transform: translate(156px, 260px); opacity: 0; }
+  7.75% { opacity: 1; }
+  9.792% { transform: translate(266px, 260px); }
+  10.003% { transform: translate(277px, 260px); }
+  11.157% { transform: translate(277px, 200px); }
+  12.176% { transform: translate(330px, 200px); }
+  12.599% { transform: translate(352px, 200px); }
+  25.75% { transform: translate(352px, 200px); }
+  28.75% { transform: translate(438px, 200px); }
+  31.75% { transform: translate(438px, 200px); }
+  34% { transform: translate(494px, 200px); }
+  38% { transform: translate(494px, 200px); }
+  40.25% { transform: translate(550px, 200px); }
+  43% { transform: translate(550px, 200px); }
+  45.25% { transform: translate(606px, 206px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 206px); }
+  100% { transform: translate(606px, 206px); opacity: 0; }
+}
+@keyframes tp-p2 {
+  0% { transform: translate(156px, 260px); opacity: 0; }
+  8.4% { transform: translate(156px, 260px); opacity: 0; }
+  8.65% { opacity: 1; }
+  10.692% { transform: translate(266px, 260px); }
+  10.903% { transform: translate(277px, 260px); }
+  11.826% { transform: translate(277px, 308px); }
+  12.846% { transform: translate(330px, 308px); }
+  13.269% { transform: translate(352px, 308px); }
+  25.75% { transform: translate(352px, 308px); }
+  28.75% { transform: translate(438px, 308px); }
+  31.75% { transform: translate(438px, 308px); }
+  40.25% { transform: translate(550px, 308px); }
+  43% { transform: translate(550px, 308px); }
+  45.25% { transform: translate(606px, 308px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 308px); }
+  100% { transform: translate(606px, 308px); opacity: 0; }
+}
+@keyframes tp-p3 {
+  0% { transform: translate(156px, 260px); opacity: 0; }
+  9.3% { transform: translate(156px, 260px); opacity: 0; }
+  9.55% { opacity: 1; }
+  11.592% { transform: translate(266px, 260px); }
+  11.803% { transform: translate(277px, 260px); }
+  13.803% { transform: translate(277px, 364px); }
+  14.822% { transform: translate(330px, 364px); }
+  15.246% { transform: translate(352px, 364px); }
+  25.75% { transform: translate(352px, 364px); }
+  28.75% { transform: translate(438px, 364px); }
+  31.75% { transform: translate(438px, 364px); }
+  40.25% { transform: translate(550px, 364px); }
+  43% { transform: translate(550px, 364px); }
+  45.25% { transform: translate(606px, 364px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 364px); }
+  100% { transform: translate(606px, 364px); opacity: 0; }
+}
+@keyframes tp-p4 {
+  0% { transform: translate(156px, 260px); opacity: 0; }
+  10.2% { transform: translate(156px, 260px); opacity: 0; }
+  10.45% { opacity: 1; }
+  12.492% { transform: translate(266px, 260px); }
+  12.703% { transform: translate(277px, 260px); }
+  13.857% { transform: translate(277px, 200px); }
+  14.876% { transform: translate(330px, 200px); }
+  15.358% { transform: translate(352px, 212px); }
+  25.75% { transform: translate(352px, 212px); }
+  28.75% { transform: translate(438px, 212px); }
+  31.75% { transform: translate(438px, 212px); }
+  34% { transform: translate(494px, 212px); }
+  35.25% { transform: translate(494px, 212px); opacity: 1; }
+  37.5% { transform: translate(494px, 220px); opacity: 0; }
+  100% { transform: translate(494px, 220px); opacity: 0; }
+}
+@keyframes tp-i1 {
+  0% { transform: translate(156px, 346px); opacity: 0; }
+  11.5% { transform: translate(156px, 346px); opacity: 0; }
+  11.75% { opacity: 1; }
+  12.417% { transform: translate(200px, 346px); }
+  14.208% { transform: translate(200px, 260px); }
+  15.583% { transform: translate(266px, 260px); }
+  15.795% { transform: translate(277px, 260px); }
+  16.949% { transform: translate(277px, 200px); }
+  17.968% { transform: translate(330px, 200px); }
+  18.594% { transform: translate(352px, 224px); }
+  25.75% { transform: translate(352px, 224px); }
+  28.75% { transform: translate(438px, 224px); }
+  31.75% { transform: translate(438px, 224px); }
+  34% { transform: translate(494px, 224px); }
+  35.25% { transform: translate(494px, 224px); opacity: 1; }
+  37.5% { transform: translate(494px, 232px); opacity: 0; }
+  100% { transform: translate(494px, 232px); opacity: 0; }
+}
+@keyframes tp-i2 {
+  0% { transform: translate(156px, 346px); opacity: 0; }
+  12.4% { transform: translate(156px, 346px); opacity: 0; }
+  12.65% { opacity: 1; }
+  13.317% { transform: translate(200px, 346px); }
+  15.108% { transform: translate(200px, 260px); }
+  16.483% { transform: translate(266px, 260px); }
+  16.695% { transform: translate(277px, 260px); }
+  17.618% { transform: translate(277px, 308px); }
+  18.637% { transform: translate(330px, 308px); }
+  19.119% { transform: translate(352px, 320px); }
+  25.75% { transform: translate(352px, 320px); }
+  28.75% { transform: translate(438px, 320px); }
+  31.75% { transform: translate(438px, 320px); }
+  40.25% { transform: translate(550px, 320px); }
+  43% { transform: translate(550px, 320px); }
+  45.25% { transform: translate(606px, 318px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 318px); }
+  100% { transform: translate(606px, 318px); opacity: 0; }
+}
+@keyframes tp-i3 {
+  0% { transform: translate(156px, 346px); opacity: 0; }
+  13.3% { transform: translate(156px, 346px); opacity: 0; }
+  13.55% { opacity: 1; }
+  14.217% { transform: translate(200px, 346px); }
+  16.008% { transform: translate(200px, 260px); }
+  17.383% { transform: translate(266px, 260px); }
+  17.595% { transform: translate(277px, 260px); }
+  19.595% { transform: translate(277px, 364px); }
+  20.614% { transform: translate(330px, 364px); }
+  21.096% { transform: translate(352px, 376px); }
+  25.75% { transform: translate(352px, 376px); }
+  28.75% { transform: translate(438px, 376px); }
+  31.75% { transform: translate(438px, 376px); }
+  40.25% { transform: translate(550px, 376px); }
+  43% { transform: translate(550px, 376px); }
+  45.25% { transform: translate(606px, 374px); }
+  46.5% { opacity: 1; }
+  46.75% { opacity: 0; }
+  47% { transform: translate(606px, 374px); }
+  100% { transform: translate(606px, 374px); opacity: 0; }
+}
+@keyframes tp-tag {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.5% { opacity: 1; }
+  47.5% { opacity: 1; }
+  47.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-sec {
+  0% { opacity: 1; }
+  40.75% { opacity: 1; }
+  42% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-rx {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7.25% { opacity: 1; }
+  22% { opacity: 1; }
+  22.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-hl-ml {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.75% { opacity: 1; }
+  28% { opacity: 1; }
+  28.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-hl-en {
+  0% { opacity: 0; }
+  28.25% { opacity: 0; }
+  29% { opacity: 1; }
+  32% { opacity: 1; }
+  32.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-hl-sa {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34.25% { opacity: 1; }
+  38.25% { opacity: 1; }
+  39% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-hl-re {
+  0% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.5% { opacity: 1; }
+  43.25% { opacity: 1; }
+  44% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-hl-ba {
+  0% { opacity: 0; }
+  44.75% { opacity: 0; }
+  45.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-kept {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.25% { opacity: 1; }
+  49% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-bm {
+  0% { transform: translate(606px, 308px); opacity: 0; }
+  45.5% { transform: translate(606px, 308px); opacity: 0; }
+  45.75% { opacity: 1; }
+  54.5% { transform: translate(606px, 308px); }
+  60.563% { transform: translate(800px, 308px); opacity: 1; }
+  60.813% { transform: translate(800px, 308px); opacity: 0; }
+  100% { transform: translate(800px, 308px); opacity: 0; }
+}
+@keyframes tp-bl {
+  0% { transform: translate(606px, 364px); opacity: 0; }
+  45.5% { transform: translate(606px, 364px); opacity: 0; }
+  45.75% { opacity: 1; }
+  55.5% { transform: translate(606px, 364px); }
+  61.563% { transform: translate(800px, 364px); opacity: 1; }
+  61.813% { transform: translate(800px, 364px); opacity: 0; }
+  100% { transform: translate(800px, 364px); opacity: 0; }
+}
+@keyframes tp-ba {
+  0% { transform: translate(606px, 200px); opacity: 0; }
+  45.5% { transform: translate(606px, 200px); opacity: 0; }
+  45.75% { opacity: 1; }
+  60% { transform: translate(606px, 200px); }
+  66.063% { transform: translate(800px, 200px); opacity: 1; }
+  66.313% { transform: translate(800px, 200px); opacity: 0; }
+  100% { transform: translate(800px, 200px); opacity: 0; }
+}
+@keyframes tp-bb {
+  0% { transform: translate(606px, 200px); opacity: 0; }
+  60% { transform: translate(606px, 200px); opacity: 0; }
+  60.25% { opacity: 1; }
+  60.688% { transform: translate(628px, 200px); }
+  62.188% { transform: translate(628px, 248px); }
+  67.563% { transform: translate(800px, 248px); opacity: 1; }
+  67.813% { transform: translate(800px, 248px); opacity: 0; }
+  100% { transform: translate(800px, 248px); opacity: 0; }
+}
+@keyframes tp-ok-m {
+  0% { opacity: 0; }
+  60.563% { opacity: 0; }
+  61.063% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-ok-l {
+  0% { opacity: 0; }
+  61.563% { opacity: 0; }
+  62.063% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-ok-a {
+  0% { opacity: 0; }
+  66.063% { opacity: 0; }
+  66.563% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-ok-b {
+  0% { opacity: 0; }
+  67.563% { opacity: 0; }
+  68.063% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-down {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-q1 {
+  0% { transform: translate(606px, 364px); opacity: 0; }
+  77.5% { transform: translate(606px, 364px); opacity: 0; }
+  77.75% { opacity: 1; }
+  79.975% { transform: translate(705px, 364px); }
+  97.5% { transform: translate(705px, 364px); opacity: 1; }
+  97.75% { transform: translate(705px, 364px); opacity: 0; }
+  100% { transform: translate(705px, 364px); opacity: 0; }
+}
+@keyframes tp-q2 {
+  0% { transform: translate(606px, 364px); opacity: 0; }
+  80.5% { transform: translate(606px, 364px); opacity: 0; }
+  80.75% { opacity: 1; }
+  82.6% { transform: translate(690px, 364px); }
+  97.5% { transform: translate(690px, 364px); opacity: 1; }
+  97.75% { transform: translate(690px, 364px); opacity: 0; }
+  100% { transform: translate(690px, 364px); opacity: 0; }
+}
+@keyframes tp-q3 {
+  0% { transform: translate(606px, 364px); opacity: 0; }
+  83.5% { transform: translate(606px, 364px); opacity: 0; }
+  83.75% { opacity: 1; }
+  85.225% { transform: translate(675px, 364px); }
+  97.5% { transform: translate(675px, 364px); opacity: 1; }
+  97.75% { transform: translate(675px, 364px); opacity: 0; }
+  100% { transform: translate(675px, 364px); opacity: 0; }
+}
+@keyframes tp-q4 {
+  0% { transform: translate(606px, 364px); opacity: 0; }
+  86.5% { transform: translate(606px, 364px); opacity: 0; }
+  86.75% { opacity: 1; }
+  87.85% { transform: translate(660px, 364px); }
+  97.5% { transform: translate(660px, 364px); opacity: 1; }
+  97.75% { transform: translate(660px, 364px); opacity: 0; }
+  100% { transform: translate(660px, 364px); opacity: 0; }
+}
+@keyframes tp-rt {
+  0% { transform: translate(744px, 364px); opacity: 0; }
+  77% { transform: translate(744px, 364px); opacity: 0; }
+  77.25% { opacity: 1; }
+  78.5% { transform: translate(794px, 364px); opacity: 1; }
+  78.75% { transform: translate(794px, 364px); opacity: 0; }
+  80% { transform: translate(744px, 364px); opacity: 0; }
+  80.25% { opacity: 1; }
+  81.5% { transform: translate(794px, 364px); opacity: 1; }
+  81.75% { transform: translate(794px, 364px); opacity: 0; }
+  84.5% { transform: translate(744px, 364px); opacity: 0; }
+  84.75% { opacity: 1; }
+  86% { transform: translate(794px, 364px); opacity: 1; }
+  86.25% { transform: translate(794px, 364px); opacity: 0; }
+  91.25% { transform: translate(744px, 364px); opacity: 0; }
+  91.5% { opacity: 1; }
+  92.75% { transform: translate(794px, 364px); opacity: 1; }
+  93% { transform: translate(794px, 364px); opacity: 0; }
+  100% { transform: translate(794px, 364px); opacity: 0; }
+}
+@keyframes tp-x {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79% { opacity: 1; }
+  80% { opacity: 1; }
+  80.5% { opacity: 0; }
+  81.5% { opacity: 0; }
+  82% { opacity: 1; }
+  83% { opacity: 1; }
+  83.5% { opacity: 0; }
+  86% { opacity: 0; }
+  86.5% { opacity: 1; }
+  87.5% { opacity: 1; }
+  88% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-full {
+  0% { opacity: 0; }
+  87.85% { opacity: 0; }
+  88.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-mem {
+  0% { transform: scaleX(0.3); }
+  78% { transform: scaleX(0.3); }
+  87.85% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes tp-refuse {
+  0% { opacity: 0; }
+  87.85% { opacity: 0; }
+  88.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-r1 {
+  0% { transform: translate(156px, 260px); opacity: 0; }
+  89.1% { transform: translate(156px, 260px); opacity: 0; }
+  89.35% { opacity: 1; }
+  91.1% { transform: translate(252px, 260px); }
+  92.5% { transform: translate(252px, 260px); }
+  93.458% { transform: translate(206px, 260px); }
+  97.5% { opacity: 1; }
+  98% { transform: translate(206px, 260px); }
+  99.5% { opacity: 0; }
+  100% { transform: translate(206px, 260px); opacity: 0; }
+}
+@keyframes tp-r2 {
+  0% { transform: translate(156px, 260px); opacity: 0; }
+  89.517% { transform: translate(156px, 260px); opacity: 0; }
+  89.767% { opacity: 1; }
+  91.1% { transform: translate(232px, 260px); }
+  92.5% { transform: translate(232px, 260px); }
+  93.458% { transform: translate(186px, 260px); }
+  97.5% { opacity: 1; }
+  98% { transform: translate(186px, 260px); }
+  99.5% { opacity: 0; }
+  100% { transform: translate(186px, 260px); opacity: 0; }
+}
+@keyframes tp-r3 {
+  0% { transform: translate(156px, 260px); opacity: 0; }
+  89.933% { transform: translate(156px, 260px); opacity: 0; }
+  90.183% { opacity: 1; }
+  91.1% { transform: translate(212px, 260px); }
+  92.5% { transform: translate(212px, 260px); }
+  93.458% { transform: translate(166px, 260px); }
+  97.5% { opacity: 1; }
+  98% { transform: translate(166px, 260px); }
+  99.5% { opacity: 0; }
+  100% { transform: translate(166px, 260px); opacity: 0; }
+}
+@keyframes tp-xin {
+  0% { opacity: 0; }
+  91.1% { opacity: 0; }
+  91.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- column titles -->
+  <text class="label" x="36" y="117">Applications</text>
+  <text class="tiny" x="36" y="134">OpenTelemetry API + SDK only</text>
+  <text class="label" x="806" y="117">Backends</text>
+
+  <!-- applications: each one emits all three signals -->
+  <rect class="box" x="36" y="146" width="120" height="56" rx="10"/>
+  <text class="label mid" x="96" y="171">Orders</text>
+  <rect class="box" x="36" y="232" width="120" height="56" rx="10"/>
+  <text class="label mid" x="96" y="257">Payments</text>
+  <rect class="box" x="36" y="318" width="120" height="56" rx="10"/>
+  <text class="label mid" x="96" y="343">Inventory</text>
+  <g class="tp-ico">
+    <g transform="translate(74 187)"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/></g>
+    <g transform="translate(97 187)"><circle class="tp-bar" r="5"/></g>
+    <g transform="translate(118 187)"><path class="tp-log" d="M-9 -3H9M-9 3H3"/></g>
+    <g transform="translate(74 273)"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/></g>
+    <g transform="translate(97 273)"><circle class="tp-bar" r="5"/></g>
+    <g transform="translate(118 273)"><path class="tp-log" d="M-9 -3H9M-9 3H3"/></g>
+    <g transform="translate(74 359)"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/></g>
+    <g transform="translate(97 359)"><circle class="tp-bar" r="5"/></g>
+    <g transform="translate(118 359)"><path class="tp-log" d="M-9 -3H9M-9 3H3"/></g>
+  </g>
+
+  <!-- one protocol in -->
+  <path class="wire" d="M156 174H200V260"/>
+  <path class="wire" d="M156 346H200V260"/>
+  <line class="wire" x1="156" y1="260" x2="265" y2="260" marker-end="url(#ah)"/>
+  <text class="sub sb mid f-ink" x="230" y="251">OTLP</text>
+
+  <!-- the collector: three stages, one pipeline per signal -->
+  <rect class="box" x="262" y="94" width="482" height="310" rx="14"/>
+  <text class="label" x="276" y="117">OpenTelemetry Collector</text>
+  <text class="tiny end" x="594" y="116">memory</text>
+  <rect class="f-line" x="600" y="108" width="100" height="8" rx="4"/>
+  <g class="p123"><rect class="f-green" x="600" y="108" width="30" height="8" rx="4"/></g>
+  <g class="p4"><rect class="f-amber tp-mem" x="600" y="108" width="100" height="8" rx="4"/></g>
+  <rect class="f-red tp-refuse" x="600" y="108" width="100" height="8" rx="4"/>
+  <text class="tiny" x="706" y="116">limit</text>
+  <text class="tiny f-red tp-refuse" x="706" y="116">limit</text>
+  <text class="tp-col mid" x="299" y="137">RECEIVERS</text>
+  <text class="tp-col mid" x="486" y="137">PROCESSORS</text>
+  <text class="tp-col mid" x="691" y="137">EXPORTERS</text>
+  <path class="none s-line dash" d="M336 126V396M636 126V396"/>
+
+  <!-- receivers: one otlp receiver feeds every pipeline -->
+  <text class="tiny mono sb mid f-ink" x="298" y="159">otlp</text>
+  <rect class="f-bg s-line" x="266" y="166" width="64" height="226" rx="8" stroke-width="1.5"/>
+  <rect class="none s-purple tp-rx" x="266" y="166" width="64" height="226" rx="8" stroke-width="2"/>
+  <path class="wire" d="M266 260H277M277 200V364M277 200H330M277 308H330M277 364H330"/>
+  <text class="tiny sb end" x="326" y="190">traces</text>
+  <text class="tiny sb end" x="326" y="298">metrics</text>
+  <text class="tiny sb end" x="326" y="354">logs</text>
+
+  <!-- processors, in pipeline order -->
+  <text class="tiny sb mid f-ink" x="383" y="147">memory</text>
+  <text class="tiny sb mid f-ink" x="383" y="159">limiter</text>
+  <text class="tiny sb mid f-ink" x="438" y="159">enrich</text>
+  <text class="tiny sb mid f-ink" x="494" y="159">sample</text>
+  <text class="tiny sb mid f-ink" x="550" y="159">redact</text>
+  <text class="tiny sb mid f-ink" x="606" y="159">batch</text>
+  <rect class="tp-band" x="372" y="166" width="22" height="226" rx="5"/>
+  <rect class="tp-band" x="427" y="166" width="22" height="226" rx="5"/>
+  <rect class="tp-band" x="483" y="166" width="22" height="64" rx="5"/>
+  <rect class="tp-band" x="539" y="166" width="22" height="226" rx="5"/>
+  <rect class="tp-band" x="595" y="166" width="22" height="226" rx="5"/>
+  <rect class="f-green-soft s-green tp-hl-ml" x="372" y="166" width="22" height="226" rx="5" stroke-width="1.5"/>
+  <rect class="f-teal-soft s-teal tp-hl-en" x="427" y="166" width="22" height="226" rx="5" stroke-width="1.5"/>
+  <rect class="f-purple-soft s-purple tp-hl-sa" x="483" y="166" width="22" height="64" rx="5" stroke-width="1.5"/>
+  <rect class="f-orange-soft s-orange tp-hl-re" x="539" y="166" width="22" height="226" rx="5" stroke-width="1.5"/>
+  <rect class="f-purple-soft s-purple tp-hl-ba" x="595" y="166" width="22" height="226" rx="5" stroke-width="1.5"/>
+  <text class="tiny sb mid f-purple tp-kept" x="494" y="247">2 of 5 kept</text>
+
+  <!-- pipelines -->
+  <line class="wire" x1="330" y1="200" x2="645" y2="200" marker-end="url(#ah)"/>
+  <line class="wire" x1="330" y1="308" x2="645" y2="308" marker-end="url(#ah)"/>
+  <line class="wire" x1="330" y1="364" x2="645" y2="364" marker-end="url(#ah)"/>
+
+  <!-- step 4: the memory limiter refuses data in every pipeline -->
+  <g class="tp-refuse">
+    <rect class="f-red-soft s-red" x="372" y="166" width="22" height="226" rx="5" stroke-width="1.5"/>
+    <circle class="f-red" cx="383" cy="200" r="8"/>
+    <path class="none s-bg" d="M379.5 196.5l7 7M386.5 196.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+    <circle class="f-red" cx="383" cy="308" r="8"/>
+    <path class="none s-bg" d="M379.5 304.5l7 7M386.5 304.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+    <circle class="f-red" cx="383" cy="364" r="8"/>
+    <path class="none s-bg" d="M379.5 360.5l7 7M386.5 360.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- exporters: one per backend, each with its own queue -->
+  <text class="tiny sb mid f-ink" x="691" y="159">queue + retry</text>
+  <rect class="f-bg s-line" x="646" y="183" width="90" height="34" rx="8" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="646" y="291" width="90" height="34" rx="8" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="646" y="347" width="90" height="34" rx="8" stroke-width="1.5"/>
+  <path class="tp-slot" d="M654 194h12v12h-12zM669 194h12v12h-12zM684 194h12v12h-12zM699 194h12v12h-12zM654 302h12v12h-12zM669 302h12v12h-12zM684 302h12v12h-12zM699 302h12v12h-12zM654 358h12v12h-12zM669 358h12v12h-12zM684 358h12v12h-12zM699 358h12v12h-12z"/>
+  <path class="none s-wire" d="M720 195l5 5-5 5M720 303l5 5-5 5M720 359l5 5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line class="wire" x1="736" y1="200" x2="805" y2="200" marker-end="url(#ah)"/>
+  <line class="wire" x1="736" y1="308" x2="805" y2="308" marker-end="url(#ah)"/>
+  <line class="wire" x1="736" y1="364" x2="805" y2="364" marker-end="url(#ah)"/>
+  <text class="tiny sb mid f-amber-ink tp-full" x="691" y="341">queue full</text>
+  <g class="p4">
+    <text class="tiny sb mid f-amber-ink" x="691" y="396">retries + backoff</text>
+  </g>
+
+  <!-- backends -->
+  <rect class="box" x="806" y="180" width="120" height="40" rx="10"/>
+  <text class="tp-name mid" x="866" y="205">Tracing backend</text>
+  <rect class="box" x="806" y="288" width="120" height="40" rx="10"/>
+  <text class="tp-name mid" x="866" y="313">Metrics store</text>
+  <rect class="box" x="806" y="344" width="120" height="40" rx="10"/>
+  <g class="tp-down">
+    <rect class="f-red-soft s-red" x="806" y="344" width="120" height="40" rx="10" stroke-width="1.5"/>
+    <text class="tiny mid sb f-red" x="866" y="400">● not responding</text>
+  </g>
+  <text class="tp-name mid" x="866" y="369">Log store</text>
+
+  <!-- step 3: a second tracing vendor, added in the collector's configuration -->
+  <g class="p34">
+    <path class="none s-green" d="M628 200V248H645" stroke-width="2" marker-end="url(#ah-green)"/>
+    <circle class="f-green" cx="628" cy="200" r="3.5"/>
+    <rect class="f-bg s-green" x="646" y="231" width="90" height="34" rx="8" stroke-width="1.5"/>
+    <path class="tp-slot" d="M654 242h12v12h-12zM669 242h12v12h-12zM684 242h12v12h-12zM699 242h12v12h-12z"/>
+    <path class="none s-green" d="M720 243l5 5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <line class="s-green" x1="736" y1="248" x2="805" y2="248" stroke-width="2" marker-end="url(#ah-green)"/>
+    <rect class="box" x="806" y="228" width="120" height="40" rx="10"/>
+    <rect class="f-green-soft s-green" x="806" y="228" width="120" height="40" rx="10" stroke-width="1.5"/>
+    <text class="tp-name mid" x="866" y="246">New vendor</text>
+    <text class="tiny mid sb f-green" x="866" y="260">traces, in parallel</text>
+  </g>
+
+  <!-- delivered -->
+  <g class="tp-ok-a"><circle class="f-green" cx="920" cy="184" r="8"/><path class="none s-bg" d="M916 184l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="tp-ok-b"><circle class="f-green" cx="920" cy="232" r="8"/><path class="none s-bg" d="M916 232l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="tp-ok-m"><circle class="f-green" cx="920" cy="292" r="8"/><path class="none s-bg" d="M916 292l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="tp-ok-l"><circle class="f-green" cx="920" cy="348" r="8"/><path class="none s-bg" d="M916 348l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+  <!-- detail strip: one concrete detail per step -->
+  <rect class="box" x="36" y="414" width="890" height="52" rx="10"/>
+  <g class="p1">
+    <text class="tiny sb f-ink" x="52" y="436">signals</text>
+    <g transform="translate(130 432)"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/></g>
+    <text class="tiny" x="146" y="436">trace span</text>
+    <g transform="translate(224 432)"><circle class="tp-bar" r="5"/></g>
+    <text class="tiny" x="235" y="436">metric point</text>
+    <g transform="translate(326 432)"><path class="tp-log" d="M-9 -3H9M-9 3H3"/></g>
+    <text class="tiny" x="341" y="436">log record</text>
+    <text class="tiny" x="436" y="436">code imports only the OpenTelemetry API + SDK: no backend agent or library</text>
+    <text class="tiny sb f-ink" x="52" y="455">OTLP</text>
+    <text class="tiny mono f-ink" x="118" y="455" textLength="66.0">gRPC :4317</text>
+    <text class="tiny mono f-ink" x="204" y="455" textLength="66.0">HTTP :4318</text>
+    <text class="tiny mono" x="290" y="455" textLength="66.0">/v1/traces</text>
+    <text class="tiny mono" x="366" y="455" textLength="72.6">/v1/metrics</text>
+    <text class="tiny mono" x="449" y="455" textLength="52.8">/v1/logs</text>
+    <text class="tiny" x="530" y="455">every request is answered, so a sender can retry</text>
+  </g>
+  <g class="p2">
+    <text class="tiny sb f-ink" x="52" y="436">resource</text>
+    <text class="tiny mono f-ink" x="118" y="436" textLength="125.4">service.name=orders</text>
+    <rect class="f-teal" x="262" y="428" width="5" height="8" rx="1.5"/>
+    <text class="tiny mono f-teal" x="272" y="436" textLength="165.0">k8s.pod.name=orders-7c9d…</text>
+    <rect class="f-teal" x="456" y="428" width="5" height="8" rx="1.5"/>
+    <text class="tiny mono f-teal" x="466" y="436" textLength="250.8">deployment.environment.name=production</text>
+    <text class="tiny" x="738" y="436">added in the collector</text>
+    <text class="tiny sb f-ink" x="52" y="455">span</text>
+    <text class="tiny mono f-ink" x="118" y="455" textLength="132.0">http.route=/checkout</text>
+    <rect class="f-orange" x="262" y="447" width="5" height="8" rx="1.5"/>
+    <text class="tiny mono f-orange" x="272" y="455" textLength="171.6">user.email=ana@example.com</text>
+    <line class="s-orange" x1="270" y1="451" x2="446" y2="451" stroke-width="1.5"/>
+    <text class="tiny" x="466" y="455">deleted before export</text>
+    <text class="tiny" x="620" y="455">sampling: every error trace + 25% of the rest</text>
+  </g>
+  <g class="p3">
+    <text class="tiny sb f-ink" x="52" y="436">traces</text>
+    <text class="tiny sb f-ink" x="52" y="455">pipeline</text>
+    <text class="tiny mono f-ink" x="118" y="436" textLength="112.2">receivers: [otlp]</text>
+    <text class="tiny mono f-ink" x="250" y="436" textLength="508.2">processors: [memory_limiter, k8s_attributes, tail_sampling, redaction, batch]</text>
+    <text class="tiny mono f-ink" x="118" y="455" textLength="297.0">exporters: [otlp_grpc/current, <tspan class="b f-green">otlp_grpc/new</tspan>]</text>
+    <text class="tiny sb f-green" x="440" y="455">+ one exporter in the collector's config; no application is rebuilt</text>
+  </g>
+  <g class="p4">
+    <text class="tiny sb f-ink" x="52" y="436">at scale</text>
+    <text class="tiny" x="52" y="455">two tiers</text>
+    <rect class="f-bg s-line" x="118" y="419" width="36" height="18" rx="5"/>
+    <text class="tiny mid" x="136" y="432">app</text>
+    <line class="wire tp-thin" x1="154" y1="428" x2="169" y2="428" marker-end="url(#ah)"/>
+    <rect class="f-bg s-purple" x="170" y="419" width="50" height="18" rx="5" stroke-width="1.5"/>
+    <text class="tiny mid sb f-ink" x="195" y="432">agent</text>
+    <rect class="f-bg s-line" x="118" y="443" width="36" height="18" rx="5"/>
+    <text class="tiny mid" x="136" y="456">app</text>
+    <line class="wire tp-thin" x1="154" y1="452" x2="169" y2="452" marker-end="url(#ah)"/>
+    <rect class="f-bg s-purple" x="170" y="443" width="50" height="18" rx="5" stroke-width="1.5"/>
+    <text class="tiny mid sb f-ink" x="195" y="456">agent</text>
+    <path class="wire tp-thin" d="M220 428L263 438" marker-end="url(#ah)"/>
+    <path class="wire tp-thin" d="M220 452L263 442" marker-end="url(#ah)"/>
+    <rect class="f-bg s-line" x="264" y="429" width="92" height="22" rx="11"/>
+    <text class="tiny mid sb f-ink" x="310" y="444">load balancer</text>
+    <path class="wire tp-thin" d="M356 438L391 429" marker-end="url(#ah)"/>
+    <path class="wire tp-thin" d="M356 442L391 451" marker-end="url(#ah)"/>
+    <rect class="f-bg s-purple" x="392" y="419" width="64" height="18" rx="5" stroke-width="1.5"/>
+    <text class="tiny mid sb f-ink" x="424" y="432">gateway</text>
+    <rect class="f-bg s-purple" x="392" y="443" width="64" height="18" rx="5" stroke-width="1.5"/>
+    <text class="tiny mid sb f-ink" x="424" y="456">gateway</text>
+    <path class="wire tp-thin" d="M456 428L491 438" marker-end="url(#ah)"/>
+    <path class="wire tp-thin" d="M456 452L491 442" marker-end="url(#ah)"/>
+    <rect class="f-bg s-line" x="492" y="429" width="72" height="22" rx="6"/>
+    <text class="tiny mid" x="528" y="444">backends</text>
+    <text class="tiny" x="588" y="436"><tspan class="sb f-ink">agents</tspan> sit beside each workload: receive, tag, forward</text>
+    <text class="tiny" x="588" y="455"><tspan class="sb f-ink">gateways</tspan> sample, redact and hold backend credentials</text>
+  </g>
+
+  <!-- step 4: failed sends and a refused export -->
+  <g class="tp-x">
+    <circle class="f-red" cx="797" cy="364" r="8"/>
+    <path class="none s-bg" d="M793.5 360.5l7 7M800.5 360.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g class="tp-xin">
+    <circle class="f-red" cx="262" cy="241" r="8"/>
+    <path class="none s-bg" d="M258.5 237.5l7 7M265.5 237.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+    <text class="tiny sb f-red" x="36" y="307">refused: SDK will retry</text>
+  </g>
+
+  <!-- telemetry items: spans (bars), metric points (dots), log records (lines) -->
+  <g class="tp-tok tp-o1"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal tp-tag" x="-17" y="-4" width="5" height="8" rx="1.5"/><rect class="f-orange tp-sec" x="12" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-o2"><circle class="tp-bar" r="5"/><rect class="f-teal tp-tag" x="-13" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-o3"><path class="tp-halo" d="M-9 -3H9M-9 3H3"/><path class="tp-log" d="M-9 -3H9M-9 3H3"/><rect class="f-teal tp-tag" x="-16.5" y="-4" width="5" height="8" rx="1.5"/><rect class="f-orange tp-sec" x="11.5" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-o4"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal tp-tag" x="-17" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-p1"><rect class="tp-bar tp-err" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal tp-tag" x="-17" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-p2"><circle class="tp-bar" r="5"/><rect class="f-teal tp-tag" x="-13" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-p3"><path class="tp-halo" d="M-9 -3H9M-9 3H3"/><path class="tp-log" d="M-9 -3H9M-9 3H3"/><rect class="f-teal tp-tag" x="-16.5" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-p4"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal tp-tag" x="-17" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-i1"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal tp-tag" x="-17" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-i2"><circle class="tp-bar" r="5"/><rect class="f-teal tp-tag" x="-13" y="-4" width="5" height="8" rx="1.5"/></g>
+  <g class="tp-tok tp-i3"><path class="tp-halo" d="M-9 -3H9M-9 3H3"/><path class="tp-log" d="M-9 -3H9M-9 3H3"/><rect class="f-teal tp-tag" x="-16.5" y="-4" width="5" height="8" rx="1.5"/><rect class="f-orange tp-sec" x="11.5" y="-4" width="5" height="8" rx="1.5"/></g>
+  <!-- batches -->
+  <g class="tp-tok tp-bm"><rect class="tp-env" x="-19" y="-20" width="30" height="40" rx="7"/><g transform="translate(0 -10)"><circle class="tp-bar" r="5"/><rect class="f-teal" x="-13" y="-4" width="5" height="8" rx="1.5"/></g><g transform="translate(0 0)"><circle class="tp-bar" r="5"/><rect class="f-teal" x="-13" y="-4" width="5" height="8" rx="1.5"/></g><g transform="translate(0 10)"><circle class="tp-bar" r="5"/><rect class="f-teal" x="-13" y="-4" width="5" height="8" rx="1.5"/></g></g>
+  <g class="tp-tok tp-bl"><rect class="tp-env" x="-22.5" y="-19.5" width="37.5" height="39" rx="7"/><g transform="translate(0 -10)"><path class="tp-halo" d="M-9 -3H9M-9 3H3"/><path class="tp-log" d="M-9 -3H9M-9 3H3"/><rect class="f-teal" x="-16.5" y="-4" width="5" height="8" rx="1.5"/></g><g transform="translate(0 0)"><path class="tp-halo" d="M-9 -3H9M-9 3H3"/><path class="tp-log" d="M-9 -3H9M-9 3H3"/><rect class="f-teal" x="-16.5" y="-4" width="5" height="8" rx="1.5"/></g><g transform="translate(0 10)"><path class="tp-halo" d="M-9 -3H9M-9 3H3"/><path class="tp-log" d="M-9 -3H9M-9 3H3"/><rect class="f-teal" x="-16.5" y="-4" width="5" height="8" rx="1.5"/></g></g>
+  <g class="tp-tok tp-bb"><rect class="tp-env" x="-23" y="-15" width="39" height="30" rx="7"/><g transform="translate(0 -6)"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal" x="-17" y="-4" width="5" height="8" rx="1.5"/></g><g transform="translate(0 6)"><rect class="tp-bar tp-err" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal" x="-17" y="-4" width="5" height="8" rx="1.5"/></g></g>
+  <g class="tp-tok tp-ba"><rect class="tp-env" x="-23" y="-15" width="39" height="30" rx="7"/><g transform="translate(0 -6)"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal" x="-17" y="-4" width="5" height="8" rx="1.5"/></g><g transform="translate(0 6)"><rect class="tp-bar tp-err" x="-10" y="-4" width="20" height="8" rx="2.5"/><rect class="f-teal" x="-17" y="-4" width="5" height="8" rx="1.5"/></g></g>
+  <!-- step 4: queued batches, retries, a refused export -->
+  <rect class="tp-tok tp-qb tp-q1" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="tp-tok tp-qb tp-q2" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="tp-tok tp-qb tp-q3" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="tp-tok tp-qb tp-q4" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="tp-tok tp-qb tp-rt" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <g class="tp-tok tp-r1"><rect class="tp-bar" x="-10" y="-4" width="20" height="8" rx="2.5"/></g>
+  <g class="tp-tok tp-r2"><circle class="tp-bar" r="5"/></g>
+  <g class="tp-tok tp-r3"><path class="tp-halo" d="M-9 -3H9M-9 3H3"/><path class="tp-log" d="M-9 -3H9M-9 3H3"/></g>
+</g>
+</svg>

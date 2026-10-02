@@ -1,0 +1,46 @@
+{
+  "aka": ["DLQ", "Dead Letter Channel", "Dead-letter topic", "Poison queue"],
+  "steps": [
+    {
+      "title": "A poison message",
+      "caption": "m-13 has a field the handler cannot parse: it fails, comes back and fails again, and the rest wait.",
+      "body": "`m-13` carries a field the handler does not expect, so the handler throws and never acknowledges the message. The broker makes it available again and delivers it again, and its **receive count** climbs to 1, 2, 3 with the same error each time: a retry cannot fix a failure that is in the message or in the code. This queue delivers in order, so `m-14`, `m-15` and `m-16` wait behind it. In an unordered queue they would get through, but each redelivery of `m-13` would still burn consumer capacity."
+    },
+    {
+      "title": "Park it after 3 receives",
+      "caption": "After 3 failed receives the broker parks m-13 in the dead-letter queue, and the queue flows again.",
+      "body": "The source queue has a dead-letter policy with a **maximum receive count** of 3. Instead of delivering `m-13` a fourth time, the broker moves it to the **dead-letter queue** together with what it knows: the reason (receive limit reached), the receive count and the queue it came from. The source queue flows again, and `m-14`, `m-15` and `m-16` are handled and saved."
+    },
+    {
+      "title": "Alarm, then inspect",
+      "caption": "Depth 1 in the dead-letter queue raises an alarm. An engineer reads m-13 and fixes the handler.",
+      "body": "The dead-letter queue now holds one message, and an alarm on *depth > 0* pages the on-call engineer. Without that alarm a dead-letter queue is silent data loss: nothing consumes it, and many brokers delete parked messages when their retention runs out. The engineer reads `m-13` without removing it, matches it with the handler's error log and finds the cause: the handler rejects any field it does not know. The message is valid and the bug is in the consumer, so the fix is a new handler version."
+    },
+    {
+      "title": "Redrive",
+      "caption": "After the fix, m-13 is redriven to the source queue and saved. The dead-letter queue is empty again.",
+      "body": "Only after the fix is deployed does the engineer **redrive** `m-13`: it re-enters the source queue as a new delivery with a fresh receive count, handler v2 saves it, and the dead-letter queue is empty again. It is saved after `m-14` to `m-16`, because parking a message gives up its place in the order. A redriven message can also repeat work that was partly done before it failed, so the consumer must be **idempotent**. A message that is invalid for good is archived or discarded on purpose instead, not left to expire."
+    }
+  ],
+  "related": ["retry-with-backoff", "idempotent-consumer", "queue-based-load-leveling", "competing-consumers", "event-driven-architecture", "transactional-outbox", "serverless", "publish-subscribe"],
+  "references": [
+    { "title": "Enterprise Integration Patterns — Dead Letter Channel", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/DeadLetterChannel.html" },
+    { "title": "Enterprise Integration Patterns — Invalid Message Channel", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/InvalidMessageChannel.html" },
+    { "title": "Amazon SQS — Using dead-letter queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html" },
+    { "title": "Amazon SQS — Learn how to configure a dead-letter queue redrive", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-configure-dead-letter-queue-redrive.html" },
+    { "title": "Amazon SQS — Available CloudWatch metrics (dead-letter queues)", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-available-cloudwatch-metrics.html" },
+    { "title": "Amazon SQS — Visibility timeout", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html" },
+    { "title": "Azure Service Bus — Dead-letter queues", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dead-letter-queues" },
+    { "title": "RabbitMQ — Dead Letter Exchanges", "url": "https://www.rabbitmq.com/docs/dlx" },
+    { "title": "RabbitMQ — Quorum Queues (poison message handling)", "url": "https://www.rabbitmq.com/docs/quorum-queues" },
+    { "title": "Google Cloud Pub/Sub — Dead-letter topics", "url": "https://docs.cloud.google.com/pubsub/docs/dead-letter-topics" },
+    { "title": "Apache Kafka 4.3 — Kafka Connect configs (errors.tolerance, errors.deadletterqueue.*)", "url": "https://kafka.apache.org/43/configuration/kafka-connect-configs/" },
+    { "title": "Apache Kafka 4.3 — Kafka Streams upgrade guide (dead-letter queue support in 4.2)", "url": "https://kafka.apache.org/43/streams/upgrade-guide/" },
+    { "title": "Apache Kafka — KIP-932: Queues for Kafka (share groups)", "url": "https://cwiki.apache.org/confluence/spaces/KAFKA/pages/255070434/KIP-932+Queues+for+Kafka" },
+    { "title": "Apache Kafka — KIP-1191: Dead-letter queues for share groups", "url": "https://cwiki.apache.org/confluence/spaces/KAFKA/pages/373885564/KIP-1191+Dead-letter+queues+for+share+groups" },
+    { "title": "Uber Engineering — Building Reliable Reprocessing and Dead Letter Queues with Apache Kafka", "url": "https://www.uber.com/blog/reliable-reprocessing/" },
+    { "title": "AWS Lambda — Creating and configuring an Amazon SQS event source mapping", "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-configure.html" },
+    { "title": "AWS Lambda — Capturing records of asynchronous invocations", "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-retain-records.html" },
+    { "title": "Azure Functions — Azure Queue storage trigger (poison messages)", "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-queue-trigger" }
+  ]
+}

@@ -68,7 +68,7 @@ When several policies or metrics are active, the larger answer wins. EC2 Auto Sc
 ## Related patterns
 
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
-- Health Endpoint Monitoring *(planned)* — Expose liveness and readiness checks that load balancers and monitors probe.
+- [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - [Serverless (Functions)](../serverless/) — Functions start per event, scale out automatically and scale to zero when idle.
 - Deployment Stamps *(planned)* — Deploy many independent copies of the whole stack, each serving a subset of tenants.

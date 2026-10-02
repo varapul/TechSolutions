@@ -1,0 +1,1132 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Webhooks</title>
+<desc id="dg-desc">Webhooks. Notify subscribers by calling their HTTP endpoints, with signatures, retries and idempotency. Step 1, Don't poll, get called: Instead of polling for news, the shop registers a URL once and the provider POSTs each event to it. Step 2, Verify before trusting: The shop recomputes the HMAC over the raw body with the shared secret; a forged POST gets a 401. Step 3, Ack fast, retry failures: The shop queues the event and answers 2xx at once; if it is down, the provider retries with backoff. Step 4, Duplicates and order: The retried evt_a43 is skipped by its ID; the late evt_a42 is older than the state, so it's ignored.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">API &amp; EDGE</text>
+  <text class="title" x="40" y="64">Webhooks</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Don't poll, get called</text>
+  <text class="step on p1" x="40" y="518">1 · Don't poll, get called</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Verify before trusting</text>
+  <text class="step on p2" x="262" y="518">2 · Verify before trusting</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Ack fast, retry failures</text>
+  <text class="step on p3" x="484" y="518">3 · Ack fast, retry failures</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Duplicates and order</text>
+  <text class="step on p4" x="706" y="518">4 · Duplicates and order</text>
+  <text class="caption p1" x="40" y="552">Instead of polling for news, the shop registers a URL once and the provider POSTs each event to it.</text>
+  <text class="caption p2" x="40" y="552">The shop recomputes the HMAC over the raw body with the shared secret; a forged POST gets a 401.</text>
+  <text class="caption p3" x="40" y="552">The shop queues the event and answers 2xx at once; if it is down, the provider retries with backoff.</text>
+  <text class="caption p4" x="40" y="552">The retried evt_a43 is skipped by its ID; the late evt_a42 is older than the state, so it's ignored.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Webhooks. Timeline (20s loop, 1s = 5%):
+   0-25%   three polls find nothing (0.3/0.9/1.5s); payment.succeeded happens at 2.1s and is POSTed (2.5-3.2s); the 200 is back at 4s
+   25-50%  what the POST carries; the genuine request is checked (ticks at 6.7/7.2/7.7s); a forged POST (8.1s) is refused with a 401
+   50-75%  evt_a41 is queued (10.75s), answered (2xx back at 11.15s) and only then worked on; from 11.95s the endpoint is down:
+           evt_a42 fails at 12.45s (503), 13.3s (timeout) and 14.2s (503), and the delivery is marked failed at 14.3s
+   75-100% the 2xx for evt_a43 is lost (15.75s); the retry (16.1s) is skipped by its ID (17.3s); the redelivered evt_a42 (17.7s)
+           is older than the state the shop holds (18.7s) */
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .c12 { font-size: 12px; }
+.diagram .cell { font-size: 11px; }
+.diagram .th { font-size: 10.5px; font-weight: 600; fill: var(--muted); }
+.diagram .tname { font-size: 11px; font-weight: 700; fill: var(--teal); }
+.diagram .legend { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .tok { opacity: 0; }
+.diagram .wh-poll1 { animation: wh-poll1 var(--T) linear infinite; }
+.diagram .wh-poll2 { animation: wh-poll2 var(--T) linear infinite; }
+.diagram .wh-poll3 { animation: wh-poll3 var(--T) linear infinite; }
+.diagram .wh-poll4 { animation: wh-poll4 var(--T) linear infinite; }
+.diagram .wh-ev0 { opacity: 0; animation: wh-ev0 var(--T) linear infinite; }
+.diagram .wh-ev41 { animation: wh-ev41 var(--T) linear infinite; }
+.diagram .wh-evflash { opacity: 0; animation: wh-evflash var(--T) linear infinite; }
+.diagram .wh-ok1 { animation: wh-ok1 var(--T) linear infinite; }
+.diagram .wh-log41 { animation: wh-log41 var(--T) linear infinite; }
+.diagram .wh-tick1 { opacity: 0; animation: wh-tick1 var(--T) linear infinite; }
+.diagram .wh-tick2 { opacity: 0; animation: wh-tick2 var(--T) linear infinite; }
+.diagram .wh-tick3 { opacity: 0; animation: wh-tick3 var(--T) linear infinite; }
+.diagram .wh-vera { opacity: 0; animation: wh-vera var(--T) linear infinite; }
+.diagram .wh-xmark { opacity: 0; animation: wh-xmark var(--T) linear infinite; }
+.diagram .wh-verb { opacity: 0; animation: wh-verb var(--T) linear infinite; }
+.diagram .wh-forged { opacity: 0; animation: wh-forged var(--T) linear infinite; }
+.diagram .wh-r401 { opacity: 0; animation: wh-r401 var(--T) linear infinite; }
+.diagram .wh-fast { opacity: 0; animation: wh-fast var(--T) linear infinite; }
+.diagram .wh-spin { opacity: 0; animation: wh-spin var(--T) linear infinite; }
+.diagram .wh-done { opacity: 0; animation: wh-done var(--T) linear infinite; }
+.diagram .wh-proc41 { opacity: 0; animation: wh-proc41 var(--T) linear infinite; }
+.diagram .wh-none { animation: wh-none var(--T) linear infinite; }
+.diagram .wh-owait { animation: wh-owait var(--T) linear infinite; }
+.diagram .wh-opaid { opacity: 0; animation: wh-opaid var(--T) linear infinite; }
+.diagram .wh-down { opacity: 0; animation: wh-down var(--T) linear infinite; }
+.diagram .wh-ev42 { opacity: 0; animation: wh-ev42 var(--T) linear infinite; }
+.diagram .wh-fail { opacity: 0; animation: wh-fail var(--T) linear infinite; }
+.diagram .wh-tmo { opacity: 0; animation: wh-tmo var(--T) linear infinite; }
+.diagram .wh-log42a { opacity: 0; animation: wh-log42a var(--T) linear infinite; }
+.diagram .wh-log42b { opacity: 0; animation: wh-log42b var(--T) linear infinite; }
+.diagram .wh-log42c { opacity: 0; animation: wh-log42c var(--T) linear infinite; }
+.diagram .wh-logend { opacity: 0; animation: wh-logend var(--T) linear infinite; }
+.diagram .wh-m1 { opacity: 0; animation: wh-m1 var(--T) linear infinite; }
+.diagram .wh-m2 { opacity: 0; animation: wh-m2 var(--T) linear infinite; }
+.diagram .wh-m3 { opacity: 0; animation: wh-m3 var(--T) linear infinite; }
+.diagram .wh-m45 { opacity: 0; animation: wh-m45 var(--T) linear infinite; }
+.diagram .wh-ev43 { opacity: 0; animation: wh-ev43 var(--T) linear infinite; }
+.diagram .wh-ev42r { opacity: 0; animation: wh-ev42r var(--T) linear infinite; }
+.diagram .wh-lost { opacity: 0; animation: wh-lost var(--T) linear infinite; }
+.diagram .wh-lostx { opacity: 0; animation: wh-lostx var(--T) linear infinite; }
+.diagram .wh-no2xx { opacity: 0; animation: wh-no2xx var(--T) linear infinite; }
+.diagram .wh-log43b { opacity: 0; animation: wh-log43b var(--T) linear infinite; }
+.diagram .wh-eff43 { opacity: 0; animation: wh-eff43 var(--T) linear infinite; }
+.diagram .wh-dup43 { opacity: 0; animation: wh-dup43 var(--T) linear infinite; }
+.diagram .wh-skip { opacity: 0; animation: wh-skip var(--T) linear infinite; }
+.diagram .wh-log42r { opacity: 0; animation: wh-log42r var(--T) linear infinite; }
+.diagram .wh-row2 { opacity: 0; animation: wh-row2 var(--T) linear infinite; }
+.diagram .wh-late { opacity: 0; animation: wh-late var(--T) linear infinite; }
+.diagram .wh-stale { opacity: 0; animation: wh-stale var(--T) linear infinite; }
+.diagram .wh-idle { animation: wh-idle var(--T) linear infinite; }
+.diagram .wh-rx { opacity: 0; animation: wh-rx var(--T) linear infinite; }
+.diagram .wh-t41 { opacity: 0; animation: wh-t41 var(--T) linear infinite; }
+.diagram .wh-t42 { opacity: 0; animation: wh-t42 var(--T) linear infinite; }
+.diagram .wh-t43 { opacity: 0; animation: wh-t43 var(--T) linear infinite; }
+.diagram .wh-r200 { opacity: 0; animation: wh-r200 var(--T) linear infinite; }
+.diagram .wh-r503 { opacity: 0; animation: wh-r503 var(--T) linear infinite; }
+.diagram .wh-q41 { opacity: 0; animation: wh-q41 var(--T) linear infinite; }
+.diagram .wh-q43 { opacity: 0; animation: wh-q43 var(--T) linear infinite; }
+.diagram .wh-q42 { opacity: 0; animation: wh-q42 var(--T) linear infinite; }
+@keyframes wh-poll1 {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.25% { opacity: 1; }
+  25% { opacity: 1; }
+  25.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-poll2 {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.25% { opacity: 1; }
+  25% { opacity: 1; }
+  25.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-poll3 {
+  0% { opacity: 0; }
+  7.5% { opacity: 0; }
+  8.25% { opacity: 1; }
+  25% { opacity: 1; }
+  25.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-poll4 {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  21.25% { opacity: 1; }
+  25% { opacity: 1; }
+  25.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-ev0 {
+  0% { opacity: 0; }
+  0.25% { opacity: 0; }
+  1.5% { opacity: 1; }
+  9.5% { opacity: 1; }
+  10.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-ev41 {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11.25% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-evflash {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11% { opacity: 1; }
+  14.5% { opacity: 1; }
+  15% { opacity: 0; }
+  60% { opacity: 0; }
+  60.5% { opacity: 1; }
+  62.5% { opacity: 1; }
+  63% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-ok1 {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17.25% { opacity: 1; }
+  25% { opacity: 1; }
+  25.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-log41 {
+  0% { opacity: 0; }
+  20% { opacity: 0; }
+  20.75% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-tick1 {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-tick2 {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  36.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-tick3 {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-vera {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-xmark {
+  0% { opacity: 0; }
+  43.75% { opacity: 0; }
+  44.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-verb {
+  0% { opacity: 0; }
+  44.25% { opacity: 0; }
+  45% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-forged {
+  0% { transform: translate(452px, 431px); opacity: 0; }
+  40.5% { transform: translate(452px, 431px); opacity: 0; }
+  40.75% { opacity: 1; }
+  41.534% { transform: translate(603px, 431px); }
+  43.37% { transform: translate(603px, 163px); }
+  43.473% { transform: translate(618px, 163px); opacity: 1; }
+  43.723% { transform: translate(618px, 163px); opacity: 0; }
+  100% { transform: translate(618px, 163px); opacity: 0; }
+}
+@keyframes wh-r401 {
+  0% { transform: translate(618px, 163px); opacity: 0; }
+  44% { transform: translate(618px, 163px); opacity: 0; }
+  44.077% { transform: translate(603px, 163px); }
+  44.25% { opacity: 1; }
+  45.444% { transform: translate(603px, 431px); }
+  46.214% { transform: translate(452px, 431px); opacity: 1; }
+  46.464% { transform: translate(452px, 431px); opacity: 0; }
+  100% { transform: translate(452px, 431px); opacity: 0; }
+}
+@keyframes wh-fast {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.25% { opacity: 1; }
+  58.75% { opacity: 1; }
+  59.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-spin {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  57.9% { opacity: 1; }
+  58.75% { opacity: 1; }
+  59.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-done {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  60% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-proc41 {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  60% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-none {
+  0% { opacity: 0; }
+  0.25% { opacity: 0; }
+  1.5% { opacity: 1; }
+  58.25% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-owait {
+  0% { opacity: 0; }
+  0.25% { opacity: 0; }
+  1.5% { opacity: 1; }
+  58.25% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-opaid {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  60% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-down {
+  0% { opacity: 0; }
+  59.75% { opacity: 0; }
+  60.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-ev42 {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  60.75% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-fail {
+  0% { opacity: 0; }
+  62.25% { opacity: 0; }
+  62.65% { opacity: 1; }
+  64.5% { opacity: 1; }
+  64.9% { opacity: 0; }
+  71% { opacity: 0; }
+  71.4% { opacity: 1; }
+  75% { opacity: 1; }
+  75.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-tmo {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  66.9% { opacity: 1; }
+  68.25% { opacity: 1; }
+  68.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-log42a {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-log42b {
+  0% { opacity: 0; }
+  66.75% { opacity: 0; }
+  67.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-log42c {
+  0% { opacity: 0; }
+  71% { opacity: 0; }
+  71.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-logend {
+  0% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-m1 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-m2 {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-m3 {
+  0% { opacity: 0; }
+  71% { opacity: 0; }
+  71.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-m45 {
+  0% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-ev43 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  87.5% { opacity: 1; }
+  88.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-ev42r {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  88.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-lost {
+  0% { transform: translate(610px, 151px); opacity: 0; }
+  76.5% { transform: translate(610px, 151px); opacity: 0; }
+  76.75% { opacity: 1; }
+  78.75% { transform: translate(468px, 151px); opacity: 1; }
+  79% { transform: translate(468px, 151px); opacity: 0; }
+  100% { transform: translate(468px, 151px); opacity: 0; }
+}
+@keyframes wh-lostx {
+  0% { opacity: 0; }
+  78.75% { opacity: 0; }
+  79.25% { opacity: 1; }
+  80.25% { opacity: 1; }
+  80.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-no2xx {
+  0% { opacity: 0; }
+  79% { opacity: 0; }
+  79.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wh-log43b {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  86.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wh-eff43 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  85.5% { opacity: 1; }
+  86.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-dup43 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wh-skip {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.25% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-log42r {
+  0% { opacity: 0; }
+  94% { opacity: 0; }
+  94.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wh-row2 {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  91.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wh-late {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  94.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wh-stale {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  94.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wh-idle {
+  0% { opacity: 0; }
+  0.25% { opacity: 0; }
+  1% { opacity: 1; }
+  56.5% { opacity: 1; }
+  57.25% { opacity: 0; }
+  75.25% { opacity: 0; }
+  76% { opacity: 1; }
+  85.5% { opacity: 1; }
+  86.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-rx {
+  0% { opacity: 0; }
+  16% { opacity: 0; }
+  16.4% { opacity: 1; }
+  18% { opacity: 1; }
+  18.4% { opacity: 0; }
+  32.5% { opacity: 0; }
+  32.9% { opacity: 1; }
+  34.5% { opacity: 1; }
+  34.9% { opacity: 0; }
+  52.75% { opacity: 0; }
+  53.15% { opacity: 1; }
+  54.5% { opacity: 1; }
+  54.9% { opacity: 0; }
+  83% { opacity: 0; }
+  83.4% { opacity: 1; }
+  85% { opacity: 1; }
+  85.4% { opacity: 0; }
+  91% { opacity: 0; }
+  91.4% { opacity: 1; }
+  93% { opacity: 1; }
+  93.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wh-t41 {
+  0% { transform: translate(336px, 151px); opacity: 0; }
+  12.5% { transform: translate(336px, 151px); opacity: 0; }
+  12.75% { opacity: 1; }
+  16% { transform: translate(610px, 151px); opacity: 1; }
+  16.25% { transform: translate(610px, 151px); opacity: 0; }
+  29.5% { transform: translate(336px, 151px); opacity: 0; }
+  29.75% { opacity: 1; }
+  32.5% { transform: translate(610px, 151px); opacity: 1; }
+  32.75% { transform: translate(610px, 151px); opacity: 0; }
+  50.5% { transform: translate(336px, 151px); opacity: 0; }
+  50.75% { opacity: 1; }
+  52.75% { transform: translate(610px, 151px); opacity: 1; }
+  53% { transform: translate(610px, 151px); opacity: 0; }
+  100% { transform: translate(610px, 151px); opacity: 0; }
+}
+@keyframes wh-t42 {
+  0% { transform: translate(336px, 151px); opacity: 0; }
+  60.25% { transform: translate(336px, 151px); opacity: 0; }
+  60.5% { opacity: 1; }
+  62.25% { transform: translate(610px, 151px); opacity: 1; }
+  62.5% { transform: translate(610px, 151px); opacity: 0; }
+  64.25% { transform: translate(336px, 151px); opacity: 0; }
+  64.5% { opacity: 1; }
+  66.25% { transform: translate(610px, 151px); opacity: 1; }
+  66.5% { transform: translate(610px, 151px); opacity: 0; }
+  69% { transform: translate(336px, 151px); opacity: 0; }
+  69.25% { opacity: 1; }
+  71% { transform: translate(610px, 151px); opacity: 1; }
+  71.25% { transform: translate(610px, 151px); opacity: 0; }
+  88.5% { transform: translate(336px, 151px); opacity: 0; }
+  88.75% { opacity: 1; }
+  91% { transform: translate(610px, 151px); opacity: 1; }
+  91.25% { transform: translate(610px, 151px); opacity: 0; }
+  100% { transform: translate(610px, 151px); opacity: 0; }
+}
+@keyframes wh-t43 {
+  0% { transform: translate(336px, 151px); opacity: 0; }
+  80.5% { transform: translate(336px, 151px); opacity: 0; }
+  80.75% { opacity: 1; }
+  83% { transform: translate(610px, 151px); opacity: 1; }
+  83.25% { transform: translate(610px, 151px); opacity: 0; }
+  100% { transform: translate(610px, 151px); opacity: 0; }
+}
+@keyframes wh-r200 {
+  0% { transform: translate(610px, 151px); opacity: 0; }
+  17% { transform: translate(610px, 151px); opacity: 0; }
+  17.25% { opacity: 1; }
+  20% { transform: translate(336px, 151px); opacity: 1; }
+  20.25% { transform: translate(336px, 151px); opacity: 0; }
+  53.5% { transform: translate(610px, 151px); opacity: 0; }
+  53.75% { opacity: 1; }
+  55.75% { transform: translate(336px, 151px); opacity: 1; }
+  56% { transform: translate(336px, 151px); opacity: 0; }
+  83.5% { transform: translate(610px, 151px); opacity: 0; }
+  83.75% { opacity: 1; }
+  86% { transform: translate(336px, 151px); opacity: 1; }
+  86.25% { transform: translate(336px, 151px); opacity: 0; }
+  91.5% { transform: translate(610px, 151px); opacity: 0; }
+  91.75% { opacity: 1; }
+  94% { transform: translate(336px, 151px); opacity: 1; }
+  94.25% { transform: translate(336px, 151px); opacity: 0; }
+  100% { transform: translate(336px, 151px); opacity: 0; }
+}
+@keyframes wh-r503 {
+  0% { transform: translate(610px, 151px); opacity: 0; }
+  62.25% { transform: translate(610px, 151px); opacity: 0; }
+  62.5% { opacity: 1; }
+  64% { transform: translate(336px, 151px); opacity: 1; }
+  64.25% { transform: translate(336px, 151px); opacity: 0; }
+  100% { transform: translate(336px, 151px); opacity: 0; }
+}
+@keyframes wh-q41 {
+  0% { transform: translate(650px, 262px); opacity: 0; }
+  52.75% { transform: translate(650px, 262px); opacity: 0; }
+  53% { opacity: 1; }
+  53.75% { transform: translate(650px, 291px); }
+  55.5% { transform: translate(650px, 291px); }
+  57.5% { transform: translate(771px, 291px); }
+  59% { transform: translate(771px, 291px); opacity: 1; }
+  59.25% { transform: translate(771px, 291px); opacity: 0; }
+  100% { transform: translate(771px, 291px); opacity: 0; }
+}
+@keyframes wh-q43 {
+  0% { transform: translate(650px, 262px); opacity: 0; }
+  83% { transform: translate(650px, 262px); opacity: 0; }
+  83.25% { opacity: 1; }
+  84% { transform: translate(650px, 291px); }
+  84.5% { transform: translate(650px, 291px); }
+  86.5% { transform: translate(771px, 291px); }
+  88% { transform: translate(771px, 291px); opacity: 1; }
+  88.25% { transform: translate(771px, 291px); opacity: 0; }
+  100% { transform: translate(771px, 291px); opacity: 0; }
+}
+@keyframes wh-q42 {
+  0% { transform: translate(650px, 262px); opacity: 0; }
+  91% { transform: translate(650px, 262px); opacity: 0; }
+  91.25% { opacity: 1; }
+  92% { transform: translate(650px, 291px); }
+  92.25% { transform: translate(650px, 291px); }
+  93.75% { transform: translate(771px, 291px); }
+  95% { transform: translate(771px, 291px); opacity: 1; }
+  95.25% { transform: translate(771px, 291px); opacity: 0; }
+  100% { transform: translate(771px, 291px); opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- two organisations, and the public internet between them -->
+  <rect class="zone" x="36" y="98" width="280" height="366" rx="14"/>
+  <rect class="zone" x="620" y="98" width="304" height="366" rx="14"/>
+  <text class="label" x="48" y="121">Payments platform</text>
+  <text class="sub end" x="304" y="121">provider</text>
+  <text class="label" x="632" y="121">Shop backend</text>
+  <text class="sub end" x="912" y="121">subscriber</text>
+  <text class="tiny mid" x="468" y="109">the public internet</text>
+
+  <!-- provider: the event that just happened -->
+  <rect class="box" x="46" y="130" width="260" height="42" rx="8"/>
+  <g class="wh-ev0">
+    <rect class="none s-line dash" x="57" y="145" width="12" height="12" rx="3.5" stroke-width="1.5"/>
+    <text class="tiny" x="80" y="155">no new events yet</text>
+  </g>
+  <g class="wh-ev41">
+    <rect class="ev" x="56" y="144" width="14" height="14" rx="4"/>
+    <text class="c12 mono sb" x="80" y="149">payment.succeeded</text>
+    <text class="tiny mono" x="80" y="164">evt_a41 · pay_9 · 10:00:07</text>
+  </g>
+  <g class="wh-ev42">
+    <rect class="ev" x="56" y="144" width="14" height="14" rx="4"/>
+    <text class="c12 mono sb" x="80" y="149">payment.succeeded</text>
+    <text class="tiny mono" x="80" y="164">evt_a42 · pay_10 · 10:02:31</text>
+  </g>
+  <g class="wh-ev43">
+    <rect class="ev" x="56" y="144" width="14" height="14" rx="4"/>
+    <text class="c12 mono sb" x="80" y="149">payment.refunded</text>
+    <text class="tiny mono" x="80" y="164">evt_a43 · pay_10 · 18:20:12</text>
+  </g>
+  <g class="wh-ev42r">
+    <rect class="ev" x="56" y="144" width="14" height="14" rx="4"/>
+    <text class="c12 mono sb" x="80" y="149">payment.succeeded</text>
+    <text class="tiny mono" x="80" y="164">evt_a42 · pay_10 · 10:02:31</text>
+    <text class="tiny end sb f-amber-ink" x="298" y="149">redelivered</text>
+  </g>
+  <rect class="none s-purple wh-evflash" x="46" y="130" width="260" height="42" rx="8" stroke-width="2.5"/>
+
+  <!-- provider: who wants which events, and the secret that signs them -->
+  <text class="tiny sb" x="48" y="193">subscriptions</text>
+  <text class="tiny end" x="304" y="193">set up once</text>
+  <rect class="box" x="46" y="200" width="260" height="58" rx="8"/>
+  <text class="th" x="56" y="217">endpoint</text>
+  <text class="th" x="56" y="233">secret</text>
+  <text class="th" x="56" y="249">events</text>
+  <text class="cell mono" x="116" y="217">https://shop.example/hooks</text>
+  <circle class="none s-orange" cx="119.5" cy="229" r="2.8" stroke-width="1.5"/>
+  <path class="none s-orange" d="M122.3 229h6.4v2.6M126.2 229v2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="cell mono f-orange" x="134" y="233">whsec_k3…</text>
+  <text class="cell mono" x="116" y="249">payment.*</text>
+  <rect class="none s-orange p2" x="50" y="221.5" width="252" height="16" rx="5" stroke-width="1.5"/>
+
+  <!-- provider: the delivery log -->
+  <text class="tiny sb" x="48" y="279">delivery log</text>
+  <text class="tiny end" x="304" y="279">one row per attempt</text>
+  <rect class="box" x="46" y="286" width="260" height="168" rx="8"/>
+  <text class="th" x="56" y="301">event</text>
+  <text class="th" x="116" y="301">try</text>
+  <text class="th" x="142" y="301">sent</text>
+  <text class="th" x="206" y="301">response</text>
+  <line class="s-line" x1="54" y1="307" x2="298" y2="307" stroke-width="1"/>
+  <g class="wh-log41">
+    <text class="cell mono" x="56" y="323">evt_a41</text>
+    <text class="cell mono" x="116" y="323">#1</text>
+    <text class="cell mono" x="142" y="323">10:00:07</text>
+    <text class="cell mono sb f-green" x="206" y="323">200</text>
+    <text class="tiny b f-green" x="231" y="323">✓</text>
+    <text class="tiny end" x="298" y="323">38 ms</text>
+  </g>
+  <g class="p3">
+    <g class="wh-log42a">
+      <text class="cell mono" x="56" y="342">evt_a42</text>
+      <text class="cell mono" x="116" y="342">#1</text>
+      <text class="cell mono" x="142" y="342">10:02:31</text>
+      <text class="cell mono sb f-red" x="206" y="342">503</text>
+    </g>
+    <g class="wh-log42b">
+      <text class="cell mono" x="116" y="361">#2</text>
+      <text class="cell mono" x="142" y="361">+5 min</text>
+      <text class="cell mono sb f-red" x="206" y="361">timeout</text>
+    </g>
+    <g class="wh-log42c">
+      <text class="cell mono" x="116" y="380">#3</text>
+      <text class="cell mono" x="142" y="380">+30 min</text>
+      <text class="cell mono sb f-red" x="206" y="380">503</text>
+    </g>
+    <g class="wh-logend">
+      <text class="tiny" x="56" y="398">⋮ +2 h, +5 h … still no 2xx</text>
+      <rect class="f-red-soft s-red" x="56" y="406" width="50" height="18" rx="9" stroke-width="1.5"/>
+      <text class="tiny mid sb f-red" x="81" y="419">failed</text>
+      <text class="tiny" x="114" y="419">after the last attempt</text>
+      <rect class="f-blue-soft s-blue" x="56" y="430" width="86" height="18" rx="5" stroke-width="1.5"/>
+      <text class="tiny mid sb f-blue" x="99" y="443">↻ redeliver</text>
+      <text class="tiny" x="150" y="443">by hand or via the API</text>
+    </g>
+  </g>
+  <g class="p4">
+    <text class="cell mono" x="56" y="323">evt_a43</text>
+    <text class="cell mono" x="116" y="323">#1</text>
+    <text class="cell mono" x="142" y="323">18:20:12</text>
+    <text class="cell mono sb f-red wh-no2xx" x="206" y="323">no 2xx</text>
+    <g class="wh-log43b">
+      <text class="cell mono" x="116" y="342">#2</text>
+      <text class="cell mono" x="142" y="342">+5 min</text>
+      <text class="cell mono sb f-green" x="206" y="342">200</text>
+      <text class="tiny b f-green" x="231" y="342">✓</text>
+      <text class="tiny end" x="298" y="342">same ID</text>
+    </g>
+    <g class="wh-log42r">
+      <text class="cell mono" x="56" y="361">evt_a42</text>
+      <text class="cell mono f-amber-ink" x="116" y="361">redelivered</text>
+      <text class="cell mono sb f-green" x="206" y="361">200</text>
+      <text class="tiny b f-green" x="231" y="361">✓</text>
+    </g>
+  </g>
+
+  <!-- the call: an HTTP POST from the provider to the subscriber's URL -->
+  <line class="wire" x1="306" y1="151" x2="629" y2="151" marker-end="url(#ah)"/>
+  <text class="tiny mid mono" x="468" y="170">POST https://shop.example/hooks</text>
+
+  <!-- subscriber: the HTTPS endpoint -->
+  <rect class="box" x="630" y="130" width="284" height="42" rx="8"/>
+  <g class="p3"><rect class="f-red-soft s-red wh-down" x="630" y="130" width="284" height="42" rx="8" stroke-width="1.5"/></g>
+  <rect class="none s-blue wh-rx" x="630" y="130" width="284" height="42" rx="8" stroke-width="2.5"/>
+  <text class="c12 mono sb" x="642" y="149">POST /hooks</text>
+  <text class="tiny" x="642" y="164">HTTPS endpoint</text>
+  <g class="p1">
+    <g class="wh-ok1">
+      <rect class="f-green-soft s-green" x="838" y="141" width="68" height="20" rx="10" stroke-width="1.5"/>
+      <text class="tiny mid sb f-green" x="872" y="155">200 OK</text>
+    </g>
+  </g>
+  <g class="p2">
+    <text class="tiny end sb f-green wh-vera" x="906" y="148">✓ evt_a41: authentic</text>
+    <text class="tiny end sb f-red wh-verb" x="906" y="164">✕ forged: 401, not queued</text>
+  </g>
+  <g class="p3">
+    <g class="wh-fast">
+      <rect class="f-green-soft s-green" x="808" y="141" width="98" height="20" rx="10" stroke-width="1.5"/>
+      <text class="tiny mid sb f-green" x="857" y="155">2xx in 38 ms</text>
+    </g>
+    <text class="tiny end sb f-red wh-down" x="906" y="155">down: no 2xx</text>
+  </g>
+
+  <!-- subscriber: verify with the shared secret before anything else -->
+  <line class="wire" x1="650" y1="172" x2="650" y2="185" marker-end="url(#ah)"/>
+  <rect class="box" x="630" y="186" width="284" height="72" rx="8"/>
+  <text class="tiny sb" x="642" y="203">verify</text>
+  <circle class="none s-orange" cx="689.5" cy="199" r="2.8" stroke-width="1.5"/>
+  <path class="none s-orange" d="M692.3 199h6.4v2.6M696.2 199v2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="cell mono f-orange" x="704" y="203">whsec_k3…</text>
+  <text class="tiny f-ink" x="642" y="221">recompute HMAC over the raw bytes</text>
+  <text class="tiny f-ink" x="642" y="237">compare in constant time</text>
+  <text class="tiny f-ink" x="642" y="253">timestamp within 5 min (no replays)</text>
+  <g class="p2">
+    <rect class="none s-orange" x="682" y="191.5" width="84" height="16" rx="5" stroke-width="1.5"/>
+    <circle class="f-blue" cx="874" cy="199" r="4.5"/>
+    <circle class="f-red" cx="900" cy="199" r="4.5"/>
+    <text class="tiny mid b f-green wh-tick1" x="874" y="221">✓</text>
+    <text class="tiny mid b f-green wh-tick2" x="874" y="237">✓</text>
+    <text class="tiny mid b f-green wh-tick3" x="874" y="253">✓</text>
+    <text class="tiny mid b f-red wh-xmark" x="900" y="237">✕</text>
+  </g>
+
+  <!-- subscriber: store first, work later -->
+  <line class="wire" x1="650" y1="258" x2="650" y2="271" marker-end="url(#ah)"/>
+  <rect class="box" x="630" y="272" width="100" height="38" rx="8"/>
+  <rect class="none s-line dash" x="642" y="283" width="16" height="16" rx="4" stroke-width="1.5"/>
+  <rect class="none s-line dash" x="663" y="283" width="16" height="16" rx="4" stroke-width="1.5"/>
+  <text class="tiny" x="687" y="295">queue</text>
+  <line class="wire" x1="730" y1="291" x2="753" y2="291" marker-end="url(#ah)"/>
+  <rect class="box" x="754" y="272" width="160" height="38" rx="8"/>
+  <rect class="none s-line dash" x="763" y="283" width="16" height="16" rx="4" stroke-width="1.5"/>
+  <text class="tiny sb f-ink" x="787" y="288">worker</text>
+  <text class="tiny wh-idle" x="787" y="302">idle</text>
+  <g class="wh-spin"><circle class="none s-purple spin" cx="771" cy="291" r="12" stroke-width="2.5" stroke-dasharray="19 57" stroke-linecap="round"/></g>
+  <g class="p3"><text class="tiny sb f-green wh-done" x="787" y="302">✓ order 1042 paid</text></g>
+  <g class="p4">
+    <text class="tiny sb f-amber-ink wh-skip" x="787" y="302">same ID again: skip</text>
+    <text class="tiny sb f-amber-ink wh-stale" x="787" y="302">older: not applied</text>
+  </g>
+
+  <!-- subscriber: the IDs it has already handled, and the state the worker changes -->
+  <line class="wire" x1="900" y1="310" x2="900" y2="341" marker-end="url(#ah)"/>
+  <text class="tname mono" x="632" y="334">processed_events</text>
+  <text class="tiny" x="746" y="334">IDs already handled</text>
+  <rect class="box" x="630" y="342" width="284" height="46" rx="8"/>
+  <text class="tiny mid wh-none" x="772" y="369">nothing handled yet</text>
+  <g class="wh-proc41">
+    <text class="cell mono" x="642" y="359">evt_a41</text>
+    <text class="cell mono f-muted" x="700" y="359">10:00:08</text>
+    <text class="tiny end" x="906" y="359">order 1042 → paid</text>
+  </g>
+  <g class="p4">
+    <rect class="f-amber-soft s-amber wh-dup43" x="634" y="366.5" width="276" height="18" rx="5" stroke-width="1.5"/>
+    <text class="cell mono" x="642" y="379">evt_a43</text>
+    <text class="cell mono f-muted" x="700" y="379">18:20:13</text>
+    <text class="tiny end wh-eff43" x="906" y="379">order 1043 → refunded</text>
+    <text class="tiny end sb f-amber-ink wh-dup43" x="906" y="379">seen before: skipped</text>
+  </g>
+  <text class="tname mono" x="632" y="406">orders</text>
+  <text class="tiny" x="680" y="406">the shop's own state</text>
+  <rect class="box" x="630" y="412" width="284" height="42" rx="8"/>
+  <g class="wh-owait">
+    <text class="cell mono" x="642" y="429">1042</text>
+    <text class="cell mono f-muted" x="680" y="429">pay_9</text>
+    <text class="tiny sb f-amber-ink" x="736" y="429">awaiting payment</text>
+  </g>
+  <g class="wh-opaid">
+    <text class="cell mono" x="642" y="429">1042</text>
+    <text class="cell mono f-muted" x="680" y="429">pay_9</text>
+    <text class="tiny sb f-green" x="736" y="429">paid</text>
+    <text class="tiny end mono" x="906" y="429">as of 10:00:07</text>
+  </g>
+  <g class="p4">
+    <text class="cell mono" x="642" y="429">1043</text>
+    <text class="cell mono f-muted" x="680" y="429">pay_10</text>
+    <text class="tiny sb f-ink" x="736" y="429">refunded</text>
+    <text class="tiny end mono" x="906" y="429">as of 18:20:12</text>
+    <text class="tiny sb f-amber-ink wh-stale" x="642" y="446">evt_a42 (10:02:31) is older: not applied</text>
+  </g>
+
+  <!-- step 1: registered once, then called; the alternative is polling -->
+  <g class="p1">
+    <line class="wire dash" x1="614" y1="203" x2="323" y2="203" stroke-width="1.5" marker-end="url(#ah)"/>
+    <text class="tiny mid" x="468" y="196">registered once: URL + event types</text>
+    <line class="none s-orange dash" x1="322" y1="223" x2="613" y2="223" stroke-width="1.5" marker-end="url(#ah-orange)"/>
+    <text class="tiny mid f-orange" x="468" y="239">the signing secret comes back</text>
+    <rect class="box" x="330" y="262" width="276" height="190" rx="10"/>
+    <text class="legend" x="342" y="281">WITHOUT WEBHOOKS: POLLING</text>
+    <g class="wh-poll1">
+      <text class="cell mono f-muted" x="342" y="302">09:59:55</text>
+      <text class="cell mono" x="400" y="302">GET /payments?since=…</text>
+      <text class="cell mono end f-muted" x="594" y="302">0 new</text>
+    </g>
+    <g class="wh-poll2">
+      <text class="cell mono f-muted" x="342" y="321">10:00:00</text>
+      <text class="cell mono" x="400" y="321">GET /payments?since=…</text>
+      <text class="cell mono end f-muted" x="594" y="321">0 new</text>
+    </g>
+    <g class="wh-poll3">
+      <text class="cell mono f-muted" x="342" y="340">10:00:05</text>
+      <text class="cell mono" x="400" y="340">GET /payments?since=…</text>
+      <text class="cell mono end f-muted" x="594" y="340">0 new</text>
+    </g>
+    <g class="wh-poll4">
+      <text class="cell mono f-muted" x="342" y="359">10:00:10</text>
+      <text class="cell mono" x="400" y="359">GET /payments?since=…</text>
+      <text class="cell mono end sb f-amber-ink" x="594" y="359">1 new</text>
+      <line class="s-line" x1="342" y1="371" x2="594" y2="371" stroke-width="1"/>
+      <text class="tiny sb f-amber-ink" x="342" y="391">polling: 4 requests, and 3 s late</text>
+      <text class="tiny sb f-green" x="342" y="410">webhook: 1 request, at 10:00:07</text>
+      <text class="tiny" x="342" y="434">The provider calls when it happens.</text>
+    </g>
+  </g>
+
+  <!-- step 2: what the POST carries, how it is signed, and a forged request -->
+  <g class="p2">
+    <rect class="box" x="330" y="186" width="256" height="124" rx="10"/>
+    <text class="legend" x="342" y="204">WHAT THE POST CARRIES</text>
+    <text class="cell mono" x="342" y="223">POST /hooks HTTP/1.1</text>
+    <text class="cell mono" x="342" y="241"><tspan class="f-muted">webhook-id: </tspan><tspan class="b f-purple">evt_a41</tspan></text>
+    <text class="cell mono" x="342" y="258"><tspan class="f-muted">webhook-timestamp: </tspan><tspan class="b f-blue">1790935207</tspan></text>
+    <text class="cell mono" x="342" y="275"><tspan class="f-muted">webhook-signature: </tspan><tspan class="b f-orange">v1,pX9kQ…</tspan></text>
+    <text class="cell mono" x="342" y="297">{"type":"payment.succeeded",…}</text>
+    <rect class="f-orange-soft s-orange" x="330" y="318" width="256" height="78" rx="8" stroke-width="1.5"/>
+    <text class="legend f-orange" x="342" y="336">THE SIGNATURE</text>
+    <text class="tiny f-ink" x="342" y="354">HMAC-SHA256 with the shared secret:</text>
+    <text class="cell mono" x="342" y="371"><tspan class="b f-purple">evt_a41</tspan>.<tspan class="b f-blue">1790935207</tspan>.{"type":…}</text>
+    <text class="tiny" x="342" y="387">ID . timestamp . raw body, as sent</text>
+    <rect class="f-red-soft s-red" x="330" y="410" width="118" height="42" rx="8" stroke-width="1.5"/>
+    <text class="tiny sb f-red" x="342" y="427">attacker</text>
+    <text class="tiny f-ink" x="342" y="443">has no secret</text>
+    <path class="none s-red dash" d="M448 431H603V163H628" stroke-width="1.5" marker-end="url(#ah-red)"/>
+    <text class="tiny f-red" x="458" y="447">forged POST</text>
+  </g>
+
+  <!-- step 3: answer first, work later; retries back off -->
+  <g class="p3">
+    <text class="tiny mid sb f-ink" x="468" y="198">Queue it, answer 2xx, work afterwards.</text>
+    <text class="tiny mid" x="468" y="216">The provider waits only seconds for the 2xx;</text>
+    <text class="tiny mid" x="468" y="232">a 5xx or a timeout means: try again later.</text>
+    <rect class="box" x="330" y="262" width="276" height="190" rx="10"/>
+    <text class="legend" x="342" y="281">RETRY SCHEDULE (AN EXAMPLE)</text>
+    <line class="s-line" x1="346" y1="322" x2="594" y2="322" stroke-width="2"/>
+    <circle class="f-bg s-line" cx="352" cy="322" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="396" cy="322" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="446" cy="322" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="508" cy="322" r="6" stroke-width="1.5"/>
+    <circle class="f-bg s-line" cx="580" cy="322" r="6" stroke-width="1.5"/>
+    <circle class="f-red wh-m1" cx="352" cy="322" r="6"/>
+    <circle class="f-red wh-m2" cx="396" cy="322" r="6"/>
+    <circle class="f-red wh-m3" cx="446" cy="322" r="6"/>
+    <g class="wh-m45">
+      <circle class="f-red" cx="508" cy="322" r="6"/>
+      <circle class="f-red" cx="580" cy="322" r="6"/>
+    </g>
+    <text class="tiny mid mono" x="352" y="307">#1</text>
+    <text class="tiny mid mono" x="396" y="307">#2</text>
+    <text class="tiny mid mono" x="446" y="307">#3</text>
+    <text class="tiny mid mono" x="508" y="307">#4</text>
+    <text class="tiny mid mono" x="580" y="307">#5</text>
+    <text class="tiny mid" x="352" y="344">now</text>
+    <text class="tiny mid" x="396" y="344">+5 min</text>
+    <text class="tiny mid" x="446" y="344">+30 min</text>
+    <text class="tiny mid" x="508" y="344">+2 h</text>
+    <text class="tiny mid" x="580" y="344">+5 h</text>
+    <text class="tiny f-ink" x="342" y="372">The gaps grow from minutes to hours.</text>
+    <text class="tiny f-ink" x="342" y="390">A 2xx at any attempt ends the schedule.</text>
+    <g class="wh-logend">
+      <line class="s-line" x1="342" y1="402" x2="594" y2="402" stroke-width="1"/>
+      <text class="tiny sb f-red" x="342" y="422">Last attempt fails: marked failed.</text>
+      <text class="tiny f-ink" x="342" y="440">Redeliver it by hand or through the API.</text>
+    </g>
+  </g>
+
+  <!-- step 4: the same event twice, and events out of order -->
+  <g class="p4">
+    <text class="tiny mid sb f-ink" x="468" y="198">The 2xx never arrived, so it is sent again.</text>
+    <text class="tiny mid" x="468" y="216">Every attempt carries the same ID:</text>
+    <text class="tiny mid" x="468" y="232">at-least-once delivery means duplicates.</text>
+    <rect class="box" x="330" y="262" width="276" height="190" rx="10"/>
+    <text class="legend" x="342" y="281">ARRIVAL ORDER ≠ EVENT ORDER</text>
+    <text class="th" x="342" y="300">arrived</text>
+    <text class="th end" x="594" y="300">event time</text>
+    <rect class="f-amber-soft s-amber wh-late" x="336" y="330" width="264" height="19" rx="5" stroke-width="1.5"/>
+    <text class="cell mono f-muted" x="342" y="321">1st</text>
+    <text class="cell mono" x="368" y="321">evt_a43</text>
+    <text class="cell mono" x="420" y="321">payment.refunded</text>
+    <text class="cell mono end" x="594" y="321">18:20:12</text>
+    <g class="wh-row2">
+      <text class="cell mono f-muted" x="342" y="343">2nd</text>
+      <text class="cell mono" x="368" y="343">evt_a42</text>
+      <text class="cell mono" x="420" y="343">payment.succeeded</text>
+      <text class="cell mono end" x="594" y="343">10:02:31</text>
+      <text class="tiny sb f-amber-ink" x="342" y="366">Redelivered late, but it happened first.</text>
+    </g>
+    <line class="s-line" x1="342" y1="378" x2="594" y2="378" stroke-width="1"/>
+    <text class="tiny f-ink" x="342" y="398">Compare the event's time with the state,</text>
+    <text class="tiny f-ink" x="342" y="414">or ask the API for the current state:</text>
+    <text class="cell mono" x="342" y="436">GET /payments/pay_10</text>
+    <text class="tiny" x="482" y="436">→</text>
+    <text class="cell mono sb f-green" x="498" y="436">refunded</text>
+  </g>
+
+  <!-- failure marks on the wire -->
+  <g class="wh-fail">
+    <circle class="f-red" cx="620" cy="151" r="9"/>
+    <path class="none s-bg" d="M616 147l8 8M624 147l-8 8" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <text class="tiny end sb f-red wh-tmo" x="604" y="138">no answer: timeout</text>
+  <g class="wh-lostx">
+    <circle class="f-red" cx="468" cy="151" r="9"/>
+    <path class="none s-bg" d="M464 147l8 8M472 147l-8 8" stroke-width="2" stroke-linecap="round"/>
+    <text class="tiny mid sb f-red" x="468" y="136">2xx lost</text>
+  </g>
+
+  <!-- traffic: POSTs, responses, and the event inside the receiver -->
+  <g class="tok wh-t41"><circle class="pkt f-blue" r="7"/><text class="cell mid mono b f-blue" y="-13">evt_a41</text></g>
+  <g class="tok wh-t42"><circle class="pkt f-blue" r="7"/><text class="cell mid mono b f-blue" y="-13">evt_a42</text></g>
+  <g class="tok wh-t43"><circle class="pkt f-blue" r="7"/><text class="cell mid mono b f-blue" y="-13">evt_a43</text><text class="tiny mid sb f-amber-ink" y="-26">retry</text></g>
+  <g class="tok wh-r200"><circle class="pkt f-green" r="7"/><text class="cell mid mono b f-green" y="-13">200</text></g>
+  <g class="tok wh-lost"><circle class="pkt f-green" r="7"/><text class="cell mid mono b f-green" y="-13">200</text></g>
+  <g class="tok wh-r503"><circle class="pkt f-red" r="7"/><text class="cell mid mono b f-red" y="-13">503</text></g>
+  <circle class="pkt f-red tok wh-forged" r="7"/>
+  <g class="tok wh-r401"><circle class="pkt f-red" r="7"/><text class="cell mid mono b f-red" y="-13">401</text></g>
+  <rect class="ev tok wh-q41" x="-7" y="-7" width="14" height="14" rx="4"/>
+  <rect class="ev tok wh-q43" x="-7" y="-7" width="14" height="14" rx="4"/>
+  <rect class="ev tok wh-q42" x="-7" y="-7" width="14" height="14" rx="4"/>
+</g>
+</svg>

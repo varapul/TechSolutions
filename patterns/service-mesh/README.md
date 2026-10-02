@@ -125,7 +125,7 @@ The node-level designs cost less, and workloads can join them without a restart.
 
 - Sidecar *(planned)* — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 - Ambassador *(planned)* — An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client.
-- Mutual TLS (mTLS) *(planned)* — Client and server both present certificates, so every connection is authenticated both ways.
+- [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 - [Circuit Breaker](../circuit-breaker/) — Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers.

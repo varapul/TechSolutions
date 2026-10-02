@@ -1,0 +1,41 @@
+{
+  "aka": ["HTTP callbacks", "Web callbacks", "Reverse API"],
+  "steps": [
+    {
+      "title": "Don't poll, get called",
+      "caption": "Instead of polling for news, the shop registers a URL once and the provider POSTs each event to it.",
+      "body": "The subscriber registers an HTTPS endpoint and the event types it wants, once, and gets a **signing secret** back. From then on the provider calls that URL with an HTTP `POST` and a JSON payload whenever such an event happens. The alternative is polling the provider's API every few seconds: most answers are empty, and the news still arrives late."
+    },
+    {
+      "title": "Verify before trusting",
+      "caption": "The shop recomputes the HMAC over the raw body with the shared secret; a forged POST gets a 401.",
+      "body": "The endpoint is a public URL, so every request carries an ID, a timestamp and a **signature**: an HMAC over the ID, the timestamp and the raw body, keyed with the shared secret. The receiver recomputes it over the bytes exactly as they arrived, compares the two in constant time and rejects timestamps older than a few minutes, which stops replays. A forged request has no valid signature and is refused before anything is queued."
+    },
+    {
+      "title": "Ack fast, retry failures",
+      "caption": "The shop queues the event and answers 2xx at once; if it is down, the provider retries with backoff.",
+      "body": "The receiver stores the verified event on its own queue and answers `2xx` within milliseconds; a worker does the real work afterwards, so slow processing never runs into the provider's timeout. When the endpoint is down the provider gets a `5xx` or no answer at all and tries again after growing delays, minutes at first and then hours, logging every attempt. After the last attempt the delivery is marked **failed** and can be redelivered by hand or through the API."
+    },
+    {
+      "title": "Duplicates and order",
+      "caption": "The retried evt_a43 is skipped by its ID; the late evt_a42 is older than the state, so it's ignored.",
+      "body": "The `2xx` for `evt_a43` is lost, so the provider sends the event again: its ID is already in the processed-IDs table and the worker skips it. Then `evt_a42` is redelivered and arrives after a newer event about the same payment. The receiver compares the event's own timestamp with the state it holds, or fetches the current state from the API, instead of trusting arrival order."
+    }
+  ],
+  "related": ["idempotent-consumer", "retry-with-backoff", "dead-letter-queue", "event-driven-architecture", "publish-subscribe", "api-gateway", "rate-limiting", "asynchronous-request-reply"],
+  "references": [
+    { "title": "Standard Webhooks — Specification", "url": "https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md" },
+    { "title": "Stripe Docs — Receive Stripe events in your webhook endpoint", "url": "https://docs.stripe.com/webhooks" },
+    { "title": "Stripe Docs — Integrate with events (snapshot and thin events)", "url": "https://docs.stripe.com/event-destinations" },
+    { "title": "GitHub Docs — Best practices for using webhooks", "url": "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks" },
+    { "title": "GitHub Docs — Validating webhook deliveries", "url": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries" },
+    { "title": "GitHub Docs — Handling failed webhook deliveries", "url": "https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries" },
+    { "title": "Shopify — About webhooks", "url": "https://shopify.dev/docs/apps/build/webhooks" },
+    { "title": "Shopify — Verify webhook deliveries", "url": "https://shopify.dev/docs/apps/build/webhooks/verify-deliveries" },
+    { "title": "CloudEvents — Specification, version 1.0.2", "url": "https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md" },
+    { "title": "CloudEvents — HTTP 1.1 Web Hooks for Event Delivery, version 1.0.2", "url": "https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/http-webhook.md" },
+    { "title": "OWASP Cheat Sheet Series — Webhook Security Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Webhook_Security_Cheat_Sheet.html" },
+    { "title": "OWASP Cheat Sheet Series — Server-Side Request Forgery Prevention Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html" },
+    { "title": "RFC 2104 — HMAC: Keyed-Hashing for Message Authentication", "url": "https://www.rfc-editor.org/rfc/rfc2104" }
+  ]
+}

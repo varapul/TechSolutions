@@ -1,0 +1,55 @@
+{
+  "aka": ["Client credentials grant", "Machine-to-machine (M2M) authorization", "Two-legged OAuth"],
+  "steps": [
+    {
+      "title": "Ask as itself",
+      "caption": "The Orders service asks for a token as itself: its own credentials, no user and no browser.",
+      "body": "A backend service needs to call an API on its own account: here an Orders service calling the Inventory API, though it could just as well be a nightly billing job. It sends `POST /token` with `grant_type=client_credentials` and `scope=inventory:read` straight to the authorization server and authenticates as itself, in this case with its `client_id` and `client_secret` in an HTTP Basic header. Nobody signs in, so there is no redirect, no sign-in page and no consent screen; the grant is only for **confidential clients**, software that can keep a credential to itself."
+    },
+    {
+      "title": "Token issued",
+      "caption": "The server authenticates the client, checks its allowed scopes and returns a short-lived token.",
+      "body": "The authorization server authenticates the client against its registration, then checks that this client is allowed the scope it asked for. It returns an access token with `token_type` and `expires_in`, and no refresh token: when the token runs out, the client simply authenticates again. The token's subject is the client itself (`sub` and `client_id` both name `orders-svc`), not a person."
+    },
+    {
+      "title": "Call and reuse",
+      "caption": "The service caches the token and reuses it for every API call, renewing shortly before it expires.",
+      "body": "The service calls the Inventory API with `Authorization: Bearer …`, and the API validates the token locally: signature, issuer, audience, expiry and scope. The service keeps the token in memory and sends the same one on every call, then asks for a new one shortly before it expires. It does not fetch a token per call, which would add a round trip to every request and push against the token endpoint's rate limits."
+    },
+    {
+      "title": "Drop the shared secret",
+      "caption": "The stored secret gives way to a signed JWT, a client certificate or a workload identity.",
+      "body": "A shared secret has to be stored by the client, crosses the wire on every token request and works for anyone who copies it. Replace it with something that can't leak the same way: a signed JWT assertion made with a private key (`private_key_jwt`, shown here), a client certificate (mutual TLS), or the platform's **workload identity**, a short-lived token that the platform issues to the workload and that is exchanged for an access token, so nothing long-lived is stored at all."
+    }
+  ],
+  "related": ["jwt-validation", "oauth2-authorization-code-pkce", "token-exchange", "mutual-tls", "api-gateway", "service-mesh", "zero-trust-access"],
+  "references": [
+    { "title": "RFC 6749 — The OAuth 2.0 Authorization Framework (§4.4 Client Credentials Grant)", "url": "https://www.rfc-editor.org/rfc/rfc6749#section-4.4" },
+    { "title": "RFC 6749 — The OAuth 2.0 Authorization Framework (§2.3 Client Authentication)", "url": "https://www.rfc-editor.org/rfc/rfc6749#section-2.3" },
+    { "title": "RFC 7523 — JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants", "url": "https://www.rfc-editor.org/rfc/rfc7523" },
+    { "title": "IETF OAuth WG — Updates to OAuth 2.0 JSON Web Token (JWT) Client Authentication and Assertion-Based Authorization Grants (draft-ietf-oauth-rfc7523bis, to update RFC 7523)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-rfc7523bis/" },
+    { "title": "OpenID Connect Core 1.0 incorporating errata set 2 — §9 Client Authentication", "url": "https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication" },
+    { "title": "IANA — OAuth Parameters: OAuth Token Endpoint Authentication Methods", "url": "https://www.iana.org/assignments/oauth-parameters/oauth-parameters.xhtml#token-endpoint-auth-method" },
+    { "title": "RFC 8705 — OAuth 2.0 Mutual-TLS Client Authentication and Certificate-Bound Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc8705" },
+    { "title": "RFC 9068 — JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens", "url": "https://www.rfc-editor.org/rfc/rfc9068" },
+    { "title": "RFC 8707 — Resource Indicators for OAuth 2.0", "url": "https://www.rfc-editor.org/rfc/rfc8707" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "IETF OAuth WG — The OAuth 2.1 Authorization Framework (draft-ietf-oauth-v2-1)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/" },
+    { "title": "RFC 9449 — OAuth 2.0 Demonstrating Proof of Possession (DPoP)", "url": "https://www.rfc-editor.org/rfc/rfc9449" },
+    { "title": "RFC 8693 — OAuth 2.0 Token Exchange", "url": "https://www.rfc-editor.org/rfc/rfc8693" },
+    { "title": "Microsoft identity platform — OAuth 2.0 client credentials flow", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow" },
+    { "title": "Microsoft Authentication Library for .NET — Client credential flows", "url": "https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/web-apps-apis/client-credential-flows" },
+    { "title": "Microsoft identity platform — Configurable token lifetimes", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/configurable-token-lifetimes" },
+    { "title": "Microsoft Entra Workload ID — Workload identity federation", "url": "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" },
+    { "title": "Google Cloud IAM — Workload Identity Federation", "url": "https://docs.cloud.google.com/iam/docs/workload-identity-federation" },
+    { "title": "AWS IAM — Federating AWS identities to external services (outbound identity federation)", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_outbound.html" },
+    { "title": "Kubernetes — Configure Service Accounts for Pods", "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/" },
+    { "title": "SPIFFE — SPIFFE Concepts", "url": "https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/" },
+    { "title": "IETF OAuth WG — OAuth SPIFFE Client Authentication (draft-ietf-oauth-spiffe-client-auth)", "url": "https://datatracker.ietf.org/doc/draft-ietf-oauth-spiffe-client-auth/" },
+    { "title": "Auth0 Docs — Application Credentials", "url": "https://auth0.com/docs/secure/application-credentials" },
+    { "title": "Auth0 Docs — Call Your API Using the Client Credentials Flow", "url": "https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-credentials-flow/call-your-api-using-the-client-credentials-flow" },
+    { "title": "Okta Developer — Implement OAuth for Okta with a service app", "url": "https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/" },
+    { "title": "Amazon Cognito — Scopes, M2M, and resource servers", "url": "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-define-resource-servers.html" },
+    { "title": "Keycloak — Server Administration Guide", "url": "https://www.keycloak.org/docs/latest/server_admin/index.html" }
+  ]
+}

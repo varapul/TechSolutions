@@ -58,7 +58,7 @@ A single region is a single failure domain. Spreading instances across availabil
 - Active-Passive Failover *(planned)* — A warm standby region is promoted when the primary region goes down.
 - Disaster Recovery Strategies *(planned)* — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
-- Health Endpoint Monitoring *(planned)* — Expose liveness and readiness checks that load balancers and monitors probe.
+- [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - Deployment Stamps *(planned)* — Deploy many independent copies of the whole stack, each serving a subset of tenants.
 - Cell-Based Architecture *(planned)* — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
