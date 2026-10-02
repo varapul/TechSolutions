@@ -13,21 +13,58 @@ for (const p of loadCatalog().patterns.filter((x) => x.animated && !x.metaError 
 }
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0 Safari/537.36';
+const pause = (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+async function get(url) {
+  const res = await fetch(url, { redirect: 'follow', headers: { 'user-agent': UA, accept: 'text/html,*/*' }, signal: AbortSignal.timeout(20000) });
+  await res.body?.cancel();
+  return res;
+}
+// github.com throttles page fetches for minutes at a time; the raw host serves the same file.
+function rawFile(url) {
+  const m = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^?#]+)/.exec(url);
+  return m && `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}`;
+}
+// A 429 or 503 is a rate limit or a passing outage, not a broken link: wait and ask again
+// before reporting it. A timeout or reset gets one more try.
+const RETRIES = 3;
 async function status(url) {
-  try {
-    const res = await fetch(url, { redirect: 'follow', headers: { 'user-agent': UA, accept: 'text/html,*/*' }, signal: AbortSignal.timeout(20000) });
-    await res.body?.cancel();
-    return { code: res.status, final: res.url };
-  } catch (e) {
-    return { code: 0, final: e.cause?.code ?? e.name };
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await get(url);
+      const throttled = res.status === 429 || res.status === 503;
+      if (throttled && rawFile(url) && (await get(rawFile(url))).ok) return { code: 200, final: url };
+      if (throttled && attempt < RETRIES) {
+        await pause(Math.min(Number(res.headers.get('retry-after')) || 15 * (attempt + 1), 60));
+        continue;
+      }
+      return { code: res.status, final: res.url };
+    } catch (e) {
+      if (attempt < 1) {
+        await pause(5);
+        continue;
+      }
+      return { code: 0, final: e.cause?.code ?? e.name };
+    }
   }
 }
 
-const list = [...urls.keys()];
-const results = [];
-for (let i = 0; i < list.length; i += 8) {
-  results.push(...await Promise.all(list.slice(i, i + 8).map(async (u) => ({ url: u, ...(await status(u)) }))));
+// One request at a time per host, eight hosts at once.
+const byHost = new Map();
+for (const u of urls.keys()) {
+  const host = new URL(u).host;
+  byHost.set(host, [...(byHost.get(host) ?? []), u]);
 }
+const queue = [...byHost.values()];
+const results = [];
+async function worker() {
+  for (let group; (group = queue.pop()); ) {
+    for (const u of group) {
+      results.push({ url: u, ...(await status(u)) });
+      await pause(0.25);
+    }
+  }
+}
+await Promise.all(Array.from({ length: 8 }, worker));
 // Some publishers answer automated requests with 403 (e.g. dl.acm.org); check those by hand.
 const BOT_BLOCKERS = /^https:\/\/(dl\.acm\.org|www\.oreilly\.com)\//;
 let failed = 0;
