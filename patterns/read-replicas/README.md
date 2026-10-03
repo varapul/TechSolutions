@@ -161,7 +161,7 @@ It is the wrong tool when:
 
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 - [Cache-Aside](../cache-aside/) — Read from the cache first; on a miss load from the database and populate the cache.
-- Sharding *(planned)* — Split data horizontally across databases using a shard key.
+- [Sharding](../sharding/) — Split data horizontally across databases using a shard key.
 - [Multi-Region Active-Active](../multi-region-active-active/) — Serve users from several regions at once and shift traffic away from a region that fails.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.

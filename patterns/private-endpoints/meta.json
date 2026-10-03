@@ -1,0 +1,40 @@
+{
+  "aka": ["Private Link", "PrivateLink", "Private Service Connect", "Interface VPC endpoints"],
+  "steps": [
+    {
+      "title": "Public endpoint",
+      "caption": "The app reaches 203.0.113.10 through NAT, and so can anyone else: only the sign-in keeps them out.",
+      "body": "Many managed services start out with a **public endpoint**. The app resolves `orders.db.cloud.example` to the public address `203.0.113.10` and needs a route to the internet (or a NAT gateway) to get there. Anyone else on the internet can reach the same door: only credentials and IP firewall rules keep them out, so the attacker's connection gets as far as the sign-in."
+    },
+    {
+      "title": "Add a private endpoint",
+      "caption": "A private endpoint puts 10.1.2.5 in your network, and a private DNS zone points the name at it.",
+      "body": "A **private endpoint** is a network interface with a private address (`10.1.2.5`) in the endpoint subnet, bound to this one database. A **private DNS zone** linked to the network answers the same name with `10.1.2.5`, so the connection string doesn't change, and the app's traffic stays on private addresses without a route to the internet. The database still checks credentials, and its public endpoint is still open."
+    },
+    {
+      "title": "Close the public door",
+      "caption": "Public access off: the internet is refused. On premises, only DNS that forwards the name gets in.",
+      "body": "With **public network access disabled**, the service refuses every connection that arrives at its public address, so the attacker is turned away at the door. Clients on premises reach `10.1.2.5` over the VPN or dedicated circuit, but only if their DNS sends the name to the cloud's resolver: a **conditional forwarder** for `db.cloud.example` pointing at its inbound endpoint. Client B's DNS has no such rule, so it still gets the public address and its connection is refused."
+    },
+    {
+      "title": "The catches",
+      "caption": "DNS causes most failures; one endpoint per network; billed hourly and per GB; bound to one resource.",
+      "body": "Most failures are **DNS**: which resolver answers, with which address, for which client. A network should have one endpoint per resource, so endpoints usually sit in a shared **hub** network that the spokes and on-premises sites reach. Each endpoint is **billed per hour and per GB** it processes. It is **bound to one resource**, so it can't be used to reach (or copy data to) another database on the same service; an endpoint for a whole cloud API, such as an AWS interface endpoint for S3, needs an endpoint policy for that. Service endpoints and gateway endpoints are a different thing: they keep the service's public address and only change the route."
+    }
+  ],
+  "related": ["hub-spoke-network", "zero-trust-access", "mutual-tls", "gatekeeper", "valet-key", "api-gateway", "multi-region-active-active"],
+  "references": [
+    { "title": "Microsoft Learn — What is a private endpoint?", "url": "https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview" },
+    { "title": "Microsoft Learn — What is Azure Private Link?", "url": "https://learn.microsoft.com/en-us/azure/private-link/private-link-overview" },
+    { "title": "Microsoft Learn — Azure Private Endpoint DNS integration scenarios", "url": "https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns-integration" },
+    { "title": "Microsoft Learn — Azure Private Endpoint private DNS zone values", "url": "https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns" },
+    { "title": "Azure Architecture Center — Azure Private Link in a hub-and-spoke network", "url": "https://learn.microsoft.com/en-us/azure/architecture/networking/guide/private-link-hub-spoke-network" },
+    { "title": "Microsoft Learn — Azure SQL Database connectivity settings (public network access)", "url": "https://learn.microsoft.com/en-us/azure/azure-sql/database/connectivity-settings" },
+    { "title": "Microsoft Learn — Azure virtual network service endpoints", "url": "https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview" },
+    { "title": "AWS PrivateLink — Access AWS services through AWS PrivateLink (interface endpoints)", "url": "https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html" },
+    { "title": "AWS PrivateLink — Gateway endpoints", "url": "https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-endpoints.html" },
+    { "title": "AWS PrivateLink — Share your services through AWS PrivateLink", "url": "https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-share-your-services.html" },
+    { "title": "Amazon Route 53 — What is Route 53 VPC Resolver? (inbound and outbound endpoints)", "url": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html" },
+    { "title": "Google Cloud — Private Service Connect", "url": "https://docs.cloud.google.com/vpc/docs/private-service-connect" }
+  ]
+}

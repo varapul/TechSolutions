@@ -67,7 +67,7 @@ Authenticating first lets quotas and cache keys depend on a *verified* identity;
 ## Related patterns
 
 - [Backends for Frontends (BFF)](../backends-for-frontends/) — A dedicated backend per client type, shaped for exactly what that UI needs.
-- Gateway Aggregation *(planned)* — Fan one client request out to several services and merge the answers into one response.
+- [Gateway Aggregation](../gateway-aggregation/) — Fan one client request out to several services and merge the answers into one response.
 - [Gateway Offloading](../gateway-offloading/) — Move TLS termination, authentication and compression out of every service into the gateway.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).

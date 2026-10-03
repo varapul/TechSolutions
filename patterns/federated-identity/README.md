@@ -86,7 +86,7 @@ When **not** to federate:
 ## Related patterns
 
 - [OpenID Connect (OIDC)](../openid-connect/) — An ID token on top of OAuth 2.0 tells the app who signed in.
-- SAML 2.0 Single Sign-On *(planned)* — Enterprise SSO: the identity provider posts a signed assertion to the app through the browser.
+- [SAML 2.0 Single Sign-On](../saml-sso/) — Enterprise SSO: the identity provider posts a signed assertion to the app through the browser.
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.

@@ -162,7 +162,7 @@ Managed services are named as examples; their behaviour was checked against the 
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 - Leader Election *(planned)* — Instances elect one coordinator; another takes over when its lease expires.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
-- Chaos Engineering *(planned)* — Inject failures on purpose to prove the system degrades the way you expect.
+- [Chaos Engineering](../chaos-engineering/) — Inject failures on purpose to prove the system degrades the way you expect.
 
 ## References
 

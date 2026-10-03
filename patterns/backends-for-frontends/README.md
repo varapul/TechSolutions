@@ -81,7 +81,7 @@ Native apps follow RFC 8252 instead: the app itself is the OAuth client (a publi
 ## Related patterns
 
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
-- Gateway Aggregation *(planned)* — Fan one client request out to several services and merge the answers into one response.
+- [Gateway Aggregation](../gateway-aggregation/) — Fan one client request out to several services and merge the answers into one response.
 - [OAuth 2.0 Authorization Code + PKCE](../oauth2-authorization-code-pkce/) — The standard sign-in flow for web, mobile and single-page apps: code via the browser, tokens via the back channel.
 - GraphQL Federation *(planned)* — A router composes one graph from many services' subgraphs and plans each query across them.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.

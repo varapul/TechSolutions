@@ -144,7 +144,7 @@ It is not enough, on its own, when a part of the system has clearly different ne
 ## Related patterns
 
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
-- Layered (N-Tier) *(planned)* — Presentation, business and data layers; each layer only calls the one directly below it.
+- [Layered (N-Tier)](../layered-architecture/) — Presentation, business and data layers; each layer only calls the one directly below it.
 - [Hexagonal (Ports & Adapters)](../hexagonal-architecture/) — Domain logic at the core; UIs, databases and queues plug in through ports and adapters.
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
 - [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.

@@ -105,7 +105,7 @@ AWS's guidance makes the same point from the cost side: the extra adapter code p
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Layered (N-Tier) *(planned)* — Presentation, business and data layers; each layer only calls the one directly below it.
+- [Layered (N-Tier)](../layered-architecture/) — Presentation, business and data layers; each layer only calls the one directly below it.
 - [Modular Monolith](../modular-monolith/) — One deployable unit built from strongly bounded modules that talk through explicit interfaces.
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.

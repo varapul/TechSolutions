@@ -1,0 +1,47 @@
+{
+  "aka": ["Externalized configuration", "Central configuration service"],
+  "steps": [
+    {
+      "title": "Settings baked in",
+      "caption": "Settings and passwords are baked into each image: a build per environment and a rebuild per change.",
+      "body": "Connection strings, timeouts and passwords sit in a settings file inside the image, so staging and production each need their own build (57-staging and 57-prod). Changing one timeout means editing the file, rebuilding both images and redeploying every instance, and the passwords live in the repository and in every copy of every image."
+    },
+    {
+      "title": "One image everywhere",
+      "caption": "Build 57 runs everywhere. At start each instance reads its label's settings and fetches its secrets.",
+      "body": "The same image, build 57, runs in staging and in production. When an instance starts it reads its environment's settings from the configuration store, selected by **label**, and fetches its secrets from a separate secret store, signing in to both with its own **workload identity**. The image and the repository hold no environment settings and no secrets; the configuration store keeps only a reference to the password."
+    },
+    {
+      "title": "Change at runtime",
+      "caption": "Payment timeout 2 s → 3 s in the store: version 8, audited, live in seconds without a redeploy.",
+      "body": "An operator, ana, changes `payment.timeout` for production from 2 s to 3 s. The store records version 8 with who changed what and when, and the sentinel key is bumped; the production instances watch the sentinel (or get a change notification) and reload within seconds, still on build 57, while staging keeps its own value. Settings that are read only at start, such as `db.pool.size`, are marked as needing a restart, and rolling back means restoring version 7."
+    },
+    {
+      "title": "Safe to depend on",
+      "caption": "The store goes down, yet instances run, and even restart, on a cached copy. Changes ship in stages.",
+      "body": "Each instance keeps its last known good configuration on local disk, so it keeps running while the store is unreachable, and prod-2 even restarts from that copy. The next change is validated before it goes live, then rolled out in stages with automatic rollback on alarms, because a bad configuration change can take a system down as surely as bad code. Secrets stay in the secret store and are rotated, and every key has an owner."
+    }
+  ],
+  "related": ["feature-flags", "immutable-infrastructure", "gitops", "sidecar", "canary-release", "oauth2-client-credentials", "blue-green-deployment", "microservices"],
+  "references": [
+    { "title": "Azure Architecture Center — External Configuration Store pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/external-configuration-store" },
+    { "title": "The Twelve-Factor App — III. Config", "url": "https://12factor.net/config" },
+    { "title": "Azure App Configuration — Best practices", "url": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/howto-best-practices" },
+    { "title": "Azure App Configuration — Tutorial: Use dynamic configuration in an ASP.NET Core app", "url": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/enable-dynamic-configuration-aspnet-core" },
+    { "title": "Azure App Configuration — Tutorial: Use Key Vault references in an ASP.NET Core app", "url": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/use-key-vault-references-dotnet-core" },
+    { "title": "Azure App Configuration — Snapshots", "url": "https://learn.microsoft.com/en-us/azure/azure-app-configuration/concept-snapshots" },
+    { "title": "AWS AppConfig — Working with deployment strategies", "url": "https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-creating-deployment-strategy.html" },
+    { "title": "AWS AppConfig — Understanding validators", "url": "https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-creating-configuration-and-profile-validators.html" },
+    { "title": "AWS AppConfig — Monitoring deployments for automatic rollback", "url": "https://docs.aws.amazon.com/appconfig/latest/userguide/monitoring-deployments.html" },
+    { "title": "AWS AppConfig — Using environment variables to configure AWS AppConfig Agent for Amazon ECS and Amazon EKS", "url": "https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-containers-agent-configuring.html" },
+    { "title": "AWS Systems Manager — Parameter Store", "url": "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" },
+    { "title": "Google Cloud — Create rotation schedules in Secret Manager", "url": "https://docs.cloud.google.com/secret-manager/docs/secret-rotation" },
+    { "title": "HashiCorp Vault — Lease, renew, and revoke", "url": "https://developer.hashicorp.com/vault/docs/concepts/lease" },
+    { "title": "Kubernetes — ConfigMaps", "url": "https://kubernetes.io/docs/concepts/configuration/configmap/" },
+    { "title": "Kubernetes — Secrets", "url": "https://kubernetes.io/docs/concepts/configuration/secret/" },
+    { "title": "Spring Cloud Config — Reference documentation", "url": "https://docs.spring.io/spring-cloud-config/reference/" },
+    { "title": "Chunqiang Tang et al. — Holistic Configuration Management at Facebook (SOSP 2015)", "url": "https://sigops.org/s/conferences/sosp/2015/current/2015-Monterey/printable/008-tang.pdf" },
+    { "title": "Cloudflare — Cloudflare outage on November 18, 2025", "url": "https://blog.cloudflare.com/18-november-2025-outage/" },
+    { "title": "OWASP — Secrets Management Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html" }
+  ]
+}

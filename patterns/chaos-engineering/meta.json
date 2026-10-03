@@ -1,0 +1,36 @@
+{
+  "aka": ["Fault injection testing", "Resilience testing"],
+  "steps": [
+    {
+      "title": "Steady state, hypothesis",
+      "caption": "Steady state from outside: 99.9% success. Hypothesis: losing 1 of 3 instances keeps it above 99.5%.",
+      "body": "First describe *working* from the outside: checkout success is **99.9%** at about **1,200 orders a minute**, measured at the load balancer. Then write a **hypothesis** that predicts it stays that way: if one of the three Checkout instances is terminated, success stays above 99.5%. The card also records the fault, the **blast radius** (one instance) and the **stop condition** (success below 99%), and the run is set for working hours with the on-call team told."
+    },
+    {
+      "title": "Inject a small failure",
+      "caption": "One instance is terminated in production: the load balancer routes around it and success holds.",
+      "body": "During normal traffic one instance is terminated. A request in flight fails, the load balancer's health check takes the instance out, the other two take 600 orders a minute each, and auto scaling starts a replacement. Success dips to 99.8% and recovers: the **hypothesis holds**, and the confidence that losing an instance is harmless now rests on evidence."
+    },
+    {
+      "title": "Find a weakness, stop",
+      "caption": "Payments slowed by 2 s: with no timeout, calls pile up; below 99% the guardrail stops the run.",
+      "body": "The next experiment adds **2 s of latency** to 5% of Payments calls. Checkout has no timeout on that call, so its workers wait, requests pile up and success falls; when it drops below 99% the **stop condition** fires, the fault is removed automatically and the metric recovers. The finding: the Payments call needs a [timeout and a fallback](../timeout-and-fallback/)."
+    },
+    {
+      "title": "Fix, rerun, make routine",
+      "caption": "With a timeout and fallback the rerun passes. It then runs weekly, and the blast radius grows.",
+      "body": "With a 1 s timeout and a fallback (the order is accepted as *payment pending* and charged moments later), the same experiment passes. It is then **automated** to run every week, the blast radius grows in steps (next: a whole zone instead of one instance), and **game days** rehearse the people and runbooks as well as the software."
+    }
+  ],
+  "related": ["slo-error-budgets", "health-endpoint-monitoring", "circuit-breaker", "timeout-and-fallback", "bulkhead", "disaster-recovery-strategies", "active-passive-failover", "load-balancing"],
+  "references": [
+    { "title": "Principles of Chaos Engineering", "url": "https://principlesofchaos.org/" },
+    { "title": "Netflix Technology Blog — The Netflix Simian Army (2011)", "url": "https://netflixtechblog.com/the-netflix-simian-army-16e57fbab116" },
+    { "title": "Netflix Technology Blog — Netflix Chaos Monkey Upgraded (2016)", "url": "https://netflixtechblog.com/netflix-chaos-monkey-upgraded-1d679429be5d" },
+    { "title": "Netflix Technology Blog — ChAP: Chaos Automation Platform (2017)", "url": "https://netflixtechblog.com/chap-chaos-automation-platform-53e6d528371f" },
+    { "title": "Basiri et al. — Chaos Engineering (IEEE Software, 2016; arXiv copy)", "url": "https://arxiv.org/abs/1702.05843" },
+    { "title": "AWS Fault Injection Service — Stop conditions", "url": "https://docs.aws.amazon.com/fis/latest/userguide/stop-conditions.html" },
+    { "title": "Azure Chaos Studio — What is Azure Chaos Studio?", "url": "https://learn.microsoft.com/en-us/azure/chaos-studio/chaos-studio-overview" },
+    { "title": "AWS Well-Architected Reliability Pillar — REL12-BP04 Test resiliency using chaos engineering", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_testing_resiliency_failure_injection_resiliency.html" }
+  ]
+}

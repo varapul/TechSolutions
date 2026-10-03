@@ -1,0 +1,48 @@
+{
+  "aka": ["API Composition", "Request aggregation"],
+  "steps": [
+    {
+      "title": "A chatty client",
+      "caption": "The app calls 3 services one after another over a slow network: 3 round trips, about 600 ms.",
+      "body": "To draw one product page, the app calls Product, then Reviews, then Inventory, over a mobile network where every round trip costs about 150 ms. The page is complete after (150 + 40) + (150 + 80) + (150 + 30) = **600 ms**. The app has to know three endpoints, and every service has to be reachable from the internet."
+    },
+    {
+      "title": "One request, fanned out",
+      "caption": "One request: the gateway calls all 3 services in parallel and merges the answers, about 235 ms.",
+      "body": "The app sends one request, `GET /product-page/42`, to an aggregation endpoint on the gateway. The gateway calls the three services **in parallel** over the data centre network, waits for all three and merges their answers into one response: 150 + 5 + 80 = about **235 ms**, set by the slowest service. The services no longer need public endpoints."
+    },
+    {
+      "title": "Partial failure",
+      "caption": "Reviews times out after 100 ms: the page still arrives, without reviews. Product is required.",
+      "body": "Reviews stops answering. Each internal call has its own timeout inside a 200 ms deadline, so after 100 ms the gateway gives up on Reviews and returns **200 OK** with the product and the stock level and the reviews section marked *unavailable*, in about 250 ms. Product is **required**: if it fails, the whole request fails. See [Timeout & Fallback](../timeout-and-fallback/)."
+    },
+    {
+      "title": "Know the limits",
+      "caption": "Keep business logic out, scale and watch it, mind dependent calls, cache what rarely changes.",
+      "body": "The aggregator only calls, merges and reshapes: prices, rules and decisions stay in the services. Every page now depends on it and on every service it calls, so run several instances and watch each call. Calls that need another call's result run one after the other and their times add up (150 + 45 + 85 = 280 ms), and stable parts such as product details can be [cached](../cache-aside/)."
+    }
+  ],
+  "related": ["api-gateway", "backends-for-frontends", "graphql-federation", "gateway-offloading", "timeout-and-fallback", "circuit-breaker", "microservices", "cache-aside"],
+  "references": [
+    { "title": "Azure Architecture Center — Gateway Aggregation pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: API Composition", "url": "https://microservices.io/patterns/data/api-composition.html" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: API Gateway / Backends for Frontends", "url": "https://microservices.io/patterns/apigateway.html" },
+    { "title": "Sam Newman — Pattern: Backends For Frontends", "url": "https://samnewman.io/patterns/architectural/bff/" },
+    { "title": "Jeffrey Dean, Luiz André Barroso — The Tail at Scale (Communications of the ACM, 2013)", "url": "https://research.google/pubs/the-tail-at-scale/" },
+    { "title": "RFC 9110 — HTTP Semantics: 206 Partial Content", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.7" },
+    { "title": "RFC 9110 — HTTP Semantics: 502 Bad Gateway and 504 Gateway Timeout", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.6" },
+    { "title": "RFC 9457 — Problem Details for HTTP APIs", "url": "https://www.rfc-editor.org/rfc/rfc9457.html" },
+    { "title": "GraphQL Specification (September 2025) — Handling Execution Errors", "url": "https://spec.graphql.org/September2025/#sec-Handling-Execution-Errors" },
+    { "title": "KrakenD — API Composition and aggregation", "url": "https://www.krakend.io/docs/endpoints/response-manipulation/" },
+    { "title": "KrakenD — Data Manipulation (group)", "url": "https://www.krakend.io/docs/backends/data-manipulation/" },
+    { "title": "KrakenD — Sequential Proxying", "url": "https://www.krakend.io/docs/endpoints/sequential-proxy/" },
+    { "title": "KrakenD — API Throttling and Timeout Management", "url": "https://www.krakend.io/docs/throttling/timeouts/" },
+    { "title": "KrakenD — Handling Concurrent Requests", "url": "https://www.krakend.io/docs/endpoints/concurrent-requests/" },
+    { "title": "Azure API Management — wait policy", "url": "https://learn.microsoft.com/en-us/azure/api-management/wait-policy" },
+    { "title": "Azure API Management — send-request policy", "url": "https://learn.microsoft.com/en-us/azure/api-management/send-request-policy" },
+    { "title": "Azure API Management — Using API Management service to generate HTTP requests (response composition)", "url": "https://learn.microsoft.com/en-us/azure/api-management/api-management-sample-send-request" },
+    { "title": "Azure API Management — Backends: circuit breaker", "url": "https://learn.microsoft.com/en-us/azure/api-management/backends#circuit-breaker" },
+    { "title": "W3C — Trace Context", "url": "https://www.w3.org/TR/trace-context/" },
+    { "title": "RFC 8693 — OAuth 2.0 Token Exchange", "url": "https://www.rfc-editor.org/rfc/rfc8693.html" }
+  ]
+}

@@ -198,7 +198,7 @@ A layered edge is normal: a load balancer or CDN that terminates TLS and filters
 ## Related patterns
 
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
-- Gateway Aggregation *(planned)* — Fan one client request out to several services and merge the answers into one response.
+- [Gateway Aggregation](../gateway-aggregation/) — Fan one client request out to several services and merge the answers into one response.
 - [Backends for Frontends (BFF)](../backends-for-frontends/) — A dedicated backend per client type, shaped for exactly what that UI needs.
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.

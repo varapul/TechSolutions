@@ -173,7 +173,7 @@ GitHub leaves recovery to the subscriber: a failed delivery stays failed until s
 - [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
-- Asynchronous Request-Reply *(planned)* — Accept now with 202, process in the background, and let the client poll a status URL.
+- [Asynchronous Request-Reply](../asynchronous-request-reply/) — Accept now with 202, process in the background, and let the client poll a status URL.
 
 ## References
 

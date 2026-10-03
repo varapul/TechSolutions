@@ -178,7 +178,7 @@ If every server can be rebuilt from an image and every environment from code, re
 - [Blue-Green Deployment](../blue-green-deployment/) — Run the new version beside the old one and switch all traffic in one step.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - GitOps *(planned)* — Git holds the desired state; an agent continuously reconciles the cluster to match it.
-- External Configuration Store *(planned)* — Keep configuration out of the deployment package, in a central store read at runtime.
+- [External Configuration Store](../external-configuration-store/) — Keep configuration out of the deployment package, in a central store read at runtime.
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 - [Disaster Recovery Strategies](../disaster-recovery-strategies/) — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 - [Centralized Logging](../centralized-logging/) — Ship structured logs from every service to one searchable store, correlated by request ID.

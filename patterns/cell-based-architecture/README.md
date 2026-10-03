@@ -164,7 +164,7 @@ Slack's and Roblox's cells are interchangeable: any cell can serve any user, and
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 - [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
-- Sharding *(planned)* — Split data horizontally across databases using a shard key.
+- [Sharding](../sharding/) — Split data horizontally across databases using a shard key.
 - [Disaster Recovery Strategies](../disaster-recovery-strategies/) — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 
 ## References

@@ -84,7 +84,7 @@ The last row is the one to watch. A backlog drains only at the *spare* capacity,
 - [Competing Consumers](../competing-consumers/) — Several workers pull from one queue, so work is shared and throughput scales out.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
-- Asynchronous Request-Reply *(planned)* — Accept now with 202, process in the background, and let the client poll a status URL.
+- [Asynchronous Request-Reply](../asynchronous-request-reply/) — Accept now with 202, process in the background, and let the client poll a status URL.
 - Web-Queue-Worker *(planned)* — A web front end hands slow work to background workers through a queue.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - Priority Queue *(planned)* — Urgent messages are processed ahead of routine ones.

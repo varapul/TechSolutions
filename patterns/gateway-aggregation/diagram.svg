@@ -1,0 +1,920 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Gateway Aggregation</title>
+<desc id="dg-desc">Gateway Aggregation. Fan one client request out to several services and merge the answers into one response. Step 1, A chatty client: The app calls 3 services one after another over a slow network: 3 round trips, about 600 ms. Step 2, One request, fanned out: One request: the gateway calls all 3 services in parallel and merges the answers, about 235 ms. Step 3, Partial failure: Reviews times out after 100 ms: the page still arrives, without reviews. Product is required. Step 4, Know the limits: Keep business logic out, scale and watch it, mind dependent calls, cache what rarely changes.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">API &amp; EDGE</text>
+  <text class="title" x="40" y="64">Gateway Aggregation</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A chatty client</text>
+  <text class="step on p1" x="40" y="518">1 · A chatty client</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · One request, fanned out</text>
+  <text class="step on p2" x="262" y="518">2 · One request, fanned out</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Partial failure</text>
+  <text class="step on p3" x="484" y="518">3 · Partial failure</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Know the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Know the limits</text>
+  <text class="caption p1" x="40" y="552">The app calls 3 services one after another over a slow network: 3 round trips, about 600 ms.</text>
+  <text class="caption p2" x="40" y="552">One request: the gateway calls all 3 services in parallel and merges the answers, about 235 ms.</text>
+  <text class="caption p3" x="40" y="552">Reviews times out after 100 ms: the page still arrives, without reviews. Product is required.</text>
+  <text class="caption p4" x="40" y="552">Keep business logic out, scale and watch it, mind dependent calls, cache what rarely changes.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Gateway Aggregation. Timeline (20s loop, 1s = 5%). Illustrative numbers: a phone-to-data-centre round trip
+   costs 150 ms, a hop inside the data centre about 5 ms; Product takes 40 ms, Reviews 80 ms, Inventory 30 ms.
+   Token motion runs at about 4.8x slow motion (75 ms across the mobile network = 0.36 s); in-data-centre hops are
+   stretched to 0.18 s so they stay visible.
+   0-25%   no gateway: the app calls Product, Reviews and Inventory one after another (0.25-4.2s); the page fills
+           section by section and the strip adds up (150 + 40) + (150 + 80) + (150 + 30) = 600 ms
+   25-50%  the gateway appears; one request (5.55-5.95s) fans out to all three in parallel (5.95-6.13s); answers land
+           at 6.41/6.46/6.65s, merge at the fork (6.65-6.8s), one response reaches the phone at 7.2s: 235 ms
+   50-75%  Reviews hangs: its 100 ms timeout fires at 11.672s inside a 200 ms deadline; the page arrives at 12.222s
+           with reviews marked unavailable: 250 ms
+   75-100% four cautions appear at 15.3/16.1/16.9/17.7s; the page resets in the last half-second (19.45-19.65s)
+   Generated with scripts/lib/motion.mjs (track, windows, keys). */
+.diagram .ga-pin { font-size: 10px; font-weight: 700; fill: var(--bg); text-anchor: middle; }
+.diagram .ga-q { opacity: 0; animation: ga-q var(--T) linear infinite; }
+.diagram .ga-a { opacity: 0; animation: ga-a var(--T) linear infinite; }
+.diagram .ga-f1 { opacity: 0; animation: ga-f1 var(--T) linear infinite; }
+.diagram .ga-r1 { opacity: 0; animation: ga-r1 var(--T) linear infinite; }
+.diagram .ga-k1 { opacity: 0; animation: ga-k1 var(--T) linear infinite; }
+.diagram .ga-f2 { opacity: 0; animation: ga-f2 var(--T) linear infinite; }
+.diagram .ga-r2 { opacity: 0; animation: ga-r2 var(--T) linear infinite; }
+.diagram .ga-k2 { opacity: 0; animation: ga-k2 var(--T) linear infinite; }
+.diagram .ga-f3 { opacity: 0; animation: ga-f3 var(--T) linear infinite; }
+.diagram .ga-r3 { opacity: 0; animation: ga-r3 var(--T) linear infinite; }
+.diagram .ga-k3 { opacity: 0; animation: ga-k3 var(--T) linear infinite; }
+.diagram .ga-k2x { opacity: 0; animation: ga-k2x var(--T) linear infinite; }
+.diagram .ga-m2 { opacity: 0; animation: ga-m2 var(--T) linear infinite; }
+.diagram .ga-m3 { opacity: 0; animation: ga-m3 var(--T) linear infinite; }
+.diagram .ga-wP { opacity: 0; animation: ga-wP var(--T) linear infinite; }
+.diagram .ga-wR { opacity: 0; animation: ga-wR var(--T) linear infinite; }
+.diagram .ga-wI { opacity: 0; animation: ga-wI var(--T) linear infinite; }
+.diagram .ga-okP { opacity: 0; animation: ga-okP var(--T) linear infinite; }
+.diagram .ga-okR { opacity: 0; animation: ga-okR var(--T) linear infinite; }
+.diagram .ga-okI { opacity: 0; animation: ga-okI var(--T) linear infinite; }
+.diagram .ga-toR { opacity: 0; animation: ga-toR var(--T) linear infinite; }
+.diagram .ga-cx { opacity: 0; animation: ga-cx var(--T) linear infinite; }
+.diagram .ga-bd2 { opacity: 0; animation: ga-bd2 var(--T) linear infinite; }
+.diagram .ga-bd3 { opacity: 0; animation: ga-bd3 var(--T) linear infinite; }
+.diagram .ga-sRx { opacity: 0; animation: ga-sRx var(--T) linear infinite; }
+.diagram .ga-t2 { opacity: 0; animation: ga-t2 var(--T) linear infinite; }
+.diagram .ga-t3 { opacity: 0; animation: ga-t3 var(--T) linear infinite; }
+.diagram .ga-n1 { opacity: 0; animation: ga-n1 var(--T) linear infinite; }
+.diagram .ga-n2 { opacity: 0; animation: ga-n2 var(--T) linear infinite; }
+.diagram .ga-n3 { opacity: 0; animation: ga-n3 var(--T) linear infinite; }
+.diagram .ga-n4 { opacity: 0; animation: ga-n4 var(--T) linear infinite; }
+.diagram .ga-sP { animation: ga-sP var(--T) linear infinite; }
+.diagram .ga-sR { animation: ga-sR var(--T) linear infinite; }
+.diagram .ga-sI { animation: ga-sI var(--T) linear infinite; }
+.diagram .ga-l1 { animation: ga-l1 var(--T) linear infinite; }
+.diagram .ga-l2 { animation: ga-l2 var(--T) linear infinite; }
+.diagram .ga-l3 { animation: ga-l3 var(--T) linear infinite; }
+.diagram .ga-t1 { animation: ga-t1 var(--T) linear infinite; }
+.diagram .ga-b1 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b1 var(--T) linear infinite; }
+.diagram .ga-b2 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b2 var(--T) linear infinite; }
+.diagram .ga-b3 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b3 var(--T) linear infinite; }
+.diagram .ga-b4 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b4 var(--T) linear infinite; }
+.diagram .ga-b5 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b5 var(--T) linear infinite; }
+.diagram .ga-b6 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b6 var(--T) linear infinite; }
+.diagram .ga-b7 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b7 var(--T) linear infinite; }
+.diagram .ga-b8 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b8 var(--T) linear infinite; }
+.diagram .ga-b9 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-b9 var(--T) linear infinite; }
+.diagram .ga-c1 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-c1 var(--T) linear infinite; }
+.diagram .ga-c2 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-c2 var(--T) linear infinite; }
+.diagram .ga-c3 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-c3 var(--T) linear infinite; }
+.diagram .ga-d1 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-d1 var(--T) linear infinite; }
+.diagram .ga-d2 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-d2 var(--T) linear infinite; }
+.diagram .ga-d3 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-d3 var(--T) linear infinite; }
+.diagram .ga-d4 { transform-box: fill-box; transform-origin: 0 50%; animation: ga-d4 var(--T) linear infinite; }
+.diagram .ga-dl { transform-box: fill-box; transform-origin: 0 50%; animation: ga-dl var(--T) linear infinite; }
+.diagram .ga-tr { transform-box: fill-box; transform-origin: 0 50%; animation: ga-tr var(--T) linear infinite; }
+@keyframes ga-q {
+  0% { transform: translate(168px, 188px); opacity: 0; }
+  1.25% { transform: translate(168px, 188px); opacity: 0; }
+  1.5% { opacity: 1; }
+  3.05% { transform: translate(352px, 188px); }
+  3.95% { transform: translate(744px, 188px); opacity: 1; }
+  4.2% { transform: translate(744px, 188px); opacity: 0; }
+  7.6% { transform: translate(168px, 246px); opacity: 0; }
+  7.85% { opacity: 1; }
+  9.4% { transform: translate(352px, 246px); }
+  10.3% { transform: translate(744px, 246px); opacity: 1; }
+  10.55% { transform: translate(744px, 246px); opacity: 0; }
+  14.9% { transform: translate(168px, 304px); opacity: 0; }
+  15.15% { opacity: 1; }
+  16.7% { transform: translate(352px, 304px); }
+  17.6% { transform: translate(744px, 304px); opacity: 1; }
+  17.85% { transform: translate(744px, 304px); opacity: 0; }
+  27.75% { transform: translate(168px, 246px); opacity: 0; }
+  28% { opacity: 1; }
+  29.55% { transform: translate(352px, 246px); }
+  29.75% { transform: translate(400px, 246px); opacity: 1; }
+  30% { transform: translate(400px, 246px); opacity: 0; }
+  52.5% { transform: translate(168px, 246px); opacity: 0; }
+  52.75% { opacity: 1; }
+  54.3% { transform: translate(352px, 246px); }
+  54.5% { transform: translate(400px, 246px); opacity: 1; }
+  54.75% { transform: translate(400px, 246px); opacity: 0; }
+  100% { transform: translate(400px, 246px); opacity: 0; }
+}
+@keyframes ga-a {
+  0% { transform: translate(744px, 188px); opacity: 0; }
+  4.9% { transform: translate(744px, 188px); opacity: 0; }
+  5.15% { opacity: 1; }
+  5.8% { transform: translate(352px, 188px); }
+  7.6% { transform: translate(168px, 188px); opacity: 1; }
+  7.85% { transform: translate(168px, 188px); opacity: 0; }
+  12.2% { transform: translate(744px, 246px); opacity: 0; }
+  12.45% { opacity: 1; }
+  13.1% { transform: translate(352px, 246px); }
+  14.9% { transform: translate(168px, 246px); opacity: 1; }
+  15.15% { transform: translate(168px, 246px); opacity: 0; }
+  18.3% { transform: translate(744px, 304px); opacity: 0; }
+  18.55% { opacity: 1; }
+  19.2% { transform: translate(352px, 304px); }
+  21% { transform: translate(168px, 304px); opacity: 1; }
+  21.25% { transform: translate(168px, 304px); opacity: 0; }
+  100% { transform: translate(168px, 304px); opacity: 0; }
+}
+@keyframes ga-f1 {
+  0% { transform: translate(400px, 246px); opacity: 0; }
+  29.75% { transform: translate(400px, 246px); opacity: 0; }
+  29.88% { transform: translate(400px, 188px); }
+  30% { opacity: 1; }
+  30.65% { transform: translate(744px, 188px); opacity: 1; }
+  30.9% { transform: translate(744px, 188px); opacity: 0; }
+  54.5% { transform: translate(400px, 246px); opacity: 0; }
+  54.63% { transform: translate(400px, 188px); }
+  54.75% { opacity: 1; }
+  55.4% { transform: translate(744px, 188px); opacity: 1; }
+  55.65% { transform: translate(744px, 188px); opacity: 0; }
+  100% { transform: translate(744px, 188px); opacity: 0; }
+}
+@keyframes ga-r1 {
+  0% { transform: translate(744px, 188px); opacity: 0; }
+  31.6% { transform: translate(744px, 188px); opacity: 0; }
+  31.85% { opacity: 1; }
+  32.3% { transform: translate(598px, 188px); opacity: 1; }
+  32.55% { transform: translate(598px, 188px); opacity: 0; }
+  56.35% { transform: translate(744px, 188px); opacity: 0; }
+  56.6% { opacity: 1; }
+  57.05% { transform: translate(598px, 188px); opacity: 1; }
+  57.3% { transform: translate(598px, 188px); opacity: 0; }
+  100% { transform: translate(598px, 188px); opacity: 0; }
+}
+@keyframes ga-k1 {
+  0% { transform: translate(598px, 188px); opacity: 0; }
+  33.25% { transform: translate(598px, 188px); opacity: 0; }
+  33.5% { opacity: 1; }
+  33.83% { transform: translate(400px, 188px); }
+  34% { transform: translate(400px, 246px); opacity: 1; }
+  34.25% { transform: translate(400px, 246px); opacity: 0; }
+  58.36% { transform: translate(598px, 188px); opacity: 0; }
+  58.61% { opacity: 1; }
+  58.94% { transform: translate(400px, 188px); }
+  59.11% { transform: translate(400px, 246px); opacity: 1; }
+  59.36% { transform: translate(400px, 246px); opacity: 0; }
+  100% { transform: translate(400px, 246px); opacity: 0; }
+}
+@keyframes ga-f2 {
+  0% { transform: translate(400px, 246px); opacity: 0; }
+  29.75% { transform: translate(400px, 246px); opacity: 0; }
+  30% { opacity: 1; }
+  30.65% { transform: translate(744px, 246px); opacity: 1; }
+  30.9% { transform: translate(744px, 246px); opacity: 0; }
+  54.5% { transform: translate(400px, 246px); opacity: 0; }
+  54.75% { opacity: 1; }
+  55.4% { transform: translate(744px, 246px); opacity: 1; }
+  55.65% { transform: translate(744px, 246px); opacity: 0; }
+  100% { transform: translate(744px, 246px); opacity: 0; }
+}
+@keyframes ga-r2 {
+  0% { transform: translate(744px, 246px); opacity: 0; }
+  32.55% { transform: translate(744px, 246px); opacity: 0; }
+  32.8% { opacity: 1; }
+  33.25% { transform: translate(598px, 246px); opacity: 1; }
+  33.5% { transform: translate(598px, 246px); opacity: 0; }
+  100% { transform: translate(598px, 246px); opacity: 0; }
+}
+@keyframes ga-k2 {
+  0% { transform: translate(598px, 246px); opacity: 0; }
+  33.25% { transform: translate(598px, 246px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(400px, 246px); opacity: 1; }
+  34.25% { transform: translate(400px, 246px); opacity: 0; }
+  100% { transform: translate(400px, 246px); opacity: 0; }
+}
+@keyframes ga-f3 {
+  0% { transform: translate(400px, 246px); opacity: 0; }
+  29.75% { transform: translate(400px, 246px); opacity: 0; }
+  29.88% { transform: translate(400px, 304px); }
+  30% { opacity: 1; }
+  30.65% { transform: translate(744px, 304px); opacity: 1; }
+  30.9% { transform: translate(744px, 304px); opacity: 0; }
+  54.5% { transform: translate(400px, 246px); opacity: 0; }
+  54.63% { transform: translate(400px, 304px); }
+  54.75% { opacity: 1; }
+  55.4% { transform: translate(744px, 304px); opacity: 1; }
+  55.65% { transform: translate(744px, 304px); opacity: 0; }
+  100% { transform: translate(744px, 304px); opacity: 0; }
+}
+@keyframes ga-r3 {
+  0% { transform: translate(744px, 304px); opacity: 0; }
+  31.35% { transform: translate(744px, 304px); opacity: 0; }
+  31.6% { opacity: 1; }
+  32.05% { transform: translate(598px, 304px); opacity: 1; }
+  32.3% { transform: translate(598px, 304px); opacity: 0; }
+  56.1% { transform: translate(744px, 304px); opacity: 0; }
+  56.35% { opacity: 1; }
+  56.8% { transform: translate(598px, 304px); opacity: 1; }
+  57.05% { transform: translate(598px, 304px); opacity: 0; }
+  100% { transform: translate(598px, 304px); opacity: 0; }
+}
+@keyframes ga-k3 {
+  0% { transform: translate(598px, 304px); opacity: 0; }
+  33.25% { transform: translate(598px, 304px); opacity: 0; }
+  33.5% { opacity: 1; }
+  33.83% { transform: translate(400px, 304px); }
+  34% { transform: translate(400px, 246px); opacity: 1; }
+  34.25% { transform: translate(400px, 246px); opacity: 0; }
+  58.36% { transform: translate(598px, 304px); opacity: 0; }
+  58.61% { opacity: 1; }
+  58.94% { transform: translate(400px, 304px); }
+  59.11% { transform: translate(400px, 246px); opacity: 1; }
+  59.36% { transform: translate(400px, 246px); opacity: 0; }
+  100% { transform: translate(400px, 246px); opacity: 0; }
+}
+@keyframes ga-k2x {
+  0% { transform: translate(598px, 246px); opacity: 0; }
+  58.36% { transform: translate(598px, 246px); opacity: 0; }
+  58.61% { opacity: 1; }
+  59.11% { transform: translate(400px, 246px); opacity: 1; }
+  59.36% { transform: translate(400px, 246px); opacity: 0; }
+  100% { transform: translate(400px, 246px); opacity: 0; }
+}
+@keyframes ga-m2 {
+  0% { transform: translate(400px, 246px); opacity: 0; }
+  34% { transform: translate(400px, 246px); opacity: 0; }
+  34.2% { transform: translate(352px, 246px); }
+  34.25% { opacity: 1; }
+  36% { transform: translate(168px, 246px); opacity: 1; }
+  36.25% { transform: translate(168px, 246px); opacity: 0; }
+  100% { transform: translate(168px, 246px); opacity: 0; }
+}
+@keyframes ga-m3 {
+  0% { transform: translate(400px, 246px); opacity: 0; }
+  59.11% { transform: translate(400px, 246px); opacity: 0; }
+  59.31% { transform: translate(352px, 246px); }
+  59.36% { opacity: 1; }
+  61.11% { transform: translate(168px, 246px); opacity: 1; }
+  61.36% { transform: translate(168px, 246px); opacity: 0; }
+  100% { transform: translate(168px, 246px); opacity: 0; }
+}
+@keyframes ga-wP {
+  0% { opacity: 0; }
+  3.95% { opacity: 0; }
+  4.45% { opacity: 1; }
+  4.9% { opacity: 1; }
+  5.4% { opacity: 0; }
+  30.65% { opacity: 0; }
+  31.15% { opacity: 1; }
+  31.6% { opacity: 1; }
+  32.1% { opacity: 0; }
+  55.4% { opacity: 0; }
+  55.9% { opacity: 1; }
+  56.35% { opacity: 1; }
+  56.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-wR {
+  0% { opacity: 0; }
+  10.3% { opacity: 0; }
+  10.8% { opacity: 1; }
+  12.2% { opacity: 1; }
+  12.7% { opacity: 0; }
+  30.65% { opacity: 0; }
+  31.15% { opacity: 1; }
+  32.55% { opacity: 1; }
+  33.05% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-wI {
+  0% { opacity: 0; }
+  17.6% { opacity: 0; }
+  18.1% { opacity: 1; }
+  18.3% { opacity: 1; }
+  18.8% { opacity: 0; }
+  30.65% { opacity: 0; }
+  31.15% { opacity: 1; }
+  31.35% { opacity: 1; }
+  31.85% { opacity: 0; }
+  55.4% { opacity: 0; }
+  55.9% { opacity: 1; }
+  56.1% { opacity: 1; }
+  56.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-okP {
+  0% { opacity: 0; }
+  32.3% { opacity: 0; }
+  33.05% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.75% { opacity: 0; }
+  57.05% { opacity: 0; }
+  57.8% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-okR {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-okI {
+  0% { opacity: 0; }
+  32.05% { opacity: 0; }
+  32.8% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.75% { opacity: 0; }
+  56.8% { opacity: 0; }
+  57.55% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-toR {
+  0% { opacity: 0; }
+  58.36% { opacity: 0; }
+  59.11% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-cx {
+  0% { opacity: 0; }
+  58.36% { opacity: 0; }
+  59.11% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-bd2 {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-bd3 {
+  0% { opacity: 0; }
+  58.86% { opacity: 0; }
+  59.86% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-sP {
+  0% { opacity: 0; }
+  7.6% { opacity: 0; }
+  8.6% { opacity: 1; }
+  25.25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  36% { opacity: 0; }
+  37% { opacity: 1; }
+  50.25% { opacity: 1; }
+  51.25% { opacity: 0; }
+  61.11% { opacity: 0; }
+  62.11% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-sR {
+  0% { opacity: 0; }
+  14.9% { opacity: 0; }
+  15.9% { opacity: 1; }
+  25.25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  36% { opacity: 0; }
+  37% { opacity: 1; }
+  50.25% { opacity: 1; }
+  51.25% { opacity: 0; }
+  75% { opacity: 0; }
+  76% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-sRx {
+  0% { opacity: 0; }
+  61.11% { opacity: 0; }
+  62.11% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-sI {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22% { opacity: 1; }
+  25.25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  36% { opacity: 0; }
+  37% { opacity: 1; }
+  50.25% { opacity: 1; }
+  51.25% { opacity: 0; }
+  61.11% { opacity: 0; }
+  62.11% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ga-l1 {
+  0% { opacity: 0; }
+  1.25% { opacity: 0; }
+  2.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-l2 {
+  0% { opacity: 0; }
+  7.6% { opacity: 0; }
+  8.6% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-l3 {
+  0% { opacity: 0; }
+  14.9% { opacity: 0; }
+  15.9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-t1 {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-t2 {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  37% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-t3 {
+  0% { opacity: 0; }
+  61.11% { opacity: 0; }
+  62.11% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-b1 {
+  0% { transform: scaleX(0); }
+  1.25% { transform: scaleX(0); }
+  3.95% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b2 {
+  0% { transform: scaleX(0); }
+  3.95% { transform: scaleX(0); }
+  4.9% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b3 {
+  0% { transform: scaleX(0); }
+  4.9% { transform: scaleX(0); }
+  7.6% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b4 {
+  0% { transform: scaleX(0); }
+  7.6% { transform: scaleX(0); }
+  10.3% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b5 {
+  0% { transform: scaleX(0); }
+  10.3% { transform: scaleX(0); }
+  12.2% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b6 {
+  0% { transform: scaleX(0); }
+  12.2% { transform: scaleX(0); }
+  14.9% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b7 {
+  0% { transform: scaleX(0); }
+  14.9% { transform: scaleX(0); }
+  17.6% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b8 {
+  0% { transform: scaleX(0); }
+  17.6% { transform: scaleX(0); }
+  18.3% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-b9 {
+  0% { transform: scaleX(0); }
+  18.3% { transform: scaleX(0); }
+  21% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-c1 {
+  0% { transform: scaleX(0); }
+  27.75% { transform: scaleX(0); }
+  29.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-c2 {
+  0% { transform: scaleX(0); }
+  29.75% { transform: scaleX(0); }
+  34% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-c3 {
+  0% { transform: scaleX(0); }
+  34% { transform: scaleX(0); }
+  36% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-d1 {
+  0% { transform: scaleX(0); }
+  52.5% { transform: scaleX(0); }
+  54.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-d2 {
+  0% { transform: scaleX(0); }
+  54.5% { transform: scaleX(0); }
+  57.05% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-d3 {
+  0% { transform: scaleX(0); }
+  57.05% { transform: scaleX(0); }
+  59.11% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-d4 {
+  0% { transform: scaleX(0); }
+  59.11% { transform: scaleX(0); }
+  61.11% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-dl {
+  0% { transform: scaleX(0); }
+  54.5% { transform: scaleX(0); }
+  58.36% { transform: scaleX(0.5); }
+  100% { transform: scaleX(0.5); }
+}
+@keyframes ga-tr {
+  0% { transform: scaleX(0); }
+  54.5% { transform: scaleX(0); }
+  58.36% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes ga-n1 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-n2 {
+  0% { opacity: 0; }
+  80.5% { opacity: 0; }
+  82% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-n3 {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  86% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ga-n4 {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  90% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+  <!-- zones: the slow mobile network and the data centre -->
+  <text class="tiny sb mid f-amber-ink" x="255" y="103">mobile network</text>
+  <rect class="zone s-amber" x="172" y="110" width="166" height="258" rx="14"/>
+  <text class="tiny sb mid f-amber-ink" x="255" y="360">150 ms per round trip</text>
+  <text class="tiny sb" x="356" y="103">data centre</text>
+  <rect class="zone" x="346" y="110" width="580" height="258" rx="14"/>
+  <text class="tiny mid" x="687" y="360">about 5 ms per hop</text>
+
+  <!-- wires: step 1 calls each service directly; from step 2 one wire reaches the gateway -->
+  <path class="wire" d="M162 246H748" marker-end="url(#ah)"/>
+  <path class="wire" d="M622 188H748" marker-end="url(#ah)"/>
+  <path class="wire" d="M622 304H748" marker-end="url(#ah)"/>
+  <g class="p1">
+    <path class="wire" d="M162 188H622"/>
+    <path class="wire" d="M162 304H622"/>
+    <text class="tiny mono mid f-ink" x="255" y="175">GET /products/42</text>
+    <text class="tiny mono mid f-ink" x="255" y="233">GET /reviews/42</text>
+    <text class="tiny mono mid f-ink" x="255" y="291">GET /stock/42</text>
+  </g>
+  <g class="p234"><text class="tiny mono mid f-ink" x="255" y="233">GET /product-page/42</text></g>
+
+  <!-- step 4: the gateway runs as several instances -->
+  <g class="p4"><g class="ga-n2">
+    <rect class="box" x="362" y="114" width="270" height="234" rx="14"/>
+    <rect class="box" x="357" y="119" width="270" height="234" rx="14"/>
+    <circle class="f-ink" cx="630" cy="116" r="8"/><text class="ga-pin" x="630" y="119.5">2</text>
+  </g></g>
+
+  <!-- the gateway and its aggregation endpoint (from step 2) -->
+  <g class="p234">
+    <path class="wire" d="M300 246H348" marker-end="url(#ah)"/>
+    <rect class="box" x="352" y="124" width="270" height="234" rx="14"/>
+    <text class="label" x="368" y="148">API gateway</text>
+    <rect class="f-bg s-line" x="472" y="135" width="138" height="18" rx="9" stroke-width="1.2"/>
+    <text class="tiny mono mid f-ink" x="541" y="148">GET /product-page/42</text>
+    <path class="wire" d="M352 246H622"/>
+    <path class="wire" d="M400 246V200Q400 188 412 188H622"/>
+    <path class="wire" d="M400 246V292Q400 304 412 304H622"/>
+    <circle class="f-wire" cx="400" cy="246" r="3.5"/>
+    <rect class="f-bg s-line" x="456" y="175" width="156" height="26" rx="13" stroke-width="1.5"/><text class="tiny sb f-ink" x="468" y="192">product</text>
+    <rect class="f-bg s-line" x="456" y="233" width="156" height="26" rx="13" stroke-width="1.5"/><text class="tiny sb f-ink" x="468" y="250">reviews</text>
+    <rect class="f-bg s-line" x="456" y="291" width="156" height="26" rx="13" stroke-width="1.5"/><text class="tiny sb f-ink" x="468" y="308">stock</text>
+    <g class="ga-okP"><circle class="f-green" cx="598" cy="188" r="7"/><path class="none s-bg" d="M594.6 188l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb end f-green" x="586" y="192">45 ms</text></g>
+    <g class="ga-okR"><circle class="f-green" cx="598" cy="246" r="7"/><path class="none s-bg" d="M594.6 246l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb end f-green" x="586" y="250">85 ms</text></g>
+    <g class="ga-okI"><circle class="f-green" cx="598" cy="304" r="7"/><path class="none s-bg" d="M594.6 304l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb end f-green" x="586" y="308">35 ms</text></g>
+    <g class="ga-toR"><circle class="f-amber" cx="598" cy="246" r="7"/><path class="none s-bg" d="M598 242v4.2l2.8 1.8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb end f-amber-ink" x="586" y="250">timed out</text></g>
+    <g class="p2"><g class="ga-bd2"><text class="tiny f-ink" x="368" y="337">waits for all three answers,</text><text class="tiny f-ink" x="368" y="351">then merges them into one response</text></g></g>
+    <g class="p3">
+      <text class="tiny sb f-amber-ink" x="368" y="170">deadline 200 ms</text>
+      <rect class="f-line" x="470" y="164" width="140" height="6" rx="3"/>
+      <rect class="f-amber ga-dl" x="470" y="164" width="140" height="6" rx="3"/>
+      <g class="ga-bd3"><text class="tiny sb f-ink" x="368" y="337">200 OK, reviews marked unavailable</text></g>
+      <text class="tiny f-ink" x="368" y="351">if Product fails, the request fails</text>
+    </g>
+    <g class="p4">
+      <g class="ga-n1"><circle class="f-green" cx="375" cy="333" r="6"/><path class="none s-bg" d="M371.6 333l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="387" y="337">calls, merges, reshapes</text><circle class="f-red" cx="375" cy="347" r="6"/><path class="s-bg" d="M372.2 344.2l5.6 5.6M377.8 344.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/><text class="tiny f-ink" x="387" y="351">no prices, rules or decisions</text><circle class="f-ink" cx="600" cy="342" r="8"/><text class="ga-pin" x="600" y="345.5">1</text></g>
+      <g class="ga-n4"><rect class="f-bg" x="456" y="175" width="156" height="26" rx="13"/><rect class="f-teal-soft s-teal" x="456" y="175" width="156" height="26" rx="13" stroke-width="1.5"/><text class="tiny sb f-ink" x="468" y="192">product</text><text class="tiny sb end f-teal" x="592" y="192">cached 5 min</text><circle class="f-ink" cx="612" cy="174" r="8"/><text class="ga-pin" x="612" y="177.5">4</text></g>
+    </g>
+  </g>
+
+  <!-- the data centre network between gateway and services -->
+  <g class="p2"><text class="tiny sb mid f-blue" x="687" y="346">3 calls in parallel</text></g>
+  <g class="p3">
+    <text class="tiny mid f-ink" x="687" y="176">timeout 150 ms</text>
+    <rect class="f-line" x="647" y="219" width="80" height="5" rx="2.5"/>
+    <rect class="f-amber ga-tr" x="647" y="219" width="80" height="5" rx="2.5"/>
+    <text class="tiny mid f-ink" x="687" y="234">timeout 100 ms</text>
+    <text class="tiny mid f-ink" x="687" y="292">timeout 100 ms</text>
+    <g class="ga-cx"><circle class="f-red" cx="636" cy="246" r="8"/><path class="s-bg" d="M633.2 243.2l5.6 5.6M638.8 243.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/></g>
+  </g>
+  <g class="p4"><g class="ga-n3">
+    <path class="none s-ink dash" d="M614 194C664 196 664 238 618 240" stroke-width="1.6" marker-end="url(#ah-ink)"/>
+    <circle class="f-ink" cx="651" cy="217" r="8"/><text class="ga-pin" x="651" y="220.5">3</text>
+    <text class="tiny f-ink" x="668" y="214">Reviews needs</text>
+    <text class="tiny f-ink" x="668" y="227">Product's id</text>
+  </g></g>
+
+  <!-- services -->
+  <rect class="box" x="752" y="164" width="170" height="48" rx="10"/>
+  
+  <rect class="none s-blue ga-wP" x="752" y="164" width="170" height="48" rx="10" stroke-width="2.5"/>
+  <text class="label" x="766" y="184">Product</text>
+  <text class="sub" x="766" y="201">takes 40 ms</text>
+  <g class="p1"><circle class="none s-amber" cx="871" cy="180" r="5" stroke-width="1.3"/><ellipse class="none s-amber" cx="871" cy="180" rx="2.1" ry="5" stroke-width="1.1"/><path class="none s-amber" d="M866 180h10" stroke-width="1.1"/><text class="tiny sb end f-amber-ink" x="912" y="184">public</text></g>
+  <g class="p234"><rect class="f-muted" x="857" y="178" width="8" height="6.5" rx="1.5"/><path class="none s-muted" d="M858.6 178v-1.8a2.4 2.4 0 0 1 4.8 0v1.8" stroke-width="1.4"/><text class="tiny end" x="912" y="184">internal</text></g>
+  <g class="p3"><rect class="f-bg s-ink" x="858" y="157" width="56" height="14" rx="7" stroke-width="1.2"/><text class="tiny mid sb f-ink" x="886" y="167.5">required</text></g>
+  <rect class="box" x="752" y="222" width="170" height="48" rx="10"/>
+  <g class="p3"><rect class="f-red-soft s-red" x="752" y="222" width="170" height="48" rx="10" stroke-width="1.5"/><circle class="none s-line" cx="902" cy="255" r="6" stroke-width="2.2"/><circle class="none s-red spin" cx="902" cy="255" r="6" stroke-width="2.2" stroke-dasharray="9 29" stroke-linecap="round"/></g>
+  <rect class="none s-blue ga-wR" x="752" y="222" width="170" height="48" rx="10" stroke-width="2.5"/>
+  <text class="label" x="766" y="242">Reviews</text>
+  <text class="sub p124" x="766" y="259">takes 80 ms</text>
+  <text class="sub sb f-red p3" x="766" y="259">not answering</text>
+  <g class="p1"><circle class="none s-amber" cx="871" cy="238" r="5" stroke-width="1.3"/><ellipse class="none s-amber" cx="871" cy="238" rx="2.1" ry="5" stroke-width="1.1"/><path class="none s-amber" d="M866 238h10" stroke-width="1.1"/><text class="tiny sb end f-amber-ink" x="912" y="242">public</text></g>
+  <g class="p234"><rect class="f-muted" x="857" y="236" width="8" height="6.5" rx="1.5"/><path class="none s-muted" d="M858.6 236v-1.8a2.4 2.4 0 0 1 4.8 0v1.8" stroke-width="1.4"/><text class="tiny end" x="912" y="242">internal</text></g>
+  <g class="p3"><rect class="f-bg s-line" x="858" y="215" width="56" height="14" rx="7" stroke-width="1.2"/><text class="tiny mid " x="886" y="225.5">optional</text></g>
+  <rect class="box" x="752" y="280" width="170" height="48" rx="10"/>
+  
+  <rect class="none s-blue ga-wI" x="752" y="280" width="170" height="48" rx="10" stroke-width="2.5"/>
+  <text class="label" x="766" y="300">Inventory</text>
+  <text class="sub" x="766" y="317">takes 30 ms</text>
+  <g class="p1"><circle class="none s-amber" cx="871" cy="296" r="5" stroke-width="1.3"/><ellipse class="none s-amber" cx="871" cy="296" rx="2.1" ry="5" stroke-width="1.1"/><path class="none s-amber" d="M866 296h10" stroke-width="1.1"/><text class="tiny sb end f-amber-ink" x="912" y="300">public</text></g>
+  <g class="p234"><rect class="f-muted" x="857" y="294" width="8" height="6.5" rx="1.5"/><path class="none s-muted" d="M858.6 294v-1.8a2.4 2.4 0 0 1 4.8 0v1.8" stroke-width="1.4"/><text class="tiny end" x="912" y="300">internal</text></g>
+  <g class="p3"><rect class="f-bg s-line" x="858" y="273" width="56" height="14" rx="7" stroke-width="1.2"/><text class="tiny mid " x="886" y="283.5">optional</text></g>
+
+  <!-- the phone and its product page -->
+  <text class="label mid" x="99" y="106">Mobile app</text>
+  <rect class="box" x="36" y="116" width="126" height="236" rx="18"/>
+  <path class="none s-line" d="M88 122h22" stroke-width="2.5" stroke-linecap="round"/>
+  <rect class="f-bg s-line" x="44" y="128" width="110" height="212" rx="8" stroke-width="1.2"/>
+  <text class="tiny sb mid f-ink" x="99" y="150">Product page</text>
+  <rect class="none s-line" x="50" y="165" width="98" height="46" rx="6" stroke-width="1.2" stroke-dasharray="4 3"/><rect class="f-line" x="57" y="179" width="62" height="6" rx="3"/><rect class="f-line" x="57" y="191" width="40" height="6" rx="3"/>
+  <rect class="none s-line" x="50" y="223" width="98" height="46" rx="6" stroke-width="1.2" stroke-dasharray="4 3"/><rect class="f-line" x="57" y="237" width="62" height="6" rx="3"/><rect class="f-line" x="57" y="249" width="40" height="6" rx="3"/>
+  <rect class="none s-line" x="50" y="281" width="98" height="46" rx="6" stroke-width="1.2" stroke-dasharray="4 3"/><rect class="f-line" x="57" y="295" width="62" height="6" rx="3"/><rect class="f-line" x="57" y="307" width="40" height="6" rx="3"/>
+  <g class="ga-sP"><rect class="f-bg s-line" x="50" y="165" width="98" height="46" rx="6" stroke-width="1.2"/><rect class="f-panel-2" x="56" y="171" width="30" height="34" rx="4"/><path class="f-wire" d="M59 201l8-11 6 7 4-4 6 8z"/><circle class="f-wire" cx="79" cy="179" r="2.6"/><text class="tiny sb f-ink" x="92" y="186">Sneaker</text><text class="tiny" x="92" y="201">$89</text></g>
+  <g class="ga-sR"><rect class="f-bg s-line" x="50" y="223" width="98" height="46" rx="6" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="57" y="241">★ 4.6</text><text class="tiny" x="57" y="257">128 reviews</text></g>
+  <g class="ga-sRx"><rect class="f-bg" x="50" y="223" width="98" height="46" rx="6"/><rect class="f-amber-soft s-amber" x="50" y="223" width="98" height="46" rx="6" stroke-width="1.5"/><text class="tiny sb f-amber-ink" x="57" y="241">Reviews</text><text class="tiny f-amber-ink" x="57" y="257">unavailable</text></g>
+  <g class="ga-sI"><rect class="f-bg s-line" x="50" y="281" width="98" height="46" rx="6" stroke-width="1.2"/><text class="tiny sb f-green" x="57" y="299">In stock</text><text class="tiny" x="57" y="315">12 left</text></g>
+  <text class="tiny mid p1" x="99" y="366">knows 3 endpoints</text>
+  <text class="tiny mid p234" x="99" y="366">knows 1 endpoint</text>
+
+  <!-- bottom strip: how long the page takes (steps 1 to 3) -->
+  <g class="p123">
+    <text class="tiny sb f-ink" x="40" y="390">Time until the page is complete</text>
+    <rect class="f-amber" x="700" y="381" width="10" height="10" rx="2"/><text class="tiny" x="715" y="390">mobile network</text>
+    <rect class="f-blue" x="806" y="381" width="10" height="10" rx="2"/><text class="tiny" x="821" y="390">data centre</text>
+    <text class="tiny sb f-ink" x="40" y="421">3 separate calls</text>
+    <rect class="f-panel-2" x="196" y="409" width="660" height="16" rx="2"/>
+    <rect class="f-amber ga-b1" x="196" y="409" width="82.5" height="16" rx="2"/>
+    <rect class="f-blue ga-b2" x="278.5" y="409" width="44" height="16" rx="2"/>
+    <rect class="f-amber ga-b3" x="322.5" y="409" width="82.5" height="16" rx="2"/>
+    <rect class="f-amber ga-b4" x="406.5" y="409" width="81" height="16" rx="2"/>
+    <rect class="f-blue ga-b5" x="487.5" y="409" width="88" height="16" rx="2"/>
+    <rect class="f-amber ga-b6" x="575.5" y="409" width="82.5" height="16" rx="2"/>
+    <rect class="f-amber ga-b7" x="659.5" y="409" width="81" height="16" rx="2"/>
+    <rect class="f-blue ga-b8" x="740.5" y="409" width="33" height="16" rx="2"/>
+    <rect class="f-amber ga-b9" x="773.5" y="409" width="82.5" height="16" rx="2"/>
+    <text class="tiny mid ga-l1" x="300.5" y="404">Product 150 + 40</text>
+    <text class="tiny mid ga-l2" x="531.5" y="404">Reviews 150 + 80</text>
+    <text class="tiny mid ga-l3" x="757" y="404">Inventory 150 + 30</text>
+    <text class="sub sb f-ink ga-t1" x="866" y="422">600 ms</text>
+    <g class="p23">
+      <text class="tiny sb f-ink" x="40" y="455">1 aggregated call</text>
+      <rect class="f-panel-2" x="196" y="443" width="660" height="16" rx="2"/>
+    </g>
+    <g class="p2">
+      <rect class="f-amber ga-c1" x="196" y="443" width="82.5" height="16" rx="2"/>
+    <rect class="f-blue ga-c2" x="278.5" y="443" width="93.5" height="16" rx="2"/>
+    <rect class="f-amber ga-c3" x="372" y="443" width="82.5" height="16" rx="2"/>
+      <g class="ga-t2"><text class="sub sb f-ink" x="464.5" y="456">235 ms</text><text class="tiny" x="514.5" y="455">one round trip (150) + one hop (5) + the slowest service (80)</text></g>
+    </g>
+    <g class="p3">
+      <rect class="f-amber ga-d1" x="196" y="443" width="82.5" height="16" rx="2"/>
+    <rect class="f-blue ga-d2" x="278.5" y="443" width="49.5" height="16" rx="2"/>
+    <rect class="f-red ga-d3" x="328" y="443" width="60.5" height="16" rx="2"/>
+    <rect class="f-amber ga-d4" x="388.5" y="443" width="82.5" height="16" rx="2"/>
+      <g class="ga-t3"><text class="sub sb f-ink" x="481" y="456">250 ms</text><text class="tiny" x="531" y="455">one round trip (150) + the Reviews timeout (100)</text></g>
+    </g>
+  </g>
+
+  <!-- step 4: four cautions -->
+  <g class="p4">
+    <g class="ga-n1"><rect class="f-bg s-line" x="30" y="380" width="216" height="88" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="48" cy="398" r="8"/><text class="ga-pin" x="48" y="401.5">1</text><text class="sub sb f-ink" x="62" y="402">No business logic</text><text class="tiny f-ink" x="44" y="421">It calls, merges and reshapes;</text><text class="tiny f-ink" x="44" y="436">prices, rules and decisions</text><text class="tiny f-ink" x="44" y="451">stay in the services.</text></g>
+    <g class="ga-n2"><rect class="f-bg s-line" x="258" y="380" width="216" height="88" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="276" cy="398" r="8"/><text class="ga-pin" x="276" y="401.5">2</text><text class="sub sb f-ink" x="290" y="402">Scale and watch it</text><text class="tiny f-ink" x="272" y="421">Every page now needs it and</text><text class="tiny f-ink" x="272" y="436">all three services: run several</text><text class="tiny f-ink" x="272" y="451">instances, monitor each call.</text></g>
+    <g class="ga-n3"><rect class="f-bg s-line" x="486" y="380" width="216" height="88" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="504" cy="398" r="8"/><text class="ga-pin" x="504" y="401.5">3</text><text class="sub sb f-ink" x="518" y="402">Dependent calls add up</text><text class="tiny f-ink" x="500" y="421">If Reviews needs Product's id,</text><text class="tiny f-ink" x="500" y="436">the two calls run in turn:</text><text class="tiny f-ink" x="500" y="451">150 + 45 + 85 = 280 ms.</text></g>
+    <g class="ga-n4"><rect class="f-bg s-line" x="714" y="380" width="216" height="88" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="732" cy="398" r="8"/><text class="ga-pin" x="732" y="401.5">4</text><text class="sub sb f-ink" x="746" y="402">Cache stable parts</text><text class="tiny f-ink" x="728" y="421">Product details rarely change:</text><text class="tiny f-ink" x="728" y="436">cache them for a few minutes.</text><text class="tiny f-ink" x="728" y="451">Stock and reviews stay live.</text></g>
+  </g>
+
+  <!-- traffic: requests blue, answers green; the merged response carries one part per section -->
+  <circle class="pkt f-blue ga-q" r="7"/>
+  <circle class="pkt f-green ga-a" r="7"/>
+  <circle class="pkt f-blue ga-f1" r="6"/>
+  <circle class="pkt f-blue ga-f2" r="6"/>
+  <circle class="pkt f-blue ga-f3" r="6"/>
+  <circle class="pkt f-green ga-r1" r="6"/>
+  <circle class="pkt f-green ga-r2" r="6"/>
+  <circle class="pkt f-green ga-r3" r="6"/>
+  <circle class="pkt f-green ga-k1" r="5"/>
+  <circle class="pkt f-green ga-k2" r="5"/>
+  <circle class="pkt f-green ga-k3" r="5"/>
+  <circle class="pkt f-amber ga-k2x" r="5"/>
+  <g class="ga-m2"><rect class="f-bg s-green" x="-20" y="-9" width="40" height="18" rx="9" stroke-width="2"/><circle class="f-green" cx="-10" r="4"/><circle class="f-green" r="4"/><circle class="f-green" cx="10" r="4"/></g>
+  <g class="ga-m3"><rect class="f-bg s-green" x="-20" y="-9" width="40" height="18" rx="9" stroke-width="2"/><circle class="f-green" cx="-10" r="4"/><circle class="f-amber" r="4"/><circle class="f-green" cx="10" r="4"/></g>
+</g>
+</svg>

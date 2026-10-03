@@ -1,0 +1,56 @@
+{
+  "aka": ["Horizontal partitioning"],
+  "steps": [
+    {
+      "title": "One database at its limit",
+      "caption": "One database holds every customer: CPU at 95%, the disk 90% full, and writes keep growing.",
+      "body": "One database holds every customer and every order. Writes and data keep growing, and the server is at its ceiling: CPU at 95% and the disk 90% full. [Read replicas](../read-replicas/) would add read capacity but not write capacity, because every replica replays every write."
+    },
+    {
+      "title": "Split rows by a shard key",
+      "caption": "The router hashes customer_id and sends each query to the one shard that holds that customer.",
+      "body": "Customers are split by `customer_id` across three shards: databases with the same schema, each holding its own subset of the rows. The router in the application's driver hashes the key into one of 12 logical shards and looks up which shard holds it, so customer 42 (logical shard 5) goes to B and nowhere else; a key range or a lookup table per key would work too. Orders carry the same `customer_id`, so a customer's orders live on the customer's shard and joins between them stay inside one database."
+    },
+    {
+      "title": "What the key makes hard",
+      "caption": "Email lookups hit every shard; one huge customer heats B; an A + C transaction needs 2PC or a saga.",
+      "body": "A query by email, which is not the shard key, has to ask every shard and merge the answers (**scatter-gather**): three queries for one row, as slow as the slowest shard. One very large customer sends so much traffic to B that it runs at 92% while A and C stay at 32%, and a transaction over a customer on A and one on C needs two-phase commit, where the database offers it at all, or a [saga](../saga-orchestration/). The choice of shard key decides all three."
+    },
+    {
+      "title": "Add a shard, move only 25%",
+      "caption": "Disks reach 80%: new shard D takes 3 of the 12 logical shards, so 25% of the data moves, not 75%.",
+      "body": "Data keeps growing until the disks reach 80%, so a fourth server is added. With `hash(key) % N`, going from 3 to 4 shards changes the shard of every key except 3 in every 12, so 75% of the data would move. Because the data was split into 12 logical shards from the start, shard D takes one from each server, 3 of 12 or 25% of the data, while A, B and C keep serving: copy, catch up on the changes made meanwhile, then switch the map. Every shard ends at 60% disk; consistent hashing gives a similar result."
+    }
+  ],
+  "related": ["read-replicas", "cell-based-architecture", "database-per-service", "cache-aside", "cqrs", "materialized-view", "deployment-stamps", "change-data-capture"],
+  "references": [
+    { "title": "Azure Architecture Center — Sharding pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding" },
+    { "title": "Azure Architecture Center — Data partitioning guidance (horizontal, vertical and functional partitioning)", "url": "https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning" },
+    { "title": "Vitess documentation — Sharding", "url": "https://vitess.io/docs/reference/features/sharding/" },
+    { "title": "Vitess documentation — Vindexes (primary and lookup vindexes)", "url": "https://vitess.io/docs/reference/features/vindexes/" },
+    { "title": "Vitess documentation — Reshard", "url": "https://vitess.io/docs/reference/vreplication/reshard/" },
+    { "title": "Vitess documentation — Distributed Transactions", "url": "https://vitess.io/docs/reference/features/distributed-transaction/" },
+    { "title": "Citus documentation — Choosing Distribution Column", "url": "https://docs.citusdata.com/en/stable/sharding/data_modeling.html" },
+    { "title": "Citus documentation — Cluster Management (rebalancing shards)", "url": "https://docs.citusdata.com/en/stable/admin_guide/cluster_management.html" },
+    { "title": "MongoDB Manual — Sharding", "url": "https://www.mongodb.com/docs/manual/sharding/" },
+    { "title": "MongoDB Manual — Choose a Shard Key", "url": "https://www.mongodb.com/docs/manual/core/sharding-choose-a-shard-key/" },
+    { "title": "MongoDB Manual — reshardCollection", "url": "https://www.mongodb.com/docs/manual/reference/command/reshardcollection/" },
+    { "title": "MongoDB Manual — Transactions", "url": "https://www.mongodb.com/docs/manual/core/transactions/" },
+    { "title": "Amazon DynamoDB Developer Guide — Partitions and data distribution", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.Partitions.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Best practices for designing and using partition keys", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Using write sharding to distribute workloads evenly", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-sharding.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Burst and adaptive capacity", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/burst-adaptive-capacity.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Using Global Secondary Indexes", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Transactions: how it works", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html" },
+    { "title": "Microsoft Learn — Partitioning and horizontal scaling in Azure Cosmos DB", "url": "https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning" },
+    { "title": "Google Cloud — Spanner: Schemas overview (database splits)", "url": "https://docs.cloud.google.com/spanner/docs/schema-and-data-model" },
+    { "title": "Google Cloud — Life of Spanner Reads & Writes", "url": "https://docs.cloud.google.com/spanner/docs/whitepapers/life-of-reads-and-writes" },
+    { "title": "Redis — Redis cluster specification (hash slots and live resharding)", "url": "https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/" },
+    { "title": "PostgreSQL documentation — Table Partitioning", "url": "https://www.postgresql.org/docs/current/ddl-partitioning.html" },
+    { "title": "Notion — Herding elephants: Lessons learned from sharding Postgres at Notion (2021)", "url": "https://www.notion.com/blog/sharding-postgres-at-notion" },
+    { "title": "Notion — The Great Re-shard: adding Postgres capacity (again) with zero downtime (2023)", "url": "https://www.notion.com/blog/the-great-re-shard" },
+    { "title": "Karger, Lehman, Leighton, Levine, Lewin and Panigrahy — Consistent Hashing and Random Trees (STOC 1997)", "url": "https://people.csail.mit.edu/karger/Papers/web.pdf" },
+    { "title": "DeCandia et al. — Dynamo: Amazon's Highly Available Key-value Store (SOSP 2007)", "url": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" },
+    { "title": "Martin Kleppmann & Chris Riccomini — Designing Data-Intensive Applications, 2nd Edition (O'Reilly, 2026)", "url": "https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" }
+  ]
+}

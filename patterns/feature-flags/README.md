@@ -83,7 +83,7 @@ The flag in the diagram is a release flag whose rollout borrows from the others.
 - [Blue-Green Deployment](../blue-green-deployment/) — Run the new version beside the old one and switch all traffic in one step.
 - [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
 - [Shadow Traffic](../shadow-traffic/) — Mirror live requests to the new version and compare results without affecting users.
-- External Configuration Store *(planned)* — Keep configuration out of the deployment package, in a central store read at runtime.
+- [External Configuration Store](../external-configuration-store/) — Keep configuration out of the deployment package, in a central store read at runtime.
 - [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
 - [Branch by Abstraction](../branch-by-abstraction/) — Introduce an abstraction, build the new implementation behind it, then switch over.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.

@@ -1,0 +1,53 @@
+{
+  "aka": ["Long-running operations (LRO)", "Async HTTP API"],
+  "steps": [
+    {
+      "title": "A long synchronous call",
+      "caption": "The report takes ~2 min, but the gateway cuts the call at 30 s; the retry renders it a second time.",
+      "body": "The client sends `POST /reports` and waits for the PDF. Rendering takes about two minutes, but the gateway in front of the API gives up after 30 seconds and answers **504 Gateway Timeout**. Nothing stops the API, so it keeps rendering copy #1 for nobody, and the client's retry starts copy #2: twice the work, and still no report."
+    },
+    {
+      "title": "Accept now, work later",
+      "caption": "The API saves job 42, queues it and answers 202 at once, with Location: /jobs/42 and Retry-After.",
+      "body": "The API validates the request (a bad one still gets its `400` right away), saves a job record in state `queued` and puts the job on a queue. Then it answers at once: **202 Accepted** with a `Location` header that points at the job's status URL, `/jobs/42`, a `Retry-After: 5` hint and the job in the body. A worker takes the job from the queue and starts rendering, and no connection is held open while it works."
+    },
+    {
+      "title": "Poll the status",
+      "caption": "The client polls /jobs/42 every 5 s; once the report is ready, 303 See Other points to /reports/42.",
+      "body": "Following `Retry-After`, the client sends `GET /jobs/42` every 5 seconds, and the API answers from the job record: `200` with the state (`running`) and the progress. The worker stores the PDF in object storage and only then marks the job `succeeded`. The next poll gets **303 See Other** with `Location: /reports/42`, and the client downloads the report from there."
+    },
+    {
+      "title": "Make it robust",
+      "caption": "With the same Idempotency-Key the retry gets job 43 back, not a second job. DELETE cancels it.",
+      "body": "The next request carries an `Idempotency-Key`. Its 202 is lost, so the client retries with the same key and gets job 43 back instead of a second job (the same idea as an [idempotent consumer](../idempotent-consumer/)), and `DELETE /jobs/43` then cancels it. Every job ends as `succeeded`, `failed` with a reason, or `cancelled`, so no client polls forever; job records and results are deleted 24 hours after the end, and a client that can take calls can get a [webhook](../webhooks/) instead of polling."
+    }
+  ],
+  "related": ["queue-based-load-leveling", "competing-consumers", "webhooks", "idempotent-consumer", "web-queue-worker", "retry-with-backoff", "serverless", "timeout-and-fallback"],
+  "references": [
+    { "title": "Azure Architecture Center — Asynchronous Request-Reply pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/asynchronous-request-reply" },
+    { "title": "RFC 9110 — HTTP Semantics: 202 Accepted", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.3" },
+    { "title": "RFC 9110 — HTTP Semantics: 303 See Other", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.4.4" },
+    { "title": "RFC 9110 — HTTP Semantics: Retry-After", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3" },
+    { "title": "Microsoft Azure REST API Guidelines — Long-Running Operations & Jobs", "url": "https://github.com/microsoft/api-guidelines/blob/vNext/azure/Guidelines.md#long-running-operations--jobs" },
+    { "title": "Microsoft Azure REST API Guidelines — Considerations for service design: Long-Running Operations", "url": "https://github.com/microsoft/api-guidelines/blob/vNext/azure/ConsiderationsForServiceDesign.md#long-running-operations" },
+    { "title": "Google API Improvement Proposals — AIP-151: Long-running operations", "url": "https://google.aip.dev/151" },
+    { "title": "Google APIs — The google.longrunning Operations service (operations.proto)", "url": "https://github.com/googleapis/googleapis/blob/master/google/longrunning/operations.proto" },
+    { "title": "Azure Durable Functions — HTTP features: async operation tracking", "url": "https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-http-features" },
+    { "title": "Azure Durable Functions — HTTP API reference", "url": "https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-http-api" },
+    { "title": "IETF HTTPAPI WG — The Idempotency-Key HTTP Header Field (draft-ietf-httpapi-idempotency-key-header-07, an expired Internet-Draft)", "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" },
+    { "title": "Stripe API reference — Idempotent requests", "url": "https://docs.stripe.com/api/idempotent_requests" },
+    { "title": "RFC 9457 — Problem Details for HTTP APIs", "url": "https://www.rfc-editor.org/rfc/rfc9457.html" },
+    { "title": "RFC 9111 — HTTP Caching", "url": "https://www.rfc-editor.org/rfc/rfc9111.html" },
+    { "title": "Heroku Dev Center — Request Timeout", "url": "https://devcenter.heroku.com/articles/request-timeout" },
+    { "title": "Amazon API Gateway — Quotas for configuring and running a REST API", "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-execution-service-limits-table.html" },
+    { "title": "Amazon API Gateway — Quotas for configuring and running an HTTP API", "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-quotas.html" },
+    { "title": "Google Cloud Load Balancing — Backend services overview (backend service timeout)", "url": "https://docs.cloud.google.com/load-balancing/docs/backend-service" },
+    { "title": "Cloudflare Support — Error 524: a timeout occurred", "url": "https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-524/" },
+    { "title": "Azure Functions — Scale and hosting (function app timeout duration)", "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale" },
+    { "title": "AWS Lambda — Configure Lambda function timeout", "url": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html" },
+    { "title": "OWASP Cheat Sheet Series — Insecure Direct Object Reference Prevention", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" },
+    { "title": "WHATWG HTML Living Standard — Server-sent events", "url": "https://html.spec.whatwg.org/multipage/server-sent-events.html" },
+    { "title": "RFC 6455 — The WebSocket Protocol", "url": "https://www.rfc-editor.org/rfc/rfc6455.html" },
+    { "title": "RFC 6202 — Known Issues and Best Practices for the Use of Long Polling and Streaming in Bidirectional HTTP", "url": "https://www.rfc-editor.org/rfc/rfc6202.html" }
+  ]
+}

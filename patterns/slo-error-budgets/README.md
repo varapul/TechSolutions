@@ -126,7 +126,7 @@ It is not a punishment, and the example says so. It gives the team permission to
 - [Telemetry Pipeline (OpenTelemetry)](../telemetry-pipeline/) — Receive, process and export traces, metrics and logs through one vendor-neutral collector.
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
-- Chaos Engineering *(planned)* — Inject failures on purpose to prove the system degrades the way you expect.
+- [Chaos Engineering](../chaos-engineering/) — Inject failures on purpose to prove the system degrades the way you expect.
 - [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
 
 ## References

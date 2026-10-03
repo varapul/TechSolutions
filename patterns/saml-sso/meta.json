@@ -1,0 +1,42 @@
+{
+  "aka": ["SAML SSO", "SAML 2.0 Web Browser SSO"],
+  "steps": [
+    {
+      "title": "SP sends an AuthnRequest",
+      "caption": "Expense has no session, so it redirects the browser to the IdP with an AuthnRequest (ID id-7f3a).",
+      "body": "Ana opens the expense app, which has no session for her. It builds an `<AuthnRequest>` with a fresh `ID` (`id-7f3a`, which it remembers) and its own entity ID as `<Issuer>`, and answers with a redirect to the IdP's SSO URL from the metadata. The **HTTP-Redirect binding** carries the request deflated and base64-encoded in the `SAMLRequest` query parameter, next to a short `RelayState`; the IdP checks that the request comes from a service provider it knows and names an ACS URL registered for it."
+    },
+    {
+      "title": "IdP posts the assertion",
+      "caption": "Ana signs in with password and MFA. The IdP posts a signed assertion to Expense via the browser.",
+      "body": "The IdP authenticates Ana (password, then a second factor) and starts its own SSO session. It answers with a small HTML page whose form the browser submits by itself: the **HTTP-POST binding** carries a base64 `SAMLResponse` and the `RelayState` to the ACS URL. Inside is an assertion signed with the IdP's key that says who signed in (`NameID`), for which app (`Audience`, `Recipient`), when (`NotBefore`, `NotOnOrAfter`), in answer to which request (`InResponseTo`), and with which attributes. It travels through the browser; the two servers never call each other."
+    },
+    {
+      "title": "Validate, map, then SSO",
+      "caption": "Expense checks the assertion and starts a session; Travel then gets its own, with no password.",
+      "body": "Expense verifies the signature with the certificate from the IdP's metadata, then checks the `Issuer`, that the `Audience` is its own entity ID and the `Recipient` its own ACS URL, the time window, that `InResponseTo` is the request it sent, and that it has never seen this assertion `ID`. It maps the `NameID` to its user and the `groups` attribute to a role, and sets its own session cookie. When Ana opens Travel, the IdP finds her SSO session and posts Travel an assertion of its own without asking for a password: **single sign-on**."
+    },
+    {
+      "title": "IdP-initiated and risks",
+      "caption": "IdP-initiated: a portal click posts an assertion nobody asked for. Beware wrapping and rollover too.",
+      "body": "Another day, with the app sessions expired, Ana starts at the IdP's portal and clicks the Expense tile. The IdP posts an assertion that nobody requested: it has no `InResponseTo`, so Expense loses the check that ties a response to a request from this browser and has to rely on its replay cache and short lifetimes, which is why some applications refuse or restrict IdP-initiated sign-in. Two more cautions: **signature wrapping** (act only on the assertion the signature covers, through a maintained library) and **certificate rollover** (an SP that has not loaded the IdP's new signing certificate rejects every sign-in)."
+    }
+  ],
+  "related": ["openid-connect",  "federated-identity",  "sessions-vs-tokens",  "zero-trust-access",  "jwt-validation",  "oauth2-authorization-code-pkce",  "policy-based-authorization"],
+  "references": [
+    { "title": "OASIS — Security Assertion Markup Language (SAML) V2.0 Technical Overview", "url": "https://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html" },
+    { "title": "OASIS — Assertions and Protocols for SAML V2.0 (SAML Core)", "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf" },
+    { "title": "OASIS — Bindings for SAML V2.0", "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf" },
+    { "title": "OASIS — Profiles for SAML V2.0", "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf" },
+    { "title": "OASIS — Metadata for SAML V2.0", "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf" },
+    { "title": "OASIS — SAML Version 2.0 Errata 05", "url": "https://docs.oasis-open.org/security/saml/v2.0/errata05/os/saml-v2.0-errata05-os.html" },
+    { "title": "OWASP — SAML Security Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/SAML_Security_Cheat_Sheet.html" },
+    { "title": "Microsoft Learn — Single sign-on SAML protocol (Microsoft identity platform)", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/single-sign-on-saml-protocol" },
+    { "title": "Microsoft Learn — Manage federation certificates in Microsoft Entra ID", "url": "https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/tutorial-manage-certificates-for-federated-single-sign-on" },
+    { "title": "Okta Developer — Understanding SAML", "url": "https://developer.okta.com/docs/concepts/saml/" },
+    { "title": "NIST SP 800-63C-4 — Digital Identity Guidelines: Federation and Assertions (2025)", "url": "https://csrc.nist.gov/pubs/sp/800/63/c/4/final" },
+    { "title": "Somorovsky et al. — On Breaking SAML: Be Whoever You Want to Be (USENIX Security 2012)", "url": "https://www.usenix.org/conference/usenixsecurity12/technical-sessions/presentation/somorovsky" },
+    { "title": "CERT/CC VU#475445 — SAML libraries and XML comments in canonicalization (2018)", "url": "https://www.kb.cert.org/vuls/id/475445" },
+    { "title": "GitHub Security Lab — Sign in as anyone: bypassing SAML SSO with parser differentials (2025)", "url": "https://github.blog/security/sign-in-as-anyone-bypassing-saml-sso-authentication-with-parser-differentials/" }
+  ]
+}

@@ -1,0 +1,1360 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Asynchronous Request-Reply</title>
+<desc id="dg-desc">Asynchronous Request-Reply. Accept now with 202, process in the background, and let the client poll a status URL. Step 1, A long synchronous call: The report takes ~2 min, but the gateway cuts the call at 30 s; the retry renders it a second time. Step 2, Accept now, work later: The API saves job 42, queues it and answers 202 at once, with Location: /jobs/42 and Retry-After. Step 3, Poll the status: The client polls /jobs/42 every 5 s; once the report is ready, 303 See Other points to /reports/42. Step 4, Make it robust: With the same Idempotency-Key the retry gets job 43 back, not a second job. DELETE cancels it.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">MESSAGING &amp; INTEGRATION</text>
+  <text class="title" x="40" y="64">Asynchronous Request-Reply</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A long synchronous call</text>
+  <text class="step on p1" x="40" y="518">1 · A long synchronous call</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Accept now, work later</text>
+  <text class="step on p2" x="262" y="518">2 · Accept now, work later</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Poll the status</text>
+  <text class="step on p3" x="484" y="518">3 · Poll the status</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Make it robust</text>
+  <text class="step on p4" x="706" y="518">4 · Make it robust</text>
+  <text class="caption p1" x="40" y="552">The report takes ~2 min, but the gateway cuts the call at 30 s; the retry renders it a second time.</text>
+  <text class="caption p2" x="40" y="552">The API saves job 42, queues it and answers 202 at once, with Location: /jobs/42 and Retry-After.</text>
+  <text class="caption p3" x="40" y="552">The client polls /jobs/42 every 5 s; once the report is ready, 303 See Other points to /reports/42.</text>
+  <text class="caption p4" x="40" y="552">With the same Idempotency-Key the retry gets job 43 back, not a second job. DELETE cancels it.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Asynchronous Request-Reply. Timeline (20s loop, 1s = 5%):
+   0-25%   synchronous: POST at 0.3s; the API renders copy #1 from 0.68s (time-lapse: 1s = 15s, so the report's
+           2 min = 8s); the gateway's 30 s limit is hit at 2.68s (504 back at 2.95s); the retry reaches the API at
+           3.53s and copy #2 starts; at the 4.6s hold copy #1 is at 49%, copy #2 at 13%
+   25-50%  POST at 5.4s; validate 5.9s, job 42 saved 6.3s, queued 6.65s, 202 + Location + Retry-After back at 7.18s;
+           the worker takes job 42 at 7.8s and marks it running at 8.15s
+   50-75%  poll at 10.35s (200 running 4% back at 11.33s); the worker finishes at 12s, stores the PDF (12.35s) and
+           marks the job succeeded (12.55s); poll at 12.6s gets 303 See Other (13.53s); GET /reports/42 at 13.53s,
+           the PDF arrives at 14.46s
+   75-100% POST with an Idempotency-Key at 15.35s creates job 43 (16.05s), its 202 is lost at 16.6s; the retry with
+           the same key (17.0s) finds the key and gets job 43 back (17.98s); DELETE /jobs/43 at 18.05s, cancelled at
+           18.65s, 200 back at 19.08s; everything fades and the back end ghosts again at 19.7-20s */
+.diagram .m11 { font-size: 11px; }
+.diagram .c12 { font-size: 12px; }
+.diagram .lbl { font-size: 10.5px; font-weight: 700; }
+.diagram .legend { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .th { font-size: 10.5px; font-weight: 600; fill: var(--muted); }
+.diagram .tname { font-size: 11px; font-weight: 700; fill: var(--teal); }
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .doc { fill: var(--teal); stroke: var(--bg); stroke-width: 1.5; stroke-linejoin: round; }
+.diagram .tok { opacity: 0; }
+.diagram .arr-post { animation: arr-post var(--T) linear infinite; }
+.diagram .arr-retry { animation: arr-retry var(--T) linear infinite; }
+.diagram .arr-get { animation: arr-get var(--T) linear infinite; }
+.diagram .arr-del { animation: arr-del var(--T) linear infinite; }
+.diagram .arr-r504 { animation: arr-r504 var(--T) linear infinite; }
+.diagram .arr-r202 { animation: arr-r202 var(--T) linear infinite; }
+.diagram .arr-lost { animation: arr-lost var(--T) linear infinite; }
+.diagram .arr-r200 { animation: arr-r200 var(--T) linear infinite; }
+.diagram .arr-r303 { animation: arr-r303 var(--T) linear infinite; }
+.diagram .arr-pdf { animation: arr-pdf var(--T) linear infinite; }
+.diagram .arr-sw { animation: arr-sw var(--T) linear infinite; }
+.diagram .arr-m42 { animation: arr-m42 var(--T) linear infinite; }
+.diagram .arr-m43 { animation: arr-m43 var(--T) linear infinite; }
+.diagram .arr-ww { animation: arr-ww var(--T) linear infinite; }
+.diagram .arr-wpdf { animation: arr-wpdf var(--T) linear infinite; }
+.diagram .arr-rpdf { animation: arr-rpdf var(--T) linear infinite; }
+.diagram .arr-cspin { animation: arr-cspin var(--T) linear infinite; }
+.diagram .arr-r1hi { animation: arr-r1hi var(--T) linear infinite; }
+.diagram .arr-x1 { animation: arr-x1 var(--T) linear infinite; }
+.diagram .arr-t1cut { animation: arr-t1cut var(--T) linear infinite; }
+.diagram .arr-o504 { animation: arr-o504 var(--T) linear infinite; }
+.diagram .arr-c1note { animation: arr-c1note var(--T) linear infinite; }
+.diagram .arr-c2note { animation: arr-c2note var(--T) linear infinite; }
+.diagram .arr-l1post { animation: arr-l1post var(--T) linear infinite; }
+.diagram .arr-l1fail { animation: arr-l1fail var(--T) linear infinite; }
+.diagram .arr-l1retry { animation: arr-l1retry var(--T) linear infinite; }
+.diagram .arr-l1wait2 { animation: arr-l1wait2 var(--T) linear infinite; }
+.diagram .arr-l1note { animation: arr-l1note var(--T) linear infinite; }
+.diagram .arr-widle { animation: arr-widle var(--T) linear infinite; }
+.diagram .arr-gcut { opacity: 0; animation: arr-gcut var(--T) linear infinite; }
+.diagram .arr-l1wait { opacity: 0; animation: arr-l1wait var(--T) linear infinite; }
+.diagram .arr-o202 { opacity: 0; animation: arr-o202 var(--T) linear infinite; }
+.diagram .arr-l2post { opacity: 0; animation: arr-l2post var(--T) linear infinite; }
+.diagram .arr-l2resp { opacity: 0; animation: arr-l2resp var(--T) linear infinite; }
+.diagram .arr-l2note { opacity: 0; animation: arr-l2note var(--T) linear infinite; }
+.diagram .arr-k1 { opacity: 0; animation: arr-k1 var(--T) linear infinite; }
+.diagram .arr-k2 { opacity: 0; animation: arr-k2 var(--T) linear infinite; }
+.diagram .arr-k3 { opacity: 0; animation: arr-k3 var(--T) linear infinite; }
+.diagram .arr-k4 { opacity: 0; animation: arr-k4 var(--T) linear infinite; }
+.diagram .arr-l3a { opacity: 0; animation: arr-l3a var(--T) linear infinite; }
+.diagram .arr-l3dots { opacity: 0; animation: arr-l3dots var(--T) linear infinite; }
+.diagram .arr-l3b { opacity: 0; animation: arr-l3b var(--T) linear infinite; }
+.diagram .arr-l3c { opacity: 0; animation: arr-l3c var(--T) linear infinite; }
+.diagram .arr-l3d { opacity: 0; animation: arr-l3d var(--T) linear infinite; }
+.diagram .arr-l3note { opacity: 0; animation: arr-l3note var(--T) linear infinite; }
+.diagram .arr-api3a { opacity: 0; animation: arr-api3a var(--T) linear infinite; }
+.diagram .arr-api3b { opacity: 0; animation: arr-api3b var(--T) linear infinite; }
+.diagram .arr-r2hi { opacity: 0; animation: arr-r2hi var(--T) linear infinite; }
+.diagram .arr-r3hi { opacity: 0; animation: arr-r3hi var(--T) linear infinite; }
+.diagram .arr-row42hi { opacity: 0; animation: arr-row42hi var(--T) linear infinite; }
+.diagram .arr-filehi { opacity: 0; animation: arr-filehi var(--T) linear infinite; }
+.diagram .arr-l4post { opacity: 0; animation: arr-l4post var(--T) linear infinite; }
+.diagram .arr-l4lost { opacity: 0; animation: arr-l4lost var(--T) linear infinite; }
+.diagram .arr-l4retry { opacity: 0; animation: arr-l4retry var(--T) linear infinite; }
+.diagram .arr-l4same { opacity: 0; animation: arr-l4same var(--T) linear infinite; }
+.diagram .arr-l4del { opacity: 0; animation: arr-l4del var(--T) linear infinite; }
+.diagram .arr-l4can { opacity: 0; animation: arr-l4can var(--T) linear infinite; }
+.diagram .arr-xlost { opacity: 0; animation: arr-xlost var(--T) linear infinite; }
+.diagram .arr-r4hi { opacity: 0; animation: arr-r4hi var(--T) linear infinite; }
+.diagram .arr-row43hi { opacity: 0; animation: arr-row43hi var(--T) linear infinite; }
+.diagram .arr-k4no { opacity: 0; animation: arr-k4no var(--T) linear infinite; }
+.diagram .arr-k4yes { opacity: 0; animation: arr-k4yes var(--T) linear infinite; }
+.diagram .arr-row42 { opacity: 0; animation: arr-row42 var(--T) linear infinite; }
+.diagram .arr-s42q { opacity: 0; animation: arr-s42q var(--T) linear infinite; }
+.diagram .arr-s42r1 { opacity: 0; animation: arr-s42r1 var(--T) linear infinite; }
+.diagram .arr-s42r4 { opacity: 0; animation: arr-s42r4 var(--T) linear infinite; }
+.diagram .arr-s42r55 { opacity: 0; animation: arr-s42r55 var(--T) linear infinite; }
+.diagram .arr-s42ok { opacity: 0; animation: arr-s42ok var(--T) linear infinite; }
+.diagram .arr-res42none { opacity: 0; animation: arr-res42none var(--T) linear infinite; }
+.diagram .arr-res42 { opacity: 0; animation: arr-res42 var(--T) linear infinite; }
+.diagram .arr-row43 { opacity: 0; animation: arr-row43 var(--T) linear infinite; }
+.diagram .arr-s43q { opacity: 0; animation: arr-s43q var(--T) linear infinite; }
+.diagram .arr-s43r { opacity: 0; animation: arr-s43r var(--T) linear infinite; }
+.diagram .arr-s43c { opacity: 0; animation: arr-s43c var(--T) linear infinite; }
+.diagram .arr-w42run { opacity: 0; animation: arr-w42run var(--T) linear infinite; }
+.diagram .arr-w42done { opacity: 0; animation: arr-w42done var(--T) linear infinite; }
+.diagram .arr-w43run { opacity: 0; animation: arr-w43run var(--T) linear infinite; }
+.diagram .arr-w43can { opacity: 0; animation: arr-w43can var(--T) linear infinite; }
+.diagram .arr-wspin { opacity: 0; animation: arr-wspin var(--T) linear infinite; }
+.diagram .arr-file { opacity: 0; animation: arr-file var(--T) linear infinite; }
+.diagram .arr-t1 { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(1); animation: arr-t1 var(--T) linear infinite; }
+.diagram .arr-t2 { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.535); animation: arr-t2 var(--T) linear infinite; }
+.diagram .arr-c1 { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.49); animation: arr-c1 var(--T) linear infinite; }
+.diagram .arr-c2 { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.134); animation: arr-c2 var(--T) linear infinite; }
+.diagram .arr-wbar { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0); animation: arr-wbar var(--T) linear infinite; }
+.diagram .arr-ghost { opacity: 0.3; animation: arr-ghost var(--T) linear infinite; }
+@keyframes arr-post {
+  0% { transform: translate(236px, 193px); opacity: 0; }
+  1.5% { transform: translate(236px, 193px); opacity: 0; }
+  1.75% { opacity: 1; }
+  3.4% { transform: translate(344px, 193px); opacity: 1; }
+  3.65% { transform: translate(344px, 193px); opacity: 0; }
+  27% { transform: translate(236px, 193px); opacity: 0; }
+  27.25% { opacity: 1; }
+  28.9% { transform: translate(344px, 193px); opacity: 1; }
+  29.15% { transform: translate(344px, 193px); opacity: 0; }
+  76.75% { transform: translate(236px, 193px); opacity: 0; }
+  77% { opacity: 1; }
+  78.65% { transform: translate(344px, 193px); opacity: 1; }
+  78.9% { transform: translate(344px, 193px); opacity: 0; }
+  100% { transform: translate(344px, 193px); opacity: 0; }
+}
+@keyframes arr-retry {
+  0% { transform: translate(236px, 193px); opacity: 0; }
+  15.75% { transform: translate(236px, 193px); opacity: 0; }
+  16% { opacity: 1; }
+  17.65% { transform: translate(344px, 193px); opacity: 1; }
+  17.9% { transform: translate(344px, 193px); opacity: 0; }
+  85% { transform: translate(236px, 193px); opacity: 0; }
+  85.25% { opacity: 1; }
+  86.9% { transform: translate(344px, 193px); opacity: 1; }
+  87.15% { transform: translate(344px, 193px); opacity: 0; }
+  100% { transform: translate(344px, 193px); opacity: 0; }
+}
+@keyframes arr-get {
+  0% { transform: translate(236px, 193px); opacity: 0; }
+  51.75% { transform: translate(236px, 193px); opacity: 0; }
+  52% { opacity: 1; }
+  53.65% { transform: translate(344px, 193px); opacity: 1; }
+  53.9% { transform: translate(344px, 193px); opacity: 0; }
+  63% { transform: translate(236px, 193px); opacity: 0; }
+  63.25% { opacity: 1; }
+  64.9% { transform: translate(344px, 193px); opacity: 1; }
+  65.15% { transform: translate(344px, 193px); opacity: 0; }
+  67.65% { transform: translate(236px, 193px); opacity: 0; }
+  67.9% { opacity: 1; }
+  69.55% { transform: translate(344px, 193px); opacity: 1; }
+  69.8% { transform: translate(344px, 193px); opacity: 0; }
+  100% { transform: translate(344px, 193px); opacity: 0; }
+}
+@keyframes arr-del {
+  0% { transform: translate(236px, 193px); opacity: 0; }
+  90.25% { transform: translate(236px, 193px); opacity: 0; }
+  90.5% { opacity: 1; }
+  92.15% { transform: translate(344px, 193px); opacity: 1; }
+  92.4% { transform: translate(344px, 193px); opacity: 0; }
+  100% { transform: translate(344px, 193px); opacity: 0; }
+}
+@keyframes arr-r504 {
+  0% { transform: translate(288px, 193px); opacity: 0; }
+  13.4% { transform: translate(288px, 193px); opacity: 0; }
+  13.65% { opacity: 1; }
+  14.75% { transform: translate(236px, 193px); opacity: 1; }
+  15% { transform: translate(236px, 193px); opacity: 0; }
+  100% { transform: translate(236px, 193px); opacity: 0; }
+}
+@keyframes arr-r202 {
+  0% { transform: translate(344px, 193px); opacity: 0; }
+  34% { transform: translate(344px, 193px); opacity: 0; }
+  34.25% { opacity: 1; }
+  35.9% { transform: translate(236px, 193px); opacity: 1; }
+  36.15% { transform: translate(236px, 193px); opacity: 0; }
+  88% { transform: translate(344px, 193px); opacity: 0; }
+  88.25% { opacity: 1; }
+  89.9% { transform: translate(236px, 193px); opacity: 1; }
+  90.15% { transform: translate(236px, 193px); opacity: 0; }
+  100% { transform: translate(236px, 193px); opacity: 0; }
+}
+@keyframes arr-lost {
+  0% { transform: translate(344px, 193px); opacity: 0; }
+  81.75% { transform: translate(344px, 193px); opacity: 0; }
+  82% { opacity: 1; }
+  83% { transform: translate(262px, 193px); opacity: 1; }
+  83.25% { transform: translate(262px, 193px); opacity: 0; }
+  100% { transform: translate(262px, 193px); opacity: 0; }
+}
+@keyframes arr-r200 {
+  0% { transform: translate(344px, 193px); opacity: 0; }
+  54.75% { transform: translate(344px, 193px); opacity: 0; }
+  55% { opacity: 1; }
+  56.65% { transform: translate(236px, 193px); opacity: 1; }
+  56.9% { transform: translate(236px, 193px); opacity: 0; }
+  93.5% { transform: translate(344px, 193px); opacity: 0; }
+  93.75% { opacity: 1; }
+  95.4% { transform: translate(236px, 193px); opacity: 1; }
+  95.65% { transform: translate(236px, 193px); opacity: 0; }
+  100% { transform: translate(236px, 193px); opacity: 0; }
+}
+@keyframes arr-r303 {
+  0% { transform: translate(344px, 193px); opacity: 0; }
+  65.75% { transform: translate(344px, 193px); opacity: 0; }
+  66% { opacity: 1; }
+  67.65% { transform: translate(236px, 193px); opacity: 1; }
+  67.9% { transform: translate(236px, 193px); opacity: 0; }
+  100% { transform: translate(236px, 193px); opacity: 0; }
+}
+@keyframes arr-pdf {
+  0% { transform: translate(344px, 193px); opacity: 0; }
+  70.4% { transform: translate(344px, 193px); opacity: 0; }
+  70.65% { opacity: 1; }
+  72.3% { transform: translate(236px, 193px); opacity: 1; }
+  72.55% { transform: translate(236px, 193px); opacity: 0; }
+  100% { transform: translate(236px, 193px); opacity: 0; }
+}
+@keyframes arr-sw {
+  0% { transform: translate(552px, 270px); opacity: 0; }
+  30.25% { transform: translate(552px, 270px); opacity: 0; }
+  30.5% { opacity: 1; }
+  31.5% { transform: translate(606px, 270px); opacity: 1; }
+  31.75% { transform: translate(606px, 270px); opacity: 0; }
+  79% { transform: translate(552px, 270px); opacity: 0; }
+  79.25% { opacity: 1; }
+  80.25% { transform: translate(606px, 270px); opacity: 1; }
+  80.5% { transform: translate(606px, 270px); opacity: 0; }
+  92.15% { transform: translate(552px, 270px); opacity: 0; }
+  92.4% { opacity: 1; }
+  93.25% { transform: translate(606px, 270px); opacity: 1; }
+  93.5% { transform: translate(606px, 270px); opacity: 0; }
+  100% { transform: translate(606px, 270px); opacity: 0; }
+}
+@keyframes arr-m42 {
+  0% { transform: translate(552px, 132px); opacity: 0; }
+  32% { transform: translate(552px, 132px); opacity: 0; }
+  32.25% { opacity: 1; }
+  33.25% { transform: translate(621px, 132px); }
+  37% { transform: translate(621px, 132px); }
+  39% { transform: translate(790px, 132px); opacity: 1; }
+  39.25% { transform: translate(790px, 132px); opacity: 0; }
+  100% { transform: translate(790px, 132px); opacity: 0; }
+}
+@keyframes arr-m43 {
+  0% { transform: translate(552px, 132px); opacity: 0; }
+  80.25% { transform: translate(552px, 132px); opacity: 0; }
+  80.5% { opacity: 1; }
+  81.5% { transform: translate(621px, 132px); }
+  82.25% { transform: translate(621px, 132px); }
+  84.25% { transform: translate(790px, 132px); opacity: 1; }
+  84.5% { transform: translate(790px, 132px); opacity: 0; }
+  100% { transform: translate(790px, 132px); opacity: 0; }
+}
+@keyframes arr-ww {
+  0% { transform: translate(830px, 170px); opacity: 0; }
+  39.5% { transform: translate(830px, 170px); opacity: 0; }
+  39.75% { opacity: 1; }
+  40.75% { transform: translate(830px, 206px); opacity: 1; }
+  41% { transform: translate(830px, 206px); opacity: 0; }
+  61.75% { transform: translate(830px, 170px); opacity: 0; }
+  62% { opacity: 1; }
+  62.75% { transform: translate(830px, 206px); opacity: 1; }
+  63% { transform: translate(830px, 206px); opacity: 0; }
+  100% { transform: translate(830px, 206px); opacity: 0; }
+}
+@keyframes arr-wpdf {
+  0% { transform: translate(908px, 170px); opacity: 0; }
+  60% { transform: translate(908px, 170px); opacity: 0; }
+  60.25% { opacity: 1; }
+  61.75% { transform: translate(908px, 374px); opacity: 1; }
+  62% { transform: translate(908px, 374px); opacity: 0; }
+  100% { transform: translate(908px, 374px); opacity: 0; }
+}
+@keyframes arr-rpdf {
+  0% { transform: translate(606px, 414px); opacity: 0; }
+  69.55% { transform: translate(606px, 414px); opacity: 0; }
+  69.8% { opacity: 1; }
+  70.4% { transform: translate(552px, 414px); opacity: 1; }
+  70.65% { transform: translate(552px, 414px); opacity: 0; }
+  100% { transform: translate(552px, 414px); opacity: 0; }
+}
+@keyframes arr-cspin {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-r1hi {
+  0% { opacity: 0; }
+  3.4% { opacity: 0; }
+  4.15% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  28.9% { opacity: 0; }
+  29.65% { opacity: 1; }
+  34% { opacity: 1; }
+  34.75% { opacity: 0; }
+  78.65% { opacity: 0; }
+  79.4% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.5% { opacity: 0; }
+  86.9% { opacity: 0; }
+  87.65% { opacity: 1; }
+  88% { opacity: 1; }
+  88.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-x1 {
+  0% { opacity: 0; }
+  13.4% { opacity: 0; }
+  14.15% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-t1cut {
+  0% { opacity: 0; }
+  13.4% { opacity: 0; }
+  14.15% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-o504 {
+  0% { opacity: 0; }
+  13.4% { opacity: 0; }
+  14.15% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-c1note {
+  0% { opacity: 0; }
+  14% { opacity: 0; }
+  14.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-c2note {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  18.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l1post {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l1fail {
+  0% { opacity: 0; }
+  14.75% { opacity: 0; }
+  15.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l1retry {
+  0% { opacity: 0; }
+  15.75% { opacity: 0; }
+  16.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l1wait2 {
+  0% { opacity: 0; }
+  17.65% { opacity: 0; }
+  18.4% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l1note {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-widle {
+  0% { opacity: 1; }
+  39% { opacity: 1; }
+  39.75% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  84.25% { opacity: 1; }
+  85% { opacity: 0; }
+  99.25% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+@keyframes arr-gcut {
+  0% { opacity: 0; }
+  13.4% { opacity: 0; }
+  14.15% { opacity: 1; }
+  17% { opacity: 1; }
+  17.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l1wait {
+  0% { opacity: 0; }
+  3.4% { opacity: 0; }
+  4.15% { opacity: 1; }
+  14.75% { opacity: 1; }
+  15.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-o202 {
+  0% { opacity: 0; }
+  35.9% { opacity: 0; }
+  36.65% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l2post {
+  0% { opacity: 0; }
+  27% { opacity: 0; }
+  27.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l2resp {
+  0% { opacity: 0; }
+  35.9% { opacity: 0; }
+  36.65% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l2note {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  38.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-k1 {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  30.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-k2 {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-k3 {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-k4 {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l3a {
+  0% { opacity: 0; }
+  56.65% { opacity: 0; }
+  57.4% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l3dots {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l3b {
+  0% { opacity: 0; }
+  67.65% { opacity: 0; }
+  68.4% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l3c {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  68.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l3d {
+  0% { opacity: 0; }
+  72.3% { opacity: 0; }
+  72.8% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l3note {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  68.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-api3a {
+  0% { opacity: 0; }
+  53.65% { opacity: 0; }
+  54.4% { opacity: 1; }
+  65.75% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-api3b {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  66.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-r2hi {
+  0% { opacity: 0; }
+  53.65% { opacity: 0; }
+  54.4% { opacity: 1; }
+  54.75% { opacity: 1; }
+  55.5% { opacity: 0; }
+  64.9% { opacity: 0; }
+  65.65% { opacity: 1; }
+  65.75% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-r3hi {
+  0% { opacity: 0; }
+  69.55% { opacity: 0; }
+  70.3% { opacity: 1; }
+  70.4% { opacity: 1; }
+  71.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-row42hi {
+  0% { opacity: 0; }
+  53.65% { opacity: 0; }
+  54.4% { opacity: 1; }
+  54.75% { opacity: 1; }
+  55.5% { opacity: 0; }
+  64.9% { opacity: 0; }
+  65.65% { opacity: 1; }
+  65.75% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-filehi {
+  0% { opacity: 0; }
+  69.55% { opacity: 0; }
+  70.3% { opacity: 1; }
+  70.5% { opacity: 1; }
+  71.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-l4post {
+  0% { opacity: 0; }
+  76.75% { opacity: 0; }
+  77.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-l4lost {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  83.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-l4retry {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  85.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-l4same {
+  0% { opacity: 0; }
+  89.9% { opacity: 0; }
+  90.65% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-l4del {
+  0% { opacity: 0; }
+  90.25% { opacity: 0; }
+  91% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-l4can {
+  0% { opacity: 0; }
+  95.4% { opacity: 0; }
+  96.15% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-xlost {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  83.75% { opacity: 1; }
+  86% { opacity: 1; }
+  86.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-r4hi {
+  0% { opacity: 0; }
+  92.15% { opacity: 0; }
+  92.9% { opacity: 1; }
+  93.5% { opacity: 1; }
+  94.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-row43hi {
+  0% { opacity: 0; }
+  86.9% { opacity: 0; }
+  87.65% { opacity: 1; }
+  88.5% { opacity: 1; }
+  89.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-k4no {
+  0% { opacity: 0; }
+  78.65% { opacity: 0; }
+  79.4% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-k4yes {
+  0% { opacity: 0; }
+  86.9% { opacity: 0; }
+  87.65% { opacity: 1; }
+  89.9% { opacity: 1; }
+  90.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-row42 {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes arr-s42q {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32.25% { opacity: 1; }
+  40.75% { opacity: 1; }
+  41.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-s42r1 {
+  0% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.5% { opacity: 1; }
+  53% { opacity: 1; }
+  53.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-s42r4 {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  53.75% { opacity: 1; }
+  56.5% { opacity: 1; }
+  57.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-s42r55 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  57.25% { opacity: 1; }
+  62.75% { opacity: 1; }
+  63.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-s42ok {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes arr-res42none {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32.25% { opacity: 1; }
+  62.75% { opacity: 1; }
+  63.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-res42 {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes arr-row43 {
+  0% { opacity: 0; }
+  80.25% { opacity: 0; }
+  81% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-s43q {
+  0% { opacity: 0; }
+  80.25% { opacity: 0; }
+  81% { opacity: 1; }
+  84.25% { opacity: 1; }
+  85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-s43r {
+  0% { opacity: 0; }
+  84.25% { opacity: 0; }
+  85% { opacity: 1; }
+  93.25% { opacity: 1; }
+  94% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-s43c {
+  0% { opacity: 0; }
+  93.25% { opacity: 0; }
+  94% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes arr-w42run {
+  0% { opacity: 0; }
+  39% { opacity: 0; }
+  39.75% { opacity: 1; }
+  60% { opacity: 1; }
+  60.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-w42done {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  60.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-w43run {
+  0% { opacity: 0; }
+  84.25% { opacity: 0; }
+  85% { opacity: 1; }
+  93.25% { opacity: 1; }
+  94% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-w43can {
+  0% { opacity: 0; }
+  93.25% { opacity: 0; }
+  94% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes arr-wspin {
+  0% { opacity: 0; }
+  39% { opacity: 0; }
+  39.75% { opacity: 1; }
+  60% { opacity: 1; }
+  60.75% { opacity: 0; }
+  84.25% { opacity: 0; }
+  85% { opacity: 1; }
+  93.25% { opacity: 1; }
+  94% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes arr-file {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes arr-t1 {
+  0% { transform: scaleX(0); }
+  3.4% { transform: scaleX(0); }
+  13.4% { transform: scaleX(1); }
+  23.5% { transform: scaleX(1); }
+  25% { transform: scaleX(0); }
+  27% { transform: scaleX(0); }
+  35.9% { transform: scaleX(0.03); }
+  48.5% { transform: scaleX(0.03); }
+  50% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes arr-t2 {
+  0% { transform: scaleX(0); }
+  17.65% { transform: scaleX(0); }
+  23.5% { transform: scaleX(0.585); }
+  25% { transform: scaleX(0.585); }
+  25.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes arr-c1 {
+  0% { transform: scaleX(0); }
+  3.4% { transform: scaleX(0); }
+  23.5% { transform: scaleX(0.5025); }
+  25% { transform: scaleX(0.5025); }
+  25.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes arr-c2 {
+  0% { transform: scaleX(0); }
+  17.65% { transform: scaleX(0); }
+  23.5% { transform: scaleX(0.146); }
+  25% { transform: scaleX(0.146); }
+  25.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes arr-wbar {
+  0% { transform: scaleX(0); }
+  39% { transform: scaleX(0); }
+  41% { transform: scaleX(0.01); }
+  50% { transform: scaleX(0.03); }
+  53% { transform: scaleX(0.04); }
+  60% { transform: scaleX(1); }
+  74.25% { transform: scaleX(1); }
+  75% { transform: scaleX(0); }
+  84.25% { transform: scaleX(0); }
+  93.25% { transform: scaleX(0.03); }
+  98.5% { transform: scaleX(0.03); }
+  99.25% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes arr-ghost {
+  0% { opacity: 0.3; }
+  25% { opacity: 0.3; }
+  26.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+</style>
+<g class="stage">
+  <!-- ============ client side ============ -->
+
+  <!-- steps 1-2: the request timer (the gateway's 30 s limit is the end of each bar) -->
+  <g class="p12">
+    <text class="tiny sb f-ink" x="36" y="107">request timer</text>
+    <text class="tiny sb mid f-red" x="186" y="107">30 s</text>
+    <rect class="f-line" x="58" y="117" width="128" height="9" rx="4.5"/>
+    <rect class="f-amber arr-t1" x="58" y="117" width="128" height="9" rx="4.5"/>
+    <rect class="f-red arr-t1cut" x="58" y="117" width="128" height="9" rx="4.5"/>
+    <text class="tiny b f-red arr-o504" x="193" y="125">504</text>
+    <g class="p1">
+      <text class="tiny" x="36" y="125">#1</text>
+      <text class="tiny" x="36" y="141">#2</text>
+      <rect class="f-line" x="58" y="133" width="128" height="9" rx="4.5"/>
+      <rect class="f-amber arr-t2" x="58" y="133" width="128" height="9" rx="4.5"/>
+    </g>
+    <line class="s-red dash" x1="186" y1="111" x2="186" y2="147" stroke-width="1.5"/>
+    <g class="p2">
+      <g class="arr-o202">
+        <text class="tiny b f-green" x="193" y="125">202</text>
+        <text class="tiny sb f-green" x="58" y="141">answered in ~0.1 s</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- step 3: the polling cadence -->
+  <g class="p3">
+    <text class="tiny sb f-ink" x="36" y="107">one GET every 5 s (Retry-After: 5)</text>
+    <g class="f-blue">
+      <circle cx="40" cy="124" r="2.4"/><circle cx="48.25" cy="124" r="2.4"/><circle cx="56.5" cy="124" r="2.4"/><circle cx="64.75" cy="124" r="2.4"/>
+      <circle cx="73" cy="124" r="2.4"/><circle cx="81.25" cy="124" r="2.4"/><circle cx="89.5" cy="124" r="2.4"/><circle cx="97.75" cy="124" r="2.4"/>
+      <circle cx="106" cy="124" r="2.4"/><circle cx="114.25" cy="124" r="2.4"/><circle cx="122.5" cy="124" r="2.4"/><circle cx="130.75" cy="124" r="2.4"/>
+      <circle cx="139" cy="124" r="2.4"/><circle cx="147.25" cy="124" r="2.4"/><circle cx="155.5" cy="124" r="2.4"/><circle cx="163.75" cy="124" r="2.4"/>
+      <circle cx="172" cy="124" r="2.4"/><circle cx="180.25" cy="124" r="2.4"/><circle cx="188.5" cy="124" r="2.4"/><circle cx="196.75" cy="124" r="2.4"/>
+      <circle cx="205" cy="124" r="2.4"/><circle cx="213.25" cy="124" r="2.4"/><circle cx="221.5" cy="124" r="2.4"/><circle cx="229.75" cy="124" r="2.4"/>
+    </g>
+    <text class="tiny" x="36" y="143">about 24 polls for a 2-minute job</text>
+  </g>
+
+  <!-- step 4: no polling at all -->
+  <g class="p4">
+    <text class="tiny sb f-ink" x="36" y="107">No polling at all?</text>
+    <text class="tiny" x="36" y="124">If the client can take calls,</text>
+    <text class="tiny" x="36" y="140">a webhook can tell it instead.</text>
+  </g>
+
+  <!-- the client -->
+  <rect class="box" x="36" y="160" width="200" height="66" rx="12"/>
+  <text class="label" x="50" y="189">Client</text>
+  <text class="sub" x="50" y="207">asks for a report</text>
+  <g class="arr-cspin">
+    <circle class="none s-line" cx="212" cy="193" r="8" stroke-width="2.5"/>
+    <circle class="none s-amber spin" cx="212" cy="193" r="8" stroke-width="2.5" stroke-dasharray="12 38.3" stroke-linecap="round"/>
+  </g>
+
+  <!-- the main wire, through the gateway -->
+  <line class="wire" x1="236" y1="193" x2="288" y2="193"/>
+  <line class="wire" x1="318" y1="193" x2="344" y2="193"/>
+  <rect class="box" x="288" y="172" width="30" height="42" rx="6"/>
+  <rect class="f-red-soft s-red arr-gcut" x="288" y="172" width="30" height="42" rx="6" stroke-width="1.5"/>
+  <circle class="none s-muted" cx="303" cy="193" r="7" stroke-width="1.5"/>
+  <path class="none s-muted" d="M303 188.5V193h3.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="tiny sb mid f-ink" x="303" y="229">gateway</text>
+  <text class="tiny mid" x="303" y="243">30 s limit</text>
+
+  <!-- what the client sends and gets back -->
+  <rect class="box" x="36" y="240" width="200" height="216" rx="10"/>
+  <g class="p1">
+    <text class="legend" x="48" y="259">ONE LONG REQUEST</text>
+    <text class="m11 mono arr-l1post" x="48" y="280"><tspan class="b f-blue">POST</tspan> /reports</text>
+    <text class="tiny sb f-amber-ink arr-l1wait" x="48" y="297">waiting…</text>
+    <g class="arr-l1fail">
+      <text class="m11 mono b f-red" x="48" y="297">504 Gateway Timeout</text>
+      <text class="tiny" x="48" y="313">after 30 s, and no report</text>
+    </g>
+    <g class="arr-l1retry">
+      <text class="m11 mono" x="48" y="337"><tspan class="b f-blue">POST</tspan> /reports</text>
+      <text class="tiny sb f-amber-ink" x="142" y="337">retry</text>
+    </g>
+    <text class="tiny sb f-amber-ink arr-l1wait2" x="48" y="354">waiting…</text>
+    <g class="arr-l1note">
+      <text class="tiny f-ink" x="48" y="388">Still no report, and the API</text>
+      <text class="tiny f-ink" x="48" y="404">is now rendering it twice.</text>
+    </g>
+  </g>
+  <g class="p2">
+    <text class="legend" x="48" y="259">THE ANSWER, AT ONCE</text>
+    <text class="m11 mono arr-l2post" x="48" y="280"><tspan class="b f-blue">POST</tspan> /reports</text>
+    <g class="arr-l2resp">
+      <text class="m11 mono b f-green" x="48" y="302">HTTP/1.1 202 Accepted</text>
+      <text class="m11 mono" x="48" y="319"><tspan class="f-muted">Location: </tspan><tspan class="b">/jobs/42</tspan></text>
+      <text class="m11 mono" x="48" y="336"><tspan class="f-muted">Retry-After: </tspan><tspan class="b">5</tspan></text>
+      <text class="m11 mono" x="48" y="356">{"id": "42",</text>
+      <text class="m11 mono" x="48" y="372"> "state": <tspan class="f-amber-ink">"queued"</tspan>}</text>
+    </g>
+    <g class="arr-l2note">
+      <text class="tiny f-ink" x="48" y="404">Answered in ~0.1 s; the work</text>
+      <text class="tiny f-ink" x="48" y="420">carries on without the client.</text>
+    </g>
+  </g>
+  <g class="p3">
+    <text class="legend" x="48" y="259">POLLING THE STATUS</text>
+    <text class="m11 mono arr-l3a" x="48" y="280"><tspan class="f-muted">+0:05 </tspan><tspan class="b f-green">200</tspan> <tspan class="f-blue">running</tspan> 4%</text>
+    <text class="tiny arr-l3dots" x="52" y="297">⋮  one GET every 5 s</text>
+    <g class="arr-l3b">
+      <text class="m11 mono" x="48" y="316"><tspan class="f-muted">+2:00 </tspan><tspan class="b f-green">303</tspan> See Other</text>
+      <text class="m11 mono" x="60" y="333"><tspan class="f-muted">Location: </tspan><tspan class="b">/reports/42</tspan></text>
+    </g>
+    <text class="m11 mono arr-l3c" x="48" y="354"><tspan class="b f-blue">GET</tspan> /reports/42</text>
+    <text class="m11 mono arr-l3d" x="48" y="371"><tspan class="b f-green">200</tspan> report.pdf <tspan class="b f-green">✓</tspan></text>
+    <g class="arr-l3note">
+      <text class="tiny f-ink" x="48" y="404">303 See Other: fetch the result</text>
+      <text class="tiny f-ink" x="48" y="420">with a GET at the Location.</text>
+    </g>
+  </g>
+  <g class="p4">
+    <text class="legend" x="48" y="259">RETRY SAFELY, CANCEL</text>
+    <g class="arr-l4post">
+      <text class="m11 mono" x="48" y="280"><tspan class="b f-blue">POST</tspan> /reports</text>
+      <text class="m11 mono" x="48" y="297"><tspan class="f-muted">Idempotency-Key: </tspan><tspan class="b f-orange">"a7c2…"</tspan></text>
+    </g>
+    <text class="tiny sb f-red arr-l4lost" x="48" y="314">✕ the 202 is lost on the way</text>
+    <g class="arr-l4retry">
+      <text class="m11 mono" x="48" y="336"><tspan class="b f-blue">POST</tspan> /reports</text>
+      <text class="tiny sb f-amber-ink" x="142" y="336">same key</text>
+    </g>
+    <g class="arr-l4same">
+      <text class="m11 mono" x="48" y="353"><tspan class="b f-green">202</tspan> <tspan class="f-muted">Location: </tspan><tspan class="b">/jobs/43</tspan></text>
+      <text class="tiny sb f-green" x="48" y="369">the same job, not a second one</text>
+    </g>
+    <text class="m11 mono arr-l4del" x="48" y="393"><tspan class="b f-blue">DELETE</tspan> /jobs/43</text>
+    <text class="m11 mono arr-l4can" x="48" y="410"><tspan class="b f-green">200</tspan> {"state":<tspan class="f-muted">"cancelled"</tspan>}</text>
+  </g>
+
+  <!-- ============ the API ============ -->
+  <rect class="box" x="344" y="98" width="216" height="358" rx="12"/>
+  <text class="label mid" x="452" y="121">Reports API</text>
+
+  <!-- routes -->
+  <rect class="f-bg s-line" x="354" y="133" width="196" height="22" rx="6" stroke-width="1"/>
+  <rect class="f-blue-soft s-blue arr-r1hi" x="354" y="133" width="196" height="22" rx="6" stroke-width="1.5"/>
+  <text class="c12 mono" x="362" y="148"><tspan class="b f-blue">POST</tspan> /reports</text>
+  <text class="tiny end sb f-amber-ink p1" x="542" y="148">→ PDF, ~2 min</text>
+  <text class="tiny end sb f-green p234" x="542" y="148">→ 202 at once</text>
+  <g class="p234">
+    <rect class="f-bg s-line" x="354" y="161" width="196" height="22" rx="6" stroke-width="1"/>
+    <rect class="f-blue-soft s-blue arr-r2hi" x="354" y="161" width="196" height="22" rx="6" stroke-width="1.5"/>
+    <text class="c12 mono" x="362" y="176"><tspan class="b f-blue">GET</tspan> /jobs/{id}</text>
+    <text class="tiny end" x="542" y="176">→ job status</text>
+    <rect class="f-bg s-line" x="354" y="189" width="196" height="22" rx="6" stroke-width="1"/>
+    <rect class="f-blue-soft s-blue arr-r3hi" x="354" y="189" width="196" height="22" rx="6" stroke-width="1.5"/>
+    <text class="c12 mono" x="362" y="204"><tspan class="b f-blue">GET</tspan> /reports/{id}</text>
+    <text class="tiny end" x="542" y="204">→ PDF</text>
+  </g>
+  <g class="p4">
+    <rect class="f-bg s-line" x="354" y="217" width="196" height="22" rx="6" stroke-width="1"/>
+    <rect class="f-blue-soft s-blue arr-r4hi" x="354" y="217" width="196" height="22" rx="6" stroke-width="1.5"/>
+    <text class="c12 mono" x="362" y="232"><tspan class="b f-blue">DELETE</tspan> /jobs/{id}</text>
+    <text class="tiny end" x="542" y="232">→ cancels</text>
+  </g>
+  <line class="s-line" x1="354" y1="252" x2="550" y2="252" stroke-width="1"/>
+
+  <!-- step 1: the work runs inside the request -->
+  <g class="p1">
+    <text class="tiny" x="362" y="182">The answer is the PDF itself,</text>
+    <text class="tiny" x="362" y="198">so the call stays open until</text>
+    <text class="tiny" x="362" y="214">the report is rendered.</text>
+    <text class="legend" x="362" y="272">INSIDE THE REQUEST</text>
+    <text class="tiny f-ink" x="362" y="292">renders the report: ~2 min</text>
+    <text class="tiny" x="362" y="321">#1</text>
+    <rect class="f-line" x="384" y="312" width="158" height="10" rx="5"/>
+    <rect class="f-blue arr-c1" x="384" y="312" width="158" height="10" rx="5"/>
+    <text class="tiny sb f-red arr-c1note" x="384" y="340">client gone, still rendering</text>
+    <text class="tiny" x="362" y="367">#2</text>
+    <rect class="f-line" x="384" y="358" width="158" height="10" rx="5"/>
+    <rect class="f-blue arr-c2" x="384" y="358" width="158" height="10" rx="5"/>
+    <text class="tiny sb f-red arr-c2note" x="384" y="386">the retry: same report again</text>
+    <text class="tiny" x="362" y="420">Each copy burns CPU and memory</text>
+    <text class="tiny" x="362" y="436">for about two minutes.</text>
+  </g>
+
+  <!-- step 2: accept, then work later -->
+  <g class="p2">
+    <text class="legend" x="362" y="272">WHAT THE API DOES</text>
+    <text class="tiny f-ink" x="378" y="294">validate the request</text>
+    <text class="tiny f-ink" x="378" y="314">save job 42 as <tspan class="sb f-amber-ink">queued</tspan></text>
+    <text class="tiny f-ink" x="378" y="334">put job 42 on the queue</text>
+    <text class="tiny f-ink" x="378" y="354">answer 202 right away</text>
+    <text class="tiny b f-green arr-k1" x="362" y="294">✓</text>
+    <text class="tiny b f-green arr-k2" x="362" y="314">✓</text>
+    <text class="tiny b f-green arr-k3" x="362" y="334">✓</text>
+    <text class="tiny b f-green arr-k4" x="362" y="354">✓</text>
+    <text class="tiny" x="362" y="404">An invalid request gets its 400</text>
+    <text class="tiny" x="362" y="420">now, before any job exists.</text>
+  </g>
+
+  <!-- step 3: the status resource -->
+  <g class="p3">
+    <text class="legend" x="362" y="272">THE STATUS RESOURCE</text>
+    <g class="arr-api3a">
+      <text class="m11 mono b f-green" x="362" y="294">200 OK</text>
+      <text class="m11 mono f-muted" x="362" y="310">Retry-After: 5</text>
+      <text class="m11 mono" x="362" y="330">{"id": "42",</text>
+      <text class="m11 mono" x="362" y="346"> "state": <tspan class="f-blue">"running"</tspan>,</text>
+      <text class="m11 mono" x="362" y="362"> "progress": 4}</text>
+    </g>
+    <g class="arr-api3b">
+      <text class="m11 mono b f-green" x="362" y="294">303 See Other</text>
+      <text class="m11 mono" x="362" y="310"><tspan class="f-muted">Location: </tspan><tspan class="b">/reports/42</tspan></text>
+      <text class="m11 mono" x="362" y="330">{"id": "42",</text>
+      <text class="m11 mono" x="362" y="346"> "state": <tspan class="f-green">"succeeded"</tspan>,</text>
+      <text class="m11 mono" x="362" y="362"> "result": "/reports/42"}</text>
+    </g>
+    <text class="tiny" x="362" y="404">Answered from the job record:</text>
+    <text class="tiny" x="362" y="420">a poll never waits for the work.</text>
+  </g>
+
+  <!-- step 4: idempotency, and how every job ends -->
+  <g class="p4">
+    <text class="legend" x="362" y="272">SAME KEY, SAME JOB</text>
+    <rect class="f-blue-soft s-blue arr-k4no" x="356" y="299" width="190" height="16" rx="4" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber arr-k4yes" x="356" y="317" width="190" height="16" rx="4" stroke-width="1.5"/>
+    <text class="tiny f-ink" x="362" y="292">key <tspan class="mono b f-orange">"a7c2…"</tspan> seen before?</text>
+    <text class="m11 mono" x="362" y="311">no  → new job 43</text>
+    <text class="m11 mono" x="362" y="329">yes → job 43 again</text>
+    <text class="tiny" x="362" y="347">Nothing is queued twice.</text>
+    <text class="legend" x="362" y="374">EVERY JOB ENDS</text>
+    <text class="m11 mono b f-green" x="362" y="393">succeeded</text>
+    <text class="tiny" x="432" y="393">→ 303 to the result</text>
+    <text class="m11 mono b f-red" x="362" y="411">failed</text>
+    <text class="tiny" x="432" y="411">→ with the reason</text>
+    <text class="m11 mono b f-muted" x="362" y="429">cancelled</text>
+    <text class="tiny" x="432" y="429">→ after a DELETE</text>
+    <text class="tiny" x="362" y="447">No client has to poll forever.</text>
+  </g>
+
+  <!-- ============ the back end: not there in step 1 (ghosted), in use from step 2 ============ -->
+  <g class="arr-ghost">
+    <!-- queue -->
+    <text class="tiny sb f-ink" x="600" y="103">queue</text>
+    <line class="wire" x1="560" y1="132" x2="599" y2="132" marker-end="url(#ah)"/>
+    <rect class="box" x="600" y="110" width="136" height="44" rx="8"/>
+    <rect class="none s-line dash" x="608" y="123" width="26" height="18" rx="4" stroke-width="1.5"/>
+    <rect class="none s-line dash" x="638" y="123" width="26" height="18" rx="4" stroke-width="1.5"/>
+    <rect class="none s-line dash" x="668" y="123" width="26" height="18" rx="4" stroke-width="1.5"/>
+    <rect class="none s-line dash" x="698" y="123" width="26" height="18" rx="4" stroke-width="1.5"/>
+    <line class="wire" x1="736" y1="132" x2="775" y2="132" marker-end="url(#ah)"/>
+
+    <!-- worker -->
+    <rect class="box" x="776" y="100" width="148" height="66" rx="12"/>
+    <text class="label mid" x="850" y="123">Worker</text>
+    <text class="tiny mid arr-widle" x="850" y="141">idle</text>
+    <text class="tiny mid sb f-blue arr-w42run" x="850" y="141">job 42 · running</text>
+    <text class="tiny mid sb f-green arr-w42done" x="850" y="141">job 42 · done ✓</text>
+    <text class="tiny mid sb f-blue arr-w43run" x="850" y="141">job 43 · running</text>
+    <text class="tiny mid sb f-muted arr-w43can" x="850" y="141">job 43 · stopped</text>
+    <rect class="f-line" x="792" y="150" width="116" height="6" rx="3"/>
+    <rect class="f-purple arr-wbar" x="792" y="150" width="116" height="6" rx="3"/>
+    <g class="arr-wspin">
+      <circle class="none s-line" cx="906" cy="117" r="7" stroke-width="2.5"/>
+      <circle class="none s-purple spin" cx="906" cy="117" r="7" stroke-width="2.5" stroke-dasharray="11 33" stroke-linecap="round"/>
+    </g>
+
+    <!-- worker → stores -->
+    <line class="wire" x1="830" y1="166" x2="830" y2="205" marker-end="url(#ah)"/>
+    <text class="tiny end" x="822" y="190">state, progress</text>
+    <line class="wire" x1="908" y1="166" x2="908" y2="371" marker-end="url(#ah)"/>
+    <text class="tiny end" x="900" y="356">stores the PDF</text>
+
+    <!-- job-status store -->
+    <line class="wire" x1="560" y1="270" x2="600" y2="270"/>
+    <rect class="box" x="600" y="206" width="282" height="128" rx="10"/>
+    <text class="tname mono" x="612" y="224">jobs</text>
+    <text class="tiny" x="646" y="224">job-status store</text>
+    <text class="th" x="612" y="242">id</text>
+    <text class="th" x="640" y="242">state</text>
+    <text class="th" x="744" y="242">result</text>
+    <g class="p4"><text class="th" x="832" y="242">key</text></g>
+    <line class="s-line" x1="608" y1="248" x2="874" y2="248" stroke-width="1"/>
+    <rect class="none s-teal arr-row42hi" x="606" y="254" width="270" height="16" rx="4" stroke-width="1.5"/>
+    <g class="arr-row42">
+      <text class="m11 mono" x="612" y="266">42</text>
+    </g>
+    <text class="m11 mono f-amber-ink arr-s42q" x="640" y="266">queued</text>
+    <text class="m11 mono f-blue arr-s42r1" x="640" y="266">running 1%</text>
+    <text class="m11 mono f-blue arr-s42r4" x="640" y="266">running 4%</text>
+    <text class="m11 mono f-blue arr-s42r55" x="640" y="266">running 55%</text>
+    <text class="m11 mono f-green arr-s42ok" x="640" y="266">succeeded</text>
+    <text class="m11 mono f-muted arr-res42none" x="744" y="266">—</text>
+    <text class="m11 mono arr-res42" x="744" y="266">/reports/42</text>
+    <g class="p4">
+      <text class="m11 mono f-muted" x="832" y="266">—</text>
+      <rect class="f-amber-soft s-amber arr-row43hi" x="606" y="272" width="270" height="16" rx="4" stroke-width="1.5"/>
+      <g class="arr-row43">
+        <text class="m11 mono" x="612" y="284">43</text>
+        <text class="m11 mono f-muted" x="744" y="284">—</text>
+        <text class="m11 mono b f-orange" x="832" y="284">a7c2…</text>
+      </g>
+      <text class="m11 mono f-amber-ink arr-s43q" x="640" y="284">queued</text>
+      <text class="m11 mono f-blue arr-s43r" x="640" y="284">running 3%</text>
+      <text class="m11 mono f-muted arr-s43c" x="640" y="284">cancelled</text>
+      <text class="tiny sb f-amber-ink" x="612" y="320">each row is deleted 24 h after its job ends</text>
+    </g>
+    <g class="p23"><text class="tiny" x="612" y="320">the worker writes it, the API reads it</text></g>
+
+    <!-- result store -->
+    <line class="wire" x1="560" y1="414" x2="600" y2="414"/>
+    <rect class="box" x="600" y="372" width="324" height="84" rx="10"/>
+    <text class="tiny sb f-ink" x="612" y="390">result store</text>
+    <text class="tiny" x="682" y="390">object storage</text>
+    <rect class="none s-teal arr-filehi" x="606" y="400" width="146" height="24" rx="5" stroke-width="1.5"/>
+    <g class="arr-file">
+      <path class="f-teal-soft s-teal" d="M613 404h8l4 4v12h-12z" stroke-width="1.5" stroke-linejoin="round"/>
+      <path class="none s-teal" d="M621 404v4h4" stroke-width="1.5" stroke-linejoin="round"/>
+      <text class="m11 mono" x="633" y="417">reports/42.pdf</text>
+    </g>
+    <g class="p4"><text class="tiny end sb f-amber-ink" x="912" y="417">deleted after 24 h</text></g>
+    <g class="p34"><text class="tiny" x="612" y="444">served by the API at /reports/42</text></g>
+  </g>
+
+  <!-- ============ marks and traffic ============ -->
+  <g class="arr-x1">
+    <circle class="f-red" cx="331" cy="193" r="8"/>
+    <path class="none s-bg" d="M327.5 189.5l7 7M334.5 189.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g class="arr-xlost">
+    <circle class="f-red" cx="262" cy="193" r="8"/>
+    <path class="none s-bg" d="M258.5 189.5l7 7M265.5 189.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <g class="tok arr-post"><circle class="pkt f-blue" r="7"/><text class="lbl mid mono f-blue" y="-12">POST</text></g>
+  <g class="tok arr-retry"><circle class="pkt f-blue" r="7"/><text class="lbl mid mono f-blue" y="-12">POST</text><text class="tiny mid sb f-amber-ink" y="-25">retry</text></g>
+  <g class="tok arr-get"><circle class="pkt f-blue" r="7"/><text class="lbl mid mono f-blue" y="-12">GET</text></g>
+  <g class="tok arr-del"><circle class="pkt f-blue" r="7"/><text class="lbl mid mono f-blue" y="-12">DELETE</text></g>
+  <g class="tok arr-r504"><circle class="pkt f-red" r="7"/><text class="lbl mid mono f-red" y="-12">504</text></g>
+  <g class="tok arr-r202"><circle class="pkt f-green" r="7"/><text class="lbl mid mono f-green" y="-12">202</text></g>
+  <g class="tok arr-lost"><circle class="pkt f-green" r="7"/><text class="lbl mid mono f-green" y="-12">202</text></g>
+  <g class="tok arr-r200"><circle class="pkt f-green" r="7"/><text class="lbl mid mono f-green" y="-12">200</text></g>
+  <g class="tok arr-r303"><circle class="pkt f-green" r="7"/><text class="lbl mid mono f-green" y="-12">303</text></g>
+  <g class="tok arr-pdf"><path class="doc" d="M-6 -8h8l4 4v12h-12z"/><text class="lbl mid mono f-teal" y="-13">PDF</text></g>
+  <circle class="pkt f-teal tok arr-sw" r="6"/>
+  <circle class="pkt f-teal tok arr-ww" r="6"/>
+  <path class="doc tok arr-wpdf" d="M-6 -8h8l4 4v12h-12z"/>
+  <path class="doc tok arr-rpdf" d="M-6 -8h8l4 4v12h-12z"/>
+  <g class="tok arr-m42"><rect class="ev" x="-13" y="-9" width="26" height="18" rx="4"/><text class="lbl mid mono f-bg" y="4">42</text></g>
+  <g class="tok arr-m43"><rect class="ev" x="-13" y="-9" width="26" height="18" rx="4"/><text class="lbl mid mono f-bg" y="4">43</text></g>
+</g>
+</svg>
