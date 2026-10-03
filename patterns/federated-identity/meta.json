@@ -1,0 +1,40 @@
+{
+  "aka": ["Identity federation", "Federated authentication"],
+  "steps": [
+    {
+      "title": "Accounts in every app",
+      "caption": "The app keeps everyone's password hash and MFA. Bo leaves the partner; his account stays active.",
+      "body": "Without federation the application is its own identity store: it keeps a username and password hash for every user and runs password resets and multi-factor setup itself, so partner staff need yet another account. When Bo leaves the partner company, nobody tells the application, and his account here stays active: an **orphaned account** that his old password still opens."
+    },
+    {
+      "title": "Trust an identity provider",
+      "caption": "Users sign in at their own identity provider; the app checks the signed token and starts a session.",
+      "body": "The application becomes a **relying party**: it sends each user to their home **identity provider** (OpenID Connect or SAML), checks the signed token or assertion that comes back against the provider's published keys, the issuer and the audience, and only then starts its own session. It never sees a password: password rules, multi-factor authentication and account recovery belong to the provider. Each trust is set up once, by exchanging metadata (issuer, endpoints, signing keys)."
+    },
+    {
+      "title": "One broker, many providers",
+      "caption": "The app trusts one broker. It finds Bo's provider by email domain and maps his group to a role.",
+      "body": "Instead of one trust per provider, the application trusts a single **federation broker**, and the broker trusts the company's provider, the partner's and a social provider. **Home realm discovery** picks the right one, here from the email domain: anyone at `partner.example` goes to the partner's provider. The broker maps each provider's claims to the application's own (the partner's group `Logistics-Admins` becomes the role `shipment-admin`), so the application sees one issuer and one claim format."
+    },
+    {
+      "title": "Accounts end at the source",
+      "caption": "The partner disables Bo: sign-in fails at his IdP, his session ends and SCIM deletes his profile.",
+      "body": "The partner disables Bo in its own directory, so his next sign-in fails at the partner's provider. Existing sessions end when their tokens expire or when the provider signals a logout, and with **SCIM** provisioning the application's local profile is removed as well. The trust itself needs care: when a provider rotates its signing key, the broker must pick the new key up from the metadata, or every sign-in through that provider fails."
+    }
+  ],
+  "related": ["openid-connect", "saml-sso", "zero-trust-access", "jwt-validation", "sessions-vs-tokens", "oauth2-authorization-code-pkce", "token-exchange", "policy-based-authorization"],
+  "references": [
+    { "title": "Azure Architecture Center — Federated Identity pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/federated-identity" },
+    { "title": "OpenID Connect Core 1.0 incorporating errata set 2", "url": "https://openid.net/specs/openid-connect-core-1_0.html" },
+    { "title": "OASIS — Security Assertion Markup Language (SAML) V2.0 Technical Overview", "url": "https://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html" },
+    { "title": "NIST SP 800-63C-4 — Digital Identity Guidelines: Federation and Assertions (2025)", "url": "https://csrc.nist.gov/pubs/sp/800/63/c/4/final" },
+    { "title": "RFC 7643 — System for Cross-domain Identity Management: Core Schema", "url": "https://www.rfc-editor.org/rfc/rfc7643" },
+    { "title": "RFC 7644 — System for Cross-domain Identity Management: Protocol", "url": "https://www.rfc-editor.org/rfc/rfc7644" },
+    { "title": "OpenID Connect Back-Channel Logout 1.0 incorporating errata set 1", "url": "https://openid.net/specs/openid-connect-backchannel-1_0.html" },
+    { "title": "OpenID Federation 1.0 (Final Specification, 2026)", "url": "https://openid.net/specs/openid-federation-1_0.html" },
+    { "title": "Microsoft Entra External ID — What is B2B collaboration?", "url": "https://learn.microsoft.com/en-us/entra/external-id/what-is-b2b" },
+    { "title": "Keycloak Server Administration Guide — Integrating identity providers", "url": "https://www.keycloak.org/docs/latest/server_admin/index.html#_identity_broker" },
+    { "title": "Auth0 Docs — Configure Identifier First Authentication (home realm discovery)", "url": "https://auth0.com/docs/authenticate/login/auth0-universal-login/identifier-first" },
+    { "title": "MSRC — Potential Risk of Privilege Escalation in Azure AD Applications (email claims)", "url": "https://www.microsoft.com/en-us/msrc/blog/2023/06/potential-risk-of-privilege-escalation-in-azure-ad-applications" }
+  ]
+}

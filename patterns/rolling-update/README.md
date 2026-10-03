@@ -91,7 +91,7 @@ The names differ by platform; the two dials, the readiness gate and the drain ar
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
-- Immutable Infrastructure *(planned)* — Never patch servers in place: bake a new image and replace them.
+- [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.
 
 ## References
 

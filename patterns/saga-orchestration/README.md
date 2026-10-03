@@ -60,10 +60,10 @@ Compensation is **semantic**, not an undo. The charge stays in the payments ledg
 ## Related patterns
 
 - [Saga (Choreography)](../saga-choreography/) — Services react to each other's events to complete a workflow, with no central coordinator.
-- Compensating Transaction *(planned)* — Undo the completed steps of a multi-step operation that failed part-way.
+- [Compensating Transaction](../compensating-transaction/) — Undo the completed steps of a multi-step operation that failed part-way.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
-- Database per Service *(planned)* — Each service owns its data; others go through its API or events, never its tables.
+- [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 

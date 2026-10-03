@@ -111,7 +111,7 @@ Choose per workload, starting from its RTO and RPO, and take the cheapest strate
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 - Chaos Engineering *(planned)* — Inject failures on purpose to prove the system degrades the way you expect.
-- Immutable Infrastructure *(planned)* — Never patch servers in place: bake a new image and replace them.
+- [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 
 ## References

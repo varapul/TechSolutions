@@ -79,7 +79,7 @@ OAuth 2.0 answers *what may this app call?*; OpenID Connect adds *who just signe
 - [OAuth 2.0 Authorization Code + PKCE](../oauth2-authorization-code-pkce/) — The standard sign-in flow for web, mobile and single-page apps: code via the browser, tokens via the back channel.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - SAML 2.0 Single Sign-On *(planned)* — Enterprise SSO: the identity provider posts a signed assertion to the app through the browser.
-- Federated Identity *(planned)* — Let an external identity provider authenticate users; the application trusts its tokens.
+- [Federated Identity](../federated-identity/) — Let an external identity provider authenticate users; the application trusts its tokens.
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 - [Refresh Token Rotation](../refresh-token-rotation/) — Short-lived access tokens, single-use refresh tokens, and reuse detection that revokes the whole family.
 

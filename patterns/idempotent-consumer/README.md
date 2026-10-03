@@ -130,7 +130,7 @@ Stripe's API is a widely copied implementation. Its v1 API accepts the header on
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 - [Saga (Orchestration)](../saga-orchestration/) — A coordinator runs local transactions in sequence and triggers compensations when one fails.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
-- Competing Consumers *(planned)* — Several workers pull from one queue, so work is shared and throughput scales out.
+- [Competing Consumers](../competing-consumers/) — Several workers pull from one queue, so work is shared and throughput scales out.
 - [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
 - [Serverless (Functions)](../serverless/) — Functions start per event, scale out automatically and scale to zero when idle.
 

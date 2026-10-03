@@ -1,0 +1,36 @@
+{
+  "aka": ["Cellular architecture"],
+  "steps": [
+    {
+      "title": "One stack for everyone",
+      "caption": "Everyone shares one stack. J's poison request and its retries crash every instance: 100% are hit.",
+      "body": "Twelve customers share one stack: one load balancer, eight app instances and one database. Customer J sends a **poison request**, one that crashes whichever instance handles it, and each retry crashes another until the service is down for everyone. A bad deployment would do the same, since it reaches every customer at once, and the only way to grow is to make this one stack bigger."
+    },
+    {
+      "title": "Split into cells",
+      "caption": "Four identical cells share nothing. The router looks up each customer's cell and sends it there.",
+      "body": "The same stack is deployed as four identical, independent **cells**, each with its own load balancer, instances and database, and each serving a fixed list of customers. A thin **cell router** reads the request's partition key (here the customer ID), looks up that customer's cell and forwards the request, with no business logic of its own. Cells share no state and never call each other, so a failure inside one cell has no way into another."
+    },
+    {
+      "title": "Failure stays in one cell",
+      "caption": "The poison request crashes only cell 2: 25% of customers. New versions go out one wave at a time.",
+      "body": "J's poison request is routed to cell 2, where it and its retry crash both instances, but only cell 2's customers D, J and M are affected: **25%** with four cells. K and the other customers of cells 1, 3 and 4 notice nothing. Cells contain bad deployments the same way: a new version goes to one cell first, bakes while its alarms are watched, and reaches the others only if it stays healthy."
+    },
+    {
+      "title": "Grow by adding cells",
+      "caption": "Full cells stay at their tested size: a fifth cell takes the new customers. The router stays tiny.",
+      "body": "Each cell has a fixed maximum size that has been load-tested (here, three customers). When the cells are full, a fifth cell is added for the new customers instead of growing the old ones, and one cell's share of customers drops to 20%. The router is the one part every request passes through, so it stays a tiny lookup, runs replicated with its table cached in memory, and is changed with more care than any cell. Moving an existing customer to another cell means moving their data, so plan for it from the start."
+    }
+  ],
+  "related": ["deployment-stamps", "bulkhead", "multi-region-active-active", "load-balancing", "canary-release", "rolling-update", "sharding", "disaster-recovery-strategies"],
+  "references": [
+    { "title": "AWS Well-Architected — Reducing the Scope of Impact with Cell-Based Architecture (whitepaper)", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reducing-scope-of-impact-with-cell-based-architecture/reducing-scope-of-impact-with-cell-based-architecture.html" },
+    { "title": "AWS Well-Architected Reliability Pillar — REL10-BP03 Use bulkhead architectures to limit scope of impact", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_fault_isolation_use_bulkhead.html" },
+    { "title": "AWS Builder Center — Workload isolation using shuffle-sharding (first published in the Amazon Builders' Library)", "url": "https://builder.aws.com/content/3F06NpJ8YeoIGP8VHTw4n81pFn8/workload-isolation-using-shuffle-sharding" },
+    { "title": "Azure Architecture Center — Deployment Stamps pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/deployment-stamp" },
+    { "title": "Slack Engineering — Slack's Migration to a Cellular Architecture (2023)", "url": "https://slack.engineering/slacks-migration-to-a-cellular-architecture/" },
+    { "title": "Shopify Engineering — A Pods Architecture To Allow Shopify To Scale (2018)", "url": "https://shopify.engineering/a-pods-architecture-to-allow-shopify-to-scale" },
+    { "title": "Roblox — How We're Making Roblox's Infrastructure More Efficient and Resilient (2023)", "url": "https://about.roblox.com/newsroom/2023/12/making-robloxs-infrastructure-efficient-resilient" },
+    { "title": "WSO2 — Cell-Based Architecture: a reference architecture (the other meaning of the term)", "url": "https://github.com/wso2/reference-architecture/blob/master/reference-architecture-cell-based.md" }
+  ]
+}

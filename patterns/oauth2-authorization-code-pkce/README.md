@@ -66,7 +66,7 @@ The hash only works one way. Seeing the challenge in step 1 doesn't reveal the v
 - [OAuth 2.0 Client Credentials](../oauth2-client-credentials/) — Machine-to-machine access tokens, with no user involved.
 - Device Authorization Grant *(planned)* — Sign in on a TV or CLI by approving a short code on your phone.
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
-- Federated Identity *(planned)* — Let an external identity provider authenticate users; the application trusts its tokens.
+- [Federated Identity](../federated-identity/) — Let an external identity provider authenticate users; the application trusts its tokens.
 
 ## References
 

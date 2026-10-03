@@ -81,7 +81,7 @@ The last row is the one to watch. A backlog drains only at the *spare* capacity,
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Competing Consumers *(planned)* — Several workers pull from one queue, so work is shared and throughput scales out.
+- [Competing Consumers](../competing-consumers/) — Several workers pull from one queue, so work is shared and throughput scales out.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - Asynchronous Request-Reply *(planned)* — Accept now with 202, process in the background, and let the client poll a status URL.

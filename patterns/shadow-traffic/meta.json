@@ -1,0 +1,39 @@
+{
+  "aka": ["Traffic mirroring", "Traffic shadowing", "Request mirroring"],
+  "steps": [
+    {
+      "title": "Mirror live traffic",
+      "caption": "v1 answers every request. The proxy also sends v2 a copy, waits for nothing and drops v2's answer.",
+      "body": "The proxy sends every request to **v1**, and v1's response goes back to the user. It also sends a **copy** to v2 without waiting for it (*fire and forget*) and throws v2's response away. Users never see v2, and v2's slowness or failure does not hold up their answers."
+    },
+    {
+      "title": "Watch v2 under real load",
+      "caption": "Real mix, full volume: v2 fails on an empty query, p99 climbs, memory creeps up. No user notices.",
+      "body": "v2 now receives the real mix of production requests at production volume, including inputs no test suite thought of. Its own metrics show what to watch: errors (here a 500 for a search with an empty query, while the user still gets v1's 200), p99 latency under the real mix, and resource use over hours, such as memory that keeps climbing."
+    },
+    {
+      "title": "Compare the responses",
+      "caption": "Mirroring drops v2's answers. A comparator diffs them; two copies of v1 show which fields are noise.",
+      "body": "Mirroring alone shows that v2 copes, not that it is right, because nobody looks at its answers. A comparator such as Diffy sends each copy to v2 and to two copies of v1 and diffs the answers. Fields that differ even between the two v1 copies, such as timestamps and generated IDs, are noise; only the rest is reported, here a `price` that changed from a string to a number."
+    },
+    {
+      "title": "Keep the shadow harmless",
+      "caption": "Copy only reads, sample 10%, mark the copies, isolate v2. Once v2 behaves, stop and canary it.",
+      "body": "A copy that writes would write twice: a second charge, a second email, shared data changed twice. So copy only reads, or give v2 stubs and a store of its own; mark the copies (Envoy and Istio append `-shadow` to the Host header); sample a percentage to limit the extra load; and remove the rule when you are done. Once the fixes are in and v2 has behaved for long enough, release it the usual way, with a canary."
+    }
+  ],
+  "related": ["canary-release", "parallel-run", "blue-green-deployment", "service-mesh", "feature-flags", "load-balancing", "rolling-update", "slo-error-budgets"],
+  "references": [
+    { "title": "Istio — Mirroring (task)", "url": "https://istio.io/latest/docs/tasks/traffic-management/mirroring/" },
+    { "title": "Istio — Virtual Service reference (mirror, mirrors, mirrorPercentage)", "url": "https://istio.io/latest/docs/reference/config/networking/virtual-service/" },
+    { "title": "Envoy — HTTP route components: RequestMirrorPolicy", "url": "https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#config-route-v3-routeaction-requestmirrorpolicy" },
+    { "title": "NGINX — Module ngx_http_mirror_module", "url": "https://nginx.org/en/docs/http/ngx_http_mirror_module.html" },
+    { "title": "Kubernetes Gateway API — HTTP request mirroring", "url": "https://gateway-api.sigs.k8s.io/guides/user-guides/http-request-mirroring/" },
+    { "title": "Kubernetes Gateway API — GEP-3171: Percentage-based Request Mirroring", "url": "https://gateway-api.sigs.k8s.io/geps/gep-3171/" },
+    { "title": "Martin Fowler — Dark Launching", "url": "https://martinfowler.com/bliki/DarkLaunching.html" },
+    { "title": "Opendiffy — Diffy: what it is and how it works (README)", "url": "https://github.com/opendiffy/diffy" },
+    { "title": "Twitter — Diffy (the original repository, archived)", "url": "https://github.com/twitter-archive/diffy" },
+    { "title": "GoReplay — capture and replay live HTTP traffic", "url": "https://github.com/probelabs/goreplay" },
+    { "title": "AWS — What is Traffic Mirroring? (Amazon VPC)", "url": "https://docs.aws.amazon.com/vpc/latest/mirroring/what-is-traffic-mirroring.html" }
+  ]
+}

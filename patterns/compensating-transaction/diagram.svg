@@ -1,0 +1,1398 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Compensating Transaction</title>
+<desc id="dg-desc">Compensating Transaction. Undo the completed steps of a multi-step operation that failed part-way. Step 1, Can't be rolled back: Flight and hotel are booked in their own systems; the car fails. No transaction spans all three. Step 2, Undo by compensating: Cancel the hotel, then the flight: new operations, not a restore. The airline keeps a $40 fee. Step 3, Compensations fail too: The hotel's cancel times out. Retrying is safe (same key); after 3 attempts a person takes over. Step 4, Design for cheap undo: Hold first, pay last: the car fails, so nothing is confirmed and the holds lapse by themselves.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">RESILIENCE &amp; RELIABILITY</text>
+  <text class="title" x="40" y="64">Compensating Transaction</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Can't be rolled back</text>
+  <text class="step on p1" x="40" y="518">1 · Can't be rolled back</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Undo by compensating</text>
+  <text class="step on p2" x="262" y="518">2 · Undo by compensating</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Compensations fail too</text>
+  <text class="step on p3" x="484" y="518">3 · Compensations fail too</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Design for cheap undo</text>
+  <text class="step on p4" x="706" y="518">4 · Design for cheap undo</text>
+  <text class="caption p1" x="40" y="552">Flight and hotel are booked in their own systems; the car fails. No transaction spans all three.</text>
+  <text class="caption p2" x="40" y="552">Cancel the hotel, then the flight: new operations, not a restore. The airline keeps a $40 fee.</text>
+  <text class="caption p3" x="40" y="552">The hotel's cancel times out. Retrying is safe (same key); after 3 attempts a person takes over.</text>
+  <text class="caption p4" x="40" y="552">Hold first, pay last: the car fails, so nothing is confirmed and the holds lapse by themselves.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Compensating Transaction. Timeline (20s loop, 1s = 5%):
+   0-25%   trip T-1042: book flight, hotel (both committed by the providers), car fails; nothing to roll back
+   25-50%  compensate newest first: cancel hotel; the worker crashes, a new one reads the log; cancel flight ($40 fee)
+   50-75%  trip T-1043: the hotel's cancel times out 3 times (same key), the case goes to a person; the flight is cancelled
+   75-100% redesign: hold seat, hold room, hold car fails; payment never reached; the holds lapse; all clears at 19.5s */
+.diagram .ct-pill { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+.diagram .ct-num { font-size: 11px; font-weight: 700; }
+.diagram .ct-w1b { opacity: 0; animation: ct-w1b var(--T) linear infinite; }
+.diagram .ct-w1a { opacity: 0; animation: ct-w1a var(--T) linear infinite; }
+.diagram .ct-w1g { opacity: 0; animation: ct-w1g var(--T) linear infinite; }
+.diagram .ct-w2b { opacity: 0; animation: ct-w2b var(--T) linear infinite; }
+.diagram .ct-w2a { opacity: 0; animation: ct-w2a var(--T) linear infinite; }
+.diagram .ct-w2g { opacity: 0; animation: ct-w2g var(--T) linear infinite; }
+.diagram .ct-w3b { opacity: 0; animation: ct-w3b var(--T) linear infinite; }
+.diagram .ct-w3r { opacity: 0; animation: ct-w3r var(--T) linear infinite; }
+.diagram .ct-case { opacity: 0; animation: ct-case var(--T) linear infinite; }
+.diagram .ct-trip1 { animation: ct-trip1 var(--T) linear infinite; }
+.diagram .ct-trip2 { opacity: 0; animation: ct-trip2 var(--T) linear infinite; }
+.diagram .ct-trip3 { opacity: 0; animation: ct-trip3 var(--T) linear infinite; }
+.diagram .ct-run { animation: ct-run var(--T) linear infinite; }
+.diagram .ct-crash { opacity: 0; animation: ct-crash var(--T) linear infinite; }
+.diagram .ct-crashbox { opacity: 0; animation: ct-crashbox var(--T) linear infinite; }
+.diagram .ct-restart { opacity: 0; animation: ct-restart var(--T) linear infinite; }
+.diagram .ct-glow { opacity: 0; animation: ct-glow var(--T) linear infinite; }
+.diagram .ct-plan1 { animation: ct-plan1 var(--T) linear infinite; }
+.diagram .ct-plan2 { opacity: 0; animation: ct-plan2 var(--T) linear infinite; }
+.diagram .ct-plan4 { opacity: 0; animation: ct-plan4 var(--T) linear infinite; }
+.diagram .ct-hard { animation: ct-hard var(--T) linear infinite; }
+.diagram .ct-never { opacity: 0; animation: ct-never var(--T) linear infinite; }
+.diagram .ct-r1 { animation: ct-r1 var(--T) linear infinite; }
+.diagram .ct-r2 { animation: ct-r2 var(--T) linear infinite; }
+.diagram .ct-r3 { animation: ct-r3 var(--T) linear infinite; }
+.diagram .ct-r1b { animation: ct-r1b var(--T) linear infinite; }
+.diagram .ct-r2b { animation: ct-r2b var(--T) linear infinite; }
+.diagram .ct-r3b { animation: ct-r3b var(--T) linear infinite; }
+.diagram .ct-r1x { animation: ct-r1x var(--T) linear infinite; }
+.diagram .ct-r1y { opacity: 0; animation: ct-r1y var(--T) linear infinite; }
+.diagram .ct-r2x { animation: ct-r2x var(--T) linear infinite; }
+.diagram .ct-r2y { opacity: 0; animation: ct-r2y var(--T) linear infinite; }
+.diagram .ct-r1c { opacity: 0; animation: ct-r1c var(--T) linear infinite; }
+.diagram .ct-r2c { opacity: 0; animation: ct-r2c var(--T) linear infinite; }
+.diagram .ct-a1 { opacity: 0; animation: ct-a1 var(--T) linear infinite; }
+.diagram .ct-a2 { opacity: 0; animation: ct-a2 var(--T) linear infinite; }
+.diagram .ct-a3 { opacity: 0; animation: ct-a3 var(--T) linear infinite; }
+.diagram .ct-esc { opacity: 0; animation: ct-esc var(--T) linear infinite; }
+.diagram .ct-r1h { opacity: 0; animation: ct-r1h var(--T) linear infinite; }
+.diagram .ct-r2h { opacity: 0; animation: ct-r2h var(--T) linear infinite; }
+.diagram .ct-r3h { opacity: 0; animation: ct-r3h var(--T) linear infinite; }
+.diagram .ct-lapse { opacity: 0; animation: ct-lapse var(--T) linear infinite; }
+.diagram .ct-u1 { opacity: 0; animation: ct-u1 var(--T) linear infinite; }
+.diagram .ct-u2 { opacity: 0; animation: ct-u2 var(--T) linear infinite; }
+.diagram .ct-save { opacity: 0; animation: ct-save var(--T) linear infinite; }
+.diagram .ct-fn1a { opacity: 0; animation: ct-fn1a var(--T) linear infinite; }
+.diagram .ct-fn1b { animation: ct-fn1b var(--T) linear infinite; }
+.diagram .ct-fn2 { opacity: 0; animation: ct-fn2 var(--T) linear infinite; }
+.diagram .ct-fn3 { opacity: 0; animation: ct-fn3 var(--T) linear infinite; }
+.diagram .ct-fn4a { opacity: 0; animation: ct-fn4a var(--T) linear infinite; }
+.diagram .ct-fn4b { opacity: 0; animation: ct-fn4b var(--T) linear infinite; }
+.diagram .ct-fo { animation: ct-fo var(--T) linear infinite; }
+.diagram .ct-fh { opacity: 0; animation: ct-fh var(--T) linear infinite; }
+.diagram .ct-fg { opacity: 0; animation: ct-fg var(--T) linear infinite; }
+.diagram .ct-ftoff { animation: ct-ftoff var(--T) linear infinite; }
+.diagram .ct-ftback { opacity: 0; animation: ct-ftback var(--T) linear infinite; }
+.diagram .ct-fthold { opacity: 0; animation: ct-fthold var(--T) linear infinite; }
+.diagram .ct-fr1a { animation: ct-fr1a var(--T) linear infinite; }
+.diagram .ct-fr1b { opacity: 0; animation: ct-fr1b var(--T) linear infinite; }
+.diagram .ct-fr1c { opacity: 0; animation: ct-fr1c var(--T) linear infinite; }
+.diagram .ct-fr2a { opacity: 0; animation: ct-fr2a var(--T) linear infinite; }
+.diagram .ct-fr2b { opacity: 0; animation: ct-fr2b var(--T) linear infinite; }
+.diagram .ct-fr2c { opacity: 0; animation: ct-fr2c var(--T) linear infinite; }
+.diagram .ct-ho { animation: ct-ho var(--T) linear infinite; }
+.diagram .ct-hh { opacity: 0; animation: ct-hh var(--T) linear infinite; }
+.diagram .ct-hg { opacity: 0; animation: ct-hg var(--T) linear infinite; }
+.diagram .ct-htoff { animation: ct-htoff var(--T) linear infinite; }
+.diagram .ct-htback { opacity: 0; animation: ct-htback var(--T) linear infinite; }
+.diagram .ct-hthold { opacity: 0; animation: ct-hthold var(--T) linear infinite; }
+.diagram .ct-hr1a { animation: ct-hr1a var(--T) linear infinite; }
+.diagram .ct-hr1b { opacity: 0; animation: ct-hr1b var(--T) linear infinite; }
+.diagram .ct-hr1c { opacity: 0; animation: ct-hr1c var(--T) linear infinite; }
+.diagram .ct-hr2a { opacity: 0; animation: ct-hr2a var(--T) linear infinite; }
+.diagram .ct-hr2c { opacity: 0; animation: ct-hr2c var(--T) linear infinite; }
+.diagram .ct-hdown { opacity: 0; animation: ct-hdown var(--T) linear infinite; }
+.diagram .ct-tmo { opacity: 0; animation: ct-tmo var(--T) linear infinite; }
+.diagram .ct-cx { animation: ct-cx var(--T) linear infinite; }
+.diagram .ct-fbar { transform-box: fill-box; transform-origin: 0 50%; animation: ct-fbar var(--T) linear infinite; }
+.diagram .ct-hbar { transform-box: fill-box; transform-origin: 0 50%; animation: ct-hbar var(--T) linear infinite; }
+.diagram .ct-ib { opacity: 0; animation: ct-ib var(--T) linear infinite; }
+.diagram .ct-if { animation: ct-if var(--T) linear infinite; }
+.diagram .ct-ic { opacity: 0; animation: ct-ic var(--T) linear infinite; }
+.diagram .ct-id { opacity: 0; animation: ct-id var(--T) linear infinite; }
+.diagram .ct-ia { opacity: 0; animation: ct-ia var(--T) linear infinite; }
+.diagram .ct-ih { opacity: 0; animation: ct-ih var(--T) linear infinite; }
+.diagram .ct-in { opacity: 0; animation: ct-in var(--T) linear infinite; }
+.diagram .ct-d1 { animation: ct-d1 var(--T) linear infinite; }
+.diagram .ct-d2 { opacity: 0; animation: ct-d2 var(--T) linear infinite; }
+.diagram .ct-d3 { opacity: 0; animation: ct-d3 var(--T) linear infinite; }
+.diagram .ct-d4 { opacity: 0; animation: ct-d4 var(--T) linear infinite; }
+.diagram .ct-qe { animation: ct-qe var(--T) linear infinite; }
+.diagram .ct-qc { opacity: 0; animation: ct-qc var(--T) linear infinite; }
+@keyframes ct-w1b {
+  0% { transform: translate(500px, 236px); opacity: 0; }
+  1.75% { transform: translate(500px, 236px); opacity: 0; }
+  2% { opacity: 1; }
+  2.15% { transform: translate(536px, 236px); }
+  2.917% { transform: translate(536px, 167px); }
+  3.839% { transform: translate(619px, 167px); opacity: 1; }
+  4.089% { transform: translate(619px, 167px); opacity: 0; }
+  76.5% { transform: translate(500px, 236px); opacity: 0; }
+  76.75% { opacity: 1; }
+  76.9% { transform: translate(536px, 236px); }
+  77.667% { transform: translate(536px, 167px); }
+  78.589% { transform: translate(619px, 167px); opacity: 1; }
+  78.839% { transform: translate(619px, 167px); opacity: 0; }
+  100% { transform: translate(619px, 167px); opacity: 0; }
+}
+@keyframes ct-w1a {
+  0% { transform: translate(500px, 236px); opacity: 0; }
+  36.75% { transform: translate(500px, 236px); opacity: 0; }
+  37% { opacity: 1; }
+  37.15% { transform: translate(536px, 236px); }
+  37.917% { transform: translate(536px, 167px); }
+  38.839% { transform: translate(619px, 167px); opacity: 1; }
+  39.089% { transform: translate(619px, 167px); opacity: 0; }
+  65% { transform: translate(500px, 236px); opacity: 0; }
+  65.25% { opacity: 1; }
+  65.4% { transform: translate(536px, 236px); }
+  66.167% { transform: translate(536px, 167px); }
+  67.089% { transform: translate(619px, 167px); opacity: 1; }
+  67.339% { transform: translate(619px, 167px); opacity: 0; }
+  100% { transform: translate(619px, 167px); opacity: 0; }
+}
+@keyframes ct-w1g {
+  0% { transform: translate(619px, 167px); opacity: 0; }
+  4.25% { transform: translate(619px, 167px); opacity: 0; }
+  4.5% { opacity: 1; }
+  5.172% { transform: translate(536px, 167px); }
+  5.939% { transform: translate(536px, 236px); }
+  6.339% { transform: translate(500px, 236px); opacity: 1; }
+  6.589% { transform: translate(500px, 236px); opacity: 0; }
+  39.25% { transform: translate(619px, 167px); opacity: 0; }
+  39.5% { opacity: 1; }
+  40.172% { transform: translate(536px, 167px); }
+  40.939% { transform: translate(536px, 236px); }
+  41.339% { transform: translate(500px, 236px); opacity: 1; }
+  41.589% { transform: translate(500px, 236px); opacity: 0; }
+  67.5% { transform: translate(619px, 167px); opacity: 0; }
+  67.75% { opacity: 1; }
+  68.422% { transform: translate(536px, 167px); }
+  69.189% { transform: translate(536px, 236px); }
+  69.589% { transform: translate(500px, 236px); opacity: 1; }
+  69.839% { transform: translate(500px, 236px); opacity: 0; }
+  79% { transform: translate(619px, 167px); opacity: 0; }
+  79.25% { opacity: 1; }
+  79.922% { transform: translate(536px, 167px); }
+  80.689% { transform: translate(536px, 236px); }
+  81.089% { transform: translate(500px, 236px); opacity: 1; }
+  81.339% { transform: translate(500px, 236px); opacity: 0; }
+  100% { transform: translate(500px, 236px); opacity: 0; }
+}
+@keyframes ct-w2b {
+  0% { transform: translate(500px, 268px); opacity: 0; }
+  7% { transform: translate(500px, 268px); opacity: 0; }
+  7.25% { opacity: 1; }
+  7.667% { transform: translate(560px, 268px); }
+  7.878% { transform: translate(560px, 287px); }
+  8.533% { transform: translate(619px, 287px); opacity: 1; }
+  8.783% { transform: translate(619px, 287px); opacity: 0; }
+  81.5% { transform: translate(500px, 268px); opacity: 0; }
+  81.75% { opacity: 1; }
+  82.167% { transform: translate(560px, 268px); }
+  82.378% { transform: translate(560px, 287px); }
+  83.033% { transform: translate(619px, 287px); opacity: 1; }
+  83.283% { transform: translate(619px, 287px); opacity: 0; }
+  100% { transform: translate(619px, 287px); opacity: 0; }
+}
+@keyframes ct-w2a {
+  0% { transform: translate(500px, 268px); opacity: 0; }
+  26.25% { transform: translate(500px, 268px); opacity: 0; }
+  26.5% { opacity: 1; }
+  26.917% { transform: translate(560px, 268px); }
+  27.128% { transform: translate(560px, 287px); }
+  27.783% { transform: translate(619px, 287px); opacity: 1; }
+  28.033% { transform: translate(619px, 287px); opacity: 0; }
+  51.75% { transform: translate(500px, 268px); opacity: 0; }
+  52% { opacity: 1; }
+  52.417% { transform: translate(560px, 268px); }
+  52.628% { transform: translate(560px, 287px); }
+  53.283% { transform: translate(619px, 287px); opacity: 1; }
+  53.533% { transform: translate(619px, 287px); opacity: 0; }
+  55.25% { transform: translate(500px, 268px); opacity: 0; }
+  55.5% { opacity: 1; }
+  55.917% { transform: translate(560px, 268px); }
+  56.128% { transform: translate(560px, 287px); }
+  56.783% { transform: translate(619px, 287px); opacity: 1; }
+  57.033% { transform: translate(619px, 287px); opacity: 0; }
+  59.25% { transform: translate(500px, 268px); opacity: 0; }
+  59.5% { opacity: 1; }
+  59.917% { transform: translate(560px, 268px); }
+  60.128% { transform: translate(560px, 287px); }
+  60.783% { transform: translate(619px, 287px); opacity: 1; }
+  61.033% { transform: translate(619px, 287px); opacity: 0; }
+  100% { transform: translate(619px, 287px); opacity: 0; }
+}
+@keyframes ct-w2g {
+  0% { transform: translate(619px, 287px); opacity: 0; }
+  9% { transform: translate(619px, 287px); opacity: 0; }
+  9.25% { opacity: 1; }
+  9.656% { transform: translate(560px, 287px); }
+  9.867% { transform: translate(560px, 268px); }
+  10.533% { transform: translate(500px, 268px); opacity: 1; }
+  10.783% { transform: translate(500px, 268px); opacity: 0; }
+  28.25% { transform: translate(619px, 287px); opacity: 0; }
+  28.5% { opacity: 1; }
+  28.906% { transform: translate(560px, 287px); }
+  29.117% { transform: translate(560px, 268px); }
+  29.783% { transform: translate(500px, 268px); opacity: 1; }
+  30.033% { transform: translate(500px, 268px); opacity: 0; }
+  83.5% { transform: translate(619px, 287px); opacity: 0; }
+  83.75% { opacity: 1; }
+  84.156% { transform: translate(560px, 287px); }
+  84.367% { transform: translate(560px, 268px); }
+  85.033% { transform: translate(500px, 268px); opacity: 1; }
+  85.283% { transform: translate(500px, 268px); opacity: 0; }
+  100% { transform: translate(500px, 268px); opacity: 0; }
+}
+@keyframes ct-w3b {
+  0% { transform: translate(500px, 300px); opacity: 0; }
+  11.25% { transform: translate(500px, 300px); opacity: 0; }
+  11.5% { opacity: 1; }
+  12.183% { transform: translate(584px, 300px); }
+  13.372% { transform: translate(584px, 407px); }
+  13.761% { transform: translate(619px, 407px); opacity: 1; }
+  14.011% { transform: translate(619px, 407px); opacity: 0; }
+  85.5% { transform: translate(500px, 300px); opacity: 0; }
+  85.75% { opacity: 1; }
+  86.433% { transform: translate(584px, 300px); }
+  87.622% { transform: translate(584px, 407px); }
+  88.011% { transform: translate(619px, 407px); opacity: 1; }
+  88.261% { transform: translate(619px, 407px); opacity: 0; }
+  100% { transform: translate(619px, 407px); opacity: 0; }
+}
+@keyframes ct-w3r {
+  0% { transform: translate(619px, 407px); opacity: 0; }
+  14.25% { transform: translate(619px, 407px); opacity: 0; }
+  14.5% { opacity: 1; }
+  14.639% { transform: translate(584px, 407px); }
+  15.828% { transform: translate(584px, 300px); }
+  16.761% { transform: translate(500px, 300px); opacity: 1; }
+  17.011% { transform: translate(500px, 300px); opacity: 0; }
+  88.25% { transform: translate(619px, 407px); opacity: 0; }
+  88.5% { opacity: 1; }
+  88.639% { transform: translate(584px, 407px); }
+  89.828% { transform: translate(584px, 300px); }
+  90.761% { transform: translate(500px, 300px); opacity: 1; }
+  91.011% { transform: translate(500px, 300px); opacity: 0; }
+  100% { transform: translate(500px, 300px); opacity: 0; }
+}
+@keyframes ct-case {
+  0% { transform: translate(407px, 284px); opacity: 0; }
+  62.75% { transform: translate(407px, 284px); opacity: 0; }
+  63% { opacity: 1; }
+  64.72% { transform: translate(407px, 414px); opacity: 1; }
+  64.97% { transform: translate(407px, 414px); opacity: 0; }
+  100% { transform: translate(407px, 414px); opacity: 0; }
+}
+@keyframes ct-trip1 {
+  0% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ct-trip2 {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-trip3 {
+  0% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-run {
+  0% { opacity: 1; }
+  31% { opacity: 1; }
+  31.5% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ct-crash {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  31.5% { opacity: 1; }
+  33.75% { opacity: 1; }
+  34.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-crashbox {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  31.5% { opacity: 1; }
+  33.75% { opacity: 1; }
+  34.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-restart {
+  0% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.25% { opacity: 1; }
+  36.5% { opacity: 1; }
+  37% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-glow {
+  0% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.25% { opacity: 1; }
+  36.5% { opacity: 1; }
+  37% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-plan1 {
+  0% { opacity: 1; }
+  25.5% { opacity: 1; }
+  26% { opacity: 0; }
+  98% { opacity: 0; }
+  98.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ct-plan2 {
+  0% { opacity: 0; }
+  25.5% { opacity: 0; }
+  26% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-plan4 {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hard {
+  0% { opacity: 1; }
+  91.25% { opacity: 1; }
+  91.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-never {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  91.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ct-r1 {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  81.25% { opacity: 0; }
+  81.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r2 {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  85.25% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r3 {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  17.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  91% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r1b {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r2b {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r3b {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  17.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r1x {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r1y {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r2x {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r2y {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r1c {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  69.75% { opacity: 0; }
+  70.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r2c {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-a1 {
+  0% { opacity: 0; }
+  51.75% { opacity: 0; }
+  52.25% { opacity: 1; }
+  55.25% { opacity: 1; }
+  55.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-a2 {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  55.75% { opacity: 1; }
+  59.25% { opacity: 1; }
+  59.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-a3 {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  59.75% { opacity: 1; }
+  62.75% { opacity: 1; }
+  63.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-esc {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r1h {
+  0% { opacity: 0; }
+  81.25% { opacity: 0; }
+  81.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r2h {
+  0% { opacity: 0; }
+  85.25% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-r3h {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-lapse {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-u1 {
+  0% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  41.5% { opacity: 1; }
+  42% { opacity: 0; }
+  65% { opacity: 0; }
+  65.5% { opacity: 1; }
+  69.75% { opacity: 1; }
+  70.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-u2 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.5% { opacity: 1; }
+  30% { opacity: 1; }
+  30.5% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52% { opacity: 1; }
+  62.75% { opacity: 1; }
+  63.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-save {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7% { opacity: 1; }
+  8% { opacity: 1; }
+  8.5% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  12.25% { opacity: 1; }
+  12.75% { opacity: 0; }
+  17% { opacity: 0; }
+  17.5% { opacity: 1; }
+  18.5% { opacity: 1; }
+  19% { opacity: 0; }
+  30% { opacity: 0; }
+  30.5% { opacity: 1; }
+  31.5% { opacity: 1; }
+  32% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42% { opacity: 1; }
+  43% { opacity: 1; }
+  43.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  52.25% { opacity: 1; }
+  52.75% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.25% { opacity: 1; }
+  64.25% { opacity: 1; }
+  64.75% { opacity: 0; }
+  69.75% { opacity: 0; }
+  70.25% { opacity: 1; }
+  71.25% { opacity: 1; }
+  71.75% { opacity: 0; }
+  81.25% { opacity: 0; }
+  81.75% { opacity: 1; }
+  82.75% { opacity: 1; }
+  83.25% { opacity: 0; }
+  85.25% { opacity: 0; }
+  85.75% { opacity: 1; }
+  86.75% { opacity: 1; }
+  87.25% { opacity: 0; }
+  91% { opacity: 0; }
+  91.5% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  96% { opacity: 1; }
+  96.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fn1a {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2% { opacity: 1; }
+  17% { opacity: 1; }
+  17.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fn1b {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  17.5% { opacity: 1; }
+  25.5% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fn2 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fn3 {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fn4a {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  91% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fn4b {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fo {
+  0% { opacity: 0; }
+  3.839% { opacity: 0; }
+  4.339% { opacity: 1; }
+  38.839% { opacity: 1; }
+  39.339% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  67.089% { opacity: 1; }
+  67.589% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fh {
+  0% { opacity: 0; }
+  78.589% { opacity: 0; }
+  79.089% { opacity: 1; }
+  94.5% { opacity: 1; }
+  95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fg {
+  0% { opacity: 0; }
+  38.839% { opacity: 0; }
+  39.339% { opacity: 1; }
+  42.839% { opacity: 1; }
+  43.339% { opacity: 0; }
+  67.089% { opacity: 0; }
+  67.589% { opacity: 1; }
+  71.089% { opacity: 1; }
+  71.589% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-ftoff {
+  0% { opacity: 0; }
+  3.839% { opacity: 0; }
+  4.339% { opacity: 1; }
+  38.839% { opacity: 1; }
+  39.339% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  67.089% { opacity: 1; }
+  67.589% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-ftback {
+  0% { opacity: 0; }
+  38.839% { opacity: 0; }
+  39.339% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  67.089% { opacity: 0; }
+  67.589% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fthold {
+  0% { opacity: 0; }
+  78.589% { opacity: 0; }
+  79.089% { opacity: 1; }
+  94.5% { opacity: 1; }
+  95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fr1a {
+  0% { opacity: 0; }
+  3.839% { opacity: 0; }
+  4.339% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fr1b {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fr1c {
+  0% { opacity: 0; }
+  78.589% { opacity: 0; }
+  79.089% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fr2a {
+  0% { opacity: 0; }
+  38.839% { opacity: 0; }
+  39.339% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fr2b {
+  0% { opacity: 0; }
+  67.089% { opacity: 0; }
+  67.589% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fr2c {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-ho {
+  0% { opacity: 0; }
+  8.533% { opacity: 0; }
+  9.033% { opacity: 1; }
+  27.783% { opacity: 1; }
+  28.283% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hh {
+  0% { opacity: 0; }
+  83.033% { opacity: 0; }
+  83.533% { opacity: 1; }
+  94.5% { opacity: 1; }
+  95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hg {
+  0% { opacity: 0; }
+  27.783% { opacity: 0; }
+  28.283% { opacity: 1; }
+  31.783% { opacity: 1; }
+  32.283% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-htoff {
+  0% { opacity: 0; }
+  8.533% { opacity: 0; }
+  9.033% { opacity: 1; }
+  27.783% { opacity: 1; }
+  28.283% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-htback {
+  0% { opacity: 0; }
+  27.783% { opacity: 0; }
+  28.283% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hthold {
+  0% { opacity: 0; }
+  83.033% { opacity: 0; }
+  83.533% { opacity: 1; }
+  94.5% { opacity: 1; }
+  95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hr1a {
+  0% { opacity: 0; }
+  8.533% { opacity: 0; }
+  9.033% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hr1b {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hr1c {
+  0% { opacity: 0; }
+  83.033% { opacity: 0; }
+  83.533% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hr2a {
+  0% { opacity: 0; }
+  27.783% { opacity: 0; }
+  28.283% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hr2c {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-hdown {
+  0% { opacity: 0; }
+  53.283% { opacity: 0; }
+  53.783% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-tmo {
+  0% { opacity: 0; }
+  53.783% { opacity: 0; }
+  54.283% { opacity: 1; }
+  55.283% { opacity: 1; }
+  55.783% { opacity: 0; }
+  57.283% { opacity: 0; }
+  57.783% { opacity: 1; }
+  58.783% { opacity: 1; }
+  59.283% { opacity: 0; }
+  61.283% { opacity: 0; }
+  61.783% { opacity: 1; }
+  62.783% { opacity: 1; }
+  63.283% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-cx {
+  0% { opacity: 0; }
+  13.761% { opacity: 0; }
+  14.261% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  88.011% { opacity: 0; }
+  88.511% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-fbar {
+  0% { transform: scaleX(1); }
+  78.589% { transform: scaleX(1); }
+  94.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes ct-hbar {
+  0% { transform: scaleX(1); }
+  83.033% { transform: scaleX(1); }
+  94.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes ct-ib {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2% { opacity: 1; }
+  17% { opacity: 1; }
+  17.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-if {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  17.5% { opacity: 1; }
+  26% { opacity: 1; }
+  26.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-ic {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  26.5% { opacity: 1; }
+  42% { opacity: 1; }
+  42.5% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.25% { opacity: 1; }
+  70.25% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-id {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-ia {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  70.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-ih {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  91.25% { opacity: 1; }
+  91.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-in {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  91.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-d1 {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  17.5% { opacity: 1; }
+  26% { opacity: 1; }
+  26.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-d2 {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-d3 {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  70.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-d4 {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  91.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ct-qe {
+  0% { opacity: 1; }
+  64.25% { opacity: 1; }
+  64.75% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ct-qc {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  65.25% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- legend for the inventory squares -->
+  <rect class="f-line" x="620" y="94" width="10" height="10" rx="2"/><text class="tiny" x="635" y="103">sold</text>
+  <rect class="f-blue" x="672" y="94" width="10" height="10" rx="2"/><text class="tiny" x="687" y="103">this trip</text>
+  <rect class="f-amber" x="746" y="94" width="10" height="10" rx="2"/><text class="tiny" x="761" y="103">held</text>
+  <rect class="f-bg s-wire" x="796.75" y="94.75" width="8.5" height="8.5" rx="2" stroke-width="1.5"/><text class="tiny" x="811" y="103">on sale</text>
+
+  <!-- booking workflow -->
+  <rect class="box" x="30" y="112" width="470" height="230" rx="14"/>
+  <rect class="none s-red dash ct-crashbox" x="30" y="112" width="470" height="230" rx="14" stroke-width="2.5"/>
+  <text class="label" x="48" y="138">Booking workflow</text>
+  <text class="tiny mono ct-trip1" x="48" y="156">trip T-1042</text>
+  <text class="tiny mono ct-trip2" x="48" y="156">trip T-1043</text>
+  <text class="tiny mono ct-trip3" x="48" y="156">trip T-1044</text>
+  <g class="ct-run"><rect class="f-green-soft s-green" x="330" y="124" width="156" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-green" x="408" y="139">● worker running</text></g>
+  <g class="ct-crash"><rect class="f-red-soft s-red" x="330" y="124" width="156" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-red" x="408" y="139">✕ worker crashed</text></g>
+  <g class="ct-restart"><rect class="f-teal-soft s-teal" x="330" y="124" width="156" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-teal" x="408" y="139">↻ new worker reads log</text></g>
+
+  <!-- the plan: original, the undo order, the redesign -->
+  <g class="ct-plan1"><text class="tiny sb f-muted" x="48" y="181">plan</text><text class="tiny" x="84" y="181">book flight  →  book hotel  →  book car</text></g>
+  <g class="ct-plan2"><text class="tiny sb f-amber-ink" x="48" y="181">undo</text><text class="tiny" x="84" y="181">cancel hotel  →  cancel flight   (newest first)</text></g>
+  <g class="ct-plan4"><text class="tiny sb f-muted" x="48" y="181">plan</text><text class="tiny" x="84" y="181">hold seat  →  hold room  →  hold car  →</text>
+    <rect class="f-bg s-ink" x="290" y="166" width="82" height="22" rx="11" stroke-width="1.5"/><text class="tiny mid sb" x="331" y="181">pay + ticket</text>
+    <text class="tiny sb f-muted ct-hard" x="380" y="181">hardest to undo</text>
+    <g class="ct-never"><line class="s-muted" x1="296" y1="177" x2="366" y2="177" stroke-width="1.5"/><text class="tiny f-faint" x="380" y="181">never reached</text></g>
+  </g>
+
+  <!-- the durable step log: written before each next step -->
+  <rect class="f-bg s-teal" x="44" y="194" width="442" height="140" rx="10" stroke-width="1.5"/>
+  <rect class="none s-teal ct-glow" x="44" y="194" width="442" height="140" rx="10" stroke-width="3.5"/>
+  <path class="f-teal-soft s-teal" d="M53 204v9a6 2.2 0 0 0 12 0v-9" stroke-width="1.3"/><ellipse class="f-teal-soft s-teal" cx="59" cy="204" rx="6" ry="2.2" stroke-width="1.3"/>
+  <g class="ct-save"><path class="f-teal s-teal" d="M53 204v9a6 2.2 0 0 0 12 0v-9" stroke-width="1.3"/><ellipse class="f-teal s-teal" cx="59" cy="204" rx="6" ry="2.2" stroke-width="1.3"/></g>
+  <text class="tiny sb f-teal" x="72" y="214">durable step log</text>
+  <text class="tiny f-faint" x="250" y="214">undo with</text>
+  <g class="ct-r1"><rect class="f-panel" x="52" y="222" width="426" height="28" rx="8"/><circle class="f-panel-2" cx="66" cy="236" r="9"/><text class="ct-num mid" x="66" y="240">1</text></g>
+  <g class="ct-r2"><rect class="f-panel" x="52" y="254" width="426" height="28" rx="8"/><circle class="f-panel-2" cx="66" cy="268" r="9"/><text class="ct-num mid" x="66" y="272">2</text></g>
+  <g class="ct-r3"><rect class="f-panel" x="52" y="286" width="426" height="28" rx="8"/><circle class="f-panel-2" cx="66" cy="300" r="9"/><text class="ct-num mid" x="66" y="304">3</text></g>
+  <!-- row 1: flight -->
+  <g class="ct-u1"><rect class="f-amber-soft s-amber" x="245" y="225" width="94" height="22" rx="11" stroke-width="1.5"/></g>
+  <g class="ct-r1b"><text class="sub" x="82" y="240">book flight</text><text class="tiny" x="250" y="240">↩&#xFE0E; cancel flight</text></g>
+  <g class="ct-r1x"><rect class="f-green-soft s-green" x="160" y="225" width="82" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-green" x="201" y="240">✓ FL-381</text></g>
+  <g class="ct-r1y"><rect class="f-green-soft s-green" x="160" y="225" width="82" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-green" x="201" y="240">✓ FL-412</text></g>
+  <g class="ct-r1c"><rect class="f-amber-soft s-amber" x="342" y="225" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-amber-ink" x="407" y="240">↩&#xFE0E; cancelled · $40 fee</text></g>
+  <g class="ct-r1h"><text class="sub" x="82" y="240">hold seat</text><rect class="f-green-soft s-green" x="160" y="225" width="82" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-green" x="201" y="240">✓ held</text><text class="tiny" x="250" y="240">↩&#xFE0E; just expires</text></g>
+  <!-- row 2: hotel -->
+  <g class="ct-u2"><rect class="f-amber-soft s-amber" x="245" y="257" width="94" height="22" rx="11" stroke-width="1.5"/></g>
+  <g class="ct-r2b"><text class="sub" x="82" y="272">book hotel</text><text class="tiny" x="250" y="272">↩&#xFE0E; cancel hotel</text></g>
+  <g class="ct-r2x"><rect class="f-green-soft s-green" x="160" y="257" width="82" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-green" x="201" y="272">✓ H-5521</text></g>
+  <g class="ct-r2y"><rect class="f-green-soft s-green" x="160" y="257" width="82" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-green" x="201" y="272">✓ H-5530</text></g>
+  <g class="ct-r2c"><rect class="f-amber-soft s-amber" x="342" y="257" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-amber-ink" x="407" y="272">↩&#xFE0E; cancelled</text></g>
+  <g class="ct-a1"><rect class="f-amber-soft s-amber" x="342" y="257" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-amber-ink" x="407" y="272">&#160;&#160;&#160;attempt 1 of 3</text><circle class="f-bg s-amber" cx="362" cy="268" r="5" stroke-width="1.5"/><path class="none s-amber" d="M362 265v3h2.5" stroke-width="1.5" stroke-linecap="round"/></g>
+  <g class="ct-a2"><rect class="f-amber-soft s-amber" x="342" y="257" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-amber-ink" x="407" y="272">&#160;&#160;&#160;attempt 2 of 3</text><circle class="f-bg s-amber" cx="362" cy="268" r="5" stroke-width="1.5"/><path class="none s-amber" d="M362 265v3h2.5" stroke-width="1.5" stroke-linecap="round"/></g>
+  <g class="ct-a3"><rect class="f-amber-soft s-amber" x="342" y="257" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-amber-ink" x="407" y="272">&#160;&#160;&#160;attempt 3 of 3</text><circle class="f-bg s-amber" cx="362" cy="268" r="5" stroke-width="1.5"/><path class="none s-amber" d="M362 265v3h2.5" stroke-width="1.5" stroke-linecap="round"/></g>
+  <g class="ct-esc"><rect class="f-red-soft s-red" x="342" y="257" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-red" x="407" y="272">→ manual queue</text></g>
+  <g class="ct-r2h"><text class="sub" x="82" y="272">hold room</text><rect class="f-green-soft s-green" x="160" y="257" width="82" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-green" x="201" y="272">✓ held</text><text class="tiny" x="250" y="272">↩&#xFE0E; just expires</text></g>
+  <!-- row 3: car -->
+  <g class="ct-r3b"><text class="sub" x="82" y="304">book car</text></g>
+  <g class="ct-r3h"><text class="sub" x="82" y="304">hold car</text></g>
+  <g class="ct-r3"><rect class="f-red-soft s-red" x="160" y="289" width="82" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb f-red" x="201" y="304">✕ none left</text><text class="tiny f-faint" x="250" y="304">nothing to undo</text></g>
+  <g class="ct-lapse"><rect class="f-panel-2 s-line" x="342" y="225" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb " x="407" y="240">lapsed by itself</text></g>
+  <g class="ct-lapse"><rect class="f-panel-2 s-line" x="342" y="257" width="130" height="22" rx="11" stroke-width="1"/><text class="tiny mid sb " x="407" y="272">lapsed by itself</text></g>
+  <!-- footnotes -->
+  <text class="tiny f-teal ct-fn1a" x="52" y="326">each entry is saved before the next step runs</text>
+  <text class="tiny sb f-red ct-fn1b" x="52" y="326">✕ no transaction spans the three systems: nothing to roll back</text>
+  <text class="tiny f-teal ct-fn2" x="52" y="326">saved before each next step, so a new worker knows what is left</text>
+  <text class="tiny f-amber-ink ct-fn3" x="52" y="326">each retry reuses one key: cancelling twice = one cancellation</text>
+  <text class="tiny f-amber-ink ct-fn4a" x="52" y="326">each hold expires on its own unless the workflow confirms it</text>
+  <text class="tiny f-green ct-fn4b" x="52" y="326">a failure just means not confirming: the holds lapse by themselves</text>
+
+  <!-- calls between the workflow and the providers -->
+  <path class="wire" d="M500 236H536V167H619" marker-end="url(#ah)"/>
+  <path class="wire" d="M500 268H560V287H619" marker-end="url(#ah)"/>
+  <path class="wire" d="M500 300H584V407H619" marker-end="url(#ah)"/>
+
+  <!-- Flights -->
+  <rect class="box" x="620" y="112" width="310" height="110" rx="12"/>
+  <text class="label" x="636" y="140">Flights</text>
+  <text class="sub" x="636" y="158">airline's own system</text>
+  <text class="tiny end" x="804" y="139">seats</text><rect class="f-line" x="812" y="128" width="14" height="14" rx="3"/><rect class="f-line" x="830" y="128" width="14" height="14" rx="3"/><rect class="f-bg s-wire" x="848.75" y="128.75" width="12.5" height="12.5" rx="2.5" stroke-width="1.5"/><rect class="f-bg s-wire" x="866.75" y="128.75" width="12.5" height="12.5" rx="2.5" stroke-width="1.5"/><rect class="f-line" x="884" y="128" width="14" height="14" rx="3"/><rect class="f-bg s-wire" x="902.75" y="128.75" width="12.5" height="12.5" rx="2.5" stroke-width="1.5"/>
+  <rect class="ct-fo f-blue " x="848" y="128" width="14" height="14" rx="3"/>
+  <rect class="ct-fh f-amber " x="848" y="128" width="14" height="14" rx="3"/>
+  <rect class="ct-fg none s-green" x="848" y="128" width="14" height="14" rx="3" stroke-width="2"/>
+  <text class="tiny sb end ct-ftoff f-blue" x="916" y="158">seat off sale</text>
+  <text class="tiny sb end ct-ftback f-green" x="916" y="158">back on sale</text>
+  <text class="tiny sb end ct-fthold f-amber-ink" x="916" y="158">held · 15 min</text>
+  <rect class="f-bg s-line" x="632" y="170" width="286" height="42" rx="8" stroke-width="1"/><path class="f-panel-2 s-muted" d="M640 186v9a6 2.2 0 0 0 12 0v-9" stroke-width="1.3"/><ellipse class="f-panel-2 s-muted" cx="646" cy="186" rx="6" ry="2.2" stroke-width="1.3"/>
+  <text class="tiny mono ct-fr1a " x="660" y="187">FL-381 booked</text>
+  <text class="tiny mono ct-fr1b " x="660" y="187">FL-412 booked</text>
+  <text class="tiny mono ct-fr1c " x="660" y="187">FL-430 held · 15 min</text>
+  <g class="ct-fh"><rect class="f-line" x="806" y="182" width="100" height="5" rx="2.5"/><rect class="f-amber ct-fbar" x="806" y="182" width="100" height="5" rx="2.5"/></g>
+  <text class="tiny mono ct-fr2a f-amber-ink" x="660" y="205">FL-381 cancelled · fee $40</text>
+  <text class="tiny mono ct-fr2b f-amber-ink" x="660" y="205">FL-412 cancelled · fee $40</text>
+  <text class="tiny mono ct-fr2c f-muted" x="660" y="205">FL-430 hold lapsed</text>
+
+  <!-- Hotel -->
+  <rect class="box" x="620" y="232" width="310" height="110" rx="12"/>
+  <g class="ct-hdown"><rect class="f-red-soft s-red" x="620" y="232" width="310" height="110" rx="12" stroke-width="1.5"/><text class="tiny sb f-red" x="684" y="260">no response</text></g>
+  <text class="label" x="636" y="260">Hotel</text>
+  <text class="sub" x="636" y="278">hotel's own system</text>
+  <text class="tiny end" x="804" y="259">rooms</text><rect class="f-line" x="812" y="248" width="14" height="14" rx="3"/><rect class="f-bg s-wire" x="830.75" y="248.75" width="12.5" height="12.5" rx="2.5" stroke-width="1.5"/><rect class="f-line" x="848" y="248" width="14" height="14" rx="3"/><rect class="f-line" x="866" y="248" width="14" height="14" rx="3"/><rect class="f-bg s-wire" x="884.75" y="248.75" width="12.5" height="12.5" rx="2.5" stroke-width="1.5"/><rect class="f-line" x="902" y="248" width="14" height="14" rx="3"/>
+  <rect class="ct-ho f-blue " x="830" y="248" width="14" height="14" rx="3"/>
+  <rect class="ct-hh f-amber " x="830" y="248" width="14" height="14" rx="3"/>
+  <rect class="ct-hg none s-green" x="830" y="248" width="14" height="14" rx="3" stroke-width="2"/>
+  <text class="tiny sb end ct-htoff f-blue" x="916" y="278">room off sale</text>
+  <text class="tiny sb end ct-htback f-green" x="916" y="278">back on sale</text>
+  <text class="tiny sb end ct-hthold f-amber-ink" x="916" y="278">held · 15 min</text>
+  <rect class="f-bg s-line" x="632" y="290" width="286" height="42" rx="8" stroke-width="1"/><path class="f-panel-2 s-muted" d="M640 306v9a6 2.2 0 0 0 12 0v-9" stroke-width="1.3"/><ellipse class="f-panel-2 s-muted" cx="646" cy="306" rx="6" ry="2.2" stroke-width="1.3"/>
+  <text class="tiny mono ct-hr1a " x="660" y="307">H-5521 booked</text>
+  <text class="tiny mono ct-hr1b " x="660" y="307">H-5530 booked</text>
+  <text class="tiny mono ct-hr1c " x="660" y="307">H-5540 held · 15 min</text>
+  <g class="ct-hh"><rect class="f-line" x="806" y="302" width="100" height="5" rx="2.5"/><rect class="f-amber ct-hbar" x="806" y="302" width="100" height="5" rx="2.5"/></g>
+  <text class="tiny mono ct-hr2a f-amber-ink" x="660" y="325">H-5521 cancelled</text>
+  <text class="tiny mono ct-hr2c f-muted" x="660" y="325">H-5540 hold lapsed</text>
+  <g class="ct-tmo"><circle class="f-bg s-red" cx="598" cy="287" r="5" stroke-width="1.5"/><path class="none s-red" d="M598 284v3h2.5" stroke-width="1.5" stroke-linecap="round"/></g>
+
+  <!-- Car rental -->
+  <rect class="box" x="620" y="352" width="310" height="110" rx="12"/>
+  <rect class="f-red-soft s-red ct-cx" x="620" y="352" width="310" height="110" rx="12" stroke-width="1.5"/>
+  <text class="label" x="636" y="380">Car rental</text>
+  <text class="sub" x="636" y="398">rental firm's own system</text>
+  <text class="tiny end" x="804" y="379">cars</text><rect class="f-line" x="812" y="368" width="14" height="14" rx="3"/><rect class="f-line" x="830" y="368" width="14" height="14" rx="3"/><rect class="f-line" x="848" y="368" width="14" height="14" rx="3"/><rect class="f-line" x="866" y="368" width="14" height="14" rx="3"/><rect class="f-line" x="884" y="368" width="14" height="14" rx="3"/><rect class="f-line" x="902" y="368" width="14" height="14" rx="3"/>
+  <text class="tiny sb end  f-red" x="916" y="398">0 left</text>
+  <rect class="f-bg s-line" x="632" y="410" width="286" height="42" rx="8" stroke-width="1"/><path class="f-panel-2 s-muted" d="M640 426v9a6 2.2 0 0 0 12 0v-9" stroke-width="1.3"/><ellipse class="f-panel-2 s-muted" cx="646" cy="426" rx="6" ry="2.2" stroke-width="1.3"/>
+  <text class="tiny mono ct-cx f-red" x="660" y="427">no car available</text>
+
+  <!-- itinerary: what the traveller sees -->
+  <rect class="box" x="30" y="352" width="220" height="110" rx="12"/>
+  <text class="label" x="46" y="378">Itinerary</text>
+  <text class="tiny mono end ct-trip1" x="234" y="378">T-1042</text>
+  <text class="tiny mono end ct-trip2" x="234" y="378">T-1043</text>
+  <text class="tiny mono end ct-trip3" x="234" y="378">T-1044</text>
+  <rect class="none s-line dash" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/>
+  <g class="ct-ib"><rect class="f-blue-soft s-blue" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/><text class="ct-pill mid f-blue" x="140" y="407.5">BOOKING…</text></g>
+  <g class="ct-if"><rect class="f-red-soft s-red" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/><text class="ct-pill mid f-red" x="140" y="407.5">CAR FAILED</text></g>
+  <g class="ct-ic"><rect class="f-amber-soft s-amber" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/><text class="ct-pill mid f-amber-ink" x="140" y="407.5">CANCELLING…</text></g>
+  <g class="ct-id"><rect class="f-panel-2 s-muted" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/><text class="ct-pill mid " x="140" y="407.5">CANCELLED</text></g>
+  <g class="ct-ia"><rect class="f-red-soft s-red" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/><text class="ct-pill mid f-red" x="140" y="407.5">NEEDS ATTENTION</text></g>
+  <g class="ct-ih"><rect class="f-amber-soft s-amber" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/><text class="ct-pill mid f-amber-ink" x="140" y="407.5">HOLDING…</text></g>
+  <g class="ct-in"><rect class="f-panel-2 s-muted" x="46" y="390" width="188" height="26" rx="13" stroke-width="1.5"/><text class="ct-pill mid " x="140" y="407.5">NOT BOOKED</text></g>
+  <text class="tiny mid ct-d1" x="140" y="442">flight ✓ · hotel ✓ · car ✕</text>
+  <text class="tiny mid ct-d2" x="140" y="442">refunded, less a $40 fee</text>
+  <text class="tiny mid ct-d3" x="140" y="442">a person will finish it</text>
+  <text class="tiny mid ct-d4" x="140" y="442">no charge, nothing to undo</text>
+
+  <!-- manual-intervention queue -->
+  <rect class="box" x="262" y="352" width="238" height="110" rx="12"/>
+  <text class="label" x="278" y="378">Manual intervention</text>
+  <text class="tiny" x="278" y="395">queue for a person</text>
+  <text class="tiny mid f-faint ct-qe" x="381" y="434">empty</text>
+  <g class="ct-qc">
+    <circle class="f-red" cx="398" cy="391" r="3.5"/><text class="tiny sb f-red end" x="486" y="395">on-call alerted</text>
+    <rect class="f-red-soft s-red" x="276" y="404" width="210" height="50" rx="8" stroke-width="1.5"/>
+    <text class="tiny sb" x="286" y="419">T-1043 · cancel hotel H-5530</text>
+    <text class="tiny" x="286" y="433">3 attempts, all timed out</text>
+    <text class="tiny mono" x="286" y="447">key cxl-T1043-hotel</text>
+  </g>
+
+  <!-- tokens -->
+  <circle class="pkt f-blue ct-w1b" r="7"/>
+  <circle class="pkt f-amber ct-w1a" r="7"/>
+  <circle class="pkt f-green ct-w1g" r="7"/>
+  <circle class="pkt f-blue ct-w2b" r="7"/>
+  <circle class="pkt f-amber ct-w2a" r="7"/>
+  <circle class="pkt f-green ct-w2g" r="7"/>
+  <circle class="pkt f-blue ct-w3b" r="7"/>
+  <circle class="pkt f-red ct-w3r" r="7"/>
+  <rect class="pkt f-red ct-case" x="-9" y="-7" width="18" height="14" rx="3"/>
+</g>
+</svg>

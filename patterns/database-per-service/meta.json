@@ -1,0 +1,37 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "One shared database",
+      "caption": "One shared database: Payments renames a column and breaks Orders; a Customers report slows Orders.",
+      "body": "Orders, Customers and Payments all read and write the same tables. Payments renames a column and an Orders query breaks; a heavy report run by Customers slows down Orders' writes; and because nobody knows which service uses which table, nobody can change one safely. The services are independent only in name."
+    },
+    {
+      "title": "Each service owns its data",
+      "caption": "Each store is private to its service: direct table access is cut, others go through its API.",
+      "body": "Every service gets a **private store** that only it can reach: no other service has credentials for it, so the others ask through its API or listen to its events. The red lines are the direct table access being cut. *Private* is about ownership, not hardware: a schema with its own credentials, a database of its own or a server of its own all qualify, and each service can pick the kind of store that suits it (**polyglot persistence**: a document store for Customers here)."
+    },
+    {
+      "title": "Cross-service queries",
+      "caption": "No join across databases: call both APIs and join in code, or keep a local copy fed by events.",
+      "body": "The order screen needs the customer's name and the payment status, and no join can span two databases. **API composition**: Orders calls Customers and Payments and joins the answers itself; simple, but the screen waits for the slowest call, and a slow or failing service holds it up. **Local read model**: Orders keeps a read-only copy of the few customer fields it needs, updated from Customers' events; fast and independent, but eventually consistent."
+    },
+    {
+      "title": "Cross-service transactions",
+      "caption": "No transaction spans the stores: each commits locally with its event; a failed step is compensated.",
+      "body": "Placing an order must also charge the card, and no transaction spans the three stores. Each service commits locally and records its event in the same commit (a [transactional outbox](../transactional-outbox/)), and a saga carries the business transaction from service to service, by [choreography](../saga-choreography/) here or with an [orchestrator](../saga-orchestration/). The card is declined, so Orders runs a **compensating transaction** and cancels the order."
+    }
+  ],
+  "related": ["microservices", "saga-orchestration", "saga-choreography", "cqrs", "materialized-view", "change-data-capture", "transactional-outbox", "modular-monolith"],
+  "references": [
+    { "title": "Chris Richardson (microservices.io) — Pattern: Database per service", "url": "https://microservices.io/patterns/data/database-per-service.html" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: Shared database", "url": "https://microservices.io/patterns/data/shared-database.html" },
+    { "title": "Chris Richardson (microservices.io) — Pattern: API Composition", "url": "https://microservices.io/patterns/data/api-composition.html" },
+    { "title": "Azure Architecture Center — Data considerations for microservices", "url": "https://learn.microsoft.com/en-us/azure/architecture/microservices/design/data-considerations" },
+    { "title": "AWS Prescriptive Guidance — Database-per-service pattern", "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/modernization-data-persistence/database-per-service.html" },
+    { "title": "Martin Fowler — IntegrationDatabase", "url": "https://martinfowler.com/bliki/IntegrationDatabase.html" },
+    { "title": "Martin Fowler — PolyglotPersistence", "url": "https://martinfowler.com/bliki/PolyglotPersistence.html" },
+    { "title": "Sam Newman — Monolith to Microservices", "url": "https://samnewman.io/books/monolith-to-microservices/" },
+    { "title": "PostgreSQL documentation — Schemas", "url": "https://www.postgresql.org/docs/current/ddl-schemas.html" }
+  ]
+}

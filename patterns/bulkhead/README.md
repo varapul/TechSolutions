@@ -130,7 +130,7 @@ Not when:
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
-- Cell-Based Architecture *(planned)* — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
+- [Cell-Based Architecture](../cell-based-architecture/) — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 

@@ -74,8 +74,8 @@ The colours are only names for the two slots. Each environment cycles through li
 - [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
 - [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
 - [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
-- Immutable Infrastructure *(planned)* — Never patch servers in place: bake a new image and replace them.
-- Shadow Traffic *(planned)* — Mirror live requests to the new version and compare results without affecting users.
+- [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.
+- [Shadow Traffic](../shadow-traffic/) — Mirror live requests to the new version and compare results without affecting users.
 
 ## References
 

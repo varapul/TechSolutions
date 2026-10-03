@@ -1,0 +1,40 @@
+{
+  "aka": ["Compensating action", "Compensation"],
+  "steps": [
+    {
+      "title": "Can't be rolled back",
+      "caption": "Flight and hotel are booked in their own systems; the car fails. No transaction spans all three.",
+      "body": "Booking a trip books a flight, then a hotel, then a car, each with a different provider and each committed in that provider's own system. The flight and the hotel are confirmed; the car fails because none are left. No transaction spans the three providers, so there is nothing to roll back: the first two bookings are already real, and the seat and the room are off sale for everyone else."
+    },
+    {
+      "title": "Undo by compensating",
+      "caption": "Cancel the hotel, then the flight: new operations, not a restore. The airline keeps a $40 fee.",
+      "body": "The workflow runs a compensating action for each completed step, newest first: cancel the hotel, then cancel the flight. A compensation is a new business operation, not a restore of the old data: the seat goes back on sale, the airline keeps a $40 cancellation fee, and the original booking stays in its history. Each step was written to the durable log before the next one ran, so when the worker crashes half-way, a new worker reads the log and knows that only the flight is left to undo."
+    },
+    {
+      "title": "Compensations fail too",
+      "caption": "The hotel's cancel times out. Retrying is safe (same key); after 3 attempts a person takes over.",
+      "body": "On the next trip the hotel's cancellation times out. The workflow retries it with the same idempotency key, which is safe only because cancelling is idempotent: cancelling twice still leaves one cancellation. After the third attempt it puts the case on the manual-intervention queue with what a person needs to finish it and alerts on-call, still cancels the flight, and marks the trip *needs attention* instead of leaving it half-cancelled with nobody noticing."
+    },
+    {
+      "title": "Design for cheap undo",
+      "caption": "Hold first, pay last: the car fails, so nothing is confirmed and the holds lapse by themselves.",
+      "body": "Design so that undo is cheap or unnecessary. Hold the seat and the room for 15 minutes, and take the payment and issue the ticket last, once everything is held: here the car fails, nothing is confirmed, and the holds lapse by themselves with nothing to compensate. Some effects can't be taken back at all (an email has been read, money has been paid out), so their compensation is a correction, such as an apology or a refund."
+    }
+  ],
+  "related": ["saga-orchestration", "saga-choreography", "idempotent-consumer", "retry-with-backoff", "event-sourcing", "transactional-outbox", "dead-letter-queue", "database-per-service"],
+  "references": [
+    { "title": "Azure Architecture Center — Compensating Transaction pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction" },
+    { "title": "Hector Garcia-Molina & Kenneth Salem — Sagas (SIGMOD 1987)", "url": "https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf" },
+    { "title": "Pat Helland — Life beyond Distributed Transactions: an Apostate's Opinion (CIDR 2007)", "url": "https://www.cidrdb.org/cidr2007/papers/cidr07p15.pdf" },
+    { "title": "Chris Richardson — Pattern: Saga (microservices.io)", "url": "https://microservices.io/patterns/data/saga.html" },
+    { "title": "Chris Richardson — How modular can your monolith go? Part 6: transaction management for commands", "url": "https://microservices.io/post/architecture/2023/11/13/how-modular-can-your-monolith-go-part-6-transactional-commands.html" },
+    { "title": "Azure Architecture Center — Saga design pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga" },
+    { "title": "Guy Pardon & Cesare Pautasso — Atomic Distributed Transactions: a RESTful Design (WS-REST 2014)", "url": "https://design.inf.usi.ch/publications/2014/wsrest/tcc" },
+    { "title": "Temporal — Saga Pattern", "url": "https://docs.temporal.io/design-patterns/saga-pattern" },
+    { "title": "AWS Step Functions — Handling errors in Step Functions workflows", "url": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html" },
+    { "title": "AWS Step Functions — Choosing workflow type (Standard vs Express)", "url": "https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html" },
+    { "title": "Microsoft Learn — Durable orchestrations overview (Durable Functions)", "url": "https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-orchestrations" },
+    { "title": "Azure Architecture Center — Event Sourcing pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing" }
+  ]
+}

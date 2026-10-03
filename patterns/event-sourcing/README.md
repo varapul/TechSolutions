@@ -125,7 +125,7 @@ It doesn't have to be all or nothing. Azure's guidance suggests applying it to t
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
-- Compensating Transaction *(planned)* — Undo the completed steps of a multi-step operation that failed part-way.
+- [Compensating Transaction](../compensating-transaction/) — Undo the completed steps of a multi-step operation that failed part-way.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 
 ## References

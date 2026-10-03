@@ -181,7 +181,7 @@ Shadow traffic, a separate pattern in this catalog, mirrors live requests to the
 
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
 - [Branch by Abstraction](../branch-by-abstraction/) — Introduce an abstraction, build the new implementation behind it, then switch over.
-- Shadow Traffic *(planned)* — Mirror live requests to the new version and compare results without affecting users.
+- [Shadow Traffic](../shadow-traffic/) — Mirror live requests to the new version and compare results without affecting users.
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 - [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.

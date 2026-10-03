@@ -1,0 +1,64 @@
+{
+  "aka": ["Work queue", "Task queue"],
+  "steps": [
+    {
+      "title": "One consumer falls behind",
+      "caption": "Jobs arrive at 10/s and the only worker does 4/s, so the queue grows by 6 every second.",
+      "body": "Jobs arrive at **10 per second** and the only worker finishes **4**. The queue grows by 6 every second and the oldest job waits longer and longer: nothing is lost, but every job is later than the one before it."
+    },
+    {
+      "title": "Add consumers, one queue",
+      "caption": "Three workers share one queue; each message goes to just one of them. 12/s, so the backlog drains.",
+      "body": "Three identical workers pull from the **same queue**. The broker hands each message to one worker and hides it from the others while that worker holds it, under a **lease** (the visibility timeout), so the work is shared, not copied as in [publish-subscribe](../publish-subscribe/). Capacity rises to 12 per second and the backlog drains by 2 every second."
+    },
+    {
+      "title": "A worker dies mid-job",
+      "caption": "Worker 2 crashes holding m-41. Its lease runs out, m-41 is visible again and worker 3 processes it.",
+      "body": "Worker 2 crashes while it holds **m-41** and never acknowledges it; until it is replaced, the other two handle 8 per second and the backlog grows again. When the lease runs out, the broker makes m-41 visible again and worker 3 processes it: nothing is lost, but worker 2 may have done part of the work, so delivery is **at least once** and processing must be [idempotent](../idempotent-consumer/). A message that keeps failing is moved to a [dead-letter queue](../dead-letter-queue/) after a few attempts."
+    },
+    {
+      "title": "What you give up: order",
+      "caption": "m-50 and m-51 both update order 7 and finish out of order. Where order matters, route by key.",
+      "body": "What you give up is **order**: m-50 and m-51 both update order 7, m-50 runs into a slow call and m-51 finishes first. Where per-key order matters, route every message with the same key to one consumer at a time (message groups, sessions or partitions), which caps the parallelism at the number of keys or partitions. Scale the workers on queue depth or the age of the oldest message, and remember that every extra worker adds load on whatever it writes to."
+    }
+  ],
+  "related": ["queue-based-load-leveling", "publish-subscribe", "idempotent-consumer", "dead-letter-queue", "autoscaling", "priority-queue", "web-queue-worker", "event-driven-architecture"],
+  "references": [
+    { "title": "Enterprise Integration Patterns — Competing Consumers", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html" },
+    { "title": "Enterprise Integration Patterns — Point-to-Point Channel", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PointToPointChannel.html" },
+    { "title": "Enterprise Integration Patterns — Polling Consumer", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PollingConsumer.html" },
+    { "title": "Enterprise Integration Patterns — Event-Driven Consumer", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/EventDrivenConsumer.html" },
+    { "title": "Azure Architecture Center — Competing Consumers pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/competing-consumers" },
+    { "title": "Amazon SQS — Visibility timeout", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html" },
+    { "title": "Amazon SQS — Short and long polling", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-short-and-long-polling.html" },
+    { "title": "Amazon SQS API Reference — ReceiveMessage", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html" },
+    { "title": "Amazon SQS — Using the message group ID with FIFO queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html" },
+    { "title": "Amazon SQS — Fair queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fair-queues.html" },
+    { "title": "Amazon SQS — Using dead-letter queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html" },
+    { "title": "Amazon SQS — Available CloudWatch metrics", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-available-cloudwatch-metrics.html" },
+    { "title": "Azure Service Bus — Message transfers, locks, and settlement", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-transfers-locks-settlement" },
+    { "title": "Azure Service Bus — Message sessions (FIFO)", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sessions" },
+    { "title": "Azure Service Bus — Prefetch messages", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-prefetch" },
+    { "title": "RabbitMQ tutorial — Work Queues (acknowledgements, fair dispatch)", "url": "https://www.rabbitmq.com/tutorials/tutorial-two-python" },
+    { "title": "RabbitMQ — Consumer Prefetch", "url": "https://www.rabbitmq.com/docs/consumer-prefetch" },
+    { "title": "RabbitMQ — Consumers (single active consumer, delivery acknowledgement timeout)", "url": "https://www.rabbitmq.com/docs/consumers" },
+    { "title": "RabbitMQ — Consumer Acknowledgements and Publisher Confirms", "url": "https://www.rabbitmq.com/docs/confirms" },
+    { "title": "RabbitMQ — Quorum Queues (poison message handling)", "url": "https://www.rabbitmq.com/docs/quorum-queues" },
+    { "title": "Apache Kafka 4.3 — KafkaConsumer (consumer groups)", "url": "https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html" },
+    { "title": "Apache Kafka 4.3 — KafkaShareConsumer (share groups)", "url": "https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/KafkaShareConsumer.html" },
+    { "title": "Apache Kafka 4.3 — Consumer and share consumer configs (max.poll.interval.ms)", "url": "https://kafka.apache.org/43/configuration/consumer-configs/" },
+    { "title": "Apache Kafka 4.3 — Producer configs (partitioning by key)", "url": "https://kafka.apache.org/43/configuration/producer-configs/" },
+    { "title": "Apache Kafka 4.3 — Group configs (share-group lock duration and delivery limit)", "url": "https://kafka.apache.org/43/configuration/group-configs/" },
+    { "title": "Apache Kafka 4.2 — Upgrade notes (Queues for Kafka is production-ready)", "url": "https://kafka.apache.org/42/getting-started/upgrade/" },
+    { "title": "Apache Kafka — KIP-932: Queues for Kafka", "url": "https://cwiki.apache.org/confluence/spaces/KAFKA/pages/255070434/KIP-932+Queues+for+Kafka" },
+    { "title": "Google Cloud Pub/Sub — Subscription overview (pull and push)", "url": "https://docs.cloud.google.com/pubsub/docs/subscription-overview" },
+    { "title": "Google Cloud Pub/Sub — Order messages", "url": "https://docs.cloud.google.com/pubsub/docs/ordering" },
+    { "title": "Google Cloud Pub/Sub — Extend ack time with lease management", "url": "https://docs.cloud.google.com/pubsub/docs/lease-management" },
+    { "title": "Google Cloud Pub/Sub — Subscription properties (acknowledgment deadline)", "url": "https://docs.cloud.google.com/pubsub/docs/subscription-properties" },
+    { "title": "Google Cloud Pub/Sub — Dead-letter topics", "url": "https://docs.cloud.google.com/pubsub/docs/dead-letter-topics" },
+    { "title": "KEDA — AWS SQS Queue scaler", "url": "https://keda.sh/docs/latest/scalers/aws-sqs/" },
+    { "title": "KEDA — Google Cloud Platform Pub/Sub scaler", "url": "https://keda.sh/docs/latest/scalers/gcp-pub-sub/" },
+    { "title": "KEDA — ScaledObject specification", "url": "https://keda.sh/docs/latest/reference/scaledobject-spec/" },
+    { "title": "Kubernetes — Pod Lifecycle (termination of Pods)", "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" }
+  ]
+}

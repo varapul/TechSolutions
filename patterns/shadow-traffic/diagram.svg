@@ -1,0 +1,883 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Shadow Traffic</title>
+<desc id="dg-desc">Shadow Traffic. Mirror live requests to the new version and compare results without affecting users. Step 1, Mirror live traffic: v1 answers every request. The proxy also sends v2 a copy, waits for nothing and drops v2's answer. Step 2, Watch v2 under real load: Real mix, full volume: v2 fails on an empty query, p99 climbs, memory creeps up. No user notices. Step 3, Compare the responses: Mirroring drops v2's answers. A comparator diffs them; two copies of v1 show which fields are noise. Step 4, Keep the shadow harmless: Copy only reads, sample 10%, mark the copies, isolate v2. Once v2 behaves, stop and canary it.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DEPLOYMENT &amp; RELEASE</text>
+  <text class="title" x="40" y="64">Shadow Traffic</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Mirror live traffic</text>
+  <text class="step on p1" x="40" y="518">1 · Mirror live traffic</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Watch v2 under real load</text>
+  <text class="step on p2" x="262" y="518">2 · Watch v2 under real load</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Compare the responses</text>
+  <text class="step on p3" x="484" y="518">3 · Compare the responses</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Keep the shadow harmless</text>
+  <text class="step on p4" x="706" y="518">4 · Keep the shadow harmless</text>
+  <text class="caption p1" x="40" y="552">v1 answers every request. The proxy also sends v2 a copy, waits for nothing and drops v2's answer.</text>
+  <text class="caption p2" x="40" y="552">Real mix, full volume: v2 fails on an empty query, p99 climbs, memory creeps up. No user notices.</text>
+  <text class="caption p3" x="40" y="552">Mirroring drops v2's answers. A comparator diffs them; two copies of v1 show which fields are noise.</text>
+  <text class="caption p4" x="40" y="552">Copy only reads, sample 10%, mark the copies, isolate v2. Once v2 behaves, stop and canary it.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Shadow Traffic. Timeline (20s loop, 1s = 5%):
+   0-25%   mirror: a request goes to v1, which answers the user; the proxy copies it to v2 without waiting,
+           v2 is slow, and its answer is discarded at the proxy
+   25-50%  real load: four requests of the real mix and their copies; v2 answers an empty query with a 500
+           (discarded, the user got v1's 200); v2's errors, p99 and memory over 6 h climb
+   50-75%  compare: the copy goes to a comparator, which sends it to v2 and to two copies of v1; fields that
+           differ between the two v1 copies are noise, the one that differs only for v2 is reported
+   75-100% harmless: the rule copies only GET/HEAD and samples 10%; a POST is not mirrored; a GET copy is marked
+           with the -shadow Host suffix and its answer is discarded; v2 is steady, next: canary
+   Keyframes between the @st-gen markers are generated by a scratch script from motion.mjs. */
+.diagram .copy { fill: var(--bg); stroke-width: 2.5; stroke-dasharray: 3.4 2.4; }
+.diagram .tag { font-size: 10px; font-weight: 700; }
+.diagram .leak { stroke-dasharray: 100; }
+/* @st-gen:start */
+.diagram .st-q1 { opacity: 0; animation: st-q1 var(--T) linear infinite; }
+.diagram .st-q2 { opacity: 0; animation: st-q2 var(--T) linear infinite; }
+.diagram .st-q3 { opacity: 0; animation: st-q3 var(--T) linear infinite; }
+.diagram .st-q4 { opacity: 0; animation: st-q4 var(--T) linear infinite; }
+.diagram .st-post { opacity: 0; animation: st-post var(--T) linear infinite; }
+.diagram .st-get { opacity: 0; animation: st-get var(--T) linear infinite; }
+.diagram .st-c1 { opacity: 0; animation: st-c1 var(--T) linear infinite; }
+.diagram .st-c2 { opacity: 0; animation: st-c2 var(--T) linear infinite; }
+.diagram .st-c3 { opacity: 0; animation: st-c3 var(--T) linear infinite; }
+.diagram .st-c4 { opacity: 0; animation: st-c4 var(--T) linear infinite; }
+.diagram .st-f1 { opacity: 0; animation: st-f1 var(--T) linear infinite; }
+.diagram .st-f2 { opacity: 0; animation: st-f2 var(--T) linear infinite; }
+.diagram .st-f3 { opacity: 0; animation: st-f3 var(--T) linear infinite; }
+.diagram .st-a1 { opacity: 0; animation: st-a1 var(--T) linear infinite; }
+.diagram .st-a2 { opacity: 0; animation: st-a2 var(--T) linear infinite; }
+.diagram .st-r1 { opacity: 0; animation: st-r1 var(--T) linear infinite; }
+.diagram .st-r2 { opacity: 0; animation: st-r2 var(--T) linear infinite; }
+.diagram .st-r3 { opacity: 0; animation: st-r3 var(--T) linear infinite; }
+.diagram .st-err { opacity: 0; animation: st-err var(--T) linear infinite; }
+.diagram .st-ok { opacity: 0; animation: st-ok var(--T) linear infinite; }
+.diagram .st-x { opacity: 0; animation: st-x var(--T) linear infinite; }
+.diagram .st-slow { opacity: 0; animation: st-slow var(--T) linear infinite; }
+.diagram .st-l1 { opacity: 0; animation: st-l1 var(--T) linear infinite; }
+.diagram .st-l2 { opacity: 0; animation: st-l2 var(--T) linear infinite; }
+.diagram .st-l3 { opacity: 0; animation: st-l3 var(--T) linear infinite; }
+.diagram .st-l4 { opacity: 0; animation: st-l4 var(--T) linear infinite; }
+.diagram .st-ehi { opacity: 0; animation: st-ehi var(--T) linear infinite; }
+.diagram .st-phi { opacity: 0; animation: st-phi var(--T) linear infinite; }
+.diagram .st-phit { opacity: 0; animation: st-phit var(--T) linear infinite; }
+.diagram .st-mhi { opacity: 0; animation: st-mhi var(--T) linear infinite; }
+.diagram .st-mhit { opacity: 0; animation: st-mhit var(--T) linear infinite; }
+.diagram .st-t1 { opacity: 0; animation: st-t1 var(--T) linear infinite; }
+.diagram .st-t2 { opacity: 0; animation: st-t2 var(--T) linear infinite; }
+.diagram .st-t3 { opacity: 0; animation: st-t3 var(--T) linear infinite; }
+.diagram .st-tf { opacity: 0; animation: st-tf var(--T) linear infinite; }
+.diagram .st-nomir { opacity: 0; animation: st-nomir var(--T) linear infinite; }
+.diagram .st-next { opacity: 0; animation: st-next var(--T) linear infinite; }
+.diagram .st-b1v { animation: st-b1v var(--T) linear infinite; }
+.diagram .st-b2v { animation: st-b2v var(--T) linear infinite; }
+.diagram .st-elo { animation: st-elo var(--T) linear infinite; }
+.diagram .st-plo { animation: st-plo var(--T) linear infinite; }
+.diagram .st-mlo { animation: st-mlo var(--T) linear infinite; }
+.diagram .st-mlot { animation: st-mlot var(--T) linear infinite; }
+@keyframes st-q1 {
+  0% { transform: translate(108px, 163px); opacity: 0; }
+  2% { transform: translate(108px, 163px); opacity: 0; }
+  2.25% { opacity: 1; }
+  7.467% { transform: translate(600px, 163px); opacity: 1; }
+  7.717% { transform: translate(600px, 163px); opacity: 0; }
+  26.5% { transform: translate(108px, 163px); opacity: 0; }
+  26.75% { opacity: 1; }
+  31.967% { transform: translate(600px, 163px); opacity: 1; }
+  32.217% { transform: translate(600px, 163px); opacity: 0; }
+  52% { transform: translate(108px, 163px); opacity: 0; }
+  52.25% { opacity: 1; }
+  57.467% { transform: translate(600px, 163px); opacity: 1; }
+  57.717% { transform: translate(600px, 163px); opacity: 0; }
+  100% { transform: translate(600px, 163px); opacity: 0; }
+}
+@keyframes st-q2 {
+  0% { transform: translate(108px, 163px); opacity: 0; }
+  28.25% { transform: translate(108px, 163px); opacity: 0; }
+  28.5% { opacity: 1; }
+  33.717% { transform: translate(600px, 163px); opacity: 1; }
+  33.967% { transform: translate(600px, 163px); opacity: 0; }
+  100% { transform: translate(600px, 163px); opacity: 0; }
+}
+@keyframes st-q3 {
+  0% { transform: translate(108px, 163px); opacity: 0; }
+  30% { transform: translate(108px, 163px); opacity: 0; }
+  30.25% { opacity: 1; }
+  35.467% { transform: translate(600px, 163px); opacity: 1; }
+  35.717% { transform: translate(600px, 163px); opacity: 0; }
+  100% { transform: translate(600px, 163px); opacity: 0; }
+}
+@keyframes st-q4 {
+  0% { transform: translate(108px, 163px); opacity: 0; }
+  31.75% { transform: translate(108px, 163px); opacity: 0; }
+  32% { opacity: 1; }
+  37.217% { transform: translate(600px, 163px); opacity: 1; }
+  37.467% { transform: translate(600px, 163px); opacity: 0; }
+  100% { transform: translate(600px, 163px); opacity: 0; }
+}
+@keyframes st-post {
+  0% { transform: translate(108px, 163px); opacity: 0; }
+  77% { transform: translate(108px, 163px); opacity: 0; }
+  77.25% { opacity: 1; }
+  82.467% { transform: translate(600px, 163px); opacity: 1; }
+  82.717% { transform: translate(600px, 163px); opacity: 0; }
+  100% { transform: translate(600px, 163px); opacity: 0; }
+}
+@keyframes st-get {
+  0% { transform: translate(108px, 163px); opacity: 0; }
+  80.5% { transform: translate(108px, 163px); opacity: 0; }
+  80.75% { opacity: 1; }
+  85.967% { transform: translate(600px, 163px); opacity: 1; }
+  86.217% { transform: translate(600px, 163px); opacity: 0; }
+  100% { transform: translate(600px, 163px); opacity: 0; }
+}
+@keyframes st-c1 {
+  0% { transform: translate(158px, 163px); opacity: 0; }
+  2.556% { transform: translate(158px, 163px); opacity: 0; }
+  2.806% { opacity: 1; }
+  4.112% { transform: translate(158px, 303px); }
+  9.023% { transform: translate(600px, 303px); opacity: 1; }
+  9.273% { transform: translate(600px, 303px); opacity: 0; }
+  27.056% { transform: translate(158px, 163px); opacity: 0; }
+  27.306% { opacity: 1; }
+  28.612% { transform: translate(158px, 303px); }
+  33.523% { transform: translate(600px, 303px); opacity: 1; }
+  33.773% { transform: translate(600px, 303px); opacity: 0; }
+  52.556% { transform: translate(158px, 163px); opacity: 0; }
+  52.806% { opacity: 1; }
+  54.112% { transform: translate(158px, 303px); }
+  57.489% { transform: translate(462px, 303px); opacity: 1; }
+  57.739% { transform: translate(462px, 303px); opacity: 0; }
+  81.056% { transform: translate(158px, 163px); opacity: 0; }
+  81.306% { opacity: 1; }
+  82.612% { transform: translate(158px, 303px); }
+  87.523% { transform: translate(600px, 303px); opacity: 1; }
+  87.773% { transform: translate(600px, 303px); opacity: 0; }
+  100% { transform: translate(600px, 303px); opacity: 0; }
+}
+@keyframes st-c2 {
+  0% { transform: translate(158px, 163px); opacity: 0; }
+  28.806% { transform: translate(158px, 163px); opacity: 0; }
+  29.056% { opacity: 1; }
+  30.362% { transform: translate(158px, 303px); }
+  35.273% { transform: translate(600px, 303px); opacity: 1; }
+  35.523% { transform: translate(600px, 303px); opacity: 0; }
+  100% { transform: translate(600px, 303px); opacity: 0; }
+}
+@keyframes st-c3 {
+  0% { transform: translate(158px, 163px); opacity: 0; }
+  30.556% { transform: translate(158px, 163px); opacity: 0; }
+  30.806% { opacity: 1; }
+  32.112% { transform: translate(158px, 303px); }
+  37.023% { transform: translate(600px, 303px); opacity: 1; }
+  37.273% { transform: translate(600px, 303px); opacity: 0; }
+  100% { transform: translate(600px, 303px); opacity: 0; }
+}
+@keyframes st-c4 {
+  0% { transform: translate(158px, 163px); opacity: 0; }
+  32.306% { transform: translate(158px, 163px); opacity: 0; }
+  32.556% { opacity: 1; }
+  33.862% { transform: translate(158px, 303px); }
+  38.773% { transform: translate(600px, 303px); opacity: 1; }
+  39.023% { transform: translate(600px, 303px); opacity: 0; }
+  100% { transform: translate(600px, 303px); opacity: 0; }
+}
+@keyframes st-f1 {
+  0% { transform: translate(462px, 303px); opacity: 0; }
+  57.75% { transform: translate(462px, 303px); opacity: 0; }
+  58% { opacity: 1; }
+  58.669% { transform: translate(411px, 324px); opacity: 1; }
+  58.919% { transform: translate(411px, 324px); opacity: 0; }
+  100% { transform: translate(411px, 324px); opacity: 0; }
+}
+@keyframes st-f2 {
+  0% { transform: translate(462px, 303px); opacity: 0; }
+  57.75% { transform: translate(462px, 303px); opacity: 0; }
+  58% { opacity: 1; }
+  58.669% { transform: translate(513px, 324px); opacity: 1; }
+  58.919% { transform: translate(513px, 324px); opacity: 0; }
+  100% { transform: translate(513px, 324px); opacity: 0; }
+}
+@keyframes st-f3 {
+  0% { transform: translate(462px, 303px); opacity: 0; }
+  57.75% { transform: translate(462px, 303px); opacity: 0; }
+  58% { opacity: 1; }
+  59.283% { transform: translate(600px, 303px); opacity: 1; }
+  59.533% { transform: translate(600px, 303px); opacity: 0; }
+  100% { transform: translate(600px, 303px); opacity: 0; }
+}
+@keyframes st-a1 {
+  0% { transform: translate(600px, 163px); opacity: 0; }
+  8.75% { transform: translate(600px, 163px); opacity: 0; }
+  9% { opacity: 1; }
+  14.217% { transform: translate(108px, 163px); opacity: 1; }
+  14.467% { transform: translate(108px, 163px); opacity: 0; }
+  34.5% { transform: translate(600px, 163px); opacity: 0; }
+  34.75% { opacity: 1; }
+  39.967% { transform: translate(108px, 163px); opacity: 1; }
+  40.217% { transform: translate(108px, 163px); opacity: 0; }
+  58.25% { transform: translate(600px, 163px); opacity: 0; }
+  58.5% { opacity: 1; }
+  63.717% { transform: translate(108px, 163px); opacity: 1; }
+  63.967% { transform: translate(108px, 163px); opacity: 0; }
+  83.25% { transform: translate(600px, 163px); opacity: 0; }
+  83.5% { opacity: 1; }
+  88.717% { transform: translate(108px, 163px); opacity: 1; }
+  88.967% { transform: translate(108px, 163px); opacity: 0; }
+  100% { transform: translate(108px, 163px); opacity: 0; }
+}
+@keyframes st-a2 {
+  0% { transform: translate(600px, 163px); opacity: 0; }
+  86.75% { transform: translate(600px, 163px); opacity: 0; }
+  87% { opacity: 1; }
+  92.217% { transform: translate(108px, 163px); opacity: 1; }
+  92.467% { transform: translate(108px, 163px); opacity: 0; }
+  100% { transform: translate(108px, 163px); opacity: 0; }
+}
+@keyframes st-r1 {
+  0% { transform: translate(600px, 303px); opacity: 0; }
+  16.5% { transform: translate(600px, 303px); opacity: 0; }
+  16.75% { opacity: 1; }
+  19.5% { transform: translate(330px, 303px); opacity: 1; }
+  19.75% { transform: translate(330px, 303px); opacity: 0; }
+  59.75% { transform: translate(411px, 324px); opacity: 0; }
+  60% { opacity: 1; }
+  60.669% { transform: translate(462px, 303px); opacity: 1; }
+  60.919% { transform: translate(462px, 303px); opacity: 0; }
+  89.75% { transform: translate(600px, 303px); opacity: 0; }
+  90% { opacity: 1; }
+  92.75% { transform: translate(330px, 303px); opacity: 1; }
+  93% { transform: translate(330px, 303px); opacity: 0; }
+  100% { transform: translate(330px, 303px); opacity: 0; }
+}
+@keyframes st-r2 {
+  0% { transform: translate(513px, 324px); opacity: 0; }
+  60% { transform: translate(513px, 324px); opacity: 0; }
+  60.25% { opacity: 1; }
+  60.919% { transform: translate(462px, 303px); opacity: 1; }
+  61.169% { transform: translate(462px, 303px); opacity: 0; }
+  100% { transform: translate(462px, 303px); opacity: 0; }
+}
+@keyframes st-r3 {
+  0% { transform: translate(600px, 303px); opacity: 0; }
+  60.25% { transform: translate(600px, 303px); opacity: 0; }
+  60.5% { opacity: 1; }
+  61.783% { transform: translate(462px, 303px); opacity: 1; }
+  62.033% { transform: translate(462px, 303px); opacity: 0; }
+  100% { transform: translate(462px, 303px); opacity: 0; }
+}
+@keyframes st-err {
+  0% { transform: translate(600px, 303px); opacity: 0; }
+  36% { transform: translate(600px, 303px); opacity: 0; }
+  36.25% { opacity: 1; }
+  39% { transform: translate(330px, 303px); opacity: 1; }
+  39.25% { transform: translate(330px, 303px); opacity: 0; }
+  100% { transform: translate(330px, 303px); opacity: 0; }
+}
+@keyframes st-ok {
+  0% { opacity: 0; }
+  14.217% { opacity: 0; }
+  14.717% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  39.967% { opacity: 0; }
+  40.467% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  63.717% { opacity: 0; }
+  64.217% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  88.717% { opacity: 0; }
+  89.217% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes st-x {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  39% { opacity: 0; }
+  39.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes st-slow {
+  0% { opacity: 0; }
+  9.023% { opacity: 0; }
+  9.523% { opacity: 1; }
+  16.5% { opacity: 1; }
+  17% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-b1 {
+  0% { transform: scaleX(0); }
+  14.217% { transform: scaleX(0); }
+  15.217% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .st-b1 { transform-box: fill-box; transform-origin: 0 50%; animation: st-b1 var(--T) linear infinite; }
+@keyframes st-b2 {
+  0% { transform: scaleX(0); }
+  19.5% { transform: scaleX(0); }
+  20.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .st-b2 { transform-box: fill-box; transform-origin: 0 50%; animation: st-b2 var(--T) linear infinite; }
+@keyframes st-b1v {
+  0% { opacity: 0; }
+  14.217% { opacity: 0; }
+  14.717% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-b2v {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-l1 {
+  0% { opacity: 0; }
+  34.273% { opacity: 0; }
+  34.773% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-l2 {
+  0% { opacity: 0; }
+  36.023% { opacity: 0; }
+  36.523% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-l3 {
+  0% { opacity: 0; }
+  37.773% { opacity: 0; }
+  38.273% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-l4 {
+  0% { opacity: 0; }
+  39.523% { opacity: 0; }
+  40.023% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-elo {
+  0% { opacity: 1; }
+  36% { opacity: 1; }
+  36.5% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes st-ehi {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  36.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-ebar {
+  0% { transform: scaleX(0.25); }
+  36% { transform: scaleX(0.25); }
+  37.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .st-ebar { transform-box: fill-box; transform-origin: 0 50%; animation: st-ebar var(--T) linear infinite; }
+@keyframes st-plo {
+  0% { opacity: 1; }
+  40.5% { opacity: 1; }
+  41% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes st-phi {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-phit {
+  0% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-pbar {
+  0% { transform: scaleX(0.611); }
+  37.5% { transform: scaleX(0.611); }
+  40.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .st-pbar { transform-box: fill-box; transform-origin: 0 50%; animation: st-pbar var(--T) linear infinite; }
+@keyframes st-mlo {
+  0% { opacity: 1; }
+  46.5% { opacity: 1; }
+  47% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes st-mlot {
+  0% { opacity: 1; }
+  46.5% { opacity: 1; }
+  47% { opacity: 0; }
+  75% { opacity: 0; }
+  75.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes st-mhi {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-mhit {
+  0% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-mdraw {
+  0% { stroke-dashoffset: 100; }
+  39.5% { stroke-dashoffset: 100; }
+  46.5% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 0; }
+}
+.diagram .st-mdraw { animation: st-mdraw var(--T) linear infinite; }
+@keyframes st-t1 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-t2 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  64.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-t3 {
+  0% { opacity: 0; }
+  65.5% { opacity: 0; }
+  66% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-tf {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  67.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes st-nomir {
+  0% { opacity: 0; }
+  77.806% { opacity: 0; }
+  78.306% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes st-next {
+  0% { opacity: 0; }
+  93% { opacity: 0; }
+  93.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* @st-gen:end */
+</style>
+<g class="stage">
+  <!-- legend -->
+  <circle class="f-blue" cx="360" cy="100" r="5"/>
+  <text class="tiny" x="370" y="104">request</text>
+  <circle class="copy s-blue" cx="428" cy="100" r="5" stroke-width="2"/>
+  <text class="tiny" x="438" y="104">mirrored copy</text>
+  <circle class="f-green" cx="526" cy="100" r="5"/>
+  <text class="tiny" x="536" y="104">answer</text>
+
+  <!-- users -->
+  <rect class="box" x="36" y="126" width="72" height="74" rx="12"/>
+  <circle class="f-faint" cx="80" cy="141" r="5"/>
+  <path class="f-faint" d="M70 158a10 9 0 0 1 20 0z"/>
+  <circle class="f-muted" cx="65" cy="144" r="6"/>
+  <path class="f-muted" d="M53 163a12 10 0 0 1 24 0z"/>
+  <text class="label mid" x="72" y="186">Users</text>
+  <g class="p134"><text class="tiny mid" x="72" y="222">answers come</text><text class="tiny mid" x="72" y="236">from v1 only</text></g>
+  <g class="p2"><text class="tiny mid sb f-amber-ink" x="72" y="222">real mix,</text><text class="tiny mid sb f-amber-ink" x="72" y="236">full volume</text></g>
+
+  <!-- proxy with its mirroring rule -->
+  <rect class="box" x="140" y="100" width="190" height="230" rx="14"/>
+  <text class="label mid" x="235" y="124">Proxy</text>
+  <text class="sub mid" x="235" y="141">gateway or mesh sidecar</text>
+  <rect class="f-bg s-line" x="170" y="177" width="152" height="106" rx="8" stroke-width="1.5"/>
+  <text class="tiny mono" x="180" y="196">methods:</text>
+  <text class="tiny mono" x="180" y="214">route:</text>
+  <text class="tiny mono" x="180" y="232">mirror:</text>
+  <text class="tiny mono" x="180" y="250">percent:</text>
+  <text class="tiny mono f-ink p123" x="242" y="196">any</text>
+  <text class="tiny mono b f-ink" x="242" y="214">v1</text>
+  <text class="tiny mono b f-ink p124" x="242" y="232">v2</text>
+  <text class="tiny mono f-ink p123" x="242" y="250">100</text>
+  <g class="p3">
+    <rect class="f-blue-soft" x="236" y="221" width="80" height="15" rx="3"/>
+    <text class="tiny mono b f-ink" x="242" y="232">comparator</text>
+  </g>
+  <g class="p4">
+    <rect class="f-green-soft" x="236" y="185" width="80" height="15" rx="3"/>
+    <text class="tiny mono b f-green" x="242" y="196">GET, HEAD</text>
+    <rect class="f-green-soft" x="236" y="239" width="80" height="15" rx="3"/>
+    <text class="tiny mono b f-green" x="242" y="250">10</text>
+    <text class="tiny mono" x="180" y="270"># remove when done</text>
+  </g>
+  <text class="tiny mid" x="244" y="322">mirror responses: discarded</text>
+
+  <!-- the live path and the mirror path -->
+  <line class="wire" x1="108" y1="163" x2="598" y2="163" marker-end="url(#ah)"/>
+  <path class="wire dash" d="M158 163V291Q158 303 170 303H598" marker-end="url(#ah)"/>
+  <circle class="f-bg s-ink" cx="158" cy="163" r="4" stroke-width="2"/>
+  <text class="tiny mid p12" x="466" y="322">copy · fire and forget</text>
+  <text class="tiny mid p4" x="466" y="292">copy · <tspan class="mono f-ink">Host: catalog-shadow</tspan></text>
+
+  <!-- v1: live -->
+  <rect class="box" x="600" y="108" width="326" height="110" rx="12"/>
+  <line class="s-line" x1="736" y1="118" x2="736" y2="208" stroke-width="1.5"/>
+  <text class="label" x="614" y="134">v1 · live</text>
+  <text class="sub" x="614" y="152">answers every user</text>
+  <text class="tiny" x="614" y="190">live database,</text>
+  <text class="tiny" x="614" y="204">real payments, email</text>
+  <text class="tiny f-faint end" x="914" y="124">last 6 h</text>
+  <text class="tiny" x="748" y="142">errors</text>
+  <text class="tiny" x="748" y="162">p99</text>
+  <text class="tiny" x="748" y="182">CPU</text>
+  <text class="tiny" x="748" y="202">memory</text>
+  <rect class="f-line" x="796" y="135" width="70" height="6" rx="3"/>
+  <rect class="f-line" x="796" y="155" width="70" height="6" rx="3"/>
+  <rect class="f-line" x="796" y="175" width="70" height="6" rx="3"/>
+  <rect class="f-green" x="796" y="135" width="14" height="6" rx="3"/>
+  <rect class="f-green" x="796" y="155" width="32" height="6" rx="3"/>
+  <rect class="f-green" x="796" y="175" width="28" height="6" rx="3"/>
+  <path class="none s-green" d="M796 198L806 197L816 198.5L826 197.5L836 198L846 197L856 198L866 197.5" stroke-width="1.5" stroke-linejoin="round"/>
+  <text class="tiny b f-ink end" x="914" y="142">0.1%</text>
+  <text class="tiny b f-ink end" x="914" y="162">180 ms</text>
+  <text class="tiny b f-ink end" x="914" y="182">40%</text>
+  <text class="tiny b f-ink end" x="914" y="202">52%</text>
+
+  <!-- v2: shadow -->
+  <rect class="box" x="600" y="248" width="326" height="110" rx="12"/>
+  <g class="st-slow">
+    <rect class="f-amber-soft s-amber" x="600" y="248" width="136" height="110" rx="12" stroke-width="1.5"/>
+    <circle class="none s-line" cx="718" cy="269" r="7" stroke-width="2.5"/>
+    <circle class="none s-amber spin" cx="718" cy="269" r="7" stroke-width="2.5" stroke-dasharray="11 33" stroke-linecap="round"/>
+  </g>
+  <line class="s-line" x1="736" y1="258" x2="736" y2="348" stroke-width="1.5"/>
+  <text class="label" x="614" y="274">v2 · shadow</text>
+  <text class="sub" x="614" y="292">the new version</text>
+  <text class="tiny sb p1" x="614" y="316">answers discarded</text>
+  <text class="tiny sb f-amber-ink p2" x="614" y="316">real mix, full load</text>
+  <text class="tiny sb f-ink p3" x="614" y="316">the candidate</text>
+  <text class="tiny sb f-green p4" x="614" y="316">fixed, steady</text>
+  <text class="tiny sb f-green st-next" x="614" y="340">next: canary →</text>
+  <text class="tiny f-faint end" x="914" y="264">last 6 h</text>
+  <text class="tiny" x="748" y="282">errors</text>
+  <text class="tiny" x="748" y="302">p99</text>
+  <text class="tiny" x="748" y="322">CPU</text>
+  <text class="tiny" x="748" y="342">memory</text>
+  <rect class="f-line" x="796" y="275" width="70" height="6" rx="3"/>
+  <rect class="f-line" x="796" y="295" width="70" height="6" rx="3"/>
+  <rect class="f-line" x="796" y="315" width="70" height="6" rx="3"/>
+  <rect class="f-green" x="796" y="275" width="14" height="6" rx="3"/>
+  <rect class="f-green" x="796" y="295" width="33" height="6" rx="3"/>
+  <rect class="f-green" x="796" y="315" width="29" height="6" rx="3"/>
+  <g class="st-ehi"><rect class="f-red st-ebar" x="796" y="275" width="56" height="6" rx="3"/><text class="tiny b f-red end" x="914" y="282">0.4%</text></g>
+  <g class="st-phi"><rect class="f-amber st-pbar" x="796" y="295" width="54" height="6" rx="3"/></g>
+  <path class="none s-green st-mlo" d="M796 338L806 337L816 338.5L826 337.5L836 338L846 337L856 338L866 337.5" stroke-width="1.5" stroke-linejoin="round"/>
+  <g class="st-mhi"><path class="none s-amber leak st-mdraw" d="M796 338L806 337L816 336.5L826 335L836 334L846 332.5L856 331L866 329" pathLength="100" stroke-width="1.5" stroke-linejoin="round"/></g>
+  <text class="tiny b f-ink end st-elo" x="914" y="282">0.1%</text>
+  <text class="tiny b f-ink end st-plo" x="914" y="302">190 ms</text>
+  <text class="tiny b f-amber-ink end st-phit" x="914" y="302">310 ms</text>
+  <text class="tiny b f-ink end" x="914" y="322">42%</text>
+  <text class="tiny b f-ink end st-mlot" x="914" y="342">50%</text>
+  <text class="tiny b f-amber-ink end st-mhit" x="914" y="342">81% ↑</text>
+
+  <!-- what v2 uses instead of the real dependencies -->
+  <line class="wire dash" x1="678" y1="358" x2="678" y2="398"/>
+  <line class="wire dash" x1="847" y1="358" x2="847" y2="398"/>
+  <rect class="box" x="600" y="398" width="156" height="50" rx="10"/>
+  <rect class="box" x="768" y="398" width="158" height="50" rx="10"/>
+  <g class="p4">
+    <rect class="f-green-soft s-green" x="600" y="398" width="156" height="50" rx="10" stroke-width="1.5"/>
+    <rect class="f-green-soft s-green" x="768" y="398" width="158" height="50" rx="10" stroke-width="1.5"/>
+    <text class="tiny sb f-green mid" x="763" y="465">nothing real is charged, sent or changed</text>
+  </g>
+  <rect class="none s-muted" x="613" y="409" width="16" height="12" rx="2" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <text class="sub sb f-ink" x="636" y="420">Stubs</text>
+  <text class="tiny" x="612" y="438">not real payments, email</text>
+  <path class="none s-teal" d="M780 409v10a8 3 0 0 0 16 0v-10" stroke-width="1.5"/>
+  <ellipse class="f-teal-soft s-teal" cx="788" cy="409" rx="8" ry="3" stroke-width="1.5"/>
+  <text class="sub sb f-ink" x="803" y="420">Own store</text>
+  <text class="tiny" x="780" y="438">not the live database</text>
+
+  <!-- step 3: the comparator sits on the mirror path -->
+  <g class="p3">
+    <rect class="box" x="352" y="266" width="220" height="196" rx="12"/>
+    <text class="label" x="366" y="289">Comparator</text>
+    <text class="tiny end" x="558" y="289">diffs answers</text>
+    <line class="wire dash" x1="352" y1="303" x2="572" y2="303"/>
+    <path class="wire" d="M462 303L411 324M462 303L513 324" stroke-width="1.5"/>
+    <circle class="f-bg s-ink" cx="462" cy="303" r="4" stroke-width="2"/>
+    <rect class="f-bg s-line" x="366" y="324" width="90" height="34" rx="8" stroke-width="1.5"/>
+    <text class="sub sb f-ink mid" x="411" y="339">v1 copy</text>
+    <text class="tiny mid" x="411" y="352">primary</text>
+    <rect class="f-bg s-line" x="468" y="324" width="90" height="34" rx="8" stroke-width="1.5"/>
+    <text class="sub sb f-ink mid" x="513" y="339">v1 copy</text>
+    <text class="tiny mid" x="513" y="352">secondary</text>
+    <text class="tiny" x="366" y="380">field</text>
+    <text class="tiny mid" x="462" y="380">v1 vs v1</text>
+    <text class="tiny mid" x="510" y="380">v1 vs v2</text>
+    <g class="st-t1"><text class="tiny mono" x="366" y="397">served_at</text><text class="tiny b mid" x="462" y="397">≠</text><text class="tiny b mid" x="510" y="397">≠</text><text class="tiny end" x="558" y="397">noise</text></g>
+    <g class="st-t2"><text class="tiny mono" x="366" y="414">request_id</text><text class="tiny b mid" x="462" y="414">≠</text><text class="tiny b mid" x="510" y="414">≠</text><text class="tiny end" x="558" y="414">noise</text></g>
+    <g class="st-t3"><text class="tiny mono b f-ink" x="366" y="431">price</text><text class="tiny b f-green mid" x="462" y="431">=</text><text class="tiny b f-red mid" x="510" y="431">≠</text><text class="tiny b f-red end" x="558" y="431">real</text></g>
+    <line class="s-line" x1="366" y1="440" x2="558" y2="440" stroke-width="1"/>
+    <g class="st-tf"><text class="tiny sb f-red" x="366" y="455">reported:</text><text class="tiny mono f-red" x="420" y="455">price "12.50" → 12.5</text></g>
+  </g>
+
+  <!-- bottom left, step 1: who waits for whom -->
+  <g class="p1">
+    <rect class="box" x="36" y="350" width="294" height="112" rx="10"/>
+    <text class="tiny sb f-ink" x="50" y="372">The user waits for v1 only</text>
+    <text class="tiny" x="50" y="400">v1 → user</text>
+    <text class="tiny" x="50" y="424">copy → v2</text>
+    <rect class="f-line" x="118" y="394" width="150" height="8" rx="4"/>
+    <rect class="f-line" x="118" y="418" width="150" height="8" rx="4"/>
+    <rect class="f-green st-b1" x="118" y="394" width="12" height="8" rx="4"/>
+    <rect class="f-amber st-b2" x="118" y="418" width="150" height="8" rx="4"/>
+    <text class="tiny b f-ink end st-b1v" x="318" y="401">90 ms</text>
+    <text class="tiny b f-amber-ink end st-b2v" x="318" y="425">1.2 s</text>
+    <text class="tiny st-b2v" x="50" y="450">nobody waits for v2; its answer is dropped</text>
+  </g>
+
+  <!-- bottom left, step 2: the real mix -->
+  <g class="p2">
+    <rect class="box" x="36" y="350" width="294" height="112" rx="10"/>
+    <text class="tiny sb f-ink" x="50" y="371">Access log: the real mix</text>
+    <text class="tiny" x="50" y="389">request</text>
+    <text class="tiny mid" x="252" y="389">user got</text>
+    <text class="tiny mid" x="304" y="389">v2</text>
+    <g class="st-l1"><text class="tiny mono f-ink" x="50" y="406">GET /item/42</text><text class="tiny b f-green mid" x="252" y="406">200</text><text class="tiny b f-green mid" x="304" y="406">200</text></g>
+    <g class="st-l2"><text class="tiny mono b f-ink" x="50" y="422">GET /search?q=</text><text class="tiny b f-green mid" x="252" y="422">200</text><text class="tiny b f-red mid" x="304" y="422">500</text></g>
+    <g class="st-l3"><text class="tiny mono f-ink" x="50" y="438">GET /item/7?lang=th</text><text class="tiny b f-green mid" x="252" y="438">200</text><text class="tiny b f-green mid" x="304" y="438">200</text></g>
+    <g class="st-l4"><text class="tiny mono f-ink" x="50" y="454">GET /deals?page=999</text><text class="tiny b f-green mid" x="252" y="454">200</text><text class="tiny b f-green mid" x="304" y="454">200</text></g>
+  </g>
+
+  <!-- bottom left, step 4: why only reads are copied -->
+  <g class="p4">
+    <rect class="box" x="36" y="350" width="294" height="112" rx="10"/>
+    <text class="tiny sb f-ink" x="50" y="372">A copied write would run twice:</text>
+    <g class="s-red" stroke-width="2" stroke-linecap="round"><path d="M52 390l7 7M59 390l-7 7"/><path d="M52 410l7 7M59 410l-7 7"/><path d="M52 430l7 7M59 430l-7 7"/></g>
+    <text class="tiny" x="68" y="397">a second charge on the card</text>
+    <text class="tiny" x="68" y="417">a second email to the customer</text>
+    <text class="tiny" x="68" y="437">shared data changed twice</text>
+    <text class="tiny sb f-green" x="50" y="455">so: copy only reads, and isolate v2</text>
+  </g>
+
+  <!-- step 4: a POST is not copied -->
+  <g class="st-nomir">
+    <rect class="f-panel s-muted" x="342" y="312" width="138" height="20" rx="10" stroke-width="1.2"/>
+    <path class="none s-red" d="M354 318.5l7 7M361 318.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+    <text class="tiny sb f-ink" x="368" y="326">POST not mirrored</text>
+  </g>
+
+  <!-- marks: the user has an answer; a mirrored answer is discarded -->
+  <g class="st-ok"><circle class="f-green" cx="104" cy="130" r="9"/><path class="none s-bg" d="M100 130l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="st-x"><circle class="f-muted" cx="330" cy="303" r="8"/><path class="none s-bg" d="M326.5 299.5l7 7M333.5 299.5l-7 7" stroke-width="2" stroke-linecap="round"/></g>
+
+  <!-- traffic -->
+  <circle class="pkt f-blue st-q1" r="7"/>
+  <g class="st-q2"><circle class="pkt f-blue" r="7"/><text class="tag mid f-blue" y="-12">?q=</text></g>
+  <circle class="pkt f-blue st-q3" r="7"/>
+  <circle class="pkt f-blue st-q4" r="7"/>
+  <g class="st-post"><circle class="pkt f-blue" r="7"/><text class="tag mid f-blue" y="-12">POST</text></g>
+  <g class="st-get"><circle class="pkt f-blue" r="7"/><text class="tag mid f-blue" y="-12">GET</text></g>
+  <circle class="copy s-blue st-c1" r="6"/>
+  <g class="st-c2"><circle class="copy s-blue" r="6"/><text class="tag mid f-blue" y="-11">?q=</text></g>
+  <circle class="copy s-blue st-c3" r="6"/>
+  <circle class="copy s-blue st-c4" r="6"/>
+  <circle class="copy s-blue st-f1" r="6"/>
+  <circle class="copy s-blue st-f2" r="6"/>
+  <circle class="copy s-blue st-f3" r="6"/>
+  <circle class="pkt f-green st-a1" r="7"/>
+  <circle class="pkt f-green st-a2" r="7"/>
+  <circle class="copy s-green st-r1" r="6"/>
+  <circle class="copy s-green st-r2" r="6"/>
+  <circle class="copy s-green st-r3" r="6"/>
+  <g class="st-err"><circle class="copy s-red" r="6"/><text class="tag mid f-red" y="-11">500</text></g>
+</g>
+</svg>

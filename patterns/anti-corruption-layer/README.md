@@ -84,7 +84,7 @@ Don't use an anti-corruption layer when the two models are already close (there 
 - [Hexagonal (Ports & Adapters)](../hexagonal-architecture/) — Domain logic at the core; UIs, databases and queues plug in through ports and adapters.
 - [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
-- Database per Service *(planned)* — Each service owns its data; others go through its API or events, never its tables.
+- [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.
 
 ## References
 

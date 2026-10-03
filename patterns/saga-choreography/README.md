@@ -116,10 +116,10 @@ Do **not** use it:
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
-- Compensating Transaction *(planned)* — Undo the completed steps of a multi-step operation that failed part-way.
+- [Compensating Transaction](../compensating-transaction/) — Undo the completed steps of a multi-step operation that failed part-way.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
-- Database per Service *(planned)* — Each service owns its data; others go through its API or events, never its tables.
+- [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.
 
 ## References
 

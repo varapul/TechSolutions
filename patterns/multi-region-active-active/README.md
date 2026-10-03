@@ -61,7 +61,7 @@ A single region is a single failure domain. Spreading instances across availabil
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - Deployment Stamps *(planned)* — Deploy many independent copies of the whole stack, each serving a subset of tenants.
-- Cell-Based Architecture *(planned)* — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
+- [Cell-Based Architecture](../cell-based-architecture/) — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 
 ## References
