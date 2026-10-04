@@ -1,0 +1,902 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Ambassador</title>
+<desc id="dg-desc">Ambassador. An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client. Step 1, A client you can't change: Billing calls the tax API directly over plain HTTP with no timeout. The API moves: every call fails. Step 2, A proxy beside the client: An ambassador on localhost finds the API, adds mutual TLS and a token, and forwards each call to it. Step 3, Resilience and visibility: The API times out: the ambassador retries with backoff, then opens its breaker; billing never hangs. Step 4, Know the costs: The costs: one more hop and one more process, safe retries only, and one per client or shared.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">API &amp; EDGE</text>
+  <text class="title" x="40" y="64">Ambassador</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A client you can't change</text>
+  <text class="step on p1" x="40" y="518">1 · A client you can't change</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · A proxy beside the client</text>
+  <text class="step on p2" x="262" y="518">2 · A proxy beside the client</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Resilience and visibility</text>
+  <text class="step on p3" x="484" y="518">3 · Resilience and visibility</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Know the costs</text>
+  <text class="step on p4" x="706" y="518">4 · Know the costs</text>
+  <text class="caption p1" x="40" y="552">Billing calls the tax API directly over plain HTTP with no timeout. The API moves: every call fails.</text>
+  <text class="caption p2" x="40" y="552">An ambassador on localhost finds the API, adds mutual TLS and a token, and forwards each call to it.</text>
+  <text class="caption p3" x="40" y="552">The API times out: the ambassador retries with backoff, then opens its breaker; billing never hangs.</text>
+  <text class="caption p4" x="40" y="552">The costs: one more hop and one more process, safe retries only, and one per client or shared.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Ambassador. Timeline (20s loop, 1s = 5%):
+   0-25%   no ambassador: billing calls 10.0.4.17 directly (ok), the API moves (2.0s) to two
+           instances that need mutual TLS and a token; the next call is refused (3.3s)
+   25-50%  ambassador on localhost:9000: call -> discovery lookup -> TLS + token -> tax-1 -> reply,
+           metrics row and a trace span fill in
+   50-75%  tax API slow: try 1 times out (2 s), backoff + jitter, try 2 on tax-2 answers (13.2s);
+           timeouts pass 50 %, breaker opens (13.3s), the next call fails fast (14.0s)
+   75-100% costs: four numbered callouts appear one by one while one more call goes through */
+.diagram .amb-amb { fill: var(--panel); stroke: var(--blue); stroke-width: 1.8; }
+.diagram .amb-card { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .amb-panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+.diagram .amb-ghost-box { fill: none; stroke: var(--red); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.diagram .amb-pin { font-size: 10px; font-weight: 700; fill: var(--bg); text-anchor: middle; }
+.diagram .amb-val { font-size: 16px; font-weight: 700; }
+.diagram .amb-chip { font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-anchor: middle; }
+.diagram .amb-tok, .diagram .amb-w { opacity: 0; }
+.diagram .amb-c1 { animation: amb-c1 var(--T) linear infinite; }
+.diagram .amb-r1 { animation: amb-r1 var(--T) linear infinite; }
+.diagram .amb-call { animation: amb-call var(--T) linear infinite; }
+.diagram .amb-tls { animation: amb-tls var(--T) linear infinite; }
+.diagram .amb-tlsok { animation: amb-tlsok var(--T) linear infinite; }
+.diagram .amb-ok { animation: amb-ok var(--T) linear infinite; }
+.diagram .amb-err { animation: amb-err var(--T) linear infinite; }
+.diagram .amb-look { animation: amb-look var(--T) linear infinite; }
+.diagram .amb-oldlive { animation: amb-oldlive var(--T) linear infinite; }
+.diagram .amb-ghost { animation: amb-ghost var(--T) linear infinite; }
+.diagram .amb-new { animation: amb-new var(--T) linear infinite; }
+.diagram .amb-refx { animation: amb-refx var(--T) linear infinite; }
+.diagram .amb-bfail { animation: amb-bfail var(--T) linear infinite; }
+.diagram .amb-cA { animation: amb-cA var(--T) linear infinite; }
+.diagram .amb-cB { animation: amb-cB var(--T) linear infinite; }
+.diagram .amb-hd { animation: amb-hd var(--T) linear infinite; }
+.diagram .amb-hreg { animation: amb-hreg var(--T) linear infinite; }
+.diagram .amb-htls { animation: amb-htls var(--T) linear infinite; }
+.diagram .amb-lock { animation: amb-lock var(--T) linear infinite; }
+.diagram .amb-f1 { animation: amb-f1 var(--T) linear infinite; }
+.diagram .amb-hmet { animation: amb-hmet var(--T) linear infinite; }
+.diagram .amb-hto { animation: amb-hto var(--T) linear infinite; }
+.diagram .amb-x1 { animation: amb-x1 var(--T) linear infinite; }
+.diagram .amb-hrt { animation: amb-hrt var(--T) linear infinite; }
+.diagram .amb-f2 { animation: amb-f2 var(--T) linear infinite; }
+.diagram .amb-ans { animation: amb-ans var(--T) linear infinite; }
+.diagram .amb-503 { animation: amb-503 var(--T) linear infinite; }
+.diagram .amb-to0 { animation: amb-to0 var(--T) linear infinite; }
+.diagram .amb-to30 { animation: amb-to30 var(--T) linear infinite; }
+.diagram .amb-to55 { animation: amb-to55 var(--T) linear infinite; }
+.diagram .amb-l48 { animation: amb-l48 var(--T) linear infinite; }
+.diagram .amb-l25 { animation: amb-l25 var(--T) linear infinite; }
+.diagram .amb-closed { animation: amb-closed var(--T) linear infinite; }
+.diagram .amb-open { animation: amb-open var(--T) linear infinite; }
+.diagram .amb-pass { animation: amb-pass var(--T) linear infinite; }
+.diagram .amb-ff { animation: amb-ff var(--T) linear infinite; }
+.diagram .amb-hbr { animation: amb-hbr var(--T) linear infinite; }
+.diagram .amb-k1 { animation: amb-k1 var(--T) linear infinite; }
+.diagram .amb-k2 { animation: amb-k2 var(--T) linear infinite; }
+.diagram .amb-k3 { animation: amb-k3 var(--T) linear infinite; }
+.diagram .amb-k4 { animation: amb-k4 var(--T) linear infinite; }
+.diagram .amb-k5 { animation: amb-k5 var(--T) linear infinite; }
+.diagram .amb-sp2a { transform-box: fill-box; transform-origin: 0 50%; animation: amb-sp2a var(--T) linear infinite; }
+.diagram .amb-sp2b { transform-box: fill-box; transform-origin: 0 50%; animation: amb-sp2b var(--T) linear infinite; }
+.diagram .amb-sp2c { transform-box: fill-box; transform-origin: 0 50%; animation: amb-sp2c var(--T) linear infinite; }
+.diagram .amb-sp3a { transform-box: fill-box; transform-origin: 0 50%; animation: amb-sp3a var(--T) linear infinite; }
+.diagram .amb-sp3b { transform-box: fill-box; transform-origin: 0 50%; animation: amb-sp3b var(--T) linear infinite; }
+.diagram .amb-sp3c { transform-box: fill-box; transform-origin: 0 50%; animation: amb-sp3c var(--T) linear infinite; }
+.diagram .amb-sp3d { transform-box: fill-box; transform-origin: 0 50%; animation: amb-sp3d var(--T) linear infinite; }
+.diagram .amb-tobar { transform-box: fill-box; transform-origin: 0 50%; animation: amb-tobar var(--T) linear infinite; }
+@keyframes amb-c1 {
+  0% { transform: translate(216px, 214px); opacity: 0; }
+  1.5% { transform: translate(216px, 214px); opacity: 0; }
+  1.75% { opacity: 1; }
+  5% { transform: translate(484px, 214px); opacity: 1; }
+  5.25% { transform: translate(484px, 214px); opacity: 0; }
+  13% { transform: translate(216px, 214px); opacity: 0; }
+  13.25% { opacity: 1; }
+  16.5% { transform: translate(484px, 214px); opacity: 1; }
+  16.75% { transform: translate(484px, 214px); opacity: 0; }
+  100% { transform: translate(484px, 214px); opacity: 0; }
+}
+@keyframes amb-r1 {
+  0% { transform: translate(484px, 214px); opacity: 0; }
+  5.75% { transform: translate(484px, 214px); opacity: 0; }
+  6% { opacity: 1; }
+  9.25% { transform: translate(216px, 214px); opacity: 1; }
+  9.5% { transform: translate(216px, 214px); opacity: 0; }
+  100% { transform: translate(216px, 214px); opacity: 0; }
+}
+@keyframes amb-call {
+  0% { transform: translate(216px, 214px); opacity: 0; }
+  27% { transform: translate(216px, 214px); opacity: 0; }
+  27.25% { opacity: 1; }
+  28.5% { transform: translate(272px, 214px); opacity: 1; }
+  28.75% { transform: translate(272px, 214px); opacity: 0; }
+  51.5% { transform: translate(216px, 214px); opacity: 0; }
+  51.75% { opacity: 1; }
+  52.75% { transform: translate(272px, 214px); opacity: 1; }
+  53% { transform: translate(272px, 214px); opacity: 0; }
+  67% { transform: translate(216px, 214px); opacity: 0; }
+  67.25% { opacity: 1; }
+  68.25% { transform: translate(272px, 214px); opacity: 1; }
+  68.5% { transform: translate(272px, 214px); opacity: 0; }
+  76.5% { transform: translate(216px, 214px); opacity: 0; }
+  76.75% { opacity: 1; }
+  77.75% { transform: translate(272px, 214px); opacity: 1; }
+  78% { transform: translate(272px, 214px); opacity: 0; }
+  100% { transform: translate(272px, 214px); opacity: 0; }
+}
+@keyframes amb-tls {
+  0% { transform: translate(452px, 214px); opacity: 0; }
+  34.5% { transform: translate(452px, 214px); opacity: 0; }
+  34.75% { opacity: 1; }
+  37.5% { transform: translate(686px, 214px); opacity: 1; }
+  37.75% { transform: translate(686px, 214px); opacity: 0; }
+  53% { transform: translate(452px, 214px); opacity: 0; }
+  53.25% { opacity: 1; }
+  55% { transform: translate(686px, 214px); }
+  58% { transform: translate(686px, 214px); opacity: 1; }
+  58.25% { transform: translate(686px, 214px); opacity: 0; }
+  59.25% { transform: translate(452px, 214px); opacity: 0; }
+  59.5% { opacity: 1; }
+  61.041% { transform: translate(664px, 214px); }
+  61.564% { transform: translate(664px, 276px); }
+  61.75% { transform: translate(686px, 276px); opacity: 1; }
+  62% { transform: translate(686px, 276px); opacity: 0; }
+  78% { transform: translate(452px, 214px); opacity: 0; }
+  78.25% { opacity: 1; }
+  80% { transform: translate(686px, 214px); opacity: 1; }
+  80.25% { transform: translate(686px, 214px); opacity: 0; }
+  100% { transform: translate(686px, 214px); opacity: 0; }
+}
+@keyframes amb-tlsok {
+  0% { transform: translate(686px, 214px); opacity: 0; }
+  38.25% { transform: translate(686px, 214px); opacity: 0; }
+  38.5% { opacity: 1; }
+  41.25% { transform: translate(452px, 214px); opacity: 1; }
+  41.5% { transform: translate(452px, 214px); opacity: 0; }
+  62.25% { transform: translate(686px, 276px); opacity: 0; }
+  62.436% { transform: translate(664px, 276px); }
+  62.5% { opacity: 1; }
+  62.959% { transform: translate(664px, 214px); }
+  64.75% { transform: translate(452px, 214px); opacity: 1; }
+  65% { transform: translate(452px, 214px); opacity: 0; }
+  80.25% { transform: translate(686px, 214px); opacity: 0; }
+  80.5% { opacity: 1; }
+  82.25% { transform: translate(452px, 214px); opacity: 1; }
+  82.5% { transform: translate(452px, 214px); opacity: 0; }
+  100% { transform: translate(452px, 214px); opacity: 0; }
+}
+@keyframes amb-ok {
+  0% { transform: translate(272px, 214px); opacity: 0; }
+  41.25% { transform: translate(272px, 214px); opacity: 0; }
+  41.5% { opacity: 1; }
+  42.5% { transform: translate(216px, 214px); opacity: 1; }
+  42.75% { transform: translate(216px, 214px); opacity: 0; }
+  64.75% { transform: translate(272px, 214px); opacity: 0; }
+  65% { opacity: 1; }
+  66% { transform: translate(216px, 214px); opacity: 1; }
+  66.25% { transform: translate(216px, 214px); opacity: 0; }
+  82.5% { transform: translate(272px, 214px); opacity: 0; }
+  82.75% { opacity: 1; }
+  83.75% { transform: translate(216px, 214px); opacity: 1; }
+  84% { transform: translate(216px, 214px); opacity: 0; }
+  100% { transform: translate(216px, 214px); opacity: 0; }
+}
+@keyframes amb-err {
+  0% { transform: translate(272px, 214px); opacity: 0; }
+  68.75% { transform: translate(272px, 214px); opacity: 0; }
+  69% { opacity: 1; }
+  70% { transform: translate(216px, 214px); opacity: 1; }
+  70.25% { transform: translate(216px, 214px); opacity: 0; }
+  100% { transform: translate(216px, 214px); opacity: 0; }
+}
+@keyframes amb-look {
+  0% { transform: translate(452px, 140px); opacity: 0; }
+  28.75% { transform: translate(452px, 140px); opacity: 0; }
+  29% { opacity: 1; }
+  29.75% { transform: translate(490px, 140px); }
+  30.5% { transform: translate(490px, 140px); }
+  31.5% { transform: translate(452px, 140px); opacity: 1; }
+  31.75% { transform: translate(452px, 140px); opacity: 0; }
+  100% { transform: translate(452px, 140px); opacity: 0; }
+}
+@keyframes amb-oldlive {
+  0% { opacity: 1; }
+  10% { opacity: 1; }
+  11.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-ghost {
+  0% { opacity: 0; }
+  10% { opacity: 0; }
+  11.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-new {
+  0% { opacity: 0; }
+  10% { opacity: 0; }
+  12% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes amb-refx {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-bfail {
+  0% { opacity: 0; }
+  16.75% { opacity: 0; }
+  17.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-cA {
+  0% { opacity: 0; }
+  16.75% { opacity: 0; }
+  17.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-cB {
+  0% { opacity: 0; }
+  17.75% { opacity: 0; }
+  18.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-hd {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29.5% { opacity: 1; }
+  31.75% { opacity: 1; }
+  32.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-hreg {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  30.5% { opacity: 1; }
+  32% { opacity: 1; }
+  33% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-htls {
+  0% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.75% { opacity: 1; }
+  34.75% { opacity: 1; }
+  35.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-lock {
+  0% { opacity: 0; }
+  32.5% { opacity: 0; }
+  33.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-f1 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.5% { opacity: 1; }
+  39.25% { opacity: 1; }
+  40.25% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.75% { opacity: 1; }
+  81.5% { opacity: 1; }
+  82.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-hmet {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42.5% { opacity: 1; }
+  44.5% { opacity: 1; }
+  45.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-hto {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  54% { opacity: 1; }
+  58.25% { opacity: 1; }
+  59.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-x1 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-hrt {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: 1; }
+  59.75% { opacity: 1; }
+  60.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-f2 {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.75% { opacity: 1; }
+  63.25% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-ans {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-503 {
+  0% { opacity: 0; }
+  70% { opacity: 0; }
+  71% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-to0 {
+  0% { opacity: 1; }
+  58% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-to30 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: 1; }
+  64.5% { opacity: 1; }
+  65.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-to55 {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-l48 {
+  0% { opacity: 1; }
+  66% { opacity: 1; }
+  67% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-l25 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-closed {
+  0% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67.5% { opacity: 0; }
+  75% { opacity: 0; }
+  76% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-open {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-pass {
+  0% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-ff {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-hbr {
+  0% { opacity: 0; }
+  68.25% { opacity: 0; }
+  69.25% { opacity: 1; }
+  69.75% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes amb-k1 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-k2 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  80% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-k3 {
+  0% { opacity: 0; }
+  81% { opacity: 0; }
+  82.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-k4 {
+  0% { opacity: 0; }
+  83.5% { opacity: 0; }
+  85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-k5 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes amb-sp2a {
+  0% { transform: scaleX(0); }
+  27% { transform: scaleX(0); }
+  42.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes amb-sp2b {
+  0% { transform: scaleX(0); }
+  28.75% { transform: scaleX(0); }
+  31.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes amb-sp2c {
+  0% { transform: scaleX(0); }
+  34.5% { transform: scaleX(0); }
+  41.25% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes amb-sp3a {
+  0% { transform: scaleX(0); }
+  51.5% { transform: scaleX(0); }
+  66% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes amb-sp3b {
+  0% { transform: scaleX(0); }
+  53% { transform: scaleX(0); }
+  58% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes amb-sp3c {
+  0% { transform: scaleX(0); }
+  58% { transform: scaleX(0); }
+  59.25% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes amb-sp3d {
+  0% { transform: scaleX(0); }
+  59.25% { transform: scaleX(0); }
+  64.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes amb-tobar {
+  0% { transform: scaleX(0); }
+  53% { transform: scaleX(0); }
+  58% { transform: scaleX(1); }
+  58.75% { transform: scaleX(1); }
+  59.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+</style>
+<g class="stage">
+  <!-- ===== the host: one localhost for the app and, from step 2, its ambassador ===== -->
+  <rect class="zone" x="40" y="112" width="424" height="200" rx="14"/>
+  <text class="tiny sb f-ink" x="44" y="104">billing host</text>
+  <text class="tiny" x="114" y="104">· a VM, or a pod: one shared localhost</text>
+
+  <!-- billing: the client nobody can change -->
+  <rect class="box" x="52" y="124" width="164" height="176" rx="12"/>
+  <text class="label" x="66" y="147">Billing</text>
+  <text class="sub" x="66" y="163">legacy application</text>
+  <rect class="f-bg s-line" x="58" y="171" width="152" height="20" rx="10" stroke-width="1.2"/>
+  <rect class="f-muted" x="66" y="180" width="9" height="7" rx="1.5"/><path class="none s-muted" d="M67.8 180v-2a2.7 2.7 0 0 1 5.4 0v2" stroke-width="1.4"/>
+  <text class="tiny sb f-ink" x="80" y="185">code can't be changed</text>
+  <line class="s-line" x1="64" y1="199" x2="204" y2="199" stroke-width="1"/>
+  <text class="tiny" x="66" y="215">tax API at</text>
+  <g class="p1"><text class="tiny mono sb f-ink" x="66" y="232">http://10.0.4.17</text></g>
+  <g class="p234"><text class="tiny mono sb f-blue" x="66" y="232">http://localhost:9000</text></g>
+  <g class="p2"><rect class="none s-green" x="60" y="219" width="152" height="18" rx="5" stroke-width="1.8"/></g>
+  <g class="p1">
+    <circle class="f-red" cx="71" cy="252" r="5.5"/><path class="s-bg" d="M68.8 249.8l4.4 4.4M73.2 249.8l-4.4 4.4" stroke-width="1.6" stroke-linecap="round"/><text class="tiny f-ink" x="82" y="256">no timeout</text>
+    <circle class="f-red" cx="71" cy="269" r="5.5"/><path class="s-bg" d="M68.8 266.8l4.4 4.4M73.2 266.8l-4.4 4.4" stroke-width="1.6" stroke-linecap="round"/><text class="tiny f-ink" x="82" y="273">no retries</text>
+    <circle class="f-red" cx="71" cy="286" r="5.5"/><path class="s-bg" d="M68.8 283.8l4.4 4.4M73.2 283.8l-4.4 4.4" stroke-width="1.6" stroke-linecap="round"/><text class="tiny f-ink" x="82" y="290">no metrics or traces</text>
+    <rect class="none s-red amb-w amb-bfail" x="52" y="124" width="164" height="176" rx="12" stroke-width="2.5"/>
+  </g>
+  <g class="p24">
+    <circle class="f-green" cx="71" cy="252" r="5.5"/><path class="none s-bg" d="M68.25 252l1.98 1.98 3.52 -3.96" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="82" y="256">one setting changed</text>
+    <circle class="f-green" cx="71" cy="269" r="5.5"/><path class="none s-bg" d="M68.25 269l1.98 1.98 3.52 -3.96" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="82" y="273">same binary</text>
+    <circle class="f-green" cx="71" cy="286" r="5.5"/><path class="none s-bg" d="M68.25 286l1.98 1.98 3.52 -3.96" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="82" y="290">API looks local</text>
+  </g>
+  <g class="p3">
+    <g class="amb-w amb-ans"><circle class="f-green" cx="71" cy="252" r="5.5"/><path class="none s-bg" d="M68.25 252l1.98 1.98 3.52 -3.96" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green" x="82" y="256">answer in 2.5 s</text></g>
+    <g class="amb-w amb-503"><circle class="f-red" cx="71" cy="269" r="5.5"/><path class="s-bg" d="M68.8 266.8l4.4 4.4M73.2 266.8l-4.4 4.4" stroke-width="1.6" stroke-linecap="round"/><text class="tiny sb f-red" x="82" y="273">503 in 1 ms</text>
+      <text class="tiny sb f-ink" x="66" y="290">never left hanging</text></g>
+  </g>
+
+  <!-- step 1: straight to the API's old, fixed address -->
+  <g class="p1">
+    <line class="wire" x1="216" y1="214" x2="484" y2="214"/>
+    <text class="tiny mid" x="350" y="206">plain HTTP, straight to the API</text>
+    <g class="amb-oldlive">
+      <rect class="box" x="484" y="180" width="168" height="68" rx="12"/>
+      <text class="label" x="498" y="204">Tax API</text>
+      <text class="tiny mono" x="498" y="221">10.0.4.17:80</text>
+      <circle class="f-green" cx="502" cy="234" r="3.5"/><text class="tiny sb f-green" x="510" y="238">answers here today</text>
+    </g>
+    <g class="amb-w amb-ghost">
+      <rect class="f-bg" x="484" y="180" width="168" height="68" rx="12"/>
+      <rect class="amb-ghost-box" x="484" y="180" width="168" height="68" rx="12"/>
+      <text class="tiny b f-red" x="498" y="200">moved: nothing here</text>
+      <text class="tiny" x="498" y="217">new address:</text>
+      <text class="tiny mono sb f-ink" x="498" y="234">tax-api.internal</text>
+    </g>
+    <g class="amb-w amb-refx">
+      <circle class="f-red" cx="470" cy="214" r="7"/><path class="s-bg" d="M467.2 211.2l5.6 5.6M472.8 211.2l-5.6 5.6" stroke-width="1.6" stroke-linecap="round"/>
+      <text class="tiny b f-red end" x="458" y="238">connection refused</text>
+    </g>
+  </g>
+
+  <!-- the tax API's new home (appears at 2 s, stays until the loop ends) -->
+  <g class="amb-w amb-new">
+    <rect class="zone" x="672" y="112" width="248" height="200" rx="14"/>
+    <text class="label" x="686" y="136">Tax API</text>
+    <text class="tiny mono sb f-ink" x="686" y="153">tax-api.internal</text>
+    <g class="p1"><rect class="f-amber-soft s-amber" x="826" y="123" width="80" height="18" rx="9" stroke-width="1.2"/><text class="tiny b mid f-amber-ink" x="866" y="136">new address</text></g>
+    <rect class="f-orange-soft s-orange" x="686" y="162" width="120" height="18" rx="9" stroke-width="1.2"/>
+    <rect class="f-orange" x="694" y="169" width="9" height="7" rx="1.5"/><path class="none s-orange" d="M695.8 169v-2a2.7 2.7 0 0 1 5.4 0v2" stroke-width="1.4"/>
+    <text class="tiny sb f-orange" x="708" y="175">TLS + client cert</text>
+    <rect class="f-orange-soft s-orange" x="812" y="162" width="100" height="18" rx="9" stroke-width="1.2"/>
+    <rect class="f-orange" x="820" y="167" width="8" height="8" rx="2"/>
+    <text class="tiny sb f-orange" x="833" y="175">access token</text>
+
+    <rect class="box" x="686" y="189" width="220" height="50" rx="10"/>
+    <rect class="box" x="686" y="251" width="220" height="50" rx="10"/>
+    <g class="p3">
+      <rect class="f-red-soft s-red" x="686" y="189" width="220" height="50" rx="10" stroke-width="1.5"/>
+      <rect class="f-amber-soft s-amber" x="686" y="251" width="220" height="50" rx="10" stroke-width="1.5"/>
+    </g>
+    <rect class="f-green-soft s-green amb-w amb-f1" x="686" y="189" width="220" height="50" rx="10" stroke-width="1.5"/>
+    <rect class="f-green-soft s-green amb-w amb-f2" x="686" y="251" width="220" height="50" rx="10" stroke-width="1.5"/>
+    <text class="sub sb f-ink" x="700" y="210">tax-1</text>
+    <text class="tiny mono" x="700" y="227">10.0.9.21</text>
+    <text class="sub sb f-ink" x="700" y="272">tax-2</text>
+    <text class="tiny mono" x="700" y="289">10.0.9.22</text>
+    <g class="p124">
+      <circle class="f-green" cx="830" cy="214" r="3.5"/><text class="tiny sb f-green" x="838" y="218">healthy</text>
+      <circle class="f-green" cx="830" cy="276" r="3.5"/><text class="tiny sb f-green" x="838" y="280">healthy</text>
+    </g>
+    <g class="p3">
+      <circle class="f-red" cx="830" cy="214" r="3.5"/><text class="tiny sb f-red" x="838" y="218">timing out</text>
+      <circle class="f-amber" cx="830" cy="276" r="3.5"/><text class="tiny sb f-amber-ink" x="838" y="280">slow</text>
+    </g>
+  </g>
+
+  <!-- steps 2-4: the ambassador, on the same host -->
+  <g class="p234">
+    <line class="wire" x1="216" y1="214" x2="272" y2="214"/>
+    <text class="tiny mid" x="244" y="206">localhost</text>
+    <rect class="amb-amb" x="272" y="124" width="180" height="176" rx="12"/>
+    <text class="label" x="286" y="146">Ambassador</text>
+    <text class="tiny mono sb f-blue" x="286" y="162">localhost:9000</text>
+    <line class="s-line" x1="284" y1="171" x2="440" y2="171" stroke-width="1"/>
+    <rect class="f-teal-soft amb-w amb-hd" x="280" y="178" width="164" height="16" rx="4"/>
+    <rect class="f-orange-soft amb-w amb-htls" x="280" y="195" width="164" height="33" rx="4"/>
+    <rect class="f-blue-soft amb-w amb-hmet" x="280" y="229" width="164" height="16" rx="4"/>
+    <rect class="f-teal" x="287" y="182" width="8" height="8" rx="2"/>
+    <text class="tiny f-ink" x="302" y="190">service discovery</text>
+    <rect class="f-orange" x="286.5" y="200" width="9" height="7" rx="1.5"/><path class="none s-orange" d="M288.3 200v-2a2.7 2.7 0 0 1 5.4 0v2" stroke-width="1.4"/>
+    <text class="tiny f-ink" x="302" y="207">TLS + client cert</text>
+    <rect class="f-orange" x="287" y="216" width="8" height="8" rx="2"/>
+    <text class="tiny f-ink" x="302" y="224">adds access token</text>
+    <rect class="f-muted" x="286" y="236" width="2.5" height="5" rx="0.8"/><rect class="f-muted" x="289.8" y="233" width="2.5" height="8" rx="0.8"/><rect class="f-muted" x="293.6" y="230" width="2.5" height="11" rx="0.8"/>
+    <text class="tiny f-ink" x="302" y="241">metrics + trace span</text>
+
+    <!-- service discovery -->
+    <line class="wire dash" x1="452" y1="140" x2="484" y2="140"/>
+    <rect class="box" x="484" y="112" width="168" height="56" rx="10"/>
+    <rect class="f-teal-soft s-teal amb-w amb-hreg" x="484" y="112" width="168" height="56" rx="10" stroke-width="1.5"/>
+    <text class="tiny sb f-teal" x="496" y="128">service discovery</text>
+    <text class="tiny mono" x="496" y="144">tax-api.internal</text>
+    <text class="tiny mono sb f-ink" x="496" y="160">→ 10.0.9.21, .22</text>
+
+    <!-- out to the API's current instances -->
+    <path class="wire" d="M452 214H686"/>
+    <path class="wire" d="M664 214V276H686"/>
+    <g class="amb-w amb-lock">
+      <rect class="f-orange" x="503" y="191" width="9" height="7" rx="1.5"/><path class="none s-orange" d="M504.8 191v-2a2.7 2.7 0 0 1 5.4 0v2" stroke-width="1.4"/>
+      <text class="tiny sb f-orange" x="517" y="198">mutual TLS + token</text>
+    </g>
+  </g>
+
+  <!-- steps 3-4: resilience rows -->
+  <g class="p34">
+    <rect class="f-amber-soft amb-w amb-hto" x="280" y="246" width="164" height="16" rx="4"/>
+    <rect class="f-amber-soft amb-w amb-hrt" x="280" y="263" width="164" height="16" rx="4"/>
+    <rect class="f-red-soft amb-w amb-hbr" x="280" y="280" width="164" height="16" rx="4"/>
+    <circle class="none s-amber" cx="291" cy="254" r="4.2" stroke-width="1.5"/><path class="none s-amber" d="M291 251.5V254H293" stroke-width="1.3" stroke-linecap="round"/>
+    <text class="tiny f-ink" x="302" y="258">timeout 2 s</text>
+    <rect class="f-line" x="372" y="251" width="64" height="6" rx="3"/>
+    <rect class="f-amber amb-tobar" x="372" y="251" width="64" height="6" rx="3"/>
+    <path class="none s-amber" d="M294.6 269.2A4 4 0 1 1 291 267" stroke-width="1.5" stroke-linecap="round"/><path class="f-amber" d="M290 264.4L293.2 267L290 269.4z"/>
+    <text class="tiny f-ink" x="302" y="275">retry with backoff</text>
+    <circle class="f-ink" cx="287" cy="290" r="1.6"/><circle class="f-ink" cx="295.5" cy="290" r="1.6"/><path class="none s-ink" d="M287 290L294 285" stroke-width="1.5" stroke-linecap="round"/>
+    <text class="tiny f-ink" x="302" y="292">circuit breaker</text>
+    <g class="amb-w amb-closed"><rect class="f-green-soft s-green" x="392" y="281" width="48" height="15" rx="7.5" stroke-width="1.2"/><text class="amb-chip f-green" x="416" y="292">CLOSED</text></g>
+    <g class="amb-w amb-open"><rect class="f-red-soft s-red" x="392" y="281" width="48" height="15" rx="7.5" stroke-width="1.2"/><text class="amb-chip f-red" x="416" y="292">OPEN</text></g>
+  </g>
+  <g class="p3">
+    <g class="amb-w amb-x1">
+      <circle class="f-red" cx="646" cy="232" r="6.5"/><path class="s-bg" d="M643.4 229.4l5.2 5.2M648.6 229.4l-5.2 5.2" stroke-width="1.6" stroke-linecap="round"/>
+      <text class="tiny b f-red end" x="634" y="236">timed out after 2 s</text>
+    </g>
+  </g>
+
+  <!-- step 1: what breaks billing -->
+  <g class="p1">
+    <rect class="amb-card" x="40" y="326" width="282" height="104" rx="10"/>
+    <rect class="none s-red amb-w amb-cA" x="40" y="326" width="282" height="104" rx="10" stroke-width="2"/>
+    <circle class="f-red" cx="60" cy="345" r="6.5"/><path class="s-bg" d="M57.4 342.4l5.2 5.2M62.6 342.4l-5.2 5.2" stroke-width="1.6" stroke-linecap="round"/><text class="sub sb f-ink" x="74" y="349">It moves</text>
+    <text class="tiny f-ink" x="54" y="370">The tax team moves it to a new address.</text>
+    <text class="tiny f-ink" x="54" y="386">The fixed address now refuses every</text>
+    <text class="tiny f-ink" x="54" y="402">connection, and every tax lookup fails.</text>
+    <rect class="amb-card" x="339" y="326" width="282" height="104" rx="10"/>
+    <rect class="none s-red amb-w amb-cB" x="339" y="326" width="282" height="104" rx="10" stroke-width="2"/>
+    <circle class="f-red" cx="359" cy="345" r="6.5"/><path class="s-bg" d="M356.4 342.4l5.2 5.2M361.6 342.4l-5.2 5.2" stroke-width="1.6" stroke-linecap="round"/><text class="sub sb f-ink" x="373" y="349">It requires mutual TLS</text>
+    <text class="tiny f-ink" x="353" y="370">HTTPS only, with a client certificate and</text>
+    <text class="tiny f-ink" x="353" y="386">an access token. Billing can send neither,</text>
+    <text class="tiny f-ink" x="353" y="402">and nobody can add them to its code.</text>
+    <rect class="amb-card" x="638" y="326" width="282" height="104" rx="10"/>
+    <circle class="f-red" cx="658" cy="345" r="6.5"/><path class="s-bg" d="M655.4 342.4l5.2 5.2M660.6 342.4l-5.2 5.2" stroke-width="1.6" stroke-linecap="round"/><text class="sub sb f-ink" x="672" y="349">It slows down</text>
+    <text class="tiny f-ink" x="652" y="370">No timeout: each call holds a thread until</text>
+    <text class="tiny f-ink" x="652" y="386">the API answers. When the threads run</text>
+    <text class="tiny f-ink" x="652" y="402">out, the whole application hangs.</text>
+  </g>
+
+  <!-- steps 2-3: telemetry, produced by the ambassador -->
+  <g class="p23">
+    <rect class="amb-panel" x="40" y="326" width="880" height="120" rx="10"/>
+    <text class="sub sb f-ink" x="54" y="346">Telemetry from the ambassador</text>
+    <text class="tiny" x="250" y="346">metrics and a trace span for every call; billing itself emits none</text>
+    <rect class="f-bg s-line" x="54" y="358" width="108" height="74" rx="8" stroke-width="1.2"/>
+    <rect class="f-bg s-line" x="170" y="358" width="108" height="74" rx="8" stroke-width="1.2"/>
+    <rect class="f-bg s-line" x="286" y="358" width="108" height="74" rx="8" stroke-width="1.2"/>
+    <text class="tiny" x="64" y="375">p99 latency</text>
+    <text class="amb-val amb-w amb-l48" x="64" y="401">48 ms</text>
+    <text class="amb-val f-amber-ink amb-w amb-l25" x="64" y="401">2.5 s</text>
+    <text class="tiny" x="64" y="421">calls via the proxy</text>
+    <text class="tiny" x="180" y="375">timeouts</text>
+    <text class="amb-val f-green amb-w amb-to0" x="180" y="401">0 %</text>
+    <text class="amb-val f-amber-ink amb-w amb-to30" x="180" y="401">30 %</text>
+    <text class="amb-val f-red amb-w amb-to55" x="180" y="401">55 %</text>
+    <text class="tiny" x="180" y="421">trip point: 50 %</text>
+    <text class="tiny" x="296" y="375">breaker</text>
+    <text class="amb-val f-green amb-w amb-closed" x="296" y="401">CLOSED</text>
+    <text class="amb-val f-red amb-w amb-open" x="296" y="401">OPEN</text>
+    <text class="tiny amb-w amb-pass" x="296" y="421">calls go through</text>
+    <text class="tiny sb f-red amb-w amb-ff" x="296" y="421">fails fast: 1 ms</text>
+    <text class="tiny sb f-ink" x="410" y="375">trace</text>
+  </g>
+  <g class="p2">
+    <path class="s-line" d="M600 381V442M750 381V442M900 381V442" stroke-width="1"/>
+    <text class="tiny mid" x="600" y="375">0</text><text class="tiny mid" x="750" y="375">25 ms</text><text class="tiny mid" x="900" y="375">50 ms</text>
+    <text class="tiny f-ink" x="410" y="396">GET /rates · 44 ms</text>
+    <rect class="f-blue amb-sp2a" x="600" y="389" width="264" height="8" rx="2"/>
+    <text class="tiny" x="420" y="413">discovery lookup</text>
+    <rect class="f-teal amb-sp2b" x="600" y="406" width="6" height="8" rx="2"/>
+    <text class="tiny" x="420" y="430">→ tax-1 · mutual TLS · 200</text>
+    <rect class="f-green amb-sp2c" x="612" y="423" width="228" height="8" rx="2"/>
+  </g>
+  <g class="p3">
+    <path class="s-line" d="M600 381V442M700 381V442M800 381V442M900 381V442" stroke-width="1"/>
+    <text class="tiny mid" x="600" y="375">0</text><text class="tiny mid" x="700" y="375">1 s</text><text class="tiny mid" x="800" y="375">2 s</text><text class="tiny mid" x="900" y="375">3 s</text>
+    <text class="tiny f-ink" x="410" y="393">GET /rates · 2.5 s</text>
+    <rect class="f-blue amb-sp3a" x="600" y="386" width="250" height="8" rx="2"/>
+    <text class="tiny" x="420" y="408">try 1 → tax-1 · timeout</text>
+    <rect class="f-red amb-sp3b" x="600" y="401" width="200" height="8" rx="2"/>
+    <text class="tiny" x="420" y="423">backoff + jitter</text>
+    <rect class="f-amber amb-sp3c" x="800" y="416" width="20" height="8" rx="2"/>
+    <text class="tiny" x="420" y="438">try 2 → tax-2 · 200</text>
+    <rect class="f-green amb-sp3d" x="820" y="431" width="30" height="8" rx="2"/>
+  </g>
+
+  <!-- legend (steps 1-3) -->
+  <g class="p123">
+    <circle class="f-blue" cx="46" cy="454" r="5"/><text class="tiny" x="56" y="458">call</text>
+    <circle class="f-green" cx="98" cy="454" r="5"/><text class="tiny" x="108" y="458">reply</text>
+    <circle class="f-blue s-orange" cx="156" cy="454" r="4.6" stroke-width="2.2"/><rect class="f-orange" x="160" y="443" width="6" height="6" rx="1.5"/>
+    <text class="tiny" x="172" y="458">over mutual TLS, with a token</text>
+    <rect class="f-teal" x="341" y="449" width="10" height="10" rx="2.5"/><text class="tiny" x="357" y="458">discovery lookup</text>
+    <circle class="f-red" cx="458" cy="454" r="5"/><text class="tiny" x="468" y="458">error</text>
+  </g>
+
+  <!-- step 4: the costs, as numbered callouts -->
+  <g class="p4">
+    <g class="amb-w amb-k1"><circle class="f-amber s-bg" cx="244" cy="188" r="8" stroke-width="1.5"/><text class="amb-pin" x="244" y="191.5">1</text></g>
+    <g class="amb-w amb-k2"><circle class="f-amber s-bg" cx="436" cy="140" r="8" stroke-width="1.5"/><text class="amb-pin" x="436" y="143.5">2</text></g>
+    <g class="amb-w amb-k3"><circle class="f-amber s-bg" cx="436" cy="271" r="8" stroke-width="1.5"/><text class="amb-pin" x="436" y="274.5">3</text></g>
+    <g class="amb-w amb-k4"><circle class="f-amber s-bg" cx="464" cy="112" r="8" stroke-width="1.5"/><text class="amb-pin" x="464" y="115.5">4</text></g>
+    <g class="amb-w amb-k1">
+      <rect class="amb-card" x="40" y="326" width="214" height="100" rx="10"/>
+      <circle class="f-amber s-bg" cx="58" cy="345" r="8" stroke-width="1.5"/><text class="amb-pin" x="58" y="348.5">1</text><text class="sub sb f-ink" x="72" y="349">One more hop</text>
+      <text class="tiny f-ink" x="54" y="370">Small on localhost, but it is</text>
+      <text class="tiny f-ink" x="54" y="386">paid on every single call.</text>
+    </g>
+    <g class="amb-w amb-k2">
+      <rect class="amb-card" x="262" y="326" width="214" height="100" rx="10"/>
+      <circle class="f-amber s-bg" cx="280" cy="345" r="8" stroke-width="1.5"/><text class="amb-pin" x="280" y="348.5">2</text><text class="sub sb f-ink" x="294" y="349">One more process</text>
+      <text class="tiny f-ink" x="276" y="370">To deploy, patch, secure and</text>
+      <text class="tiny f-ink" x="276" y="386">watch, next to every client.</text>
+    </g>
+    <g class="amb-w amb-k3">
+      <rect class="amb-card" x="484" y="326" width="214" height="100" rx="10"/>
+      <circle class="f-amber s-bg" cx="502" cy="345" r="8" stroke-width="1.5"/><text class="amb-pin" x="502" y="348.5">3</text><text class="sub sb f-ink" x="516" y="349">Safe retries only</text>
+      <text class="tiny f-ink" x="498" y="370">Retry GET /rates, not POST</text>
+      <text class="tiny f-ink" x="498" y="386">/transactions. A proxy can't</text>
+      <text class="tiny f-ink" x="498" y="402">always tell: the client may need</text>
+      <text class="tiny f-ink" x="498" y="418">to send a hint (idempotency key).</text>
+    </g>
+    <g class="amb-w amb-k4">
+      <rect class="amb-card" x="706" y="326" width="214" height="100" rx="10"/>
+      <circle class="f-amber s-bg" cx="724" cy="345" r="8" stroke-width="1.5"/><text class="amb-pin" x="724" y="348.5">4</text><text class="sub sb f-ink" x="738" y="349">Per client or shared?</text>
+      <text class="tiny f-ink" x="720" y="370">Per client: isolated, but many</text>
+      <text class="tiny f-ink" x="720" y="386">copies. Shared by several: fewer,</text>
+      <text class="tiny f-ink" x="720" y="402">but one failure hits them all.</text>
+    </g>
+    <g class="amb-w amb-k5">
+      <rect class="amb-card" x="40" y="436" width="880" height="30" rx="8"/>
+      <text class="tiny" x="54" y="455"><tspan class="sb f-ink">Simpler:</tspan> a client library, when every client uses one language.</text>
+      <text class="tiny" x="480" y="455"><tspan class="sb f-ink">More general:</tspan> a service mesh, when every service needs this.</text>
+    </g>
+  </g>
+
+  <!-- moving tokens -->
+  <circle class="pkt f-blue amb-tok amb-c1" r="6"/>
+  <circle class="pkt f-green amb-tok amb-r1" r="6"/>
+  <circle class="pkt f-blue amb-tok amb-call" r="6"/>
+  <g class="amb-tok amb-tls"><circle class="f-blue s-orange" r="6" stroke-width="2.5"/><rect class="f-orange s-bg" x="3" y="-13" width="8" height="8" rx="2" stroke-width="1.2"/></g>
+  <g class="amb-tok amb-tlsok"><circle class="f-green s-orange" r="6" stroke-width="2.5"/></g>
+  <circle class="pkt f-green amb-tok amb-ok" r="6"/>
+  <circle class="pkt f-red amb-tok amb-err" r="6"/>
+  <rect class="pkt f-teal amb-tok amb-look" x="-5" y="-5" width="10" height="10" rx="2.5"/>
+</g>
+</svg>

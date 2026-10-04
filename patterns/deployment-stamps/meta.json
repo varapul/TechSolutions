@@ -1,0 +1,40 @@
+{
+  "aka": ["Scale unit", "Service unit", "Cell"],
+  "steps": [
+    {
+      "title": "One deployment hits limits",
+      "caption": "One US deployment: no bigger tier to grow into, a big tenant slows all, and EU data has no home.",
+      "body": "A SaaS HR application runs as **one deployment** in a US region and serves all 88 of its tenants. It is close to ceilings that can't simply be raised: the database is already on its largest tier and the region's vCPU quota is nearly used up. One large tenant's month-end payroll run slows everybody down, and Northwind, a new customer in the EU, can't be served at all: its data has to stay in the EU, and there is no EU deployment."
+    },
+    {
+      "title": "Many copies, one template",
+      "caption": "One template, deployed as stamps 1 to 3. The router looks up each tenant's stamp in the catalog.",
+      "body": "The whole stack (app instances, cache, database and storage) is defined once as code and deployed several times as **stamps**: stamps 1 and 2 in the US, stamp 3 in the EU. Each stamp is complete and independent, keeps its own tenants' data and is sized for at most 50 tenants. A global **tenant catalog** records which stamp holds each tenant, and the router uses it to send every request to that stamp, here by host name (`contoso.hr.example`)."
+    },
+    {
+      "title": "Placing tenants",
+      "caption": "A new EU tenant goes to stamp 3. The US stamps are full, so automation adds stamp 4 for new ones.",
+      "body": "When Proseware, a new EU tenant, signs up, onboarding picks an EU stamp with room (stamp 3) and adds a catalog entry. As the US stamps reach 50 tenants, automation deploys **stamp 4** from the same template, and the next US tenant, Woodgrove, is placed there. A very large tenant can be given a stamp of its own in the same way."
+    },
+    {
+      "title": "Operating many stamps",
+      "caption": "v8 rolls out ring by ring, Fabrikam moves to stamp 4, and the global parts stay highly available.",
+      "body": "Release v8 rolls out in **rings**: an internal stamp first, then stamp 1, then the rest, with a pause to watch each ring, so for a while the stamps run different versions and the catalog records which. Moving a tenant means copying its data to the new stamp, switching its catalog entry and draining the old stamp; here the large tenant Fabrikam moves from the full stamp 2 to stamp 4. The router, the catalog, sign-in and billing live outside the stamps, so they must be at least as available as any stamp."
+    }
+  ],
+  "related": ["cell-based-architecture", "sharding", "multi-region-active-active", "canary-release", "autoscaling", "gitops", "immutable-infrastructure", "api-gateway"],
+  "references": [
+    { "title": "Azure Architecture Center — Deployment Stamps pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/deployment-stamp" },
+    { "title": "Azure Architecture Center — Tenancy models for a multitenant solution", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/tenancy-models" },
+    { "title": "Azure Architecture Center — Architectural approaches for the deployment and configuration of multitenant solutions", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/approaches/deployment-configuration" },
+    { "title": "Azure Architecture Center — Considerations for updating a multitenant solution (deployment rings)", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/updates" },
+    { "title": "Azure Architecture Center — Considerations for multitenant control planes", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/control-planes" },
+    { "title": "Azure Architecture Center — Map requests to tenants in a multitenant solution", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/map-requests" },
+    { "title": "Azure Architecture Center — Tenant life cycle considerations in multitenant solutions", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/tenant-life-cycle" },
+    { "title": "Azure Architecture Center — Noisy Neighbor antipattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/noisy-neighbor" },
+    { "title": "Azure Architecture Center — Geode pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/geodes" },
+    { "title": "AWS Well-Architected — Reducing the Scope of Impact with Cell-Based Architecture (whitepaper)", "url": "https://docs.aws.amazon.com/wellarchitected/latest/reducing-scope-of-impact-with-cell-based-architecture/reducing-scope-of-impact-with-cell-based-architecture.html" },
+    { "title": "Azure Front Door — How requests get matched to a route configuration", "url": "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-route-matching" },
+    { "title": "AWS Global Accelerator — How AWS Global Accelerator works", "url": "https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works.html" }
+  ]
+}

@@ -184,7 +184,7 @@ The diagram gives its page a plain `max-age=600` to keep the picture simple. Tha
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 - [Gateway Offloading](../gateway-offloading/) — Move TLS termination, authentication and compression out of every service into the gateway.
-- Valet Key *(planned)* — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
+- [Valet Key](../valet-key/) — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
 
 ## References
 

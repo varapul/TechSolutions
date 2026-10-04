@@ -101,7 +101,7 @@ The numbers in the animation are small so they can be counted: 5 tokens, one bac
 - [Bulkhead](../bulkhead/) — Give each dependency its own pool of resources so one failure can't sink the whole ship.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - [Timeout & Fallback](../timeout-and-fallback/) — Bound every remote call and degrade gracefully when the time runs out.
-- Priority Queue *(planned)* — Urgent messages are processed ahead of routine ones.
+- [Priority Queue](../priority-queue/) — Urgent messages are processed ahead of routine ones.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 
 ## References

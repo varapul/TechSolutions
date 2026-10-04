@@ -1,0 +1,41 @@
+{
+  "aka": ["Presigned URLs", "Signed URLs", "Shared access signatures (SAS)"],
+  "steps": [
+    {
+      "title": "The API in the data path",
+      "caption": "Ana's 2 GB video streams through the API to storage: every byte, in and out, for minutes.",
+      "body": "Ana uploads her 2 GB video, `video-981.mp4`, to the API, which streams it on to storage using its own credentials. Every byte crosses the application on the way in and again on the way out, so an instance is busy for minutes, needs long timeouts and large buffers, and the API tier ends up scaled for bandwidth instead of for its logic."
+    },
+    {
+      "title": "Ask for a key, not data",
+      "caption": "The API checks Ana may add videos, then signs a URL to write video-981.mp4 only, for 15 minutes.",
+      "body": "The client asks the API for permission to upload `video-981.mp4`. The API authenticates Ana, checks that she may add videos to this album, and signs a **valet key**: a URL that allows writing that one object only, for 15 minutes, over HTTPS, optionally with a size limit and a content type. The signature is made with credentials that never leave the server; the client receives only the signed URL."
+    },
+    {
+      "title": "Straight to storage",
+      "caption": "The upload goes straight to storage, which checks the key; a storage event sends it for scanning.",
+      "body": "The client sends the file straight to storage with the signed URL. Storage checks the signature, the expiry, the object name and the operation, then accepts the bytes; the API is not involved. When the object lands, a storage event triggers processing: the file is scanned and validated before anything else uses it, and quarantined if it fails. This one is clean, so the thumbnail worker gets it."
+    },
+    {
+      "title": "A leaked key does little",
+      "caption": "A copied URL can only write video-981.mp4 until it expires; reads and deletes are refused.",
+      "body": "Someone copies the URL. It can write only `video-981.mp4`, and only until it expires: a read or a delete with it is refused, and after 15 minutes so is everything. Taking a key back before it expires is the hard part, so keep lifetimes short and sign with credentials or a policy you can revoke, such as an Azure user delegation key or stored access policy, or an AWS role session. Downloads work the same way: a short-lived, read-only URL for one object."
+    }
+  ],
+  "related": ["private-endpoints", "cdn-edge-caching", "gatekeeper", "jwt-validation", "oauth2-client-credentials", "event-driven-architecture", "web-queue-worker", "zero-trust-access"],
+  "references": [
+    { "title": "Azure Architecture Center — Valet Key pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/valet-key" },
+    { "title": "Microsoft Learn — Grant limited access to data with shared access signatures (SAS)", "url": "https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview" },
+    { "title": "Microsoft Learn — Create a user delegation SAS", "url": "https://learn.microsoft.com/en-us/rest/api/storageservices/create-user-delegation-sas" },
+    { "title": "Microsoft Learn — Define a stored access policy", "url": "https://learn.microsoft.com/en-us/rest/api/storageservices/define-stored-access-policy" },
+    { "title": "Amazon S3 — Download and upload objects with presigned URLs", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html" },
+    { "title": "Amazon S3 — Uploading objects with presigned URLs", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" },
+    { "title": "Amazon S3 — Browser-based uploads using POST (AWS Signature Version 4)", "url": "https://docs.aws.amazon.com/AmazonS3/latest/developerguide/sigv4-UsingHTTPPOST.html" },
+    { "title": "Amazon S3 — POST policy (conditions such as content-length-range)", "url": "https://docs.aws.amazon.com/AmazonS3/latest/developerguide/sigv4-HTTPPOSTConstructPolicy.html" },
+    { "title": "AWS Compute Blog — Uploading large objects to Amazon S3 using multipart upload and transfer acceleration", "url": "https://aws.amazon.com/blogs/compute/uploading-large-objects-to-amazon-s3-using-multipart-upload-and-transfer-acceleration/" },
+    { "title": "Google Cloud Storage — Signed URLs", "url": "https://docs.cloud.google.com/storage/docs/access-control/signed-urls" },
+    { "title": "Google Cloud Storage — Signatures (signed URLs and policy documents)", "url": "https://docs.cloud.google.com/storage/docs/authentication/signatures" },
+    { "title": "Amazon CloudFront — Serve private content with signed URLs and signed cookies", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html" },
+    { "title": "OWASP Cheat Sheet Series — File Upload", "url": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html" }
+  ]
+}

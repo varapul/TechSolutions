@@ -1,0 +1,37 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "First come, first served",
+      "caption": "One queue: a password reset waits behind 500 re-index jobs. At 10 jobs a second, that is 50 s.",
+      "body": "The nightly import has put **500 re-index jobs** on the only queue, and a password-reset email lands behind them. Four workers finish 2.5 jobs a second each, 10 in total, so the email waits 500 ÷ 10 = **50 s** while the user stares at the screen. In one queue every message has the same standing, whatever it is for."
+    },
+    {
+      "title": "A queue per priority",
+      "caption": "Two queues, high checked first: the reset email is picked up at once and sent in about 0.5 s.",
+      "body": "Producers mark each message and send it to a **high** or a **low** queue (or publish to one topic whose subscriptions filter on a priority attribute). Workers always check the high queue first, so the password-reset email finds it empty, goes to the next free worker and is sent about 0.5 s after it arrived. The import carries on in the low queue."
+    },
+    {
+      "title": "Starvation, then reserve",
+      "caption": "A flash sale floods high and low starves for 10 min. Reserve a worker for low; scale high out.",
+      "body": "A flash sale sends 12 urgent order confirmations a second, more than the pool's 10. With high-first polling the high queue never empties and the low queue gets nothing: its oldest message is soon **10 minutes** old. **Reserve capacity** for it (worker 4 takes only low work, or the pool pulls high and low 3 : 1), so high gets 7.5 jobs a second and low 2.5, and scale each pool on its own queue: the high pool grows to six workers, 15 jobs a second."
+    },
+    {
+      "title": "Know the limits",
+      "caption": "Brokers differ, priority never pre-empts, and if every producer says urgent, nothing is.",
+      "body": "RabbitMQ can order by priority inside one queue (classic and quorum queues); Amazon SQS, Azure Service Bus, Google Cloud Pub/Sub and Kafka need a queue, subscription or topic per level. Priority only decides which message is picked next: worker 1's long low-priority job keeps its worker, so split long jobs. And decide who may send urgent work: if every producer marks its messages urgent, nothing is."
+    }
+  ],
+  "related": ["competing-consumers", "queue-based-load-leveling", "web-queue-worker", "rate-limiting", "bulkhead", "dead-letter-queue", "asynchronous-request-reply", "autoscaling"],
+  "references": [
+    { "title": "Azure Architecture Center — Priority Queue pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/priority-queue" },
+    { "title": "RabbitMQ — Priority Support in Queues (classic and quorum queues)", "url": "https://www.rabbitmq.com/docs/priority" },
+    { "title": "Amazon SQS — Features (priority through separate queues)", "url": "https://aws.amazon.com/sqs/features/" },
+    { "title": "Azure Service Bus — Topic filters", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/topic-filters" },
+    { "title": "Google Cloud Pub/Sub — Filter messages from a subscription", "url": "https://docs.cloud.google.com/pubsub/docs/subscription-message-filter" },
+    { "title": "Apache Kafka — KafkaConsumer (consumption flow control: pause and resume)", "url": "https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html" },
+    { "title": "Google SRE Book — Handling Overload (request criticality)", "url": "https://sre.google/sre-book/handling-overload/" },
+    { "title": "KEDA — Scalers", "url": "https://keda.sh/docs/2.21/scalers/" },
+    { "title": "Amazon SQS — Available CloudWatch metrics (ApproximateAgeOfOldestMessage)", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-available-cloudwatch-metrics.html" }
+  ]
+}

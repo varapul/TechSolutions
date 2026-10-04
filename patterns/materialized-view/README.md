@@ -120,7 +120,7 @@ It is the wrong tool for:
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
 - [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.
-- Medallion Architecture *(planned)* — Bronze, silver, gold: raw data is refined in layers inside a lakehouse.
+- [Medallion Architecture](../medallion-architecture/) — Bronze, silver, gold: raw data is refined in layers inside a lakehouse.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 
 ## References

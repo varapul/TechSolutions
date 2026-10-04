@@ -1,0 +1,973 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">GitOps</title>
+<desc id="dg-desc">GitOps. Git holds the desired state; an agent continuously reconciles the cluster to match it. Step 1, Push from CI, edit by hand: CI deploys with admin credentials; fixes typed into the cluster are lost at the next deploy. Step 2, Desired state lives in Git: A reviewed PR sets v43 and 4 replicas in Git; the agent inside the cluster pulls and applies it. Step 3, Drift is reconciled: Someone scales to 10 by hand: the agent reports OutOfSync and self-heals back to the 4 in Git. Step 4, Roll back and promote: v43 misbehaves: a revert commit brings v42 back. Promotion is a PR too; secrets stay encrypted.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DEPLOYMENT &amp; RELEASE</text>
+  <text class="title" x="40" y="64">GitOps</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Push from CI, edit by hand</text>
+  <text class="step on p1" x="40" y="518">1 · Push from CI, edit by hand</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Desired state lives in Git</text>
+  <text class="step on p2" x="262" y="518">2 · Desired state lives in Git</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Drift is reconciled</text>
+  <text class="step on p3" x="484" y="518">3 · Drift is reconciled</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Roll back and promote</text>
+  <text class="step on p4" x="706" y="518">4 · Roll back and promote</text>
+  <text class="caption p1" x="40" y="552">CI deploys with admin credentials; fixes typed into the cluster are lost at the next deploy.</text>
+  <text class="caption p2" x="40" y="552">A reviewed PR sets v43 and 4 replicas in Git; the agent inside the cluster pulls and applies it.</text>
+  <text class="caption p3" x="40" y="552">Someone scales to 10 by hand: the agent reports OutOfSync and self-heals back to the 4 in Git.</text>
+  <text class="caption p4" x="40" y="552">v43 misbehaves: a revert commit brings v42 back. Promotion is a PR too; secrets stay encrypted.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* GitOps. Timeline (20s loop, 1s = 5%):
+   0-25%   step 1: an operator scales shop to 10 (0.4s) and sets TIMEOUT=30s (1.4s) by hand; nothing is written back;
+           CI's "kubectl apply" with cluster-admin credentials (2.7s) puts 3 replicas and 5s back; "what is running?" at 3.5s.
+   25-50%  step 2: CI builds, pushes v43 (6.2-6.6s) and opens PR #57 (image v42->v43, replicas 3->4); approved 7.35s,
+           merged 7.75s (commit b7e2 at 7.9s); the agent pulls b7e2 (8.0-8.6s), OutOfSync, applies (8.7-9.05s), Synced 9.3s.
+   50-75%  step 3: someone scales to 10 (10.6s); OutOfSync 11.55s; self-heal applies (12.15-12.5s); Synced 12.75s.
+   75-100% step 4: v43 errors (15.35s); PR #58 reverts #57, merged 16.95s (commit c9d1 at 17.0s); the agent pulls
+           c9d1 (17.1-17.7s) and applies (17.8-18.1s): v42 x 3, Synced at 18.3s. Promotion and an encrypted
+           secret are shown for the whole step. p234 pieces fade at 19.7-20s; step 1 pieces fade back in at 0-0.3s. */
+.diagram .go-tw { opacity: 0; animation: go-tw var(--T) linear infinite; }
+.diagram .go-tl34 { animation: go-tl34 var(--T) linear infinite; }
+.diagram .go-m42 { opacity: 0; animation: go-m42 var(--T) linear infinite; }
+.diagram .go-t5 { animation: go-t5 var(--T) linear infinite; }
+.diagram .go-t30 { opacity: 0; animation: go-t30 var(--T) linear infinite; }
+.diagram .go-never { animation: go-never var(--T) linear infinite; }
+.diagram .go-cdep { opacity: 0; animation: go-cdep var(--T) linear infinite; }
+.diagram .go-dwire { opacity: 0; animation: go-dwire var(--T) linear infinite; }
+.diagram .go-dt { opacity: 0; animation: go-dt var(--T) linear infinite; }
+.diagram .go-over { animation: go-over var(--T) linear infinite; }
+.diagram .go-q { animation: go-q var(--T) linear infinite; }
+.diagram .go-cb { opacity: 0; animation: go-cb var(--T) linear infinite; }
+.diagram .go-ct { opacity: 0; animation: go-ct var(--T) linear infinite; }
+.diagram .go-cp { opacity: 0; animation: go-cp var(--T) linear infinite; }
+.diagram .go-it { opacity: 0; animation: go-it var(--T) linear infinite; }
+.diagram .go-v43 { opacity: 0; animation: go-v43 var(--T) linear infinite; }
+.diagram .go-cpr { opacity: 0; animation: go-cpr var(--T) linear infinite; }
+.diagram .go-prt { opacity: 0; animation: go-prt var(--T) linear infinite; }
+.diagram .go-card { opacity: 0; animation: go-card var(--T) linear infinite; }
+.diagram .go-appr { opacity: 0; animation: go-appr var(--T) linear infinite; }
+.diagram .go-merged { opacity: 0; animation: go-merged var(--T) linear infinite; }
+.diagram .go-i42 { animation: go-i42 var(--T) linear infinite; }
+.diagram .go-i43 { opacity: 0; animation: go-i43 var(--T) linear infinite; }
+.diagram .go-hl { opacity: 0; animation: go-hl var(--T) linear infinite; }
+.diagram .go-ca { animation: go-ca var(--T) linear infinite; }
+.diagram .go-cb7 { opacity: 0; animation: go-cb7 var(--T) linear infinite; }
+.diagram .go-cc9 { opacity: 0; animation: go-cc9 var(--T) linear infinite; }
+.diagram .go-pt1 { opacity: 0; animation: go-pt1 var(--T) linear infinite; }
+.diagram .go-pt2 { opacity: 0; animation: go-pt2 var(--T) linear infinite; }
+.diagram .go-syn { animation: go-syn var(--T) linear infinite; }
+.diagram .go-oos { opacity: 0; animation: go-oos var(--T) linear infinite; }
+.diagram .go-l1 { animation: go-l1 var(--T) linear infinite; }
+.diagram .go-l2 { opacity: 0; animation: go-l2 var(--T) linear infinite; }
+.diagram .go-l3 { opacity: 0; animation: go-l3 var(--T) linear infinite; }
+.diagram .go-l4 { opacity: 0; animation: go-l4 var(--T) linear infinite; }
+.diagram .go-l5 { opacity: 0; animation: go-l5 var(--T) linear infinite; }
+.diagram .go-l6 { opacity: 0; animation: go-l6 var(--T) linear infinite; }
+.diagram .go-at { opacity: 0; animation: go-at var(--T) linear infinite; }
+.diagram .go-awire { opacity: 0; animation: go-awire var(--T) linear infinite; }
+.diagram .go-p42 { animation: go-p42 var(--T) linear infinite; }
+.diagram .go-p43 { opacity: 0; animation: go-p43 var(--T) linear infinite; }
+.diagram .go-s4 { opacity: 0; animation: go-s4 var(--T) linear infinite; }
+.diagram .go-new { opacity: 0; animation: go-new var(--T) linear infinite; }
+.diagram .go-m43 { opacity: 0; animation: go-m43 var(--T) linear infinite; }
+.diagram .go-heal { opacity: 0; animation: go-heal var(--T) linear infinite; }
+.diagram .go-keep { opacity: 0; animation: go-keep var(--T) linear infinite; }
+.diagram .go-err { opacity: 0; animation: go-err var(--T) linear infinite; }
+.diagram .go-rb { opacity: 0; animation: go-rb var(--T) linear infinite; }
+.diagram .go-spin { transform-box: fill-box; transform-origin: 50% 50%; animation: go-spin 4s linear infinite; }
+.diagram .go-dash { stroke-dasharray: 5 4; }
+.diagram .go-12 { font-size: 12px; }
+@keyframes go-tw {
+  0% { opacity: 0; }
+  2% { opacity: 0; }
+  2.5% { opacity: 1; }
+  4.5% { opacity: 1; }
+  5% { opacity: 0; }
+  7% { opacity: 0; }
+  7.5% { opacity: 1; }
+  9.5% { opacity: 1; }
+  10% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-tl34 {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  7% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-m42 {
+  0% { opacity: 0; }
+  3.5% { opacity: 0; }
+  5% { opacity: 1; }
+  15.75% { opacity: 1; }
+  17.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-t5 {
+  0% { opacity: 1; }
+  8.75% { opacity: 1; }
+  9.75% { opacity: 0; }
+  15.75% { opacity: 0; }
+  16.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-t30 {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  9.75% { opacity: 1; }
+  15.75% { opacity: 1; }
+  16.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-never {
+  0% { opacity: 0; }
+  10% { opacity: 0; }
+  11.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-cdep {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13% { opacity: 1; }
+  16% { opacity: 1; }
+  16.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-dwire {
+  0% { opacity: 0; }
+  13.25% { opacity: 0; }
+  13.75% { opacity: 1; }
+  16% { opacity: 1; }
+  16.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-dt {
+  0% { transform: translate(604px, 353px); opacity: 0; }
+  13.5% { transform: translate(604px, 353px); opacity: 0; }
+  13.75% { opacity: 1; }
+  15% { transform: translate(650px, 353px); opacity: 1; }
+  15.25% { transform: translate(650px, 353px); opacity: 0; }
+  100% { transform: translate(650px, 353px); opacity: 0; }
+}
+@keyframes go-over {
+  0% { opacity: 0; }
+  15.75% { opacity: 0; }
+  17.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-q {
+  0% { opacity: 0; }
+  17.5% { opacity: 0; }
+  19% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-cb {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27% { opacity: 1; }
+  28.25% { opacity: 1; }
+  28.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-ct {
+  0% { opacity: 0; }
+  28% { opacity: 0; }
+  28.5% { opacity: 1; }
+  29.75% { opacity: 1; }
+  30.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-cp {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  30% { opacity: 1; }
+  31.25% { opacity: 1; }
+  31.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-it {
+  0% { transform: translate(444px, 366px); opacity: 0; }
+  31% { transform: translate(444px, 366px); opacity: 0; }
+  31.25% { opacity: 1; }
+  33% { transform: translate(444px, 436px); opacity: 1; }
+  33.25% { transform: translate(444px, 436px); opacity: 0; }
+  100% { transform: translate(444px, 436px); opacity: 0; }
+}
+@keyframes go-v43 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  34.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes go-cpr {
+  0% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.25% { opacity: 1; }
+  34.75% { opacity: 1; }
+  35.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-prt {
+  0% { transform: translate(545px, 340px); opacity: 0; }
+  32.25% { transform: translate(545px, 340px); opacity: 0; }
+  32.5% { opacity: 1; }
+  32.739% { transform: translate(545px, 296px); }
+  34.939% { transform: translate(347px, 296px); }
+  35.361% { transform: translate(347px, 258px); opacity: 1; }
+  35.611% { transform: translate(347px, 258px); opacity: 0; }
+  100% { transform: translate(347px, 258px); opacity: 0; }
+}
+@keyframes go-card {
+  0% { opacity: 0; }
+  34.75% { opacity: 0; }
+  36.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  79% { opacity: 0; }
+  80.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes go-appr {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  37.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes go-merged {
+  0% { opacity: 0; }
+  38.75% { opacity: 0; }
+  39.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  84.75% { opacity: 0; }
+  85.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes go-i42 {
+  0% { opacity: 1; }
+  39.5% { opacity: 1; }
+  40.75% { opacity: 0; }
+  85% { opacity: 0; }
+  86.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-i43 {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.75% { opacity: 1; }
+  85% { opacity: 1; }
+  86.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-hl {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.5% { opacity: 1; }
+  45% { opacity: 1; }
+  47% { opacity: 0; }
+  85% { opacity: 0; }
+  86% { opacity: 1; }
+  92% { opacity: 1; }
+  94% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-ca {
+  0% { opacity: 1; }
+  39.5% { opacity: 1; }
+  40.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-cb7 {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.5% { opacity: 1; }
+  85% { opacity: 1; }
+  86% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-cc9 {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-pt1 {
+  0% { transform: translate(248px, 148px); opacity: 0; }
+  40% { transform: translate(248px, 148px); opacity: 0; }
+  40.25% { opacity: 1; }
+  43% { transform: translate(652px, 148px); opacity: 1; }
+  43.25% { transform: translate(652px, 148px); opacity: 0; }
+  100% { transform: translate(652px, 148px); opacity: 0; }
+}
+@keyframes go-pt2 {
+  0% { transform: translate(248px, 148px); opacity: 0; }
+  85.5% { transform: translate(248px, 148px); opacity: 0; }
+  85.75% { opacity: 1; }
+  88.5% { transform: translate(652px, 148px); opacity: 1; }
+  88.75% { transform: translate(652px, 148px); opacity: 0; }
+  100% { transform: translate(652px, 148px); opacity: 0; }
+}
+@keyframes go-syn {
+  0% { opacity: 1; }
+  43% { opacity: 1; }
+  44% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47.5% { opacity: 1; }
+  57.75% { opacity: 1; }
+  58.75% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.75% { opacity: 1; }
+  88.5% { opacity: 1; }
+  89.5% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-oos {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  44% { opacity: 1; }
+  46.5% { opacity: 1; }
+  47.5% { opacity: 0; }
+  57.75% { opacity: 0; }
+  58.75% { opacity: 1; }
+  63.75% { opacity: 1; }
+  64.75% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89.5% { opacity: 1; }
+  91.5% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-l1 {
+  0% { opacity: 1; }
+  43% { opacity: 1; }
+  44% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-l2 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  44% { opacity: 1; }
+  46.5% { opacity: 1; }
+  47.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-l3 {
+  0% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47.5% { opacity: 1; }
+  57.75% { opacity: 1; }
+  58.75% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.75% { opacity: 1; }
+  88.5% { opacity: 1; }
+  89.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-l4 {
+  0% { opacity: 0; }
+  57.75% { opacity: 0; }
+  58.75% { opacity: 1; }
+  63.75% { opacity: 1; }
+  64.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-l5 {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89.5% { opacity: 1; }
+  91.5% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-l6 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-at {
+  0% { transform: translate(676px, 172px); opacity: 0; }
+  43.5% { transform: translate(676px, 172px); opacity: 0; }
+  43.75% { opacity: 1; }
+  45.25% { transform: translate(676px, 238px); opacity: 1; }
+  45.5% { transform: translate(676px, 238px); opacity: 0; }
+  60.75% { transform: translate(676px, 172px); opacity: 0; }
+  61% { opacity: 1; }
+  62.5% { transform: translate(676px, 238px); opacity: 1; }
+  62.75% { transform: translate(676px, 238px); opacity: 0; }
+  89% { transform: translate(676px, 172px); opacity: 0; }
+  89.25% { opacity: 1; }
+  90.5% { transform: translate(676px, 238px); opacity: 1; }
+  90.75% { transform: translate(676px, 238px); opacity: 0; }
+  100% { transform: translate(676px, 238px); opacity: 0; }
+}
+@keyframes go-awire {
+  0% { opacity: 0; }
+  43.25% { opacity: 0; }
+  43.75% { opacity: 1; }
+  45.75% { opacity: 1; }
+  46.25% { opacity: 0; }
+  60.5% { opacity: 0; }
+  61% { opacity: 1; }
+  63% { opacity: 1; }
+  63.5% { opacity: 0; }
+  88.75% { opacity: 0; }
+  89.25% { opacity: 1; }
+  91% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-p42 {
+  0% { opacity: 1; }
+  45.25% { opacity: 1; }
+  46.5% { opacity: 0; }
+  90.25% { opacity: 0; }
+  91.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes go-p43 {
+  0% { opacity: 0; }
+  45.25% { opacity: 0; }
+  46.5% { opacity: 1; }
+  90.25% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-s4 {
+  0% { opacity: 0; }
+  45.25% { opacity: 0; }
+  46.5% { opacity: 1; }
+  90.25% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-new {
+  0% { opacity: 0; }
+  45.25% { opacity: 0; }
+  45.75% { opacity: 1; }
+  46% { opacity: 1; }
+  47.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-m43 {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.5% { opacity: 1; }
+  62.25% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-heal {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.5% { opacity: 1; }
+  63% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-keep {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  66.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-err {
+  0% { opacity: 0; }
+  76.75% { opacity: 0; }
+  78% { opacity: 1; }
+  90.25% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-rb {
+  0% { opacity: 0; }
+  90.25% { opacity: 0; }
+  90.75% { opacity: 1; }
+  91% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes go-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<g class="stage">
+  <!-- ===== config repository: the desired state ===== -->
+  <rect class="box" x="30" y="96" width="210" height="204" rx="12"/>
+  <text class="label" x="46" y="121">config repo</text>
+  <text class="sub" x="46" y="139">desired state, per environment</text>
+  <line class="s-line" x1="42" y1="149" x2="228" y2="149" stroke-width="1.5"/>
+  <g class="p234">
+    <rect class="f-bg s-line" x="146" y="106" width="86" height="20" rx="10" stroke-width="1.5"/>
+    <text class="tiny" x="156" y="120">main</text>
+    <text class="tiny mono sb f-ink go-ca" x="186" y="120">a1f3</text>
+    <text class="tiny mono sb f-ink go-cb7" x="186" y="120">b7e2</text>
+    <text class="tiny mono sb f-ink go-cc9" x="186" y="120">c9d1</text>
+  </g>
+  <rect class="f-green-soft go-hl" x="52" y="175" width="122" height="36" rx="4"/>
+  <text class="tiny mono" x="46" y="168">envs/prod/</text>
+  <text class="sub mono f-ink go-i42" x="58" y="187">image: shop:v42</text>
+  <text class="sub mono f-ink go-i43" x="58" y="187">image: shop:v43</text>
+  <text class="sub mono f-ink go-i42" x="58" y="205">replicas: 3</text>
+  <text class="sub mono f-ink go-i43" x="58" y="205">replicas: 4</text>
+  <text class="sub mono f-ink" x="58" y="223">TIMEOUT: 5s</text>
+  <g class="p4">
+    <path class="none s-orange" d="M60 236V234.5a2.5 2.5 0 0 1 5 0V236" stroke-width="1.5"/>
+    <rect class="f-orange" x="58.5" y="236" width="8" height="6" rx="1.2"/>
+    <text class="tiny mono f-orange" x="72" y="242">db-pass: ENC[AES256…]</text>
+  </g>
+  <text class="tiny mono" x="46" y="267">envs/staging/</text>
+  <g class="p4">
+    <text class="tiny sb f-purple" x="140" y="267">promote: PR</text>
+    <path class="none s-purple" d="M208 263H214Q226 263 226 251V175Q226 163 214 163H127" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+  </g>
+
+  <!-- ===== app repository and developers ===== -->
+  <rect class="box" x="30" y="318" width="210" height="66" rx="12"/>
+  <text class="label" x="46" y="344">app repo</text>
+  <text class="sub" x="46" y="364">source code, Dockerfile</text>
+  <path class="wire" d="M150 410V387" marker-end="url(#ah)"/>
+  <circle class="f-faint" cx="76" cy="427" r="5.5"/>
+  <path class="f-faint" d="M65 451a11 11 0 0 1 22 0z"/>
+  <circle class="f-muted" cx="60" cy="431" r="6"/>
+  <path class="f-muted" d="M48 456a12 12 0 0 1 24 0z"/>
+  <text class="sub sb f-ink" x="96" y="436">developers</text>
+  <text class="tiny" x="96" y="452">write code, review PRs</text>
+
+  <!-- ===== the agent pulls Git (steps 2-4) ===== -->
+  <g class="p234">
+    <path class="wire" d="M652 148H243" marker-end="url(#ah)"/>
+    <text class="tiny mid" x="540" y="140">agent pulls from Git</text>
+  </g>
+
+  <!-- ===== wires around CI ===== -->
+  <path class="wire" d="M240 353H258" marker-end="url(#ah)"/>
+  <path class="wire" d="M336 353H349" marker-end="url(#ah)"/>
+  <path class="wire" d="M402 353H415" marker-end="url(#ah)"/>
+  <path class="wire" d="M472 353H485" marker-end="url(#ah)"/>
+  <path class="wire" d="M444 366V410" marker-end="url(#ah)"/>
+  <path class="wire go-dash" d="M620 437H676V401" marker-end="url(#ah)"/>
+  <text class="tiny" x="684" y="426">pulls image</text>
+  <g class="p1">
+    <path class="wire" d="M604 353H650" marker-end="url(#ah)"/>
+  </g>
+  <path class="none s-blue go-dwire" d="M604 353H650" stroke-width="2.5" marker-end="url(#ah-blue)"/>
+  <g class="p234">
+    <path class="wire go-dash" d="M545 340V296H347V258" marker-end="url(#ah)"/>
+  </g>
+
+  <!-- ===== CI pipeline ===== -->
+  <rect class="box" x="260" y="306" width="360" height="74" rx="12"/>
+  <text class="label" x="276" y="329">CI pipeline</text>
+  <g class="p1">
+    <circle class="none s-orange" cx="378" cy="324" r="3.5" stroke-width="1.8"/>
+    <path class="none s-orange" d="M381.5 324H390M387 324V327M390 324V327" stroke-width="1.8" stroke-linecap="round"/>
+    <text class="tiny sb f-orange" x="396" y="329">holds cluster-admin credentials</text>
+  </g>
+  <g class="p234">
+    <path class="none s-green" d="M375 324l3.5 3.5 6-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="tiny sb f-green" x="390" y="329">no cluster credentials</text>
+  </g>
+  <rect class="f-bg s-line" x="276" y="340" width="60" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="350" y="340" width="52" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="416" y="340" width="56" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-bg s-line" x="486" y="340" width="118" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="none s-orange p1" x="486" y="340" width="118" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-blue-soft s-blue go-cb" x="276" y="340" width="60" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-blue-soft s-blue go-ct" x="350" y="340" width="52" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-blue-soft s-blue go-cp" x="416" y="340" width="56" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-blue-soft s-blue go-cdep" x="486" y="340" width="118" height="26" rx="13" stroke-width="1.5"/>
+  <rect class="f-blue-soft s-blue go-cpr" x="486" y="340" width="118" height="26" rx="13" stroke-width="1.5"/>
+  <text class="sub mid f-ink" x="306" y="357">build</text>
+  <text class="sub mid f-ink" x="376" y="357">test</text>
+  <text class="sub mid f-ink" x="444" y="357">push</text>
+  <text class="sub mid f-ink p1" x="545" y="357">kubectl apply</text>
+  <text class="sub mid f-ink p234" x="545" y="357">open PR</text>
+
+  <!-- ===== image registry ===== -->
+  <rect class="box" x="360" y="412" width="260" height="50" rx="10"/>
+  <rect class="f-teal-soft s-teal" x="374" y="425" width="40" height="24" rx="6" stroke-width="1.5"/>
+  <text class="tiny mono sb mid f-teal" x="394" y="441">v42</text>
+  <g class="go-v43">
+    <rect class="f-teal-soft s-teal" x="424" y="425" width="40" height="24" rx="6" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-teal" x="444" y="441">v43</text>
+  </g>
+  <text class="label" x="480" y="443">image registry</text>
+
+  <!-- ===== pull request (steps 2 and 4) ===== -->
+  <g class="go-card">
+    <rect class="box" x="262" y="170" width="172" height="86" rx="10"/>
+    <g class="p2">
+      <text class="tiny sb f-ink" x="274" y="189">PR #57 · envs/prod</text>
+      <text class="tiny mono" x="274" y="208">image</text>
+      <text class="tiny mono f-ink" x="338" y="208">v42 → v43</text>
+      <text class="tiny mono" x="274" y="226">replicas</text>
+      <text class="tiny mono f-ink" x="338" y="226">3 → 4</text>
+    </g>
+    <g class="p4">
+      <text class="tiny sb f-ink" x="274" y="189">PR #58 · revert #57</text>
+      <text class="tiny mono" x="274" y="208">image</text>
+      <text class="tiny mono f-ink" x="338" y="208">v43 → v42</text>
+      <text class="tiny mono" x="274" y="226">replicas</text>
+      <text class="tiny mono f-ink" x="338" y="226">4 → 3</text>
+    </g>
+    <g class="go-appr">
+      <path class="none s-green" d="M276 242l3.5 3.5 6-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text class="tiny sb f-green" x="290" y="247">approved</text>
+    </g>
+    <g class="go-merged">
+      <rect class="f-purple-soft s-purple" x="356" y="236" width="64" height="17" rx="8.5" stroke-width="1.2"/>
+      <text class="tiny sb mid f-purple" x="388" y="248">merged</text>
+      <path class="none s-purple" d="M262 213H243" stroke-width="2" marker-end="url(#ah-purple)"/>
+    </g>
+  </g>
+
+  <!-- ===== operator's terminal (steps 1 and 3) ===== -->
+  <g class="p13">
+    <rect class="f-panel-2 s-line" x="452" y="170" width="168" height="96" rx="8" stroke-width="1.5"/>
+    <circle class="f-faint" cx="464" cy="182" r="3"/>
+    <circle class="f-faint" cx="474" cy="182" r="3"/>
+    <circle class="f-faint" cx="484" cy="182" r="3"/>
+    <text class="tiny" x="496" y="186">on-call operator</text>
+    <text class="tiny mono f-ink" x="462" y="207">$ kubectl scale</text>
+    <text class="tiny mono f-ink" x="474" y="223">--replicas=10</text>
+    <g class="go-tl34">
+      <text class="tiny mono f-ink" x="462" y="241">$ kubectl set env</text>
+      <text class="tiny mono f-ink" x="474" y="257">TIMEOUT=30s</text>
+    </g>
+    <path class="wire" d="M620 250H650" marker-end="url(#ah)"/>
+  </g>
+  <path class="none s-amber go-tw" d="M620 250H650" stroke-width="2.5" marker-end="url(#ah-amber)"/>
+  <g class="go-never">
+    <circle class="f-red" cx="459" cy="283" r="6"/>
+    <path class="none s-bg" d="M456.5 280.5l5 5M461.5 280.5l-5 5" stroke-width="1.6" stroke-linecap="round"/>
+    <text class="tiny sb f-red" x="470" y="287">never written back to Git</text>
+  </g>
+  <text class="tiny sb f-amber-ink go-keep" x="456" y="287">keep 10? change it in Git</text>
+
+  <!-- ===== Kubernetes cluster ===== -->
+  <rect class="zone" x="640" y="96" width="290" height="370" rx="16"/>
+  <text class="tiny sb" x="656" y="114">Kubernetes cluster · prod</text>
+
+  <!-- step 1: no agent -->
+  <g class="p1">
+    <rect class="none s-line go-dash" x="652" y="122" width="266" height="50" rx="10" stroke-width="1.5"/>
+    <text class="tiny mid" x="785" y="151">nothing compares the cluster with Git</text>
+  </g>
+
+  <!-- GitOps agent (steps 2-4) -->
+  <g class="p234">
+    <path class="wire" d="M676 172V236" marker-end="url(#ah)"/>
+    <rect class="box" x="652" y="122" width="266" height="50" rx="10"/>
+    <rect class="f-green-soft s-green go-heal" x="652" y="122" width="266" height="50" rx="10" stroke-width="1.5"/>
+    <text class="label" x="668" y="143">GitOps agent</text>
+    <text class="tiny p24" x="668" y="162">pulls, compares, applies the diff</text>
+    <text class="tiny sb f-green p3" x="668" y="162">self-heal on (off: alert only)</text>
+    <g class="go-spin">
+      <circle class="none" cx="896" cy="147" r="11"/>
+      <path class="none s-blue" d="M896 139A8 8 0 1 1 889.07 143" stroke-width="2" stroke-linecap="round"/>
+      <path class="f-blue" d="M891.07 139.54L891.17 145.37L885.97 142.37Z"/>
+    </g>
+  </g>
+  <path class="none s-blue go-awire" d="M676 172V236" stroke-width="2.5" marker-end="url(#ah-blue)"/>
+
+  <!-- sync status (steps 2-4) -->
+  <g class="p234">
+    <rect class="box" x="700" y="180" width="218" height="48" rx="10"/>
+    <g class="go-oos">
+      <rect class="f-amber-soft s-amber" x="700" y="180" width="218" height="48" rx="10" stroke-width="1.5"/>
+      <circle class="f-amber" cx="719" cy="195" r="4.5"/>
+      <text class="go-12 sb f-amber-ink" x="730" y="199">OutOfSync</text>
+    </g>
+    <g class="go-syn">
+      <circle class="f-green" cx="719" cy="195" r="4.5"/>
+      <text class="go-12 sb f-green" x="730" y="199">Synced</text>
+    </g>
+    <text class="tiny end" x="906" y="199">sync status</text>
+    <text class="tiny mono f-ink go-l1" x="714" y="219">Git a1f3 · live a1f3</text>
+    <text class="tiny mono f-ink go-l2" x="714" y="219">Git b7e2 ≠ live a1f3</text>
+    <text class="tiny mono f-ink go-l3" x="714" y="219">Git b7e2 · live b7e2</text>
+    <text class="tiny mono f-ink go-l4" x="714" y="219">replicas: Git 4 ≠ live 10</text>
+    <text class="tiny mono f-ink go-l5" x="714" y="219">Git c9d1 ≠ live b7e2</text>
+    <text class="tiny mono f-ink go-l6" x="714" y="219">Git c9d1 · live c9d1</text>
+  </g>
+  <!-- step 1: nobody knows -->
+  <g class="go-q">
+    <rect class="f-amber-soft s-amber" x="700" y="180" width="218" height="48" rx="10" stroke-width="1.5"/>
+    <text class="go-12 sb mid f-amber-ink" x="809" y="200">what is running, and why?</text>
+    <text class="tiny mid" x="809" y="218">no record of the hand edits</text>
+  </g>
+
+  <!-- workloads -->
+  <rect class="box" x="652" y="238" width="266" height="160" rx="10"/>
+  <text class="label" x="668" y="261">shop</text>
+  <text class="sub" x="708" y="261">Deployment</text>
+  <g class="go-p42">
+    <rect class="f-bg s-line" x="664" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-bg s-line" x="714" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-bg s-line" x="764" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-ink" x="685" y="290">v42</text>
+    <text class="tiny mono sb mid f-ink" x="735" y="290">v42</text>
+    <text class="tiny mono sb mid f-ink" x="785" y="290">v42</text>
+  </g>
+  <g class="go-p43">
+    <rect class="f-bg s-line" x="664" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-bg s-line" x="714" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-bg s-line" x="764" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-ink" x="685" y="290">v43</text>
+    <text class="tiny mono sb mid f-ink" x="735" y="290">v43</text>
+    <text class="tiny mono sb mid f-ink" x="785" y="290">v43</text>
+  </g>
+  <g class="go-s4">
+    <rect class="f-bg s-line" x="814" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-ink" x="835" y="290">v43</text>
+  </g>
+  <g class="go-m42">
+    <rect class="f-amber-soft s-amber go-dash" x="814" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="864" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="664" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="714" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="764" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="814" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="864" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-amber-ink" x="835" y="290">v42</text>
+    <text class="tiny mono sb mid f-amber-ink" x="885" y="290">v42</text>
+    <text class="tiny mono sb mid f-amber-ink" x="685" y="322">v42</text>
+    <text class="tiny mono sb mid f-amber-ink" x="735" y="322">v42</text>
+    <text class="tiny mono sb mid f-amber-ink" x="785" y="322">v42</text>
+    <text class="tiny mono sb mid f-amber-ink" x="835" y="322">v42</text>
+    <text class="tiny mono sb mid f-amber-ink" x="885" y="322">v42</text>
+  </g>
+  <g class="go-m43">
+    <rect class="f-amber-soft s-amber go-dash" x="864" y="274" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="664" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="714" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="764" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="814" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <rect class="f-amber-soft s-amber go-dash" x="864" y="306" width="42" height="24" rx="6" stroke-width="1.5"/>
+    <text class="tiny mono sb mid f-amber-ink" x="885" y="290">v43</text>
+    <text class="tiny mono sb mid f-amber-ink" x="685" y="322">v43</text>
+    <text class="tiny mono sb mid f-amber-ink" x="735" y="322">v43</text>
+    <text class="tiny mono sb mid f-amber-ink" x="785" y="322">v43</text>
+    <text class="tiny mono sb mid f-amber-ink" x="835" y="322">v43</text>
+    <text class="tiny mono sb mid f-amber-ink" x="885" y="322">v43</text>
+  </g>
+  <g class="go-new">
+    <rect class="f-green-soft s-green" x="664" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-green-soft s-green" x="714" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-green-soft s-green" x="764" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-green-soft s-green" x="814" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+  </g>
+  <g class="go-rb">
+    <rect class="f-green-soft s-green" x="664" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-green-soft s-green" x="714" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-green-soft s-green" x="764" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+  </g>
+  <g class="go-err">
+    <rect class="f-red-soft s-red" x="664" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-red-soft s-red" x="714" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-red-soft s-red" x="764" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-red-soft s-red" x="814" y="274" width="42" height="24" rx="6" stroke-width="2"/>
+    <rect class="f-red-soft s-red" x="836" y="247" width="70" height="19" rx="9.5" stroke-width="1.5"/>
+    <text class="tiny sb mid f-red" x="871" y="260">errors ↑</text>
+  </g>
+  <text class="tiny sb mid f-red go-over" x="785" y="322">hand edits overwritten</text>
+  <text class="tiny mono f-ink go-t5" x="668" y="357">TIMEOUT 5s</text>
+  <text class="tiny mono sb f-amber-ink go-t30" x="668" y="357">TIMEOUT 30s</text>
+  <g class="p4">
+    <rect class="f-orange-soft s-orange" x="790" y="345" width="116" height="22" rx="11" stroke-width="1.5"/>
+    <path class="none s-orange" d="M801.5 352V350.5a2.5 2.5 0 0 1 5 0V352" stroke-width="1.5"/>
+    <rect class="f-orange" x="800" y="352" width="8" height="6" rx="1.2"/>
+    <text class="tiny sb f-orange" x="815" y="360">Secret db-pass</text>
+    <text class="tiny end" x="906" y="386">decrypted in the cluster</text>
+  </g>
+
+  <!-- credentials stay inside (steps 2-4) -->
+  <g class="p234">
+    <circle class="none s-orange" cx="744" cy="443" r="3.5" stroke-width="1.8"/>
+    <path class="none s-orange" d="M747.5 443H756M753 443V446M756 443V446" stroke-width="1.8" stroke-linecap="round"/>
+    <text class="tiny" x="762" y="447">credentials stay inside</text>
+  </g>
+
+  <!-- ===== tokens ===== -->
+  <circle class="pkt f-blue go-dt" r="7"/>
+  <g class="go-it">
+    <circle class="pkt f-teal" r="7"/>
+    <text class="tiny mono sb f-teal" x="12" y="4">v43</text>
+  </g>
+  <g class="go-prt">
+    <circle class="pkt f-blue" r="7"/>
+    <text class="tiny sb f-blue" x="11" y="-8">PR</text>
+  </g>
+  <g class="go-pt1">
+    <circle class="pkt f-teal" r="7"/>
+    <text class="tiny mono sb mid f-teal" y="-12">b7e2</text>
+  </g>
+  <g class="go-pt2">
+    <circle class="pkt f-teal" r="7"/>
+    <text class="tiny mono sb mid f-teal" y="-12">c9d1</text>
+  </g>
+  <circle class="pkt f-blue go-at" r="7"/>
+</g>
+</svg>

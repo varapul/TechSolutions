@@ -1,0 +1,35 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Two roles and a queue",
+      "caption": "The web tier saves order 1042, queues a job and replies in ~120 ms; a worker does the ~90 s render.",
+      "body": "A user orders photo book 1042. The **web front end** validates it, saves it as *rendering*, puts a job on the **queue** and replies in about 120 ms, so it never does the slow work itself. A **worker** takes the job, renders the PDF (about 90 s), stores it in blob storage, marks the order *ready* and calls the email service and the print partner, while static files come from the CDN and hot reads from the cache."
+    },
+    {
+      "title": "Scale each role on its own",
+      "caption": "Peak: web 2→4 on request rate, workers 1→3 on queue length. At night web shrinks; workers drain.",
+      "body": "At the 19:00 peak the web tier grows from 2 to 4 instances on **request rate**, while the burst of orders deepens the queue and the worker tier grows from 1 to 3 on **queue length**. At night the web tier shrinks back to 2 while the workers drain the backlog. The two roles are deployed, scaled and sized separately: small web instances, CPU-heavy workers."
+    },
+    {
+      "title": "State outside the roles",
+      "caption": "Sessions sit in the cache, so a new web instance knows the user. A crashed job reappears and reruns.",
+      "body": "During a deployment web 1 is replaced, and the user's next request lands on the new instance but stays signed in, because the session lives in the cache, not in the instance. Worker 2 crashes halfway through book 1043: the message was only hidden, so when its visibility timeout runs out it reappears and worker 1 renders the book again, which is why job handlers must be **idempotent**. At 02:00 the worker also runs a scheduled clean-up of old, abandoned uploads that no request triggers."
+    },
+    {
+      "title": "Know where it stops",
+      "caption": "Shared schema: a worker change breaks the web tier. The worker becomes a monolith; split it by job.",
+      "body": "Both roles share one database schema and a common code library, so a schema change shipped with the worker breaks the web tier, which still reads the old column. As features pile up, the worker becomes a monolith of unrelated jobs (rendering, emails, imports, reports) with one release cycle. The usual next steps are a queue and a worker per job type, then services that own their data once the domain outgrows the style."
+    }
+  ],
+  "related": ["queue-based-load-leveling", "competing-consumers", "asynchronous-request-reply", "priority-queue", "serverless", "microservices", "layered-architecture", "autoscaling"],
+  "references": [
+    { "title": "Azure Architecture Center — Web-Queue-Worker architecture style", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/web-queue-worker" },
+    { "title": "AWS Elastic Beanstalk — Elastic Beanstalk worker environments", "url": "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features-managing-env-tiers.html" },
+    { "title": "Heroku Dev Center — The Process Model", "url": "https://devcenter.heroku.com/articles/process-model" },
+    { "title": "Heroku Dev Center — Worker Dynos, Background Jobs and Queueing", "url": "https://devcenter.heroku.com/articles/background-jobs-queueing" },
+    { "title": "The Twelve-Factor App — VIII. Concurrency", "url": "https://12factor.net/concurrency" },
+    { "title": "Google Cloud — Understand Cloud Tasks", "url": "https://docs.cloud.google.com/tasks/docs/dual-overview" },
+    { "title": "Amazon EC2 Auto Scaling — Scaling policy based on Amazon SQS", "url": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-using-sqs-queue.html" }
+  ]
+}

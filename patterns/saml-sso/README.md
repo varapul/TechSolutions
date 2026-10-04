@@ -105,7 +105,7 @@ It is the same discipline as [JWT validation](../jwt-validation/), plus XML's ex
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - [OAuth 2.0 Authorization Code + PKCE](../oauth2-authorization-code-pkce/) — The standard sign-in flow for web, mobile and single-page apps: code via the browser, tokens via the back channel.
-- Policy-Based Authorization *(planned)* — Services ask a central policy engine for allow/deny decisions (RBAC, ABAC, ReBAC).
+- [Policy-Based Authorization](../policy-based-authorization/) — Services ask a central policy engine for allow/deny decisions (RBAC, ABAC, ReBAC).
 
 ## References
 

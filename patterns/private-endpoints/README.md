@@ -137,7 +137,7 @@ Endpoints add up: one per resource, per sub-resource, per zone and per network t
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 - [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
 - Gatekeeper *(planned)* — A hardened broker validates and sanitises requests before they reach trusted hosts.
-- Valet Key *(planned)* — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
+- [Valet Key](../valet-key/) — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Multi-Region Active-Active](../multi-region-active-active/) — Serve users from several regions at once and shift traffic away from a region that fails.
 

@@ -86,7 +86,7 @@ How a failure is handled depends on how the function was invoked:
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
-- Web-Queue-Worker *(planned)* — A web front end hands slow work to background workers through a queue.
+- [Web-Queue-Worker](../web-queue-worker/) — A web front end hands slow work to background workers through a queue.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.

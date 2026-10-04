@@ -1,0 +1,41 @@
+{
+  "aka": ["Pull-based continuous delivery", "Operations by pull request"],
+  "steps": [
+    {
+      "title": "Push from CI, edit by hand",
+      "caption": "CI deploys with admin credentials; fixes typed into the cluster are lost at the next deploy.",
+      "body": "The pipeline deploys by running `kubectl apply` against the cluster with administrator credentials stored in CI. During an incident an operator scales the deployment to 10 and raises a timeout by hand; neither change is written back anywhere, so the next deployment silently puts 3 replicas and the old timeout back. Nobody can say exactly what is running, or why."
+    },
+    {
+      "title": "Desired state lives in Git",
+      "caption": "A reviewed PR sets v43 and 4 replicas in Git; the agent inside the cluster pulls and applies it.",
+      "body": "Every change is a pull request to the configuration repository. Here CI builds and pushes image **v43**, then opens a PR that sets `image: v43` and `replicas: 4` for production. After review and merge, the agent inside the cluster pulls the new commit, sees that the live state no longer matches it (**OutOfSync**) and applies the difference. CI only builds images and proposes changes; the credentials that can change the cluster never leave it."
+    },
+    {
+      "title": "Drift is reconciled",
+      "caption": "Someone scales to 10 by hand: the agent reports OutOfSync and self-heals back to the 4 in Git.",
+      "body": "Someone scales the deployment to 10 replicas by hand. The agent keeps comparing the live state with Git, reports **OutOfSync**, and because self-healing is on it puts the count back to 4; with self-healing off it would only report the drift, so an alert can fire instead. A change that should stay has to go through Git."
+    },
+    {
+      "title": "Roll back and promote",
+      "caption": "v43 misbehaves: a revert commit brings v42 back. Promotion is a PR too; secrets stay encrypted.",
+      "body": "v43 misbehaves. Reverting its commit is an ordinary, reviewed pull request: once it merges, the agent returns the cluster to v42 and 3 replicas, and the rollback stays in the history like any other change. Promotion works the same way, as a PR that copies the image tag from `envs/staging/` to `envs/prod/`. Secrets never sit in Git as plain text: they are committed encrypted (SOPS, Sealed Secrets) or as references to an external secret store."
+    }
+  ],
+  "related": ["immutable-infrastructure", "external-configuration-store", "canary-release", "blue-green-deployment", "rolling-update", "deployment-stamps", "feature-flags"],
+  "references": [
+    { "title": "OpenGitOps — GitOps Principles v1.0.0", "url": "https://github.com/open-gitops/documents/blob/v1.0.0/PRINCIPLES.md" },
+    { "title": "KubeCon + CloudNativeCon North America 2017 — GitOps: Operations by Pull Request (Alexis Richardson, William Denniss)", "url": "https://kccncna17.sched.com/event/CU6y/gitops-operations-by-pull-request-b-alexis-richardson-weaveworks-william-denniss-google" },
+    { "title": "Argo CD — Core concepts", "url": "https://argo-cd.readthedocs.io/en/stable/core_concepts/" },
+    { "title": "Argo CD — Automated sync policy", "url": "https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/" },
+    { "title": "Argo CD — Best practices", "url": "https://argo-cd.readthedocs.io/en/stable/user-guide/best_practices/" },
+    { "title": "Flux — Core concepts", "url": "https://fluxcd.io/flux/concepts/" },
+    { "title": "Flux — Automate image updates to Git", "url": "https://fluxcd.io/flux/guides/image-update/" },
+    { "title": "Flux — Ways of structuring your repositories", "url": "https://fluxcd.io/flux/guides/repository-structure/" },
+    { "title": "CNCF — Argo has graduated (December 2022)", "url": "https://www.cncf.io/announcements/2022/12/06/the-cloud-native-computing-foundation-announces-argo-has-graduated/" },
+    { "title": "CNCF — Flux graduates from the CNCF incubator (November 2022)", "url": "https://www.cncf.io/announcements/2022/11/30/flux-graduates-from-cncf-incubator/" },
+    { "title": "Kubernetes — Server-Side Apply", "url": "https://kubernetes.io/docs/reference/using-api/server-side-apply/" },
+    { "title": "Bitnami — Sealed Secrets", "url": "https://github.com/bitnami/sealed-secrets" },
+    { "title": "SOPS: Secrets OPerationS", "url": "https://getsops.io/" }
+  ]
+}

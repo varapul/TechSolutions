@@ -1,0 +1,50 @@
+{
+  "aka": ["Ambassador container"],
+  "steps": [
+    {
+      "title": "A client you can't change",
+      "caption": "Billing calls the tax API directly over plain HTTP with no timeout. The API moves: every call fails.",
+      "body": "The billing application is a vendor binary: nobody can change its code. It calls the tax API directly, at a fixed address from its configuration, over plain HTTP, with no timeout, no retries and no metrics. When the tax team moves the API to a new address that demands TLS with a client certificate and an access token, every call fails, and had the API only slowed down, billing would have hung."
+    },
+    {
+      "title": "A proxy beside the client",
+      "caption": "An ambassador on localhost finds the API, adds mutual TLS and a token, and forwards each call to it.",
+      "body": "An **ambassador**, a small proxy process on the same host (or a sidecar container in the same pod), listens on `localhost:9000`, and pointing billing's configured endpoint at it is the only change to billing. The ambassador finds the API's current instances through service discovery (and keeps that list fresh), opens a TLS connection with the client certificate, adds the access token and forwards the call. To billing, the remote API now looks like a local service."
+    },
+    {
+      "title": "Resilience and visibility",
+      "caption": "The API times out: the ambassador retries with backoff, then opens its breaker; billing never hangs.",
+      "body": "The tax API starts timing out. The ambassador gives each try 2 s, waits a jittered backoff and retries the idempotent `GET /rates` lookup on the other instance, which answers; once timeouts pass 50 % its **circuit breaker** opens, and the next call fails in about a millisecond. Billing gets one answer or one clean error instead of hanging, and every call leaves metrics and a trace span."
+    },
+    {
+      "title": "Know the costs",
+      "caption": "The costs: one more hop and one more process, safe retries only, and one per client or shared.",
+      "body": "Every call pays one more hop (small on localhost), and every client brings one more process to deploy, patch and watch. Retries are safe only for idempotent calls, which a proxy cannot always recognise, so the client may have to pass a hint such as an idempotency key; and you choose between one ambassador per client and one shared by several. A client library is simpler when every client uses one language, and a service mesh is the generalisation when every service needs the same thing."
+    }
+  ],
+  "related": ["sidecar", "service-mesh", "gateway-offloading", "retry-with-backoff", "circuit-breaker", "mutual-tls", "timeout-and-fallback", "distributed-tracing"],
+  "references": [
+    { "title": "Azure Architecture Center — Ambassador pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/ambassador" },
+    { "title": "Brendan Burns, David Oppenheimer — Design Patterns for Container-based Distributed Systems (HotCloud '16)", "url": "https://www.usenix.org/conference/hotcloud16/workshop-program/presentation/burns" },
+    { "title": "Brendan Burns — The Distributed System ToolKit: Patterns for Composite Containers (Kubernetes blog, 2015)", "url": "https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/" },
+    { "title": "Kubernetes — Sidecar Containers", "url": "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/" },
+    { "title": "Envoy — What is Envoy", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/what_is_envoy" },
+    { "title": "Envoy — Service to service only (egress listeners on localhost)", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/deployment_types/service_to_service" },
+    { "title": "Envoy — Router filter (retries, back-off, per-try timeouts, request headers)", "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter" },
+    { "title": "Envoy — TLS (origination to upstream clusters, client certificates)", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ssl" },
+    { "title": "Envoy — Service discovery (strict DNS, EDS)", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/service_discovery" },
+    { "title": "Envoy — Circuit breaking", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking" },
+    { "title": "Envoy — Outlier detection", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier" },
+    { "title": "Envoy — Tracing (trace context propagation)", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/observability/tracing" },
+    { "title": "twemproxy (nutcracker) — a fast, light-weight proxy for memcached and Redis", "url": "https://github.com/twitter/twemproxy" },
+    { "title": "NGINX — Module ngx_http_proxy_module", "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html" },
+    { "title": "NGINX — Module ngx_http_upstream_module", "url": "https://nginx.org/en/docs/http/ngx_http_upstream_module.html" },
+    { "title": "HAProxy 3.4 — Configuration Manual", "url": "https://docs.haproxy.org/3.4/configuration.html" },
+    { "title": "Istio — Egress TLS Origination", "url": "https://istio.io/latest/docs/tasks/traffic-management/egress/egress-tls-origination/" },
+    { "title": "Istio — Install the Istio CNI node agent (sidecar traffic redirection)", "url": "https://istio.io/latest/docs/setup/additional-setup/cni/" },
+    { "title": "RFC 9110 — HTTP Semantics, section 9.2.2: Idempotent Methods", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2" },
+    { "title": "IETF — The Idempotency-Key HTTP Header Field (expired Internet-Draft)", "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" },
+    { "title": "Stripe API reference — Idempotent requests", "url": "https://docs.stripe.com/api/idempotent_requests" },
+    { "title": "Emissary-ingress (formerly Ambassador API Gateway) — GitHub", "url": "https://github.com/emissary-ingress/emissary" }
+  ]
+}

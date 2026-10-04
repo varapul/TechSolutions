@@ -1,0 +1,36 @@
+{
+  "aka": ["Multi-hop architecture"],
+  "steps": [
+    {
+      "title": "Bronze: land as-is",
+      "caption": "Bronze: records from all three sources land unchanged, bad ones included, plus load metadata.",
+      "body": "Change events from the orders database, the clickstream and a partner's daily CSV file are **appended unchanged** to bronze tables, together with ingestion metadata (source, load time, batch ID). Today that is 1,000 order records, **12 duplicates and 3 malformed records included**: bronze fixes nothing and throws nothing away, so it is the complete, replayable history of what the sources sent."
+    },
+    {
+      "title": "Silver: clean and conform",
+      "caption": "Silver: a job reads new rows, drops 12 duplicates and conforms codes; 3 go to quarantine, 985 pass.",
+      "body": "A silver job reads **only the new bronze records**, parses and types the fields, removes the 12 duplicates by order ID, converts country names to ISO codes and amounts to one currency, and joins customer data. The 3 malformed records move to a **quarantine table** with the reason, so silver holds **985 validated records** (1,000 − 12 − 3): the trusted, record-level view that many uses share."
+    },
+    {
+      "title": "Gold: shape for use",
+      "caption": "Gold: silver is aggregated and modelled into business tables, one for each audience.",
+      "body": "A gold job aggregates and models silver into **business-level tables** for each audience: daily revenue by region for the BI dashboard, a customer features table for the ML model and a product summary (from the clickstream) for the data API. Gold tables are named in business terms, optimised for reading and governed per audience."
+    },
+    {
+      "title": "Fix and replay",
+      "caption": "A currency bug is fixed and replayed from bronze; lineage shows which tables and consumers it hit.",
+      "body": "A bug is found in the currency conversion. The silver job is fixed and **replayed from bronze**, which still holds every raw record. **Lineage** shows that only the orders path is affected (two gold tables, the dashboard and the model), and the table format's **time travel** lets the team compare the old and new versions. Day to day, every hop processes only new data, by streaming or incremental merges."
+    }
+  ],
+  "related": ["change-data-capture", "materialized-view", "cqrs", "event-sourcing", "pipes-and-filters", "idempotent-consumer", "dead-letter-queue"],
+  "references": [
+    { "title": "Databricks — What is the medallion lakehouse architecture?", "url": "https://docs.databricks.com/aws/en/lakehouse/medallion" },
+    { "title": "Microsoft Learn — Implement medallion lakehouse architecture in Fabric", "url": "https://learn.microsoft.com/en-us/fabric/onelake/onelake-medallion-lakehouse-architecture" },
+    { "title": "Armbrust, Ghodsi, Xin, Zaharia — Lakehouse: A New Generation of Open Platforms that Unify Data Warehousing and Advanced Analytics (CIDR 2021)", "url": "https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf" },
+    { "title": "Delta Lake — Table deletes, updates, and merges", "url": "https://docs.delta.io/delta-update/" },
+    { "title": "Delta Lake — Table batch reads and writes (time travel and data retention)", "url": "https://docs.delta.io/delta-batch/" },
+    { "title": "Apache Iceberg — Introduction", "url": "https://iceberg.apache.org/docs/latest/" },
+    { "title": "Databricks — Manage data quality with pipeline expectations", "url": "https://docs.databricks.com/aws/en/ldp/expectations" },
+    { "title": "dbt — How we structure our dbt projects", "url": "https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview" }
+  ]
+}

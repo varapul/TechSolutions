@@ -1,0 +1,1088 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Medallion Architecture</title>
+<desc id="dg-desc">Medallion Architecture. Bronze, silver, gold: raw data is refined in layers inside a lakehouse. Step 1, Bronze: land as-is: Bronze: records from all three sources land unchanged, bad ones included, plus load metadata. Step 2, Silver: clean and conform: Silver: a job reads new rows, drops 12 duplicates and conforms codes; 3 go to quarantine, 985 pass. Step 3, Gold: shape for use: Gold: silver is aggregated and modelled into business tables, one for each audience. Step 4, Fix and replay: A currency bug is fixed and replayed from bronze; lineage shows which tables and consumers it hit.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATA MANAGEMENT</text>
+  <text class="title" x="40" y="64">Medallion Architecture</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Bronze: land as-is</text>
+  <text class="step on p1" x="40" y="518">1 · Bronze: land as-is</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Silver: clean and conform</text>
+  <text class="step on p2" x="262" y="518">2 · Silver: clean and conform</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Gold: shape for use</text>
+  <text class="step on p3" x="484" y="518">3 · Gold: shape for use</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Fix and replay</text>
+  <text class="step on p4" x="706" y="518">4 · Fix and replay</text>
+  <text class="caption p1" x="40" y="552">Bronze: records from all three sources land unchanged, bad ones included, plus load metadata.</text>
+  <text class="caption p2" x="40" y="552">Silver: a job reads new rows, drops 12 duplicates and conforms codes; 3 go to quarantine, 985 pass.</text>
+  <text class="caption p3" x="40" y="552">Gold: silver is aggregated and modelled into business tables, one for each audience.</text>
+  <text class="caption p4" x="40" y="552">A currency bug is fixed and replayed from bronze; lineage shows which tables and consumers it hit.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Medallion Architecture. Timeline (20s loop, 1s = 5%):
+   0-25%   bronze: orders (1,000 incl. 12 dupes + 3 malformed), partner CSV and clicks land unchanged + metadata
+   25-50%  silver job: new rows only; a duplicate pops at the job, a malformed row drops to quarantine; 985 valid
+   50-75%  gold job: silver -> daily_revenue / customer_features / product_summary -> consumers get a check
+   75-100% FX bug on the silver job; lineage marks 2 gold tables + 2 consumers; fixed job replays bronze -> silver
+           -> gold; time travel compares v12 and v13; story pieces fade out 19.45-19.95 s so the loop restarts empty */
+.diagram .ma-tok { opacity: 0; }
+.diagram .ma-ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .ma-ev.f-amber { fill: var(--amber); }
+.diagram .ma-ev.f-red { fill: var(--red); }
+.diagram .ma-tn { font-size: 11px; font-weight: 600; }
+.diagram .ma-tc { font-size: 11px; font-weight: 700; }
+.diagram .ma-lt { font-size: 10px; }
+.diagram .ma-medal { stroke: var(--bg); stroke-width: 1.5; }
+.diagram .ma-ev0 { animation: ma-ev0 var(--T) linear infinite; }
+.diagram .ma-ev1 { animation: ma-ev1 var(--T) linear infinite; }
+.diagram .ma-ev2 { animation: ma-ev2 var(--T) linear infinite; }
+.diagram .ma-ev3 { animation: ma-ev3 var(--T) linear infinite; }
+.diagram .ma-file0 { animation: ma-file0 var(--T) linear infinite; }
+.diagram .ma-eva0 { animation: ma-eva0 var(--T) linear infinite; }
+.diagram .ma-evr0 { animation: ma-evr0 var(--T) linear infinite; }
+.diagram .ma-rec0 { animation: ma-rec0 var(--T) linear infinite; }
+.diagram .ma-rec1 { animation: ma-rec1 var(--T) linear infinite; }
+.diagram .ma-rec2 { animation: ma-rec2 var(--T) linear infinite; }
+.diagram .ma-rec3 { animation: ma-rec3 var(--T) linear infinite; }
+.diagram .ma-rec4 { animation: ma-rec4 var(--T) linear infinite; }
+.diagram .ma-reca0 { animation: ma-reca0 var(--T) linear infinite; }
+.diagram .ma-recr0 { animation: ma-recr0 var(--T) linear infinite; }
+.diagram .ma-recg0 { animation: ma-recg0 var(--T) linear infinite; }
+.diagram .ma-recg1 { animation: ma-recg1 var(--T) linear infinite; }
+.diagram .ma-recg2 { animation: ma-recg2 var(--T) linear infinite; }
+.diagram .ma-pop { opacity: 0; transform-box: fill-box; transform-origin: 50% 50%; animation: ma-pop var(--T) linear infinite; }
+.diagram .ma-b1red { opacity: 0; animation: ma-b1red var(--T) linear infinite; }
+.diagram .ma-b1ok { opacity: 0; animation: ma-b1ok var(--T) linear infinite; }
+.diagram .ma-b2run { opacity: 0; animation: ma-b2run var(--T) linear infinite; }
+.diagram .ma-c-br0 { animation: ma-c-br0 var(--T) linear infinite; }
+.diagram .ma-n-br0 { animation: ma-n-br0 var(--T) linear infinite; }
+.diagram .ma-c-br1 { animation: ma-c-br1 var(--T) linear infinite; }
+.diagram .ma-c-br2 { animation: ma-c-br2 var(--T) linear infinite; }
+.diagram .ma-sored { opacity: 0; animation: ma-sored var(--T) linear infinite; }
+.diagram .ma-sook { opacity: 0; animation: ma-sook var(--T) linear infinite; }
+.diagram .ma-c-si0 { opacity: 0; animation: ma-c-si0 var(--T) linear infinite; }
+.diagram .ma-sonote { animation: ma-sonote var(--T) linear infinite; }
+.diagram .ma-sonote-bad { opacity: 0; animation: ma-sonote-bad var(--T) linear infinite; }
+.diagram .ma-sonote-ok { opacity: 0; animation: ma-sonote-ok var(--T) linear infinite; }
+.diagram .ma-c-si1 { opacity: 0; animation: ma-c-si1 var(--T) linear infinite; }
+.diagram .ma-c-si2 { opacity: 0; animation: ma-c-si2 var(--T) linear infinite; }
+.diagram .ma-g1red { opacity: 0; animation: ma-g1red var(--T) linear infinite; }
+.diagram .ma-g1ok { opacity: 0; animation: ma-g1ok var(--T) linear infinite; }
+.diagram .ma-n-go0 { opacity: 0; animation: ma-n-go0 var(--T) linear infinite; }
+.diagram .ma-g2red { opacity: 0; animation: ma-g2red var(--T) linear infinite; }
+.diagram .ma-g2ok { opacity: 0; animation: ma-g2ok var(--T) linear infinite; }
+.diagram .ma-n-go1 { opacity: 0; animation: ma-n-go1 var(--T) linear infinite; }
+.diagram .ma-n-go2 { opacity: 0; animation: ma-n-go2 var(--T) linear infinite; }
+.diagram .ma-ok-bi { opacity: 0; animation: ma-ok-bi var(--T) linear infinite; }
+.diagram .ma-ok-ml { opacity: 0; animation: ma-ok-ml var(--T) linear infinite; }
+.diagram .ma-ok-api { opacity: 0; animation: ma-ok-api var(--T) linear infinite; }
+.diagram .ma-bad-bi { opacity: 0; animation: ma-bad-bi var(--T) linear infinite; }
+.diagram .ma-bad-ml { opacity: 0; animation: ma-bad-ml var(--T) linear infinite; }
+.diagram .ma-bug { opacity: 0; animation: ma-bug var(--T) linear infinite; }
+.diagram .ma-fixed { opacity: 0; animation: ma-fixed var(--T) linear infinite; }
+.diagram .ma-l-dup { opacity: 0; animation: ma-l-dup var(--T) linear infinite; }
+.diagram .ma-l-bad { opacity: 0; animation: ma-l-bad var(--T) linear infinite; }
+.diagram .ma-r4a { opacity: 0; animation: ma-r4a var(--T) linear infinite; }
+.diagram .ma-r4b { opacity: 0; animation: ma-r4b var(--T) linear infinite; }
+.diagram .ma-l4a { opacity: 0; animation: ma-l4a var(--T) linear infinite; }
+.diagram .ma-l4b { opacity: 0; animation: ma-l4b var(--T) linear infinite; }
+.diagram .ma-qempty { animation: ma-qempty var(--T) linear infinite; }
+.diagram .ma-q3 { opacity: 0; animation: ma-q3 var(--T) linear infinite; }
+.diagram .ma-qrows { opacity: 0; animation: ma-qrows var(--T) linear infinite; }
+.diagram .ma-lsrc { opacity: 0; animation: ma-lsrc var(--T) linear infinite; }
+.diagram .ma-lo-red { opacity: 0; animation: ma-lo-red var(--T) linear infinite; }
+.diagram .ma-lo-ok { opacity: 0; animation: ma-lo-ok var(--T) linear infinite; }
+.diagram .ma-lr-red { opacity: 0; animation: ma-lr-red var(--T) linear infinite; }
+.diagram .ma-lr-ok { opacity: 0; animation: ma-lr-ok var(--T) linear infinite; }
+.diagram .ma-lf-red { opacity: 0; animation: ma-lf-red var(--T) linear infinite; }
+.diagram .ma-lf-ok { opacity: 0; animation: ma-lf-ok var(--T) linear infinite; }
+.diagram .ma-lb-red { opacity: 0; animation: ma-lb-red var(--T) linear infinite; }
+.diagram .ma-lb-ok { opacity: 0; animation: ma-lb-ok var(--T) linear infinite; }
+.diagram .ma-lm-red { opacity: 0; animation: ma-lm-red var(--T) linear infinite; }
+.diagram .ma-lm-ok { opacity: 0; animation: ma-lm-ok var(--T) linear infinite; }
+.diagram .ma-ls-red { opacity: 0; animation: ma-ls-red var(--T) linear infinite; }
+.diagram .ma-ls-ok { opacity: 0; animation: ma-ls-ok var(--T) linear infinite; }
+@keyframes ma-ev0 {
+  0% { transform: translate(136px, 172px); opacity: 0; }
+  2.5% { transform: translate(136px, 172px); opacity: 0; }
+  2.75% { opacity: 1; }
+  4.611% { transform: translate(174px, 172px); opacity: 1; }
+  4.861% { transform: translate(174px, 172px); opacity: 0; }
+  6% { transform: translate(136px, 268px); opacity: 0; }
+  6.25% { opacity: 1; }
+  8.111% { transform: translate(174px, 268px); opacity: 1; }
+  8.361% { transform: translate(174px, 268px); opacity: 0; }
+  9% { transform: translate(136px, 268px); opacity: 0; }
+  9.25% { opacity: 1; }
+  11.111% { transform: translate(174px, 268px); opacity: 1; }
+  11.361% { transform: translate(174px, 268px); opacity: 0; }
+  100% { transform: translate(174px, 268px); opacity: 0; }
+}
+@keyframes ma-ev1 {
+  0% { transform: translate(136px, 268px); opacity: 0; }
+  3% { transform: translate(136px, 268px); opacity: 0; }
+  3.25% { opacity: 1; }
+  5.111% { transform: translate(174px, 268px); opacity: 1; }
+  5.361% { transform: translate(174px, 268px); opacity: 0; }
+  7.5% { transform: translate(136px, 268px); opacity: 0; }
+  7.75% { opacity: 1; }
+  9.611% { transform: translate(174px, 268px); opacity: 1; }
+  9.861% { transform: translate(174px, 268px); opacity: 0; }
+  11.25% { transform: translate(136px, 172px); opacity: 0; }
+  11.5% { opacity: 1; }
+  13.361% { transform: translate(174px, 172px); opacity: 1; }
+  13.611% { transform: translate(174px, 172px); opacity: 0; }
+  100% { transform: translate(174px, 172px); opacity: 0; }
+}
+@keyframes ma-ev2 {
+  0% { transform: translate(136px, 172px); opacity: 0; }
+  4.25% { transform: translate(136px, 172px); opacity: 0; }
+  4.5% { opacity: 1; }
+  6.361% { transform: translate(174px, 172px); opacity: 1; }
+  6.611% { transform: translate(174px, 172px); opacity: 0; }
+  7.75% { transform: translate(136px, 172px); opacity: 0; }
+  8% { opacity: 1; }
+  9.861% { transform: translate(174px, 172px); opacity: 1; }
+  10.111% { transform: translate(174px, 172px); opacity: 0; }
+  100% { transform: translate(174px, 172px); opacity: 0; }
+}
+@keyframes ma-ev3 {
+  0% { transform: translate(136px, 268px); opacity: 0; }
+  4.5% { transform: translate(136px, 268px); opacity: 0; }
+  4.75% { opacity: 1; }
+  6.611% { transform: translate(174px, 268px); opacity: 1; }
+  6.861% { transform: translate(174px, 268px); opacity: 0; }
+  100% { transform: translate(174px, 268px); opacity: 0; }
+}
+@keyframes ma-file0 {
+  0% { transform: translate(132px, 220px); opacity: 0; }
+  5% { transform: translate(132px, 220px); opacity: 0; }
+  5.25% { opacity: 1; }
+  9.038% { transform: translate(174px, 220px); opacity: 1; }
+  9.288% { transform: translate(174px, 220px); opacity: 0; }
+  100% { transform: translate(174px, 220px); opacity: 0; }
+}
+@keyframes ma-eva0 {
+  0% { transform: translate(136px, 172px); opacity: 0; }
+  6% { transform: translate(136px, 172px); opacity: 0; }
+  6.25% { opacity: 1; }
+  8.111% { transform: translate(174px, 172px); opacity: 1; }
+  8.361% { transform: translate(174px, 172px); opacity: 0; }
+  100% { transform: translate(174px, 172px); opacity: 0; }
+}
+@keyframes ma-evr0 {
+  0% { transform: translate(136px, 172px); opacity: 0; }
+  9.5% { transform: translate(136px, 172px); opacity: 0; }
+  9.75% { opacity: 1; }
+  11.611% { transform: translate(174px, 172px); opacity: 1; }
+  11.861% { transform: translate(174px, 172px); opacity: 0; }
+  100% { transform: translate(174px, 172px); opacity: 0; }
+}
+@keyframes ma-rec0 {
+  0% { transform: translate(318px, 172px); opacity: 0; }
+  27% { transform: translate(318px, 172px); opacity: 0; }
+  27.25% { opacity: 1; }
+  28.4% { transform: translate(346px, 172px); }
+  29.8% { transform: translate(374px, 172px); opacity: 1; }
+  30.05% { transform: translate(374px, 172px); opacity: 0; }
+  30.5% { transform: translate(318px, 172px); opacity: 0; }
+  30.75% { opacity: 1; }
+  31.9% { transform: translate(346px, 172px); }
+  33.3% { transform: translate(374px, 172px); opacity: 1; }
+  33.55% { transform: translate(374px, 172px); opacity: 0; }
+  34% { transform: translate(318px, 172px); opacity: 0; }
+  34.25% { opacity: 1; }
+  35.4% { transform: translate(346px, 172px); }
+  36.8% { transform: translate(374px, 172px); opacity: 1; }
+  37.05% { transform: translate(374px, 172px); opacity: 0; }
+  52% { transform: translate(518px, 172px); opacity: 0; }
+  52.25% { opacity: 1; }
+  53.4% { transform: translate(546px, 172px); }
+  54.8% { transform: translate(574px, 172px); opacity: 1; }
+  55.05% { transform: translate(574px, 172px); opacity: 0; }
+  55.5% { transform: translate(518px, 172px); opacity: 0; }
+  55.75% { opacity: 1; }
+  56.9% { transform: translate(546px, 172px); }
+  58.3% { transform: translate(574px, 172px); opacity: 1; }
+  58.55% { transform: translate(574px, 172px); opacity: 0; }
+  59.75% { transform: translate(728px, 268px); opacity: 0; }
+  60% { opacity: 1; }
+  61.75% { transform: translate(762px, 268px); opacity: 1; }
+  62% { transform: translate(762px, 268px); opacity: 0; }
+  100% { transform: translate(762px, 268px); opacity: 0; }
+}
+@keyframes ma-rec1 {
+  0% { transform: translate(318px, 268px); opacity: 0; }
+  27.5% { transform: translate(318px, 268px); opacity: 0; }
+  27.75% { opacity: 1; }
+  28.9% { transform: translate(346px, 268px); }
+  30.3% { transform: translate(374px, 268px); opacity: 1; }
+  30.55% { transform: translate(374px, 268px); opacity: 0; }
+  31% { transform: translate(318px, 268px); opacity: 0; }
+  31.25% { opacity: 1; }
+  32.4% { transform: translate(346px, 268px); }
+  33.8% { transform: translate(374px, 268px); opacity: 1; }
+  34.05% { transform: translate(374px, 268px); opacity: 0; }
+  35.75% { transform: translate(318px, 172px); opacity: 0; }
+  36% { opacity: 1; }
+  37.15% { transform: translate(346px, 172px); }
+  38.55% { transform: translate(374px, 172px); opacity: 1; }
+  38.8% { transform: translate(374px, 172px); opacity: 0; }
+  52.5% { transform: translate(518px, 220px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.9% { transform: translate(546px, 220px); }
+  55.3% { transform: translate(574px, 220px); opacity: 1; }
+  55.55% { transform: translate(574px, 220px); opacity: 0; }
+  60.25% { transform: translate(728px, 172px); opacity: 0; }
+  60.5% { opacity: 1; }
+  62.25% { transform: translate(762px, 172px); opacity: 1; }
+  62.5% { transform: translate(762px, 172px); opacity: 0; }
+  100% { transform: translate(762px, 172px); opacity: 0; }
+}
+@keyframes ma-rec2 {
+  0% { transform: translate(318px, 220px); opacity: 0; }
+  28% { transform: translate(318px, 220px); opacity: 0; }
+  28.25% { opacity: 1; }
+  29.4% { transform: translate(346px, 220px); }
+  30.8% { transform: translate(374px, 220px); opacity: 1; }
+  31.05% { transform: translate(374px, 220px); opacity: 0; }
+  53% { transform: translate(518px, 268px); opacity: 0; }
+  53.25% { opacity: 1; }
+  54.4% { transform: translate(546px, 268px); }
+  55.8% { transform: translate(574px, 268px); opacity: 1; }
+  56.05% { transform: translate(574px, 268px); opacity: 0; }
+  60.75% { transform: translate(728px, 220px); opacity: 0; }
+  61% { opacity: 1; }
+  62.75% { transform: translate(762px, 220px); opacity: 1; }
+  63% { transform: translate(762px, 220px); opacity: 0; }
+  100% { transform: translate(762px, 220px); opacity: 0; }
+}
+@keyframes ma-rec3 {
+  0% { transform: translate(318px, 268px); opacity: 0; }
+  29.25% { transform: translate(318px, 268px); opacity: 0; }
+  29.5% { opacity: 1; }
+  30.65% { transform: translate(346px, 268px); }
+  32.05% { transform: translate(374px, 268px); opacity: 1; }
+  32.3% { transform: translate(374px, 268px); opacity: 0; }
+  53.75% { transform: translate(518px, 172px); opacity: 0; }
+  54% { opacity: 1; }
+  55.023% { transform: translate(546px, 172px); }
+  57.205% { transform: translate(546px, 220px); }
+  58.477% { transform: translate(574px, 220px); opacity: 1; }
+  58.727% { transform: translate(574px, 220px); opacity: 0; }
+  100% { transform: translate(574px, 220px); opacity: 0; }
+}
+@keyframes ma-rec4 {
+  0% { transform: translate(318px, 220px); opacity: 0; }
+  30% { transform: translate(318px, 220px); opacity: 0; }
+  30.25% { opacity: 1; }
+  31.4% { transform: translate(346px, 220px); }
+  32.8% { transform: translate(374px, 220px); opacity: 1; }
+  33.05% { transform: translate(374px, 220px); opacity: 0; }
+  54.75% { transform: translate(518px, 268px); opacity: 0; }
+  55% { opacity: 1; }
+  56.023% { transform: translate(546px, 268px); }
+  58.205% { transform: translate(546px, 220px); }
+  59.477% { transform: translate(574px, 220px); opacity: 1; }
+  59.727% { transform: translate(574px, 220px); opacity: 0; }
+  100% { transform: translate(574px, 220px); opacity: 0; }
+}
+@keyframes ma-reca0 {
+  0% { transform: translate(318px, 172px); opacity: 0; }
+  28.75% { transform: translate(318px, 172px); opacity: 0; }
+  29% { opacity: 1; }
+  30.15% { transform: translate(346px, 172px); }
+  31.65% { transform: translate(346px, 172px); opacity: 1; }
+  31.9% { transform: translate(346px, 172px); opacity: 0; }
+  100% { transform: translate(346px, 172px); opacity: 0; }
+}
+@keyframes ma-recr0 {
+  0% { transform: translate(318px, 172px); opacity: 0; }
+  32.25% { transform: translate(318px, 172px); opacity: 0; }
+  32.5% { opacity: 1; }
+  33.183% { transform: translate(346px, 172px); }
+  39.117% { transform: translate(346px, 350px); opacity: 1; }
+  39.367% { transform: translate(346px, 350px); opacity: 0; }
+  100% { transform: translate(346px, 350px); opacity: 0; }
+}
+@keyframes ma-recg0 {
+  0% { transform: translate(318px, 172px); opacity: 0; }
+  83% { transform: translate(318px, 172px); opacity: 0; }
+  83.25% { opacity: 1; }
+  84.25% { transform: translate(346px, 172px); }
+  85.5% { transform: translate(374px, 172px); opacity: 1; }
+  85.75% { transform: translate(374px, 172px); opacity: 0; }
+  87.75% { transform: translate(518px, 172px); opacity: 0; }
+  88% { opacity: 1; }
+  89% { transform: translate(546px, 172px); }
+  90.25% { transform: translate(574px, 172px); opacity: 1; }
+  90.5% { transform: translate(574px, 172px); opacity: 0; }
+  92.1% { transform: translate(728px, 220px); opacity: 0; }
+  92.35% { opacity: 1; }
+  93.8% { transform: translate(762px, 220px); opacity: 1; }
+  94.05% { transform: translate(762px, 220px); opacity: 0; }
+  100% { transform: translate(762px, 220px); opacity: 0; }
+}
+@keyframes ma-recg1 {
+  0% { transform: translate(318px, 172px); opacity: 0; }
+  84% { transform: translate(318px, 172px); opacity: 0; }
+  84.25% { opacity: 1; }
+  85.25% { transform: translate(346px, 172px); }
+  86.5% { transform: translate(374px, 172px); opacity: 1; }
+  86.75% { transform: translate(374px, 172px); opacity: 0; }
+  88.25% { transform: translate(518px, 172px); opacity: 0; }
+  88.5% { opacity: 1; }
+  89.25% { transform: translate(546px, 172px); }
+  90.964% { transform: translate(546px, 220px); }
+  91.964% { transform: translate(574px, 220px); opacity: 1; }
+  92.214% { transform: translate(574px, 220px); opacity: 0; }
+  100% { transform: translate(574px, 220px); opacity: 0; }
+}
+@keyframes ma-recg2 {
+  0% { transform: translate(318px, 172px); opacity: 0; }
+  85% { transform: translate(318px, 172px); opacity: 0; }
+  85.25% { opacity: 1; }
+  86.25% { transform: translate(346px, 172px); }
+  87.5% { transform: translate(374px, 172px); opacity: 1; }
+  87.75% { transform: translate(374px, 172px); opacity: 0; }
+  90.5% { transform: translate(728px, 172px); opacity: 0; }
+  90.75% { opacity: 1; }
+  92.2% { transform: translate(762px, 172px); opacity: 1; }
+  92.45% { transform: translate(762px, 172px); opacity: 0; }
+  100% { transform: translate(762px, 172px); opacity: 0; }
+}
+@keyframes ma-pop {
+  0% { opacity: 0; transform: scale(0.4); }
+  30.15% { opacity: 0; transform: scale(0.4); }
+  30.4% { opacity: 1; }
+  32.5% { opacity: 0; transform: scale(1.9); }
+  100% { opacity: 0; transform: scale(1.9); }
+}
+@keyframes ma-b1red {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76.75% { opacity: 1; }
+  82.25% { opacity: 1; }
+  83.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-b1ok {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-b2run {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  89% { opacity: 1; }
+  92.25% { opacity: 1; }
+  93.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-c-br0 {
+  0% { opacity: 0; }
+  13.75% { opacity: 0; }
+  15% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-n-br0 {
+  0% { opacity: 0; }
+  14.25% { opacity: 0; }
+  15.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-c-br1 {
+  0% { opacity: 0; }
+  9.25% { opacity: 0; }
+  10.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-c-br2 {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-sored {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77.25% { opacity: 1; }
+  87.75% { opacity: 1; }
+  89% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-sook {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  89% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-c-si0 {
+  0% { opacity: 0; }
+  38.75% { opacity: 0; }
+  40% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-sonote {
+  0% { opacity: 1; }
+  76% { opacity: 1; }
+  77% { opacity: 0; }
+  98.75% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ma-sonote-bad {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.5% { opacity: 1; }
+  87.25% { opacity: 1; }
+  88.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-sonote-ok {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-c-si1 {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-c-si2 {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  35.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-g1red {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  90.25% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-g1ok {
+  0% { opacity: 0; }
+  90.25% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-n-go0 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-g2red {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  92% { opacity: 1; }
+  93.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-g2ok {
+  0% { opacity: 0; }
+  92% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-n-go1 {
+  0% { opacity: 0; }
+  59.75% { opacity: 0; }
+  61% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-n-go2 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  57.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-ok-bi {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.75% { opacity: 1; }
+  79.25% { opacity: 1; }
+  80.75% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-ok-ml {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.25% { opacity: 1; }
+  79.25% { opacity: 1; }
+  80.75% { opacity: 0; }
+  94% { opacity: 0; }
+  95.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-ok-api {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  63.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-bad-bi {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.75% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-bad-ml {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.75% { opacity: 1; }
+  94% { opacity: 1; }
+  95.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-bug {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76.75% { opacity: 1; }
+  81.5% { opacity: 1; }
+  82.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-fixed {
+  0% { opacity: 0; }
+  82.75% { opacity: 0; }
+  84% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-l-dup {
+  0% { opacity: 0; }
+  30.25% { opacity: 0; }
+  31.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-l-bad {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-r4a {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-r4b {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-l4a {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-l4b {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-qempty {
+  0% { opacity: 1; }
+  39% { opacity: 1; }
+  40% { opacity: 0; }
+  98.75% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ma-q3 {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-qrows {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lsrc {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lo-red {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  87.75% { opacity: 1; }
+  89% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lo-ok {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  89% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lr-red {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  90.25% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lr-ok {
+  0% { opacity: 0; }
+  90.25% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lf-red {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  92% { opacity: 1; }
+  93.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lf-ok {
+  0% { opacity: 0; }
+  92% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lb-red {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.75% { opacity: 1; }
+  92.5% { opacity: 1; }
+  93.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lb-ok {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lm-red {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.75% { opacity: 1; }
+  94% { opacity: 1; }
+  95.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-lm-ok {
+  0% { opacity: 0; }
+  94% { opacity: 0; }
+  95.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-ls-red {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  93.25% { opacity: 1; }
+  94.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ma-ls-ok {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <defs>
+    <marker id="ma-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="ma-a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="ma-a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="ma-a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+  </defs>
+  <!-- lakehouse: object storage + an open table format -->
+  <path class="zone" d="M172 96H730Q744 96 744 110V324Q744 338 730 338H418Q404 338 404 352V438Q404 452 390 452H172Q158 452 158 438V110Q158 96 172 96Z"/>
+  <text class="label" x="172" y="115">Lakehouse</text><text class="sub" x="258" y="115">object storage + open table format (Delta Lake, Iceberg, Hudi)</text>
+  <text class="tiny sb" x="34" y="144">Sources</text><text class="tiny sb" x="762" y="144">Consumers</text>
+  <rect class="f-panel s-line" x="168" y="124" width="156" height="172" rx="12" stroke-width="1.5"/>
+  <rect class="f-panel s-line" x="368" y="124" width="156" height="172" rx="12" stroke-width="1.5"/>
+  <rect class="f-panel s-line" x="568" y="124" width="166" height="172" rx="12" stroke-width="1.5"/>
+  <g class="p1"><rect class="none s-teal" x="168" y="124" width="156" height="172" rx="12" stroke-width="2"/></g>
+  <g class="p2"><rect class="none s-teal" x="368" y="124" width="156" height="172" rx="12" stroke-width="2"/></g>
+  <g class="p3"><rect class="none s-teal" x="568" y="124" width="166" height="172" rx="12" stroke-width="2"/></g>
+  <circle class="f-orange ma-medal" cx="184" cy="139" r="6.5"/><text class="label" x="196" y="144">Bronze</text><text class="tiny end" x="314" y="144">raw, as sent</text>
+  <circle class="f-faint ma-medal" cx="384" cy="139" r="6.5"/><text class="label" x="396" y="144">Silver</text><text class="tiny end" x="514" y="144">validated</text>
+  <circle class="f-amber ma-medal" cx="584" cy="139" r="6.5"/><text class="label" x="596" y="144">Gold</text><text class="tiny end" x="724" y="144">business-ready</text>
+  <!-- wires: sources -> bronze -> silver job -> silver -> gold job -> gold -> consumers -->
+  <line class="wire" x1="140" y1="172" x2="173" y2="172" marker-end="url(#ah)"/><line class="wire" x1="318" y1="172" x2="336" y2="172" marker-end="url(#ah)"/><line class="wire" x1="355" y1="172" x2="373" y2="172" marker-end="url(#ah)"/><line class="wire" x1="518" y1="172" x2="536" y2="172" marker-end="url(#ah)"/><line class="wire" x1="555" y1="172" x2="573" y2="172" marker-end="url(#ah)"/><line class="wire" x1="728" y1="172" x2="761" y2="172" marker-end="url(#ah)"/>
+  <line class="wire" x1="140" y1="220" x2="173" y2="220" marker-end="url(#ah)"/><line class="wire" x1="318" y1="220" x2="336" y2="220" marker-end="url(#ah)"/><line class="wire" x1="355" y1="220" x2="373" y2="220" marker-end="url(#ah)"/><line class="wire" x1="518" y1="220" x2="536" y2="220" marker-end="url(#ah)"/><line class="wire" x1="555" y1="220" x2="573" y2="220" marker-end="url(#ah)"/><line class="wire" x1="728" y1="220" x2="761" y2="220" marker-end="url(#ah)"/>
+  <line class="wire" x1="140" y1="268" x2="173" y2="268" marker-end="url(#ah)"/><line class="wire" x1="318" y1="268" x2="336" y2="268" marker-end="url(#ah)"/><line class="wire" x1="355" y1="268" x2="373" y2="268" marker-end="url(#ah)"/><line class="wire" x1="518" y1="268" x2="536" y2="268" marker-end="url(#ah)"/><line class="wire" x1="555" y1="268" x2="573" y2="268" marker-end="url(#ah)"/><line class="wire" x1="728" y1="268" x2="761" y2="268" marker-end="url(#ah)"/>
+  <g class="p234"><path class="none s-red dash" d="M346 288V349" stroke-width="2" marker-end="url(#ah-red)"/></g>
+  <rect class="f-panel-2 s-line" x="337" y="152" width="18" height="136" rx="9" stroke-width="1.5"/><text class="tiny mid" x="346" y="144">job</text>
+  <rect class="f-panel-2 s-line" x="537" y="152" width="18" height="136" rx="9" stroke-width="1.5"/><text class="tiny mid" x="546" y="144">job</text>
+  <g class="p2"><rect class="f-teal-soft s-teal" x="337" y="152" width="18" height="136" rx="9" stroke-width="2"/></g>
+  <g class="p3"><rect class="f-teal-soft s-teal" x="537" y="152" width="18" height="136" rx="9" stroke-width="2"/></g>
+  <g class="ma-b1red"><rect class="f-red-soft s-red" x="337" y="152" width="18" height="136" rx="9" stroke-width="2"/></g>
+  <g class="ma-b1ok"><rect class="f-green-soft s-green" x="337" y="152" width="18" height="136" rx="9" stroke-width="2"/></g>
+  <g class="ma-b2run"><rect class="f-teal-soft s-teal" x="537" y="152" width="18" height="136" rx="9" stroke-width="2"/></g>
+  <!-- tables: name, today's row count, and what the layer did to them -->
+  <rect class="f-bg s-line" x="174" y="152" width="144" height="40" rx="8" stroke-width="1.5"/>
+  <text class="ma-tn mono" x="182" y="168">orders_raw</text>
+  <text class="ma-tc mono end ma-c-br0" x="310" y="168">1,000</text>
+  <text class="tiny sb ma-n-br0" x="182" y="183"><tspan class="f-amber-ink">12 dupes</tspan> · <tspan class="f-red">3 malformed</tspan></text>
+  <rect class="f-bg s-line" x="174" y="200" width="144" height="40" rx="8" stroke-width="1.5"/>
+  <text class="ma-tn mono" x="182" y="216">partner_raw</text>
+  <text class="ma-tc mono end ma-c-br1" x="310" y="216">8,300</text>
+  <text class="tiny" x="182" y="231">CSV rows, as sent</text>
+  <rect class="f-bg s-line" x="174" y="248" width="144" height="40" rx="8" stroke-width="1.5"/>
+  <text class="ma-tn mono" x="182" y="264">clicks_raw</text>
+  <text class="ma-tc mono end ma-c-br2" x="310" y="264">52,400</text>
+  <text class="tiny" x="182" y="279">JSON events, as sent</text>
+  <rect class="f-bg s-line" x="374" y="152" width="144" height="40" rx="8" stroke-width="1.5"/>
+  <g class="ma-sored"><rect class="f-red-soft s-red" x="374" y="152" width="144" height="40" rx="8" stroke-width="2"/></g>
+  <g class="ma-sook"><rect class="f-green-soft s-green" x="374" y="152" width="144" height="40" rx="8" stroke-width="2"/></g>
+  <text class="ma-tn mono" x="382" y="168">orders</text>
+  <text class="ma-tc mono end ma-c-si0" x="510" y="168">985</text>
+  <text class="tiny ma-sonote" x="382" y="183">typed · deduped · USD</text>
+  <text class="tiny sb f-red ma-sonote-bad" x="382" y="183">amount_usd wrong · v12</text>
+  <text class="tiny sb f-green ma-sonote-ok" x="382" y="183">rebuilt · v13</text>
+  <rect class="f-bg s-line" x="374" y="200" width="144" height="40" rx="8" stroke-width="1.5"/>
+  <text class="ma-tn mono" x="382" y="216">customers</text>
+  <text class="ma-tc mono end ma-c-si1" x="510" y="216">8,300</text>
+  <text class="tiny" x="382" y="231">ISO country codes</text>
+  <rect class="f-bg s-line" x="374" y="248" width="144" height="40" rx="8" stroke-width="1.5"/>
+  <text class="ma-tn mono" x="382" y="264">clicks</text>
+  <text class="ma-tc mono end ma-c-si2" x="510" y="264">52,400</text>
+  <text class="tiny" x="382" y="279">typed events</text>
+  <rect class="f-bg s-line" x="574" y="152" width="154" height="40" rx="8" stroke-width="1.5"/>
+  <g class="ma-g1red"><rect class="f-red-soft s-red" x="574" y="152" width="154" height="40" rx="8" stroke-width="2"/></g>
+  <g class="ma-g1ok"><rect class="f-green-soft s-green" x="574" y="152" width="154" height="40" rx="8" stroke-width="2"/></g>
+  <text class="ma-tn mono" x="582" y="168">daily_revenue</text>
+  <text class="tiny ma-n-go0" x="582" y="183">5 rows · by region</text>
+  <rect class="f-bg s-line" x="574" y="200" width="154" height="40" rx="8" stroke-width="1.5"/>
+  <g class="ma-g2red"><rect class="f-red-soft s-red" x="574" y="200" width="154" height="40" rx="8" stroke-width="2"/></g>
+  <g class="ma-g2ok"><rect class="f-green-soft s-green" x="574" y="200" width="154" height="40" rx="8" stroke-width="2"/></g>
+  <text class="ma-tn mono" x="582" y="216">customer_features</text>
+  <text class="tiny ma-n-go1" x="582" y="231">8,300 rows · by customer</text>
+  <rect class="f-bg s-line" x="574" y="248" width="154" height="40" rx="8" stroke-width="1.5"/>
+  <text class="ma-tn mono" x="582" y="264">product_summary</text>
+  <text class="tiny ma-n-go2" x="582" y="279">140 rows · by product</text>
+  <rect class="box" x="34" y="152" width="106" height="40" rx="10"/><text class="label mid" x="87" y="169">Orders DB</text><text class="sub mid" x="87" y="184">CDC events</text>
+  <rect class="box" x="34" y="200" width="106" height="40" rx="10"/><text class="label mid" x="87" y="217">Partner</text><text class="sub mid" x="87" y="232">daily CSV</text>
+  <rect class="box" x="34" y="248" width="106" height="40" rx="10"/><text class="label mid" x="87" y="265">Clickstream</text><text class="sub mid" x="87" y="280">event stream</text>
+  <rect class="box" x="762" y="152" width="164" height="40" rx="10"/><text class="label mid" x="844" y="169">BI dashboard</text><text class="sub mid" x="844" y="184">revenue by region</text>
+  <rect class="box" x="762" y="200" width="164" height="40" rx="10"/><text class="label mid" x="844" y="217">ML model</text><text class="sub mid" x="844" y="232">reads features</text>
+  <rect class="box" x="762" y="248" width="164" height="40" rx="10"/><text class="label mid" x="844" y="265">Data API</text><text class="sub mid" x="844" y="280">product summaries</text>
+  <g class="ma-ok-bi"><circle class="f-green" cx="918" cy="156" r="8"/><path class="none s-bg" d="M914 156l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="ma-ok-ml"><circle class="f-green" cx="918" cy="204" r="8"/><path class="none s-bg" d="M914 204l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="ma-ok-api"><circle class="f-green" cx="918" cy="252" r="8"/><path class="none s-bg" d="M914 252l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="ma-bad-bi"><circle class="f-red" cx="918" cy="156" r="8"/><path class="none s-bg" d="M918 152v4.5M918 159.5v0.5" stroke-width="2.2" stroke-linecap="round"/></g>
+  <g class="ma-bad-ml"><circle class="f-red" cx="918" cy="204" r="8"/><path class="none s-bg" d="M918 200v4.5M918 207.5v0.5" stroke-width="2.2" stroke-linecap="round"/></g>
+  <g class="ma-bug"><rect class="f-bg" x="322" y="132" width="48" height="17" rx="8.5"/><rect class="f-red-soft s-red" x="322" y="132" width="48" height="17" rx="8.5" stroke-width="1.5"/><text class="tiny b mid f-red" x="346" y="144">FX bug</text></g>
+  <g class="ma-fixed"><rect class="f-bg" x="322" y="132" width="48" height="17" rx="8.5"/><rect class="f-green-soft s-green" x="322" y="132" width="48" height="17" rx="8.5" stroke-width="1.5"/><text class="tiny b mid f-green" x="346" y="144">fixed</text></g>
+  <!-- callouts -->
+  <g class="p1"><text class="tiny" x="178" y="314">appended unchanged: nothing fixed, nothing dropped</text><text class="tiny" x="178" y="330">+ ingestion metadata</text><rect class="f-teal-soft s-teal" x="294" y="319" width="50" height="15" rx="4" stroke-width="1"/><text class="ma-lt mono mid f-teal" x="319" y="330">_source</text><rect class="f-teal-soft s-teal" x="350" y="319" width="68" height="15" rx="4" stroke-width="1"/><text class="ma-lt mono mid f-teal" x="384" y="330">_loaded_at</text><rect class="f-teal-soft s-teal" x="424" y="319" width="62" height="15" rx="4" stroke-width="1"/><text class="ma-lt mono mid f-teal" x="455" y="330">_batch_id</text></g>
+  <g class="p2"><text class="tiny" x="384" y="314">silver job: reads only new rows, parses and types fields</text><text class="tiny" x="384" y="330">countries → ISO codes · amounts → USD · joins customers</text></g>
+  <text class="tiny sb end f-amber-ink ma-l-dup" x="336" y="314">12 duplicates dropped</text>
+  <text class="tiny sb end f-red ma-l-bad" x="336" y="330">3 malformed → quarantine</text>
+  <g class="p3"><text class="tiny" x="384" y="314">gold job: aggregates and models silver for each audience</text><text class="tiny" x="384" y="330">business names · fast to read · access per audience</text></g>
+  <text class="tiny ma-r4a" x="384" y="314">fixed job replays bronze into silver, then gold</text>
+  <text class="tiny ma-r4b" x="384" y="330">time travel: compare orders v12 (buggy) with v13 (fixed)</text>
+  <text class="tiny sb end f-green ma-l4a" x="336" y="314">bronze still has</text>
+  <text class="tiny sb end f-green ma-l4b" x="336" y="330">all 1,000 raw rows</text>
+  <circle class="none s-amber ma-pop" cx="346" cy="172" r="9" stroke-width="2"/>
+  <!-- quarantine table: rejected records with the reason -->
+  <rect class="f-bg s-line" x="174" y="350" width="218" height="92" rx="10" stroke-width="1.5"/>
+  <text class="ma-tn mono" x="186" y="368">orders_quarantine</text>
+  <text class="tiny end f-faint ma-qempty" x="380" y="368">empty</text>
+  <text class="ma-tc end f-red ma-q3" x="380" y="368">3 rows</text>
+  <line class="s-line" x1="182" y1="376" x2="384" y2="376" stroke-width="1"/>
+  <text class="tiny" x="186" y="390">raw value</text><text class="tiny mono" x="304" y="390">_reason</text>
+  <g class="ma-qrows"><text class="ma-lt mono f-red" x="186" y="406">amount: "N/A"</text><text class="tiny" x="304" y="406">not a number</text><text class="ma-lt mono f-red" x="186" y="421">ts: "2026-13-01"</text><text class="tiny" x="304" y="421">invalid date</text><text class="ma-lt mono f-red" x="186" y="436">{"order_id": 48</text><text class="tiny" x="304" y="436">truncated JSON</text></g>
+  <!-- legend -->
+  <rect class="ma-ev" x="35" y="360" width="12" height="12" rx="3"/><text class="tiny" x="56" y="370">event</text>
+  <circle class="pkt f-teal" cx="41" cy="386" r="6"/><text class="tiny" x="56" y="390">record</text>
+  <circle class="pkt f-amber" cx="41" cy="406" r="6"/><text class="tiny" x="56" y="410">duplicate</text>
+  <circle class="pkt f-red" cx="41" cy="426" r="6"/><text class="tiny" x="56" y="430">malformed</text>
+  <circle class="pkt f-green" cx="41" cy="446" r="6"/><text class="tiny" x="56" y="450">replayed (fixed)</text>
+  <text class="tiny f-faint" x="35" y="466">counts: today's load</text>
+  <!-- lineage, as a catalog records it -->
+  <rect class="f-panel s-line" x="420" y="348" width="506" height="118" rx="12" stroke-width="1.5"/>
+  <text class="tiny b f-ink" x="434" y="366">Lineage</text><text class="tiny" x="482" y="366">which tables feed which</text>
+  <path class="none s-wire" d="M518 390H551" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M518 416H551" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M518 442H551" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M585 408V398.5" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M618 390H651" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M618 390H635V416H651" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M618 416H651" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M618 442H635V416H651" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M618 442H651" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M768 390H801" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M768 416H801" stroke-width="1.5" marker-end="url(#ma-a)"/><path class="none s-wire" d="M768 442H801" stroke-width="1.5" marker-end="url(#ma-a)"/>
+  <rect class="f-bg s-line" x="434" y="382" width="84" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="434" y="408" width="84" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="434" y="434" width="84" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="552" y="382" width="66" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="552" y="408" width="66" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="552" y="434" width="66" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="652" y="382" width="116" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="652" y="408" width="116" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="652" y="434" width="116" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="802" y="382" width="96" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="802" y="408" width="96" height="16" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="802" y="434" width="96" height="16" rx="4" stroke-width="1.2"/>
+  <g class="p1"><rect class="f-teal-soft s-teal" x="434" y="382" width="84" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="434" y="408" width="84" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="434" y="434" width="84" height="16" rx="4" stroke-width="1.5"/></g>
+  <g class="p2"><rect class="f-teal-soft s-teal" x="552" y="382" width="66" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="552" y="408" width="66" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="552" y="434" width="66" height="16" rx="4" stroke-width="1.5"/><path class="none s-teal" d="M518 390H551" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M518 416H551" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M518 442H551" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M585 408V398.5" stroke-width="2" marker-end="url(#ma-a-teal)"/></g>
+  <g class="p3"><rect class="f-teal-soft s-teal" x="652" y="382" width="116" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="652" y="408" width="116" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="652" y="434" width="116" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="802" y="382" width="96" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="802" y="408" width="96" height="16" rx="4" stroke-width="1.5"/><rect class="f-teal-soft s-teal" x="802" y="434" width="96" height="16" rx="4" stroke-width="1.5"/><path class="none s-teal" d="M618 390H651" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M618 390H635V416H651" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M618 416H651" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M618 442H635V416H651" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M618 442H651" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M768 390H801" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M768 416H801" stroke-width="2" marker-end="url(#ma-a-teal)"/><path class="none s-teal" d="M768 442H801" stroke-width="2" marker-end="url(#ma-a-teal)"/></g>
+  <g class="ma-lsrc"><rect class="f-green-soft s-green" x="434" y="382" width="84" height="16" rx="4" stroke-width="1.5"/><path class="none s-green" d="M518 390H551" stroke-width="2" marker-end="url(#ma-a-green)"/></g>
+  <g class="ma-lo-red"><rect class="f-red-soft s-red" x="552" y="382" width="66" height="16" rx="4" stroke-width="1.5"/></g>
+  <g class="ma-lo-ok"><rect class="f-green-soft s-green" x="552" y="382" width="66" height="16" rx="4" stroke-width="1.5"/></g>
+  <g class="ma-lr-red"><rect class="f-red-soft s-red" x="652" y="382" width="116" height="16" rx="4" stroke-width="1.5"/><path class="none s-red" d="M618 390H651" stroke-width="2" marker-end="url(#ma-a-red)"/></g>
+  <g class="ma-lr-ok"><rect class="f-green-soft s-green" x="652" y="382" width="116" height="16" rx="4" stroke-width="1.5"/><path class="none s-green" d="M618 390H651" stroke-width="2" marker-end="url(#ma-a-green)"/></g>
+  <g class="ma-lf-red"><rect class="f-red-soft s-red" x="652" y="408" width="116" height="16" rx="4" stroke-width="1.5"/><path class="none s-red" d="M618 390H635V416H651" stroke-width="2" marker-end="url(#ma-a-red)"/></g>
+  <g class="ma-lf-ok"><rect class="f-green-soft s-green" x="652" y="408" width="116" height="16" rx="4" stroke-width="1.5"/><path class="none s-green" d="M618 390H635V416H651" stroke-width="2" marker-end="url(#ma-a-green)"/></g>
+  <g class="ma-lb-red"><rect class="f-red-soft s-red" x="802" y="382" width="96" height="16" rx="4" stroke-width="1.5"/><path class="none s-red" d="M768 390H801" stroke-width="2" marker-end="url(#ma-a-red)"/></g>
+  <g class="ma-lb-ok"><rect class="f-green-soft s-green" x="802" y="382" width="96" height="16" rx="4" stroke-width="1.5"/><path class="none s-green" d="M768 390H801" stroke-width="2" marker-end="url(#ma-a-green)"/></g>
+  <g class="ma-lm-red"><rect class="f-red-soft s-red" x="802" y="408" width="96" height="16" rx="4" stroke-width="1.5"/><path class="none s-red" d="M768 416H801" stroke-width="2" marker-end="url(#ma-a-red)"/></g>
+  <g class="ma-lm-ok"><rect class="f-green-soft s-green" x="802" y="408" width="96" height="16" rx="4" stroke-width="1.5"/><path class="none s-green" d="M768 416H801" stroke-width="2" marker-end="url(#ma-a-green)"/></g>
+  <text class="ma-lt mid mono" x="476" y="394">orders_raw</text>
+  <text class="ma-lt mid mono" x="476" y="420">partner_raw</text>
+  <text class="ma-lt mid mono" x="476" y="446">clicks_raw</text>
+  <text class="ma-lt mid mono" x="585" y="394">orders</text>
+  <text class="ma-lt mid mono" x="585" y="420">customers</text>
+  <text class="ma-lt mid mono" x="585" y="446">clicks</text>
+  <text class="ma-lt mid mono" x="710" y="394">daily_revenue</text>
+  <text class="ma-lt mid mono" x="710" y="420">customer_features</text>
+  <text class="ma-lt mid mono" x="710" y="446">product_summary</text>
+  <text class="ma-lt mid" x="850" y="394">BI dashboard</text>
+  <text class="ma-lt mid" x="850" y="420">ML model</text>
+  <text class="ma-lt mid" x="850" y="446">Data API</text>
+  <text class="tiny sb end f-red ma-ls-red" x="912" y="366">impact: 2 gold tables, 2 consumers</text>
+  <text class="tiny sb end f-green ma-ls-ok" x="912" y="366">fixed and rebuilt from bronze</text>
+  <!-- moving records and events -->
+  <g class="ma-tok ma-ev0"><rect class="ma-ev" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+  <g class="ma-tok ma-ev1"><rect class="ma-ev" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+  <g class="ma-tok ma-ev2"><rect class="ma-ev" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+  <g class="ma-tok ma-ev3"><rect class="ma-ev" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+  <g class="ma-tok ma-file0"><path class="f-bg s-teal" d="M-6 -8h7l5 5v11h-12z" stroke-width="1.6"/><path class="none s-teal" d="M-3 0h6M-3 4h6" stroke-width="1.4"/></g>
+  <g class="ma-tok ma-eva0"><rect class="ma-ev f-amber" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+  <g class="ma-tok ma-evr0"><rect class="ma-ev f-red" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+  <g class="ma-tok ma-rec0"><circle class="pkt f-teal" r="6"/></g>
+  <g class="ma-tok ma-rec1"><circle class="pkt f-teal" r="6"/></g>
+  <g class="ma-tok ma-rec2"><circle class="pkt f-teal" r="6"/></g>
+  <g class="ma-tok ma-rec3"><circle class="pkt f-teal" r="6"/></g>
+  <g class="ma-tok ma-rec4"><circle class="pkt f-teal" r="6"/></g>
+  <g class="ma-tok ma-reca0"><circle class="pkt f-amber" r="6"/></g>
+  <g class="ma-tok ma-recr0"><circle class="pkt f-red" r="6"/></g>
+  <g class="ma-tok ma-recg0"><circle class="pkt f-green" r="6"/></g>
+  <g class="ma-tok ma-recg1"><circle class="pkt f-green" r="6"/></g>
+  <g class="ma-tok ma-recg2"><circle class="pkt f-green" r="6"/></g>
+</g>
+</svg>

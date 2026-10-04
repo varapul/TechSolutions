@@ -150,8 +150,8 @@ Scale-in and deployments stop workers on purpose, so do it gracefully. On `SIGTE
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
-- Priority Queue *(planned)* — Urgent messages are processed ahead of routine ones.
-- Web-Queue-Worker *(planned)* — A web front end hands slow work to background workers through a queue.
+- [Priority Queue](../priority-queue/) — Urgent messages are processed ahead of routine ones.
+- [Web-Queue-Worker](../web-queue-worker/) — A web front end hands slow work to background workers through a queue.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 
 ## References

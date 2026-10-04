@@ -1,0 +1,867 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Policy-Based Authorization</title>
+<desc id="dg-desc">Policy-Based Authorization. Services ask a central policy engine for allow/deny decisions (RBAC, ABAC, ReBAC). Step 1, Rules scattered in code: Each service hard-codes its own check in its own language, and their approval limits disagree. Step 2, Ask a decision point: The PEP asks the PDP: may Ana approve e-42? Policy plus attributes answer allow, and it's logged. Step 3, RBAC, ABAC or ReBAC: One rule, three models: by role (RBAC), by attributes (ABAC), by relationship (ReBAC). Step 4, Fast, safe, auditable: A local PDP answers in under 1 ms, a list takes one filter query, and if no PDP answers, deny.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">IDENTITY &amp; ACCESS (AUTH)</text>
+  <text class="title" x="40" y="64">Policy-Based Authorization</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Rules scattered in code</text>
+  <text class="step on p1" x="40" y="518">1 · Rules scattered in code</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Ask a decision point</text>
+  <text class="step on p2" x="262" y="518">2 · Ask a decision point</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · RBAC, ABAC or ReBAC</text>
+  <text class="step on p3" x="484" y="518">3 · RBAC, ABAC or ReBAC</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Fast, safe, auditable</text>
+  <text class="step on p4" x="706" y="518">4 · Fast, safe, auditable</text>
+  <text class="caption p1" x="40" y="552">Each service hard-codes its own check in its own language, and their approval limits disagree.</text>
+  <text class="caption p2" x="40" y="552">The PEP asks the PDP: may Ana approve e-42? Policy plus attributes answer allow, and it's logged.</text>
+  <text class="caption p3" x="40" y="552">One rule, three models: by role (RBAC), by attributes (ABAC), by relationship (ReBAC).</text>
+  <text class="caption p4" x="40" y="552">A local PDP answers in under 1 ms, a list takes one filter query, and if no PDP answers, deny.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Policy-Based Authorization. Timeline (20s loop, 1s = 5%):
+   0-25%   rules in code: three services, three languages; limits $5,000 / $2,000 / none appear
+           (2.5-5.5%), then "who may approve what?" (7.5%) and "change the limit?" with a redeploy badge
+           on each service (10.5-16%)
+   25-50%  policy v12 is reviewed, tested and shipped repo -> PDP (27-32%); Ana's request waits at the
+           PEP (32.5%); the PEP asks the PDP (34.5-36.5%), attributes arrive from the PIP (37-38.75%),
+           rule 2 matches, allow returns (40.5-42.5%), e-42 is approved and the decision is logged (43.5%)
+   50-75%  the same rule three ways: RBAC (52-57.5%), ABAC (59-65%), ReBAC (66.5-73.5%), one decision each
+   75-100% a control plane ships bundle v12 to a local PDP beside the PEP (77-79.5%); Ana's list is one
+           filter query (81%); the local PDP goes down (86%) and the next request is denied: fail closed
+           (87-92.5%); every decision is logged */
+.diagram .pba-doc { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .pba-lim1 { animation: pba-lim1 var(--T) linear infinite; }
+.diagram .pba-lim2 { animation: pba-lim2 var(--T) linear infinite; }
+.diagram .pba-lim3 { animation: pba-lim3 var(--T) linear infinite; }
+.diagram .pba-who { animation: pba-who var(--T) linear infinite; }
+.diagram .pba-chg { animation: pba-chg var(--T) linear infinite; }
+.diagram .pba-rd1 { animation: pba-rd1 var(--T) linear infinite; }
+.diagram .pba-rd2 { animation: pba-rd2 var(--T) linear infinite; }
+.diagram .pba-rd3 { animation: pba-rd3 var(--T) linear infinite; }
+.diagram .pba-ok1 { opacity: 0; animation: pba-ok1 var(--T) linear infinite; }
+.diagram .pba-ok2 { opacity: 0; animation: pba-ok2 var(--T) linear infinite; }
+.diagram .pba-bun1 { opacity: 0; animation: pba-bun1 var(--T) linear infinite; }
+.diagram .pba-pol { opacity: 0; animation: pba-pol var(--T) linear infinite; }
+.diagram .pba-req1 { opacity: 0; animation: pba-req1 var(--T) linear infinite; }
+.diagram .pba-q1 { opacity: 0; animation: pba-q1 var(--T) linear infinite; }
+.diagram .pba-qtext { opacity: 0; animation: pba-qtext var(--T) linear infinite; }
+.diagram .pba-at1 { opacity: 0; animation: pba-at1 var(--T) linear infinite; }
+.diagram .pba-rule2 { opacity: 0; animation: pba-rule2 var(--T) linear infinite; }
+.diagram .pba-dec { opacity: 0; animation: pba-dec var(--T) linear infinite; }
+.diagram .pba-ans1 { opacity: 0; animation: pba-ans1 var(--T) linear infinite; }
+.diagram .pba-done { opacity: 0; animation: pba-done var(--T) linear infinite; }
+.diagram .pba-log1 { opacity: 0; animation: pba-log1 var(--T) linear infinite; }
+.diagram .pba-hdir { opacity: 0; animation: pba-hdir var(--T) linear infinite; }
+.diagram .pba-hexp { opacity: 0; animation: pba-hexp var(--T) linear infinite; }
+.diagram .pba-hrel { opacity: 0; animation: pba-hrel var(--T) linear infinite; }
+.diagram .pba-m1 { opacity: 0; animation: pba-m1 var(--T) linear infinite; }
+.diagram .pba-m2 { opacity: 0; animation: pba-m2 var(--T) linear infinite; }
+.diagram .pba-m3 { opacity: 0; animation: pba-m3 var(--T) linear infinite; }
+.diagram .pba-c1 { opacity: 0; animation: pba-c1 var(--T) linear infinite; }
+.diagram .pba-c2 { opacity: 0; animation: pba-c2 var(--T) linear infinite; }
+.diagram .pba-c3 { opacity: 0; animation: pba-c3 var(--T) linear infinite; }
+.diagram .pba-r1 { opacity: 0; animation: pba-r1 var(--T) linear infinite; }
+.diagram .pba-r2 { opacity: 0; animation: pba-r2 var(--T) linear infinite; }
+.diagram .pba-a1 { opacity: 0; animation: pba-a1 var(--T) linear infinite; }
+.diagram .pba-a2 { opacity: 0; animation: pba-a2 var(--T) linear infinite; }
+.diagram .pba-a3 { opacity: 0; animation: pba-a3 var(--T) linear infinite; }
+.diagram .pba-e1 { opacity: 0; animation: pba-e1 var(--T) linear infinite; }
+.diagram .pba-e2 { opacity: 0; animation: pba-e2 var(--T) linear infinite; }
+.diagram .pba-b1 { opacity: 0; animation: pba-b1 var(--T) linear infinite; }
+.diagram .pba-bun2 { opacity: 0; animation: pba-bun2 var(--T) linear infinite; }
+.diagram .pba-chipok { opacity: 0; animation: pba-chipok var(--T) linear infinite; }
+.diagram .pba-list { opacity: 0; animation: pba-list var(--T) linear infinite; }
+.diagram .pba-log2 { opacity: 0; animation: pba-log2 var(--T) linear infinite; }
+.diagram .pba-down { opacity: 0; animation: pba-down var(--T) linear infinite; }
+.diagram .pba-req4 { opacity: 0; animation: pba-req4 var(--T) linear infinite; }
+.diagram .pba-q4 { opacity: 0; animation: pba-q4 var(--T) linear infinite; }
+.diagram .pba-x4 { opacity: 0; animation: pba-x4 var(--T) linear infinite; }
+.diagram .pba-deny { opacity: 0; animation: pba-deny var(--T) linear infinite; }
+.diagram .pba-fc { opacity: 0; animation: pba-fc var(--T) linear infinite; }
+.diagram .pba-log3 { opacity: 0; animation: pba-log3 var(--T) linear infinite; }
+@keyframes pba-lim1 {
+  0% { opacity: 0; }
+  2.5% { opacity: 0; }
+  4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-lim2 {
+  0% { opacity: 0; }
+  4% { opacity: 0; }
+  5.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-lim3 {
+  0% { opacity: 0; }
+  5.5% { opacity: 0; }
+  7% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-who {
+  0% { opacity: 0; }
+  7.5% { opacity: 0; }
+  9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-chg {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  12% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-rd1 {
+  0% { opacity: 0; }
+  12% { opacity: 0; }
+  13.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-rd2 {
+  0% { opacity: 0; }
+  14% { opacity: 0; }
+  15.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-rd3 {
+  0% { opacity: 0; }
+  16% { opacity: 0; }
+  17.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-ok1 {
+  0% { opacity: 0; }
+  27% { opacity: 0; }
+  28.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-ok2 {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-bun1 {
+  0% { transform: translate(790px, 153px); opacity: 0; }
+  29.5% { transform: translate(790px, 153px); opacity: 0; }
+  29.75% { opacity: 1; }
+  32% { transform: translate(748px, 153px); opacity: 1; }
+  32.25% { transform: translate(748px, 153px); opacity: 0; }
+  100% { transform: translate(748px, 153px); opacity: 0; }
+}
+@keyframes pba-pol {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  33.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-req1 {
+  0% { transform: translate(162px, 136px); opacity: 0; }
+  32.5% { transform: translate(162px, 136px); opacity: 0; }
+  32.75% { opacity: 1; }
+  34.5% { transform: translate(218px, 136px); }
+  42.5% { transform: translate(218px, 136px); opacity: 1; }
+  42.75% { transform: translate(218px, 136px); opacity: 0; }
+  100% { transform: translate(218px, 136px); opacity: 0; }
+}
+@keyframes pba-q1 {
+  0% { transform: translate(452px, 136px); opacity: 0; }
+  34.5% { transform: translate(452px, 136px); opacity: 0; }
+  34.75% { opacity: 1; }
+  36.5% { transform: translate(528px, 136px); opacity: 1; }
+  36.75% { transform: translate(528px, 136px); opacity: 0; }
+  100% { transform: translate(528px, 136px); opacity: 0; }
+}
+@keyframes pba-qtext {
+  0% { opacity: 0; }
+  36.5% { opacity: 0; }
+  38% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-at1 {
+  0% { transform: translate(790px, 274px); opacity: 0; }
+  37% { transform: translate(790px, 274px); opacity: 0; }
+  37.25% { opacity: 1; }
+  38.75% { transform: translate(748px, 274px); opacity: 1; }
+  39% { transform: translate(748px, 274px); opacity: 0; }
+  100% { transform: translate(748px, 274px); opacity: 0; }
+}
+@keyframes pba-rule2 {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  41% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-dec {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  41.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-ans1 {
+  0% { transform: translate(528px, 136px); opacity: 0; }
+  40.5% { transform: translate(528px, 136px); opacity: 0; }
+  40.75% { opacity: 1; }
+  42.5% { transform: translate(452px, 136px); opacity: 1; }
+  42.75% { transform: translate(452px, 136px); opacity: 0; }
+  100% { transform: translate(452px, 136px); opacity: 0; }
+}
+@keyframes pba-done {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  44% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-log1 {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  45% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-hdir {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  37.5% { opacity: 1; }
+  41% { opacity: 1; }
+  42.5% { opacity: 0; }
+  52% { opacity: 0; }
+  53.5% { opacity: 1; }
+  57.5% { opacity: 1; }
+  59% { opacity: 0; opacity: 0; }
+  60.5% { opacity: 1; }
+  65% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-hexp {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  37.5% { opacity: 1; }
+  41% { opacity: 1; }
+  42.5% { opacity: 0; }
+  59% { opacity: 0; }
+  60.5% { opacity: 1; }
+  65% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-hrel {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  68% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-m1 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53.5% { opacity: 1; }
+  57.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-m2 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60.5% { opacity: 1; }
+  65% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-m3 {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  68% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-c1 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53.5% { opacity: 1; }
+  57.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-c2 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60.5% { opacity: 1; }
+  65% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-c3 {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  68% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-r1 {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  56% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-r2 {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  57.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-a1 {
+  0% { opacity: 0; }
+  60.5% { opacity: 0; }
+  62% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-a2 {
+  0% { opacity: 0; }
+  62.25% { opacity: 0; }
+  63.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-a3 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  65.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-e1 {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  69% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-e2 {
+  0% { opacity: 0; }
+  69% { opacity: 0; }
+  70.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-b1 {
+  0% { opacity: 0; }
+  70.5% { opacity: 0; }
+  72% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-bun2 {
+  0% { transform: translate(528px, 136px); opacity: 0; }
+  77% { transform: translate(528px, 136px); opacity: 0; }
+  77.25% { opacity: 1; }
+  79.5% { transform: translate(452px, 136px); opacity: 1; }
+  79.75% { transform: translate(452px, 136px); opacity: 0; }
+  100% { transform: translate(452px, 136px); opacity: 0; }
+}
+@keyframes pba-chipok {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.5% { opacity: 1; }
+  82.5% { opacity: 1; }
+  83.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-list {
+  0% { opacity: 0; }
+  81% { opacity: 0; }
+  82.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-log2 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-down {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-req4 {
+  0% { transform: translate(162px, 136px); opacity: 0; }
+  87% { transform: translate(162px, 136px); opacity: 0; }
+  87.25% { opacity: 1; }
+  89% { transform: translate(218px, 136px); }
+  90.5% { transform: translate(218px, 136px); opacity: 1; }
+  90.75% { transform: translate(218px, 136px); opacity: 0; }
+  100% { transform: translate(218px, 136px); opacity: 0; }
+}
+@keyframes pba-q4 {
+  0% { transform: translate(300px, 136px); opacity: 0; }
+  89% { transform: translate(300px, 136px); opacity: 0; }
+  89.25% { opacity: 1; }
+  90% { transform: translate(340px, 136px); opacity: 1; }
+  90.25% { transform: translate(340px, 136px); opacity: 0; }
+  100% { transform: translate(340px, 136px); opacity: 0; }
+}
+@keyframes pba-x4 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  93% { opacity: 1; }
+  94% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pba-deny {
+  0% { transform: translate(218px, 136px); opacity: 0; }
+  90.5% { transform: translate(218px, 136px); opacity: 0; }
+  90.75% { opacity: 1; }
+  92.5% { transform: translate(162px, 136px); opacity: 1; }
+  92.75% { transform: translate(162px, 136px); opacity: 0; }
+  100% { transform: translate(162px, 136px); opacity: 0; }
+}
+@keyframes pba-fc {
+  0% { opacity: 0; }
+  92% { opacity: 0; }
+  93.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pba-log3 {
+  0% { opacity: 0; }
+  93% { opacity: 0; }
+  94.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+  <!-- ===== people (subjects) with their attributes ===== -->
+  <rect class="box" x="34" y="111" width="128" height="50" rx="10"/>
+  <rect class="box" x="34" y="171" width="128" height="50" rx="10"/>
+  <rect class="box" x="34" y="231" width="128" height="50" rx="10"/>
+  <rect class="box" x="34" y="291" width="128" height="50" rx="10"/>
+  <text class="label" x="46" y="132">Ana</text>
+  <text class="tiny" x="46" y="149">manager · Sales</text>
+  <text class="label" x="46" y="192">Bo</text>
+  <text class="tiny" x="46" y="209">employee · Sales</text>
+  <text class="label" x="46" y="252">Cara</text>
+  <text class="tiny" x="46" y="269">manager · Marketing</text>
+  <text class="label" x="46" y="312">Dev</text>
+  <text class="tiny" x="46" y="329">employee · Finance</text>
+  <path class="wire" d="M162 196H172M162 256H172M162 316H172M172 316V136" stroke-width="1.5"/>
+  <line class="wire" x1="162" y1="136" x2="219" y2="136" marker-end="url(#ah)"/>
+  <g class="p24">
+    <text class="tiny mid" x="196" y="116">approve</text>
+    <text class="tiny mid" x="196" y="129">e-42</text>
+  </g>
+
+  <!-- ===== Expenses API: hard-coded check (step 1), then a PEP in front of every operation ===== -->
+  <rect class="box" x="220" y="111" width="232" height="230" rx="12"/>
+  <path class="f-amber-soft p1" d="M220 161V123Q220 111 232 111H440Q452 111 452 123V161Z"/>
+  <path class="f-blue-soft p234" d="M220 161V123Q220 111 232 111H440Q452 111 452 123V161Z"/>
+  <rect class="none s-line" x="220" y="111" width="232" height="230" rx="12" stroke-width="1.5"/>
+  <line class="s-line" x1="220" y1="161" x2="452" y2="161" stroke-width="1.5"/>
+  <g class="p1">
+    <text class="tiny mono f-ink" x="234" y="133">if (u.isManager()</text>
+    <text class="tiny mono f-ink" x="260" y="150">&amp;&amp; amt &lt;= 5000)</text>
+  </g>
+  <g class="p234"><text class="label" x="234" y="135">PEP</text></g>
+  <g class="p23">
+    <text class="tiny" x="270" y="135">policy enforcement point</text>
+    <text class="tiny" x="234" y="152">checks every operation</text>
+  </g>
+  <g class="p4">
+    <text class="tiny" x="234" y="152">asks the local PDP</text>
+    <rect class="f-bg s-line" x="342" y="117" width="104" height="38" rx="8" stroke-width="1.5"/>
+    <text class="tiny sb mid f-ink" x="394" y="132">local PDP</text>
+    <text class="tiny mid" x="394" y="148">v12 · &lt; 1 ms</text>
+    <rect class="none s-green pba-chipok" x="342" y="117" width="104" height="38" rx="8" stroke-width="2.5"/>
+    <g class="pba-down">
+      <rect class="f-bg" x="342" y="117" width="104" height="38" rx="8"/>
+      <rect class="f-red-soft s-red" x="342" y="117" width="104" height="38" rx="8" stroke-width="1.5"/>
+      <text class="tiny sb mid f-red" x="394" y="132">local PDP</text>
+      <text class="tiny mid f-red" x="394" y="148">not reachable</text>
+    </g>
+  </g>
+  <text class="label mid" x="336" y="188">Expenses API</text>
+  <text class="sub mid" x="336" y="205">Java service</text>
+  <rect class="f-bg s-line" x="236" y="216" width="200" height="24" rx="6" stroke-width="1.5"/>
+  <text class="tiny mono mid f-ink" x="336" y="232">e-42 · Bo · $1,800 · Sales</text>
+  <g class="p1">
+    <text class="sub sb mid f-red pba-lim1" x="336" y="272">approval limit $5,000</text>
+    <g class="pba-rd1">
+      <rect class="f-amber-soft s-amber" x="262" y="296" width="148" height="26" rx="13" stroke-width="1.5"/>
+      <circle class="none s-amber spin" cx="279" cy="309" r="6" stroke-width="2" stroke-dasharray="9 29" stroke-linecap="round"/>
+      <text class="tiny sb f-amber-ink" x="292" y="313">edit, test, redeploy</text>
+    </g>
+  </g>
+  <text class="sub sb mid f-green pba-done" x="336" y="272">✓ e-42 approved</text>
+  <g class="p4">
+    <g class="pba-list">
+      <text class="tiny sb f-ink" x="236" y="266">Ana’s list to approve: 1 query</text>
+      <text class="tiny mono f-ink" x="236" y="283">dept = Sales and amount ≤ 5000</text>
+      <text class="tiny sb f-green" x="236" y="300">e-42 $1,800 · e-51 $640</text>
+    </g>
+    <text class="tiny b f-red pba-fc" x="236" y="327">approve e-42: denied, fail closed</text>
+  </g>
+
+  <!-- ===== step 1 only: two more services, each with its own hard-coded rule ===== -->
+  <g class="p1">
+    <rect class="box" x="500" y="111" width="206" height="230" rx="12"/>
+    <path class="f-amber-soft" d="M500 161V123Q500 111 512 111H694Q706 111 706 123V161Z"/>
+    <rect class="none s-line" x="500" y="111" width="206" height="230" rx="12" stroke-width="1.5"/>
+    <line class="s-line" x1="500" y1="161" x2="706" y2="161" stroke-width="1.5"/>
+    <text class="tiny mono f-ink" x="514" y="133">if ("manager" in roles</text>
+    <text class="tiny mono f-ink" x="540" y="150">and amt &lt;= 2000):</text>
+    <text class="label mid" x="603" y="188">Reports</text>
+    <text class="sub mid" x="603" y="205">Python service</text>
+    <text class="tiny mid" x="603" y="232">approvals report</text>
+    <text class="sub sb mid f-red pba-lim2" x="603" y="272">approval limit $2,000</text>
+    <g class="pba-rd2">
+      <rect class="f-amber-soft s-amber" x="529" y="296" width="148" height="26" rx="13" stroke-width="1.5"/>
+      <circle class="none s-amber spin" cx="546" cy="309" r="6" stroke-width="2" stroke-dasharray="9 29" stroke-linecap="round"/>
+      <text class="tiny sb f-amber-ink" x="559" y="313">edit, test, redeploy</text>
+    </g>
+
+    <rect class="box" x="720" y="111" width="206" height="230" rx="12"/>
+    <path class="f-amber-soft" d="M720 161V123Q720 111 732 111H914Q926 111 926 123V161Z"/>
+    <rect class="none s-line" x="720" y="111" width="206" height="230" rx="12" stroke-width="1.5"/>
+    <line class="s-line" x1="720" y1="161" x2="926" y2="161" stroke-width="1.5"/>
+    <text class="tiny mono f-ink" x="734" y="133">if u.Dept == "Finance" ||</text>
+    <text class="tiny mono f-ink" x="760" y="150">u.IsManager {</text>
+    <text class="label mid" x="823" y="188">Payouts</text>
+    <text class="sub mid" x="823" y="205">Go service</text>
+    <text class="tiny mid" x="823" y="232">releases payments</text>
+    <text class="sub sb mid f-red pba-lim3" x="823" y="272">any manager, no limit</text>
+    <g class="pba-rd3">
+      <rect class="f-amber-soft s-amber" x="749" y="296" width="148" height="26" rx="13" stroke-width="1.5"/>
+      <circle class="none s-amber spin" cx="766" cy="309" r="6" stroke-width="2" stroke-dasharray="9 29" stroke-linecap="round"/>
+      <text class="tiny sb f-amber-ink" x="779" y="313">edit, test, redeploy</text>
+    </g>
+  </g>
+
+  <!-- ===== PDP (steps 2-3), control plane (step 4) ===== -->
+  <g class="p234">
+    <rect class="box" x="528" y="111" width="220" height="230" rx="12"/>
+    <!-- policy v12, shipped from the repo -->
+    <g class="pba-pol">
+      <rect class="f-green-soft s-green pba-rule2" x="538" y="280" width="200" height="31" rx="6" stroke-width="1.5"/>
+      <text class="tiny sb f-ink" x="544" y="260">policy v12</text>
+      <text class="tiny" x="544" y="276">1 view: own expenses</text>
+      <text class="tiny" x="544" y="292">2 approve: manager, same dept,</text>
+      <text class="tiny" x="555" y="306">up to $5,000</text>
+      <text class="tiny" x="544" y="325">3 approve: Finance, any amount</text>
+    </g>
+    <!-- sources: the policy repository (PAP) and attribute data (PIP) -->
+    <rect class="box" x="790" y="111" width="136" height="84" rx="12"/>
+    <text class="label" x="804" y="134">Policy repo</text>
+    <text class="tiny" x="804" y="151">Git · the PAP</text>
+    <text class="tiny sb f-green pba-ok1" x="804" y="170">✓ reviewed</text>
+    <text class="tiny sb f-green pba-ok2" x="804" y="186">✓ tests pass</text>
+    <rect class="box" x="790" y="207" width="136" height="134" rx="12"/>
+    <rect class="f-teal-soft s-teal pba-hdir" x="796" y="240" width="124" height="30" rx="6" stroke-width="1.5"/>
+    <rect class="f-teal-soft s-teal pba-hexp" x="796" y="272" width="124" height="30" rx="6" stroke-width="1.5"/>
+    <rect class="f-teal-soft s-teal pba-hrel" x="796" y="304" width="124" height="30" rx="6" stroke-width="1.5"/>
+    <text class="label" x="804" y="230">Attributes</text>
+    <text class="tiny end" x="914" y="230">PIP</text>
+    <text class="tiny sb f-ink" x="804" y="252">directory</text>
+    <text class="tiny" x="804" y="265">ana: manager, Sales</text>
+    <text class="tiny sb f-ink" x="804" y="284">expense data</text>
+    <text class="tiny" x="804" y="297">e-42: $1,800, Sales</text>
+    <text class="tiny sb f-ink" x="804" y="316">relationships</text>
+    <text class="tiny mono" x="804" y="329">bo#manager@ana</text>
+    <line class="wire" x1="790" y1="153" x2="750" y2="153" marker-end="url(#ah)"/>
+    <line class="wire" x1="790" y1="274" x2="750" y2="274" marker-end="url(#ah)"/>
+  </g>
+  <g class="p23">
+    <text class="label" x="544" y="137">PDP</text>
+    <text class="tiny" x="582" y="137">policy decision point</text>
+    <line class="wire" x1="452" y1="136" x2="526" y2="136" marker-end="url(#ah)"/>
+    <text class="tiny mid" x="490" y="127">authorize?</text>
+  </g>
+  <g class="pba-qtext">
+    <text class="tiny" x="544" y="160">subject</text>
+    <text class="tiny" x="544" y="175">action</text>
+    <text class="tiny" x="544" y="190">resource</text>
+    <text class="tiny" x="544" y="205">context</text>
+    <text class="tiny mono f-ink" x="604" y="160">ana</text>
+    <text class="tiny mono f-ink" x="604" y="175">approve</text>
+    <text class="tiny mono f-ink" x="604" y="190">e-42</text>
+    <text class="tiny mono f-ink" x="604" y="205">09:41, office</text>
+  </g>
+  <g class="pba-dec">
+    <rect class="f-green-soft s-green" x="540" y="216" width="196" height="24" rx="12" stroke-width="1.5"/>
+    <text class="tiny b mid f-green" x="638" y="232">allow · matched rule 2</text>
+  </g>
+  <g class="p3"><text class="tiny" x="544" y="262">the same rule, written as</text></g>
+  <g class="pba-m1"><text class="label" x="544" y="288">RBAC</text><text class="tiny" x="592" y="288">the role decides</text></g>
+  <g class="pba-m2"><text class="label" x="544" y="288">ABAC</text><text class="tiny" x="592" y="288">attributes decide</text></g>
+  <g class="pba-m3"><text class="label" x="544" y="288">ReBAC</text><text class="tiny" x="601" y="288">relationships decide</text></g>
+  <g class="p4">
+    <text class="label" x="544" y="137">Control plane</text>
+    <text class="tiny" x="544" y="162">builds bundle v12 from the</text>
+    <text class="tiny" x="544" y="177">policy repo and attribute data,</text>
+    <text class="tiny" x="544" y="192">ships it to every local PDP</text>
+    <text class="tiny f-faint" x="544" y="216">no call per request</text>
+    <line class="wire dash" x1="528" y1="136" x2="454" y2="136" marker-end="url(#ah)"/>
+    <text class="tiny mid" x="490" y="152">bundle</text>
+  </g>
+
+  <!-- ===== bottom band: question (1), decision log (2, 4), three models (3) ===== -->
+  <g class="p1">
+    <rect class="zone" x="34" y="362" width="892" height="104" rx="12"/>
+    <text class="label" x="54" y="398">Who may approve what?</text>
+    <text class="sub sb f-red pba-who" x="262" y="398">Nobody can say: three services, three different rules.</text>
+    <text class="label" x="54" y="436">Change the limit?</text>
+    <text class="sub sb f-amber-ink pba-chg" x="262" y="436">Find every copy, then edit, test and redeploy each service.</text>
+  </g>
+  <g class="p24">
+    <rect class="box" x="34" y="362" width="892" height="104" rx="12"/>
+    <text class="label" x="50" y="385">Decision log</text>
+    <text class="tiny" x="156" y="385">every decision, with its inputs, kept for audit</text>
+    <text class="tiny sb" x="50" y="406">time</text>
+    <text class="tiny sb" x="118" y="406">subject</text>
+    <text class="tiny sb" x="172" y="406">action</text>
+    <text class="tiny sb" x="234" y="406">resource</text>
+    <text class="tiny sb" x="300" y="406">decision</text>
+    <text class="tiny sb" x="366" y="406">reason and inputs</text>
+  </g>
+  <g class="pba-log1">
+    <text class="tiny mono f-ink" x="50" y="426">09:41:07</text>
+    <text class="tiny mono f-ink" x="118" y="426">ana</text>
+    <text class="tiny mono f-ink" x="172" y="426">approve</text>
+    <text class="tiny mono f-ink" x="234" y="426">e-42</text>
+    <text class="tiny b f-green" x="300" y="426">allow</text>
+    <text class="tiny" x="366" y="426">rule 2 · policy v12 · ana: manager, Sales · e-42: $1,800, Sales</text>
+  </g>
+  <g class="p4">
+    <g class="pba-log2">
+      <text class="tiny mono f-ink" x="50" y="426">09:58:12</text>
+      <text class="tiny mono f-ink" x="118" y="426">ana</text>
+      <text class="tiny mono f-ink" x="172" y="426">list</text>
+      <text class="tiny mono f-ink" x="234" y="426">expense</text>
+      <text class="tiny b f-green" x="300" y="426">filter</text>
+      <text class="tiny" x="366" y="426">dept = Sales and amount ≤ 5000 · policy v12 · local PDP, 0.2 ms</text>
+    </g>
+    <g class="pba-log3">
+      <text class="tiny mono f-ink" x="50" y="446">09:58:14</text>
+      <text class="tiny mono f-ink" x="118" y="446">ana</text>
+      <text class="tiny mono f-ink" x="172" y="446">approve</text>
+      <text class="tiny mono f-ink" x="234" y="446">e-42</text>
+      <text class="tiny b f-red" x="300" y="446">deny</text>
+      <text class="tiny" x="366" y="446">no decision: local PDP not reachable, so the PEP failed closed</text>
+    </g>
+  </g>
+  <g class="p3">
+    <!-- RBAC -->
+    <rect class="box" x="34" y="362" width="288" height="104" rx="12"/>
+    <rect class="none s-blue pba-c1" x="34" y="362" width="288" height="104" rx="12" stroke-width="2.5"/>
+    <text class="label" x="48" y="385">RBAC</text>
+    <text class="sub" x="98" y="385">role-based</text>
+    <text class="tiny mono f-ink" x="48" y="405">allow if "manager" in roles</text>
+    <text class="tiny" x="48" y="427">Ana has the manager role</text>
+    <text class="tiny b end f-green pba-r1" x="308" y="427">allow</text>
+    <g class="pba-r2">
+      <text class="tiny f-amber-ink" x="48" y="446">a role can’t see department or amount,</text>
+      <text class="tiny f-amber-ink" x="48" y="460">so Cara (Marketing) would pass too</text>
+    </g>
+    <!-- ABAC -->
+    <rect class="box" x="336" y="362" width="288" height="104" rx="12"/>
+    <rect class="none s-blue pba-c2" x="336" y="362" width="288" height="104" rx="12" stroke-width="2.5"/>
+    <text class="label" x="350" y="385">ABAC</text>
+    <text class="sub" x="400" y="385">attribute-based</text>
+    <text class="tiny f-ink" x="350" y="405">manager · same department · up to $5,000</text>
+    <text class="tiny" x="350" y="425">Ana · e-42 · $1,800 · Sales</text>
+    <text class="tiny" x="350" y="443">Ana · e-43 · $7,000 · Sales</text>
+    <text class="tiny" x="350" y="461">Cara · Marketing · e-42</text>
+    <text class="tiny b end f-green pba-a1" x="610" y="425">allow</text>
+    <text class="tiny b end f-red pba-a2" x="610" y="443">deny</text>
+    <text class="tiny b end f-red pba-a3" x="610" y="461">deny</text>
+    <!-- ReBAC -->
+    <rect class="box" x="638" y="362" width="288" height="104" rx="12"/>
+    <rect class="none s-blue pba-c3" x="638" y="362" width="288" height="104" rx="12" stroke-width="2.5"/>
+    <text class="label" x="652" y="385">ReBAC</text>
+    <text class="sub" x="708" y="385">relationship-based</text>
+    <text class="tiny mono f-ink" x="652" y="405">approver: manager from owner</text>
+    <rect class="f-bg s-line" x="652" y="418" width="44" height="22" rx="11" stroke-width="1.5"/>
+    <rect class="f-bg s-line" x="758" y="418" width="36" height="22" rx="11" stroke-width="1.5"/>
+    <rect class="f-bg s-line" x="856" y="418" width="52" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny mono mid f-ink" x="674" y="433">ana</text>
+    <text class="tiny mono mid f-ink" x="776" y="433">bo</text>
+    <text class="tiny mono mid f-ink" x="882" y="433">e-42</text>
+    <g class="pba-e1">
+      <line class="s-teal" x1="697" y1="429" x2="753" y2="429" stroke-width="2" marker-end="url(#ah-teal)"/>
+      <text class="tiny mid f-teal" x="726" y="423">manages</text>
+    </g>
+    <g class="pba-e2">
+      <line class="s-teal" x1="795" y1="429" x2="851" y2="429" stroke-width="2" marker-end="url(#ah-teal)"/>
+      <text class="tiny mid f-teal" x="824" y="423">owns</text>
+    </g>
+    <text class="tiny" x="652" y="460">Ana manages Bo, who owns e-42</text>
+    <text class="tiny b end f-green pba-b1" x="912" y="460">allow</text>
+  </g>
+
+  <!-- ===== moving tokens ===== -->
+  <g class="pba-bun1">
+    <rect class="pba-doc" x="-9" y="-7" width="18" height="14" rx="3"/>
+    <text class="tiny mid b f-purple" y="-12">v12</text>
+  </g>
+  <g class="pba-bun2">
+    <rect class="pba-doc" x="-9" y="-7" width="18" height="14" rx="3"/>
+    <text class="tiny mid b f-purple" y="-12">v12</text>
+  </g>
+  <circle class="pkt f-blue pba-req1" r="7"/>
+  <circle class="pkt f-blue pba-q1" r="7"/>
+  <circle class="pkt f-teal pba-at1" r="7"/>
+  <circle class="pkt f-green pba-ans1" r="7"/>
+  <circle class="pkt f-blue pba-req4" r="7"/>
+  <circle class="pkt f-blue pba-q4" r="7"/>
+  <circle class="pkt f-red pba-deny" r="7"/>
+  <g class="pba-x4">
+    <circle class="f-red" cx="342" cy="136" r="9"/>
+    <path class="none s-bg" d="M338 132l8 8M346 132l-8 8" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</g>
+</svg>

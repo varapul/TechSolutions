@@ -173,7 +173,7 @@ Many teams keep configuration in a Git repository and let a pipeline or an agent
 
 - [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
 - [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.
-- GitOps *(planned)* — Git holds the desired state; an agent continuously reconciles the cluster to match it.
+- [GitOps](../gitops/) — Git holds the desired state; an agent continuously reconciles the cluster to match it.
 - [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 - [Canary Release](../canary-release/) — Route a small slice of traffic to the new version, watch its metrics, then ramp up or roll back.
 - [OAuth 2.0 Client Credentials](../oauth2-client-credentials/) — Machine-to-machine access tokens, with no user involved.

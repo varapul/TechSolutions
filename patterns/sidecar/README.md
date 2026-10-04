@@ -216,7 +216,7 @@ On the positive side, a sidecar can add a security control such as [Mutual TLS](
 ## Related patterns
 
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
-- Ambassador *(planned)* — An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client.
+- [Ambassador](../ambassador/) — An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client.
 - [Telemetry Pipeline (OpenTelemetry)](../telemetry-pipeline/) — Receive, process and export traces, metrics and logs through one vendor-neutral collector.
 - [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
 - [Centralized Logging](../centralized-logging/) — Ship structured logs from every service to one searchable store, correlated by request ID.

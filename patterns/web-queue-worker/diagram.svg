@@ -1,0 +1,1845 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Web-Queue-Worker</title>
+<desc id="dg-desc">Web-Queue-Worker. A web front end hands slow work to background workers through a queue. Step 1, Two roles and a queue: The web tier saves order 1042, queues a job and replies in ~120 ms; a worker does the ~90 s render. Step 2, Scale each role on its own: Peak: web 2→4 on request rate, workers 1→3 on queue length. At night web shrinks; workers drain. Step 3, State outside the roles: Sessions sit in the cache, so a new web instance knows the user. A crashed job reappears and reruns. Step 4, Know where it stops: Shared schema: a worker change breaks the web tier. The worker becomes a monolith; split it by job.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">APPLICATION ARCHITECTURE</text>
+  <text class="title" x="40" y="64">Web-Queue-Worker</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Two roles and a queue</text>
+  <text class="step on p1" x="40" y="518">1 · Two roles and a queue</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Scale each role on its own</text>
+  <text class="step on p2" x="262" y="518">2 · Scale each role on its own</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · State outside the roles</text>
+  <text class="step on p3" x="484" y="518">3 · State outside the roles</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Know where it stops</text>
+  <text class="step on p4" x="706" y="518">4 · Know where it stops</text>
+  <text class="caption p1" x="40" y="552">The web tier saves order 1042, queues a job and replies in ~120 ms; a worker does the ~90 s render.</text>
+  <text class="caption p2" x="40" y="552">Peak: web 2→4 on request rate, workers 1→3 on queue length. At night web shrinks; workers drain.</text>
+  <text class="caption p3" x="40" y="552">Sessions sit in the cache, so a new web instance knows the user. A crashed job reappears and reruns.</text>
+  <text class="caption p4" x="40" y="552">Shared schema: a worker change breaks the web tier. The worker becomes a monolith; split it by job.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Web-Queue-Worker. Timeline (20s loop, 1s = 5%):
+   0-25%   order 1042: web 1 reads the cache, saves the order, queues a job and replies (0.5-2.35s);
+           worker 1 takes the job, renders (2.5-3.65s), stores the PDF, marks it ready, calls print + email (to 4.35s)
+   25-50%  19:00 peak: 8 orders, web tier 2 -> 4 (5.85, 6.2s), queue depth up to 4, workers 1 -> 3 (6.45, 6.95s);
+           23:00 night: web tier back to 2 (8.0, 8.35s) while three workers drain the queue
+   50-75%  02:00: web 1 replaced (10.15-11.05s), the next request finds its session in the cache (11.1-12.35s);
+           worker 2 takes 1043 and crashes (10.05, 10.9s), 1043 is visible again at 12.2s, worker 1 reruns it;
+           worker 1 also runs the scheduled clean-up (10.89-11.69s)
+   75-100% a worker schema change breaks the web tier (15.6-16.5s), the worker becomes a monolith (16.8-17.55s),
+           next steps: a queue and worker per job type, then services with their own data (17.8-19.1s); reset at 19.4-19.95s */
+.diagram .cnt { font-size: 14px; font-weight: 700; }
+.diagram .msg { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .ck { fill: none; stroke: var(--green); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.diagram .wq-grow { transform-box: fill-box; transform-origin: 0 50%; }
+.diagram .wq-cdn { opacity: 0; animation: wq-cdn var(--T) linear infinite; }
+.diagram .wq-o1 { opacity: 0; animation: wq-o1 var(--T) linear infinite; }
+.diagram .wq-hw1 { opacity: 0; animation: wq-hw1 var(--T) linear infinite; }
+.diagram .wq-h1 { opacity: 0; animation: wq-h1 var(--T) linear infinite; }
+.diagram .wq-s1 { opacity: 0; animation: wq-s1 var(--T) linear infinite; }
+.diagram .wq-dbr { opacity: 0; animation: wq-dbr var(--T) linear infinite; }
+.diagram .wq-j0 { opacity: 0; animation: wq-j0 var(--T) linear infinite; }
+.diagram .wq-a1 { opacity: 0; animation: wq-a1 var(--T) linear infinite; }
+.diagram .wq-ub { animation: wq-ub var(--T) linear infinite; }
+.diagram .wq-hk1 { opacity: 0; animation: wq-hk1 var(--T) linear infinite; }
+.diagram .wq-f1 { opacity: 0; animation: wq-f1 var(--T) linear infinite; }
+.diagram .wq-bp1 { animation: wq-bp1 var(--T) linear infinite; }
+.diagram .wq-m1 { opacity: 0; animation: wq-m1 var(--T) linear infinite; }
+.diagram .wq-dbd { animation: wq-dbd var(--T) linear infinite; }
+.diagram .wq-p1 { opacity: 0; animation: wq-p1 var(--T) linear infinite; }
+.diagram .wq-e1 { opacity: 0; animation: wq-e1 var(--T) linear infinite; }
+.diagram .wq-tk { animation: wq-tk var(--T) linear infinite; }
+.diagram .wq-ck1 { animation: wq-ck1 var(--T) linear infinite; }
+.diagram .wq-ck2 { animation: wq-ck2 var(--T) linear infinite; }
+.diagram .wq-ck3 { animation: wq-ck3 var(--T) linear infinite; }
+.diagram .wq-ck4 { animation: wq-ck4 var(--T) linear infinite; }
+.diagram .wq-ck5 { animation: wq-ck5 var(--T) linear infinite; }
+.diagram .wq-ck6 { animation: wq-ck6 var(--T) linear infinite; }
+.diagram .wq-r1 { opacity: 0; animation: wq-r1 var(--T) linear infinite; }
+.diagram .wq-r2 { opacity: 0; animation: wq-r2 var(--T) linear infinite; }
+.diagram .wq-r3 { opacity: 0; animation: wq-r3 var(--T) linear infinite; }
+.diagram .wq-r4 { opacity: 0; animation: wq-r4 var(--T) linear infinite; }
+.diagram .wq-r5 { opacity: 0; animation: wq-r5 var(--T) linear infinite; }
+.diagram .wq-r6 { opacity: 0; animation: wq-r6 var(--T) linear infinite; }
+.diagram .wq-r7 { opacity: 0; animation: wq-r7 var(--T) linear infinite; }
+.diagram .wq-r8 { opacity: 0; animation: wq-r8 var(--T) linear infinite; }
+.diagram .wq-j1 { opacity: 0; animation: wq-j1 var(--T) linear infinite; }
+.diagram .wq-j2 { opacity: 0; animation: wq-j2 var(--T) linear infinite; }
+.diagram .wq-j3 { opacity: 0; animation: wq-j3 var(--T) linear infinite; }
+.diagram .wq-j4 { opacity: 0; animation: wq-j4 var(--T) linear infinite; }
+.diagram .wq-j6 { opacity: 0; animation: wq-j6 var(--T) linear infinite; }
+.diagram .wq-j5 { opacity: 0; animation: wq-j5 var(--T) linear infinite; }
+.diagram .wq-j7 { opacity: 0; animation: wq-j7 var(--T) linear infinite; }
+.diagram .wq-j8 { opacity: 0; animation: wq-j8 var(--T) linear infinite; }
+.diagram .wq-w3 { opacity: 0; animation: wq-w3 var(--T) linear infinite; }
+.diagram .wq-w4 { opacity: 0; animation: wq-w4 var(--T) linear infinite; }
+.diagram .wq-k2 { opacity: 0; animation: wq-k2 var(--T) linear infinite; }
+.diagram .wq-k3 { opacity: 0; animation: wq-k3 var(--T) linear infinite; }
+.diagram .wq-wc2 { animation: wq-wc2 var(--T) linear infinite; }
+.diagram .wq-wc3 { opacity: 0; animation: wq-wc3 var(--T) linear infinite; }
+.diagram .wq-wc4 { opacity: 0; animation: wq-wc4 var(--T) linear infinite; }
+.diagram .wq-kc1 { animation: wq-kc1 var(--T) linear infinite; }
+.diagram .wq-kc2 { opacity: 0; animation: wq-kc2 var(--T) linear infinite; }
+.diagram .wq-kc3 { opacity: 0; animation: wq-kc3 var(--T) linear infinite; }
+.diagram .wq-t19 { opacity: 0; animation: wq-t19 var(--T) linear infinite; }
+.diagram .wq-t23 { opacity: 0; animation: wq-t23 var(--T) linear infinite; }
+.diagram .wq-t02 { opacity: 0; animation: wq-t02 var(--T) linear infinite; }
+.diagram .wq-mt { animation: wq-mt var(--T) linear infinite; }
+.diagram .wq-k1k { opacity: 0; animation: wq-k1k var(--T) linear infinite; }
+.diagram .wq-dl { opacity: 0; animation: wq-dl var(--T) linear infinite; }
+.diagram .wq-bdl { opacity: 0; animation: wq-bdl var(--T) linear infinite; }
+.diagram .wq-w1d { opacity: 0; animation: wq-w1d var(--T) linear infinite; }
+.diagram .wq-w1c { animation: wq-w1c var(--T) linear infinite; }
+.diagram .wq-w1n { opacity: 0; animation: wq-w1n var(--T) linear infinite; }
+.diagram .wq-ss { opacity: 0; animation: wq-ss var(--T) linear infinite; }
+.diagram .wq-sq { opacity: 0; animation: wq-sq var(--T) linear infinite; }
+.diagram .wq-cs { opacity: 0; animation: wq-cs var(--T) linear infinite; }
+.diagram .wq-sa { opacity: 0; animation: wq-sa var(--T) linear infinite; }
+.diagram .wq-a3 { opacity: 0; animation: wq-a3 var(--T) linear infinite; }
+.diagram .wq-us { opacity: 0; animation: wq-us var(--T) linear infinite; }
+.diagram .wq-gh { opacity: 0; animation: wq-gh var(--T) linear infinite; }
+.diagram .wq-tg { opacity: 0; animation: wq-tg var(--T) linear infinite; }
+.diagram .wq-tb { animation: wq-tb var(--T) linear infinite; }
+.diagram .wq-tt1 { opacity: 0; animation: wq-tt1 var(--T) linear infinite; }
+.diagram .wq-tt2 { opacity: 0; animation: wq-tt2 var(--T) linear infinite; }
+.diagram .wq-k2x { opacity: 0; animation: wq-k2x var(--T) linear infinite; }
+.diagram .wq-jr { opacity: 0; animation: wq-jr var(--T) linear infinite; }
+.diagram .wq-f3 { opacity: 0; animation: wq-f3 var(--T) linear infinite; }
+.diagram .wq-bp3 { opacity: 0; animation: wq-bp3 var(--T) linear infinite; }
+.diagram .wq-d0 { animation: wq-d0 var(--T) linear infinite; }
+.diagram .wq-d1 { opacity: 0; animation: wq-d1 var(--T) linear infinite; }
+.diagram .wq-d2 { opacity: 0; animation: wq-d2 var(--T) linear infinite; }
+.diagram .wq-d3 { opacity: 0; animation: wq-d3 var(--T) linear infinite; }
+.diagram .wq-k1r { opacity: 0; animation: wq-k1r var(--T) linear infinite; }
+.diagram .wq-k1d { animation: wq-k1d var(--T) linear infinite; }
+.diagram .wq-k1b { opacity: 0; animation: wq-k1b var(--T) linear infinite; }
+.diagram .wq-k1c { opacity: 0; animation: wq-k1c var(--T) linear infinite; }
+.diagram .wq-k1a { opacity: 0; animation: wq-k1a var(--T) linear infinite; }
+.diagram .wq-k1s { opacity: 0; animation: wq-k1s var(--T) linear infinite; }
+.diagram .wq-k1m { opacity: 0; animation: wq-k1m var(--T) linear infinite; }
+.diagram .wq-k1w { opacity: 0; animation: wq-k1w var(--T) linear infinite; }
+.diagram .wq-b1 { opacity: 0; animation: wq-b1 var(--T) linear infinite; }
+.diagram .wq-k2b { opacity: 0; animation: wq-k2b var(--T) linear infinite; }
+.diagram .wq-k2r { opacity: 0; animation: wq-k2r var(--T) linear infinite; }
+.diagram .wq-k2w { opacity: 0; animation: wq-k2w var(--T) linear infinite; }
+.diagram .wq-b2 { opacity: 0; animation: wq-b2 var(--T) linear infinite; }
+.diagram .wq-k3b { opacity: 0; animation: wq-k3b var(--T) linear infinite; }
+.diagram .wq-k3w { opacity: 0; animation: wq-k3w var(--T) linear infinite; }
+.diagram .wq-b3 { opacity: 0; animation: wq-b3 var(--T) linear infinite; }
+.diagram .wq-lib { opacity: 0; animation: wq-lib var(--T) linear infinite; }
+.diagram .wq-dbx { opacity: 0; animation: wq-dbx var(--T) linear infinite; }
+.diagram .wq-sc { opacity: 0; animation: wq-sc var(--T) linear infinite; }
+.diagram .wq-bk { opacity: 0; animation: wq-bk var(--T) linear infinite; }
+.diagram .wq-werr { opacity: 0; animation: wq-werr var(--T) linear infinite; }
+.diagram .wq-mono { opacity: 0; animation: wq-mono var(--T) linear infinite; }
+.diagram .wq-mj1 { opacity: 0; animation: wq-mj1 var(--T) linear infinite; }
+.diagram .wq-mj2 { opacity: 0; animation: wq-mj2 var(--T) linear infinite; }
+.diagram .wq-mj3 { opacity: 0; animation: wq-mj3 var(--T) linear infinite; }
+.diagram .wq-mj4 { opacity: 0; animation: wq-mj4 var(--T) linear infinite; }
+.diagram .wq-mrel { opacity: 0; animation: wq-mrel var(--T) linear infinite; }
+.diagram .wq-rem { animation: wq-rem var(--T) linear infinite; }
+.diagram .wq-pnl { opacity: 0; animation: wq-pnl var(--T) linear infinite; }
+.diagram .wq-ln1 { opacity: 0; animation: wq-ln1 var(--T) linear infinite; }
+.diagram .wq-ln2 { opacity: 0; animation: wq-ln2 var(--T) linear infinite; }
+.diagram .wq-ln3 { opacity: 0; animation: wq-ln3 var(--T) linear infinite; }
+.diagram .wq-ln4 { opacity: 0; animation: wq-ln4 var(--T) linear infinite; }
+.diagram .wq-pn2 { opacity: 0; animation: wq-pn2 var(--T) linear infinite; }
+.diagram .wq-sv1 { opacity: 0; animation: wq-sv1 var(--T) linear infinite; }
+.diagram .wq-sv2 { opacity: 0; animation: wq-sv2 var(--T) linear infinite; }
+.diagram .wq-sv3 { opacity: 0; animation: wq-sv3 var(--T) linear infinite; }
+@keyframes wq-cdn {
+  0% { transform: translate(78px, 384px); opacity: 0; }
+  0.75% { transform: translate(78px, 384px); opacity: 0; }
+  1% { opacity: 1; }
+  2.25% { transform: translate(78px, 334px); opacity: 1; }
+  2.5% { transform: translate(78px, 334px); opacity: 0; }
+  100% { transform: translate(78px, 334px); opacity: 0; }
+}
+@keyframes wq-o1 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  2.5% { transform: translate(126px, 288px); opacity: 0; }
+  2.75% { opacity: 1; }
+  3.091% { transform: translate(152px, 288px); }
+  3.682% { transform: translate(152px, 314px); }
+  4.5% { transform: translate(188px, 314px); opacity: 1; }
+  4.75% { transform: translate(188px, 314px); opacity: 0; }
+  100% { transform: translate(188px, 314px); opacity: 0; }
+}
+@keyframes wq-hw1 {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.25% { opacity: 1; }
+  10.25% { opacity: 1; }
+  11.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-h1 {
+  0% { transform: translate(256px, 384px); opacity: 0; }
+  4.75% { transform: translate(256px, 384px); opacity: 0; }
+  5% { opacity: 1; }
+  6% { transform: translate(256px, 332px); opacity: 1; }
+  6.25% { transform: translate(256px, 332px); opacity: 0; }
+  100% { transform: translate(256px, 332px); opacity: 0; }
+}
+@keyframes wq-s1 {
+  0% { transform: translate(300px, 332px); opacity: 0; }
+  6.25% { transform: translate(300px, 332px); opacity: 0; }
+  6.5% { opacity: 1; }
+  6.671% { transform: translate(300px, 364px); }
+  7.987% { transform: translate(400px, 364px); }
+  8.25% { transform: translate(400px, 384px); opacity: 1; }
+  8.5% { transform: translate(400px, 384px); opacity: 0; }
+  100% { transform: translate(400px, 384px); opacity: 0; }
+}
+@keyframes wq-dbr {
+  0% { opacity: 0; }
+  8.25% { opacity: 0; }
+  9.25% { opacity: 1; }
+  21% { opacity: 1; }
+  21.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-j0 {
+  0% { transform: translate(324px, 314px); opacity: 0; }
+  8% { transform: translate(324px, 314px); opacity: 0; }
+  8.25% { opacity: 1; }
+  8.259% { transform: translate(350px, 314px); }
+  8.517% { transform: translate(350px, 288px); }
+  8.656% { transform: translate(364px, 288px); }
+  9.75% { transform: translate(474px, 288px); }
+  11.25% { transform: translate(474px, 288px); }
+  11.506% { transform: translate(490px, 288px); }
+  11.763% { transform: translate(506px, 288px); }
+  12.083% { transform: translate(506px, 308px); }
+  12.5% { transform: translate(532px, 308px); opacity: 1; }
+  12.75% { transform: translate(532px, 308px); opacity: 0; }
+  100% { transform: translate(532px, 308px); opacity: 0; }
+}
+@keyframes wq-a1 {
+  0% { transform: translate(188px, 314px); opacity: 0; }
+  10% { transform: translate(188px, 314px); opacity: 0; }
+  10.25% { opacity: 1; }
+  10.716% { transform: translate(152px, 314px); }
+  11.233% { transform: translate(152px, 288px); }
+  11.75% { transform: translate(126px, 288px); opacity: 1; }
+  12% { transform: translate(126px, 288px); opacity: 0; }
+  100% { transform: translate(126px, 288px); opacity: 0; }
+}
+@keyframes wq-ub {
+  0% { opacity: 0; }
+  11.75% { opacity: 0; }
+  12.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-hk1 {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.25% { opacity: 1; }
+  21.75% { opacity: 1; }
+  22.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-f1 {
+  0% { transform: translate(620px, 336px); opacity: 0; }
+  18.25% { transform: translate(620px, 336px); opacity: 0; }
+  18.5% { opacity: 1; }
+  19.5% { transform: translate(620px, 384px); opacity: 1; }
+  19.75% { transform: translate(620px, 384px); opacity: 0; }
+  100% { transform: translate(620px, 384px); opacity: 0; }
+}
+@keyframes wq-bp1 {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-m1 {
+  0% { transform: translate(560px, 336px); opacity: 0; }
+  19.5% { transform: translate(560px, 336px); opacity: 0; }
+  19.75% { opacity: 1; }
+  19.773% { transform: translate(560px, 364px); }
+  20.805% { transform: translate(454px, 364px); }
+  21% { transform: translate(454px, 384px); opacity: 1; }
+  21.25% { transform: translate(454px, 384px); opacity: 0; }
+  100% { transform: translate(454px, 384px); opacity: 0; }
+}
+@keyframes wq-dbd {
+  0% { opacity: 0; }
+  21.4% { opacity: 0; }
+  22.15% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-p1 {
+  0% { transform: translate(704px, 308px); opacity: 0; }
+  20.25% { transform: translate(704px, 308px); opacity: 0; }
+  20.5% { opacity: 1; }
+  21.5% { transform: translate(758px, 308px); opacity: 1; }
+  21.75% { transform: translate(758px, 308px); opacity: 0; }
+  100% { transform: translate(758px, 308px); opacity: 0; }
+}
+@keyframes wq-e1 {
+  0% { transform: translate(704px, 308px); opacity: 0; }
+  20.25% { transform: translate(704px, 308px); opacity: 0; }
+  20.5% { opacity: 1; }
+  20.66% { transform: translate(736px, 308px); }
+  21.468% { transform: translate(736px, 245px); }
+  21.75% { transform: translate(758px, 245px); opacity: 1; }
+  22% { transform: translate(758px, 245px); opacity: 0; }
+  100% { transform: translate(758px, 245px); opacity: 0; }
+}
+@keyframes wq-tk {
+  0% { opacity: 0; }
+  21.75% { opacity: 0; }
+  22.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ck1 {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  7% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ck2 {
+  0% { opacity: 0; }
+  9.75% { opacity: 0; }
+  10.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ck3 {
+  0% { opacity: 0; }
+  11.75% { opacity: 0; }
+  12.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ck4 {
+  0% { opacity: 0; }
+  18.25% { opacity: 0; }
+  19.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ck5 {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ck6 {
+  0% { opacity: 0; }
+  21.75% { opacity: 0; }
+  22.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-r1 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  25.75% { transform: translate(126px, 288px); opacity: 0; }
+  26% { opacity: 1; }
+  26.075% { transform: translate(152px, 288px); }
+  26.4% { transform: translate(152px, 314px); }
+  26.85% { transform: translate(188px, 314px); opacity: 1; }
+  27.1% { transform: translate(188px, 314px); opacity: 0; }
+  100% { transform: translate(188px, 314px); opacity: 0; }
+}
+@keyframes wq-r2 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  27.25% { transform: translate(126px, 288px); opacity: 0; }
+  27.5% { opacity: 1; }
+  27.575% { transform: translate(152px, 288px); }
+  27.8% { transform: translate(152px, 270px); }
+  28.25% { transform: translate(188px, 270px); opacity: 1; }
+  28.5% { transform: translate(188px, 270px); opacity: 0; }
+  100% { transform: translate(188px, 270px); opacity: 0; }
+}
+@keyframes wq-r3 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  28.75% { transform: translate(126px, 288px); opacity: 0; }
+  29% { opacity: 1; }
+  29.075% { transform: translate(152px, 288px); }
+  29.4% { transform: translate(152px, 314px); }
+  29.85% { transform: translate(188px, 314px); opacity: 1; }
+  30.1% { transform: translate(188px, 314px); opacity: 0; }
+  100% { transform: translate(188px, 314px); opacity: 0; }
+}
+@keyframes wq-r4 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  30.25% { transform: translate(126px, 288px); opacity: 0; }
+  30.5% { opacity: 1; }
+  30.575% { transform: translate(152px, 288px); }
+  31.35% { transform: translate(152px, 226px); }
+  31.8% { transform: translate(188px, 226px); opacity: 1; }
+  32.05% { transform: translate(188px, 226px); opacity: 0; }
+  100% { transform: translate(188px, 226px); opacity: 0; }
+}
+@keyframes wq-r5 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  31.75% { transform: translate(126px, 288px); opacity: 0; }
+  32% { opacity: 1; }
+  32.075% { transform: translate(152px, 288px); }
+  33.4% { transform: translate(152px, 182px); }
+  33.85% { transform: translate(188px, 182px); opacity: 1; }
+  34.1% { transform: translate(188px, 182px); opacity: 0; }
+  100% { transform: translate(188px, 182px); opacity: 0; }
+}
+@keyframes wq-r6 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  33.25% { transform: translate(126px, 288px); opacity: 0; }
+  33.5% { opacity: 1; }
+  33.575% { transform: translate(152px, 288px); }
+  33.8% { transform: translate(152px, 270px); }
+  34.25% { transform: translate(188px, 270px); opacity: 1; }
+  34.5% { transform: translate(188px, 270px); opacity: 0; }
+  100% { transform: translate(188px, 270px); opacity: 0; }
+}
+@keyframes wq-r7 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  34.75% { transform: translate(126px, 288px); opacity: 0; }
+  35% { opacity: 1; }
+  35.075% { transform: translate(152px, 288px); }
+  35.85% { transform: translate(152px, 226px); }
+  36.3% { transform: translate(188px, 226px); opacity: 1; }
+  36.55% { transform: translate(188px, 226px); opacity: 0; }
+  100% { transform: translate(188px, 226px); opacity: 0; }
+}
+@keyframes wq-r8 {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  36.75% { transform: translate(126px, 288px); opacity: 0; }
+  37% { opacity: 1; }
+  37.075% { transform: translate(152px, 288px); }
+  38.4% { transform: translate(152px, 182px); }
+  38.85% { transform: translate(188px, 182px); opacity: 1; }
+  39.1% { transform: translate(188px, 182px); opacity: 0; }
+  100% { transform: translate(188px, 182px); opacity: 0; }
+}
+@keyframes wq-j1 {
+  0% { transform: translate(324px, 314px); opacity: 0; }
+  27.35% { transform: translate(324px, 314px); opacity: 0; }
+  27.6% { opacity: 1; }
+  27.621% { transform: translate(350px, 314px); }
+  27.892% { transform: translate(350px, 288px); }
+  28.037% { transform: translate(364px, 288px); }
+  29.183% { transform: translate(474px, 288px); }
+  29.933% { transform: translate(474px, 288px); }
+  30.162% { transform: translate(490px, 288px); }
+  30.39% { transform: translate(506px, 288px); }
+  30.676% { transform: translate(506px, 308px); }
+  31.047% { transform: translate(532px, 308px); opacity: 1; }
+  31.297% { transform: translate(532px, 308px); opacity: 0; }
+  100% { transform: translate(532px, 308px); opacity: 0; }
+}
+@keyframes wq-j2 {
+  0% { transform: translate(324px, 270px); opacity: 0; }
+  28.75% { transform: translate(324px, 270px); opacity: 0; }
+  29% { opacity: 1; }
+  29.021% { transform: translate(350px, 270px); }
+  29.208% { transform: translate(350px, 288px); }
+  29.354% { transform: translate(364px, 288px); }
+  30.5% { transform: translate(474px, 288px); }
+  33% { transform: translate(474px, 288px); }
+  33.229% { transform: translate(490px, 288px); }
+  33.457% { transform: translate(506px, 288px); }
+  34.071% { transform: translate(506px, 245px); }
+  34.443% { transform: translate(532px, 245px); opacity: 1; }
+  34.693% { transform: translate(532px, 245px); opacity: 0; }
+  100% { transform: translate(532px, 245px); opacity: 0; }
+}
+@keyframes wq-j3 {
+  0% { transform: translate(324px, 314px); opacity: 0; }
+  30.35% { transform: translate(324px, 314px); opacity: 0; }
+  30.6% { opacity: 1; }
+  30.656% { transform: translate(350px, 314px); }
+  30.961% { transform: translate(350px, 288px); }
+  31.126% { transform: translate(364px, 288px); }
+  32.183% { transform: translate(454px, 288px); }
+  33% { transform: translate(454px, 288px); }
+  34% { transform: translate(474px, 288px); }
+  35.5% { transform: translate(474px, 288px); }
+  35.729% { transform: translate(490px, 288px); }
+  35.957% { transform: translate(506px, 288px); }
+  37.471% { transform: translate(506px, 182px); }
+  37.843% { transform: translate(532px, 182px); opacity: 1; }
+  38.093% { transform: translate(532px, 182px); opacity: 0; }
+  100% { transform: translate(532px, 182px); opacity: 0; }
+}
+@keyframes wq-j4 {
+  0% { transform: translate(324px, 226px); opacity: 0; }
+  32.3% { transform: translate(324px, 226px); opacity: 0; }
+  32.55% { opacity: 1; }
+  32.599% { transform: translate(350px, 226px); }
+  33.312% { transform: translate(350px, 288px); }
+  33.473% { transform: translate(364px, 288px); }
+  34.508% { transform: translate(454px, 288px); }
+  35.5% { transform: translate(454px, 288px); }
+  36.5% { transform: translate(474px, 288px); }
+  38.048% { transform: translate(474px, 288px); }
+  38.277% { transform: translate(490px, 288px); }
+  38.505% { transform: translate(506px, 288px); }
+  38.791% { transform: translate(506px, 308px); }
+  39.162% { transform: translate(532px, 308px); opacity: 1; }
+  39.412% { transform: translate(532px, 308px); opacity: 0; }
+  100% { transform: translate(532px, 308px); opacity: 0; }
+}
+@keyframes wq-j6 {
+  0% { transform: translate(324px, 270px); opacity: 0; }
+  34.75% { transform: translate(324px, 270px); opacity: 0; }
+  35% { opacity: 1; }
+  35.057% { transform: translate(350px, 270px); }
+  35.27% { transform: translate(350px, 288px); }
+  35.436% { transform: translate(364px, 288px); }
+  36.5% { transform: translate(454px, 288px); }
+  38.048% { transform: translate(454px, 288px); }
+  39.048% { transform: translate(474px, 288px); }
+  41.443% { transform: translate(474px, 288px); }
+  41.672% { transform: translate(490px, 288px); }
+  41.9% { transform: translate(506px, 288px); }
+  42.514% { transform: translate(506px, 245px); }
+  42.886% { transform: translate(532px, 245px); opacity: 1; }
+  43.136% { transform: translate(532px, 245px); opacity: 0; }
+  100% { transform: translate(532px, 245px); opacity: 0; }
+}
+@keyframes wq-j5 {
+  0% { transform: translate(324px, 182px); opacity: 0; }
+  34.35% { transform: translate(324px, 182px); opacity: 0; }
+  34.6% { opacity: 1; }
+  34.671% { transform: translate(350px, 182px); }
+  35.98% { transform: translate(350px, 288px); }
+  36.152% { transform: translate(364px, 288px); }
+  37.017% { transform: translate(434px, 288px); }
+  38.048% { transform: translate(434px, 288px); }
+  39.048% { transform: translate(454px, 288px); }
+  41.443% { transform: translate(454px, 288px); }
+  42.443% { transform: translate(474px, 288px); }
+  44.843% { transform: translate(474px, 288px); }
+  45.072% { transform: translate(490px, 288px); }
+  45.3% { transform: translate(506px, 288px); }
+  46.814% { transform: translate(506px, 182px); }
+  47.186% { transform: translate(532px, 182px); opacity: 1; }
+  47.436% { transform: translate(532px, 182px); opacity: 0; }
+  100% { transform: translate(532px, 182px); opacity: 0; }
+}
+@keyframes wq-j7 {
+  0% { transform: translate(324px, 226px); opacity: 0; }
+  36.8% { transform: translate(324px, 226px); opacity: 0; }
+  37.05% { opacity: 1; }
+  37.134% { transform: translate(350px, 226px); }
+  37.93% { transform: translate(350px, 288px); }
+  38.11% { transform: translate(364px, 288px); }
+  39.008% { transform: translate(434px, 288px); }
+  41.443% { transform: translate(434px, 288px); }
+  42.443% { transform: translate(454px, 288px); }
+  44.843% { transform: translate(454px, 288px); }
+  45.843% { transform: translate(474px, 288px); }
+  46.343% { transform: translate(474px, 288px); }
+  46.572% { transform: translate(490px, 288px); }
+  46.8% { transform: translate(506px, 288px); }
+  47.086% { transform: translate(506px, 308px); }
+  47.457% { transform: translate(532px, 308px); opacity: 1; }
+  47.707% { transform: translate(532px, 308px); opacity: 0; }
+  100% { transform: translate(532px, 308px); opacity: 0; }
+}
+@keyframes wq-j8 {
+  0% { transform: translate(324px, 182px); opacity: 0; }
+  39.35% { transform: translate(324px, 182px); opacity: 0; }
+  39.6% { opacity: 1; }
+  39.671% { transform: translate(350px, 182px); }
+  40.98% { transform: translate(350px, 288px); }
+  41.152% { transform: translate(364px, 288px); }
+  42.017% { transform: translate(434px, 288px); }
+  44.843% { transform: translate(434px, 288px); }
+  45.843% { transform: translate(454px, 288px); }
+  46.343% { transform: translate(454px, 288px); }
+  47.343% { transform: translate(474px, 288px); }
+  50.25% { transform: translate(474px, 288px); }
+  50.479% { transform: translate(490px, 288px); }
+  50.707% { transform: translate(506px, 288px); }
+  51.321% { transform: translate(506px, 245px); }
+  51.693% { transform: translate(532px, 245px); opacity: 1; }
+  51.943% { transform: translate(532px, 245px); opacity: 0; }
+  100% { transform: translate(532px, 245px); opacity: 0; }
+}
+@keyframes wq-w3 {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.75% { opacity: 1; }
+  41.75% { opacity: 1; }
+  43.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-w4 {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  32.5% { opacity: 1; }
+  40% { opacity: 1; }
+  41.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k2 {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  33.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k3 {
+  0% { opacity: 0; }
+  34.75% { opacity: 0; }
+  36.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-wc2 {
+  0% { opacity: 1; }
+  29.25% { opacity: 1; }
+  29.75% { opacity: 0; }
+  41.75% { opacity: 0; }
+  42.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wq-wc3 {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  29.75% { opacity: 1; }
+  31% { opacity: 1; }
+  31.5% { opacity: 0; }
+  40% { opacity: 0; }
+  40.5% { opacity: 1; }
+  41.75% { opacity: 1; }
+  42.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-wc4 {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  31.5% { opacity: 1; }
+  40% { opacity: 1; }
+  40.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-kc1 {
+  0% { opacity: 1; }
+  32.25% { opacity: 1; }
+  32.75% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wq-kc2 {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  34.75% { opacity: 1; }
+  35.25% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.25% { opacity: 1; }
+  75.75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-kc3 {
+  0% { opacity: 0; }
+  34.75% { opacity: 0; }
+  35.25% { opacity: 1; }
+  54.75% { opacity: 1; }
+  55.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-t19 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  38% { opacity: 1; }
+  38.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-t23 {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  38.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-t02 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-mt {
+  0% { transform: scaleX(0.25); }
+  25% { transform: scaleX(0.25); }
+  29% { transform: scaleX(0.92); }
+  38% { transform: scaleX(0.92); }
+  41.5% { transform: scaleX(0.15); }
+  100% { transform: scaleX(0.15); }
+}
+@keyframes wq-k1k {
+  0% { opacity: 0; }
+  54.45% { opacity: 0; }
+  55.2% { opacity: 1; }
+  58.45% { opacity: 1; }
+  59.2% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-dl {
+  0% { transform: translate(620px, 336px); opacity: 0; }
+  55.45% { transform: translate(620px, 336px); opacity: 0; }
+  55.7% { opacity: 1; }
+  56.7% { transform: translate(620px, 384px); opacity: 1; }
+  56.95% { transform: translate(620px, 384px); opacity: 0; }
+  100% { transform: translate(620px, 384px); opacity: 0; }
+}
+@keyframes wq-bdl {
+  0% { opacity: 0; }
+  56.7% { opacity: 0; }
+  57.7% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-w1d {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.5% { opacity: 1; }
+  52.75% { opacity: 1; }
+  53.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-w1c {
+  0% { opacity: 1; }
+  52.75% { opacity: 1; }
+  53.75% { opacity: 0; }
+  54.25% { opacity: 0; }
+  55.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wq-w1n {
+  0% { opacity: 0; }
+  54.25% { opacity: 0; }
+  55.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ss {
+  0% { transform: translate(126px, 288px); opacity: 0; }
+  55.5% { transform: translate(126px, 288px); opacity: 0; }
+  55.75% { opacity: 1; }
+  56.017% { transform: translate(152px, 288px); }
+  56.534% { transform: translate(152px, 314px); }
+  57.25% { transform: translate(188px, 314px); opacity: 1; }
+  57.5% { transform: translate(188px, 314px); opacity: 0; }
+  100% { transform: translate(188px, 314px); opacity: 0; }
+}
+@keyframes wq-sq {
+  0% { transform: translate(256px, 332px); opacity: 0; }
+  57.5% { transform: translate(256px, 332px); opacity: 0; }
+  57.75% { opacity: 1; }
+  58.5% { transform: translate(256px, 384px); opacity: 1; }
+  58.75% { transform: translate(256px, 384px); opacity: 0; }
+  100% { transform: translate(256px, 384px); opacity: 0; }
+}
+@keyframes wq-cs {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-sa {
+  0% { transform: translate(256px, 384px); opacity: 0; }
+  58.75% { transform: translate(256px, 384px); opacity: 0; }
+  59% { opacity: 1; }
+  59.75% { transform: translate(256px, 332px); opacity: 1; }
+  60% { transform: translate(256px, 332px); opacity: 0; }
+  100% { transform: translate(256px, 332px); opacity: 0; }
+}
+@keyframes wq-a3 {
+  0% { transform: translate(188px, 314px); opacity: 0; }
+  60% { transform: translate(188px, 314px); opacity: 0; }
+  60.25% { opacity: 1; }
+  60.716% { transform: translate(152px, 314px); }
+  61.233% { transform: translate(152px, 288px); }
+  61.75% { transform: translate(126px, 288px); opacity: 1; }
+  62% { transform: translate(126px, 288px); opacity: 0; }
+  100% { transform: translate(126px, 288px); opacity: 0; }
+}
+@keyframes wq-us {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-gh {
+  0% { opacity: 0; }
+  50.25% { opacity: 0; }
+  51% { opacity: 1; }
+  61% { opacity: 1; }
+  61.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-tg {
+  0% { opacity: 0; }
+  50.25% { opacity: 0; }
+  51.25% { opacity: 1; }
+  61.25% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-tb {
+  0% { transform: scaleX(1); }
+  50.25% { transform: scaleX(1); }
+  61% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes wq-tt1 {
+  0% { opacity: 0; }
+  50.25% { opacity: 0; }
+  51.25% { opacity: 1; }
+  61% { opacity: 1; }
+  61.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-tt2 {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  61.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k2x {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-jr {
+  0% { transform: translate(474px, 288px); opacity: 0; }
+  61% { transform: translate(474px, 288px); opacity: 0; }
+  61.25% { opacity: 1; }
+  61.75% { transform: translate(474px, 288px); }
+  62.006% { transform: translate(490px, 288px); }
+  62.263% { transform: translate(506px, 288px); }
+  62.583% { transform: translate(506px, 308px); }
+  63% { transform: translate(532px, 308px); opacity: 1; }
+  63.25% { transform: translate(532px, 308px); opacity: 0; }
+  100% { transform: translate(532px, 308px); opacity: 0; }
+}
+@keyframes wq-f3 {
+  0% { transform: translate(620px, 336px); opacity: 0; }
+  68.25% { transform: translate(620px, 336px); opacity: 0; }
+  68.5% { opacity: 1; }
+  69.5% { transform: translate(620px, 384px); opacity: 1; }
+  69.75% { transform: translate(620px, 384px); opacity: 0; }
+  100% { transform: translate(620px, 384px); opacity: 0; }
+}
+@keyframes wq-bp3 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-d0 {
+  0% { opacity: 1; }
+  9.75% { opacity: 1; }
+  10% { opacity: 0; }
+  11.25% { opacity: 0; }
+  11.5% { opacity: 1; }
+  29.183% { opacity: 1; }
+  29.433% { opacity: 0; }
+  29.933% { opacity: 0; }
+  30.183% { opacity: 1; }
+  30.5% { opacity: 1; }
+  30.75% { opacity: 0; }
+  50.25% { opacity: 0; }
+  50.5% { opacity: 1; }
+  61% { opacity: 1; }
+  61.25% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wq-d1 {
+  0% { opacity: 0; }
+  9.75% { opacity: 0; }
+  10% { opacity: 1; }
+  11.25% { opacity: 1; }
+  11.5% { opacity: 0; }
+  29.183% { opacity: 0; }
+  29.433% { opacity: 1; }
+  29.933% { opacity: 1; }
+  30.183% { opacity: 0; }
+  30.5% { opacity: 0; }
+  30.75% { opacity: 1; }
+  32.183% { opacity: 1; }
+  32.433% { opacity: 0; }
+  33% { opacity: 0; }
+  33.25% { opacity: 1; }
+  34.508% { opacity: 1; }
+  34.758% { opacity: 0; }
+  35.5% { opacity: 0; }
+  35.75% { opacity: 1; }
+  36.5% { opacity: 1; }
+  36.75% { opacity: 0; }
+  46.343% { opacity: 0; }
+  46.593% { opacity: 1; }
+  50.25% { opacity: 1; }
+  50.5% { opacity: 0; }
+  61% { opacity: 0; }
+  61.25% { opacity: 1; }
+  61.75% { opacity: 1; }
+  62% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-d2 {
+  0% { opacity: 0; }
+  32.183% { opacity: 0; }
+  32.433% { opacity: 1; }
+  33% { opacity: 1; }
+  33.25% { opacity: 0; }
+  34.508% { opacity: 0; }
+  34.758% { opacity: 1; }
+  35.5% { opacity: 1; }
+  35.75% { opacity: 0; }
+  36.5% { opacity: 0; }
+  36.75% { opacity: 1; }
+  37.017% { opacity: 1; }
+  37.267% { opacity: 0; }
+  38.048% { opacity: 0; }
+  38.298% { opacity: 1; }
+  39.008% { opacity: 1; }
+  39.258% { opacity: 0; }
+  41.443% { opacity: 0; }
+  41.693% { opacity: 1; }
+  42.017% { opacity: 1; }
+  42.267% { opacity: 0; }
+  44.843% { opacity: 0; }
+  45.093% { opacity: 1; }
+  46.343% { opacity: 1; }
+  46.593% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-d3 {
+  0% { opacity: 0; }
+  37.017% { opacity: 0; }
+  37.267% { opacity: 1; }
+  38.048% { opacity: 1; }
+  38.298% { opacity: 0; }
+  39.008% { opacity: 0; }
+  39.258% { opacity: 1; }
+  41.443% { opacity: 1; }
+  41.693% { opacity: 0; }
+  42.017% { opacity: 0; }
+  42.267% { opacity: 1; }
+  44.843% { opacity: 1; }
+  45.093% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1r {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13% { opacity: 1; }
+  18.25% { opacity: 1; }
+  18.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1d {
+  0% { opacity: 0; }
+  18.25% { opacity: 0; }
+  18.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1b {
+  0% { opacity: 0; }
+  31.048% { opacity: 0; }
+  31.548% { opacity: 1; }
+  53.957% { opacity: 1; }
+  54.457% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1c {
+  0% { opacity: 0; }
+  54.45% { opacity: 0; }
+  54.95% { opacity: 1; }
+  58.45% { opacity: 1; }
+  58.95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1a {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.5% { opacity: 1; }
+  68% { opacity: 1; }
+  68.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1s {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  68.5% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1m {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  77.5% { opacity: 1; }
+  84% { opacity: 1; }
+  84.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k1w {
+  0% { opacity: 1; }
+  12.5% { opacity: 1; }
+  13% { opacity: 0; }
+  23.75% { opacity: 0; }
+  24.25% { opacity: 1; }
+  31.048% { opacity: 1; }
+  31.548% { opacity: 0; }
+  53.957% { opacity: 0; }
+  54.45% { opacity: 1; }
+  54.457% { opacity: 1; }
+  54.95% { opacity: 0; }
+  58.45% { opacity: 0; }
+  58.95% { opacity: 1; }
+  63% { opacity: 1; }
+  63.5% { opacity: 0; }
+  73.75% { opacity: 0; }
+  74.25% { opacity: 1; }
+  77% { opacity: 1; }
+  77.5% { opacity: 0; }
+  84% { opacity: 0; }
+  84.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wq-b1 {
+  0% { transform: scaleX(0); opacity: 0; }
+  12.4% { transform: scaleX(0); opacity: 0; }
+  12.5% { transform: scaleX(0); opacity: 1; }
+  18.25% { transform: scaleX(1); opacity: 1; }
+  19% { transform: scaleX(1); opacity: 0; }
+  19.25% { transform: scaleX(0); opacity: 0; }
+  30.948% { transform: scaleX(0); opacity: 0; }
+  31.048% { transform: scaleX(0); opacity: 1; }
+  37.548% { transform: scaleX(1); opacity: 1; }
+  38.298% { transform: scaleX(1); opacity: 0; }
+  38.548% { transform: scaleX(0); opacity: 0; }
+  39.062% { transform: scaleX(0); opacity: 0; }
+  39.162% { transform: scaleX(0); opacity: 1; }
+  45.662% { transform: scaleX(1); opacity: 1; }
+  46.412% { transform: scaleX(1); opacity: 0; }
+  46.662% { transform: scaleX(0); opacity: 0; }
+  47.357% { transform: scaleX(0); opacity: 0; }
+  47.457% { transform: scaleX(0); opacity: 1; }
+  53.957% { transform: scaleX(1); opacity: 1; }
+  54.35% { transform: scaleX(0); opacity: 0; }
+  54.45% { transform: scaleX(0); opacity: 1; }
+  54.707% { transform: scaleX(1); opacity: 0; }
+  54.957% { transform: scaleX(0); opacity: 0; }
+  58.45% { transform: scaleX(1); opacity: 1; }
+  59.2% { transform: scaleX(1); opacity: 0; }
+  59.45% { transform: scaleX(0); opacity: 0; }
+  62.9% { transform: scaleX(0); opacity: 0; }
+  63% { transform: scaleX(0); opacity: 1; }
+  68% { transform: scaleX(1); opacity: 1; }
+  68.75% { transform: scaleX(1); opacity: 0; }
+  69% { transform: scaleX(0); opacity: 0; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+@keyframes wq-k2b {
+  0% { opacity: 0; }
+  34.443% { opacity: 0; }
+  34.943% { opacity: 1; }
+  49.386% { opacity: 1; }
+  49.886% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k2r {
+  0% { opacity: 0; }
+  51.693% { opacity: 0; }
+  52.193% { opacity: 1; }
+  54.25% { opacity: 1; }
+  54.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k2w {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  34.443% { opacity: 1; }
+  34.943% { opacity: 0; }
+  49.386% { opacity: 0; }
+  49.886% { opacity: 1; }
+  51.693% { opacity: 1; }
+  52.193% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-b2 {
+  0% { transform: scaleX(0); opacity: 0; }
+  34.343% { transform: scaleX(0); opacity: 0; }
+  34.443% { transform: scaleX(0); opacity: 1; }
+  40.943% { transform: scaleX(1); opacity: 1; }
+  41.693% { transform: scaleX(1); opacity: 0; }
+  41.943% { transform: scaleX(0); opacity: 0; }
+  42.786% { transform: scaleX(0); opacity: 0; }
+  42.886% { transform: scaleX(0); opacity: 1; }
+  49.386% { transform: scaleX(1); opacity: 1; }
+  50.136% { transform: scaleX(1); opacity: 0; }
+  50.386% { transform: scaleX(0); opacity: 0; }
+  51.593% { transform: scaleX(0); opacity: 0; }
+  51.693% { transform: scaleX(0); opacity: 1; }
+  54.5% { transform: scaleX(0.43); opacity: 1; }
+  76.5% { transform: scaleX(0.43); opacity: 1; }
+  76.75% { transform: scaleX(0); opacity: 0; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+@keyframes wq-k3b {
+  0% { opacity: 0; }
+  37.843% { opacity: 0; }
+  38.343% { opacity: 1; }
+  44.343% { opacity: 1; }
+  44.843% { opacity: 0; }
+  47.186% { opacity: 0; }
+  47.686% { opacity: 1; }
+  53.686% { opacity: 1; }
+  54.186% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-k3w {
+  0% { opacity: 0; }
+  34.75% { opacity: 0; }
+  35.25% { opacity: 1; }
+  37.843% { opacity: 1; }
+  38.343% { opacity: 0; }
+  44.343% { opacity: 0; }
+  44.843% { opacity: 1; }
+  47.186% { opacity: 1; }
+  47.686% { opacity: 0; }
+  53.686% { opacity: 0; }
+  54.186% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-b3 {
+  0% { transform: scaleX(0); opacity: 0; }
+  37.743% { transform: scaleX(0); opacity: 0; }
+  37.843% { transform: scaleX(0); opacity: 1; }
+  44.343% { transform: scaleX(1); opacity: 1; }
+  45.093% { transform: scaleX(1); opacity: 0; }
+  45.343% { transform: scaleX(0); opacity: 0; }
+  47.086% { transform: scaleX(0); opacity: 0; }
+  47.186% { transform: scaleX(0); opacity: 1; }
+  53.686% { transform: scaleX(1); opacity: 1; }
+  54.436% { transform: scaleX(1); opacity: 0; }
+  54.686% { transform: scaleX(0); opacity: 0; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+@keyframes wq-lib {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  77% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-dbx {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77.5% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-sc {
+  0% { transform: translate(560px, 336px); opacity: 0; }
+  78% { transform: translate(560px, 336px); opacity: 0; }
+  78.25% { opacity: 1; }
+  78.364% { transform: translate(560px, 364px); }
+  79.74% { transform: translate(454px, 364px); }
+  80% { transform: translate(454px, 384px); opacity: 1; }
+  80.25% { transform: translate(454px, 384px); opacity: 0; }
+  100% { transform: translate(454px, 384px); opacity: 0; }
+}
+@keyframes wq-bk {
+  0% { transform: translate(400px, 384px); opacity: 0; }
+  80.5% { transform: translate(400px, 384px); opacity: 0; }
+  80.75% { opacity: 1; }
+  80.763% { transform: translate(400px, 364px); }
+  82.079% { transform: translate(300px, 364px); }
+  82.5% { transform: translate(300px, 332px); opacity: 1; }
+  82.75% { transform: translate(300px, 332px); opacity: 0; }
+  100% { transform: translate(300px, 332px); opacity: 0; }
+}
+@keyframes wq-werr {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.5% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-mono {
+  0% { opacity: 0; }
+  84% { opacity: 0; }
+  85.5% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-mj1 {
+  0% { opacity: 0; }
+  84.75% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-mj2 {
+  0% { opacity: 0; }
+  85.5% { opacity: 0; }
+  86.5% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-mj3 {
+  0% { opacity: 0; }
+  86.25% { opacity: 0; }
+  87.25% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-mj4 {
+  0% { opacity: 0; }
+  87% { opacity: 0; }
+  88% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-mrel {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  88.75% { opacity: 1; }
+  97% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-rem {
+  0% { opacity: 1; }
+  87.5% { opacity: 1; }
+  89% { opacity: 0; }
+  98% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes wq-pnl {
+  0% { opacity: 0; }
+  89% { opacity: 0; }
+  90.5% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ln1 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ln2 {
+  0% { opacity: 0; }
+  90.75% { opacity: 0; }
+  91.75% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ln3 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.5% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-ln4 {
+  0% { opacity: 0; }
+  92.25% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-pn2 {
+  0% { opacity: 0; }
+  93.25% { opacity: 0; }
+  94.25% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-sv1 {
+  0% { opacity: 0; }
+  94% { opacity: 0; }
+  95% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-sv2 {
+  0% { opacity: 0; }
+  94.75% { opacity: 0; }
+  95.75% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes wq-sv3 {
+  0% { opacity: 0; }
+  95.5% { opacity: 0; }
+  96.5% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- role zones -->
+  <rect class="zone" x="176" y="104" width="160" height="240" rx="14"/>
+  <rect class="zone" x="520" y="104" width="196" height="240" rx="14"/>
+  <text class="label" x="188" y="127">Web front end</text>
+  <text class="tiny" x="188" y="142">small instances</text>
+  <text class="label" x="532" y="127">Worker</text>
+  <text class="tiny" x="532" y="142">CPU-heavy instances</text>
+  <text class="cnt end wq-wc2" x="324" y="127">×2</text>
+  <text class="cnt end wq-wc3" x="324" y="127">×3</text>
+  <text class="cnt end wq-wc4" x="324" y="127">×4</text>
+  <text class="cnt end wq-kc1" x="704" y="127">×1</text>
+  <text class="cnt end wq-kc2" x="704" y="127">×2</text>
+  <text class="cnt end wq-kc3" x="704" y="127">×3</text>
+
+  <!-- wires -->
+  <line class="wire" x1="78" y1="384" x2="78" y2="335" marker-end="url(#ah)"/>
+  <line class="wire" x1="126" y1="288" x2="141" y2="288" marker-end="url(#ah)"/>
+  <line class="wire" x1="162" y1="314" x2="187" y2="314" marker-end="url(#ah)"/>
+  <line class="wire" x1="162" y1="270" x2="187" y2="270" marker-end="url(#ah)"/>
+  <path class="wire" d="M324 314H350V270H324"/>
+  <line class="wire" x1="350" y1="288" x2="363" y2="288" marker-end="url(#ah)"/>
+  <path class="wire" d="M490 288H506V308H531" marker-end="url(#ah)"/>
+  <path class="wire" d="M256 332V384M300 332V364H400V384M560 336V364H454V384M620 336V384"/>
+
+  <!-- extra web instances (step 2) -->
+  <g class="wq-w3">
+    <line class="wire" x1="162" y1="226" x2="187" y2="226" marker-end="url(#ah)"/>
+    <path class="wire" d="M324 226H350V270"/>
+    <rect class="box" x="188" y="208" width="136" height="36" rx="8"/>
+    <text class="sub sb f-ink" x="200" y="230">web 3</text>
+  </g>
+  <g class="wq-w4">
+    <line class="wire" x1="162" y1="182" x2="187" y2="182" marker-end="url(#ah)"/>
+    <path class="wire" d="M324 182H350V226"/>
+    <rect class="box" x="188" y="164" width="136" height="36" rx="8"/>
+    <text class="sub sb f-ink" x="200" y="186">web 4</text>
+  </g>
+
+  <!-- extra workers (steps 2-3) -->
+  <g class="wq-k2">
+    <path class="wire" d="M506 288V245H531" marker-end="url(#ah)"/>
+    <rect class="box" x="532" y="217" width="172" height="56" rx="10"/>
+    <text class="sub sb f-ink" x="544" y="235">worker 2</text>
+    <text class="tiny wq-k2w" x="544" y="250">waiting for jobs</text>
+    <text class="tiny sb f-blue wq-k2b" x="544" y="250">rendering a book</text>
+    <text class="tiny sb f-blue wq-k2r" x="544" y="250">rendering 1043</text>
+    <rect class="f-line" x="544" y="257" width="148" height="6" rx="3"/>
+    <rect class="f-blue wq-grow wq-b2" x="544" y="257" width="148" height="6" rx="3"/>
+    <g class="wq-k2x">
+      <rect class="f-red-soft s-red" x="532" y="217" width="172" height="56" rx="10" stroke-width="2"/>
+      <text class="tiny sb f-red" x="544" y="250">crashed mid-render</text>
+      <circle class="f-red" cx="689" cy="232" r="8"/>
+      <path class="none s-bg" d="M685.5 228.5l7 7M692.5 228.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </g>
+  <g class="wq-k3">
+    <path class="wire" d="M506 245V182H531" marker-end="url(#ah)"/>
+    <rect class="box" x="532" y="154" width="172" height="56" rx="10"/>
+    <text class="sub sb f-ink" x="544" y="172">worker 3</text>
+    <text class="tiny wq-k3w" x="544" y="187">waiting for jobs</text>
+    <text class="tiny sb f-blue wq-k3b" x="544" y="187">rendering a book</text>
+    <rect class="f-line" x="544" y="194" width="148" height="6" rx="3"/>
+    <rect class="f-blue wq-grow wq-b3" x="544" y="194" width="148" height="6" rx="3"/>
+  </g>
+
+  <!-- load balancer -->
+  <rect class="box" x="142" y="164" width="20" height="168" rx="6"/>
+  <text class="tiny mid" x="152" y="252" transform="rotate(-90 152 248)">load balancer</text>
+
+  <!-- users and CDN -->
+  <rect class="box" x="30" y="244" width="96" height="88" rx="12"/>
+  <rect class="f-bg s-muted" x="60" y="254" width="36" height="24" rx="4" stroke-width="1.5"/>
+  <path class="none s-muted" d="M60 261H96" stroke-width="1.5"/>
+  <circle class="f-muted" cx="64.5" cy="257.5" r="1.2"/>
+  <circle class="f-muted" cx="68.5" cy="257.5" r="1.2"/>
+  <circle class="f-muted" cx="72.5" cy="257.5" r="1.2"/>
+  <text class="label mid" x="78" y="300">Users</text>
+  <text class="sub mid" x="78" y="318">in browsers</text>
+  <rect class="box" x="30" y="384" width="96" height="78" rx="12"/>
+  <text class="label mid" x="78" y="418">CDN</text>
+  <text class="sub mid" x="78" y="436">static files</text>
+
+  <!-- shared state -->
+  <rect class="box" x="176" y="384" width="160" height="78" rx="12"/>
+  <text class="label mid" x="256" y="408">Cache</text>
+  <text class="sub mid" x="256" y="425">sessions, hot reads</text>
+  <rect class="box" x="356" y="384" width="142" height="78" rx="12"/>
+  <text class="label mid" x="427" y="408">Database</text>
+  <text class="sub mid" x="427" y="425">orders, users</text>
+  <rect class="box" x="520" y="384" width="196" height="78" rx="12"/>
+  <text class="label mid" x="618" y="408">Blob storage</text>
+  <text class="sub mid" x="618" y="425">photos, PDFs</text>
+
+  <!-- queue -->
+  <text class="label" x="364" y="258">Queue</text>
+  <text class="tiny end wq-d0" x="490" y="258">depth 0</text>
+  <text class="tiny end wq-d1" x="490" y="258">depth 1</text>
+  <text class="tiny end sb f-amber-ink wq-d2" x="490" y="258">depth 2</text>
+  <text class="tiny end sb f-amber-ink wq-d3" x="490" y="258">depth 3</text>
+  <rect class="box" x="364" y="268" width="126" height="40" rx="8"/>
+  <rect class="none s-purple wq-gh" x="466" y="280" width="16" height="16" rx="3" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+  <!-- web 1 (replaced in step 3) and web 2 -->
+  <g class="wq-w1c">
+    <rect class="box" x="188" y="296" width="136" height="36" rx="8"/>
+    <text class="sub sb f-ink" x="200" y="318">web 1</text>
+  </g>
+  <rect class="f-blue-soft s-blue wq-hw1" x="188" y="296" width="136" height="36" rx="8" stroke-width="2"/>
+  <g class="wq-w1d">
+    <rect class="f-amber-soft s-amber" x="188" y="296" width="136" height="36" rx="8" stroke-width="2"/>
+    <text class="tiny end sb f-amber-ink" x="316" y="318">draining</text>
+  </g>
+  <g class="wq-w1n">
+    <rect class="f-green-soft s-green" x="188" y="296" width="136" height="36" rx="8" stroke-width="2"/>
+    <text class="tiny end sb f-green" x="316" y="318">new instance</text>
+  </g>
+  <rect class="box" x="188" y="252" width="136" height="36" rx="8"/>
+  <text class="sub sb f-ink" x="200" y="274">web 2</text>
+
+  <!-- worker 1 -->
+  <rect class="box" x="532" y="280" width="172" height="56" rx="10"/>
+  <rect class="f-blue-soft s-blue wq-hk1" x="532" y="280" width="172" height="56" rx="10" stroke-width="2"/>
+  <text class="sub sb f-ink" x="544" y="298">worker 1</text>
+  <text class="tiny wq-k1w" x="544" y="313">waiting for jobs</text>
+  <text class="tiny sb f-blue wq-k1r" x="544" y="313">rendering 1042 · ~90 s</text>
+  <text class="tiny sb f-green wq-k1d" x="544" y="313">PDF ready, job done</text>
+  <text class="tiny sb f-blue wq-k1b" x="544" y="313">rendering a book</text>
+  <text class="tiny sb f-ink wq-k1c" x="544" y="313">scheduled clean-up</text>
+  <text class="tiny sb f-blue wq-k1a" x="544" y="313">rendering 1043 again</text>
+  <text class="tiny sb f-green wq-k1s" x="544" y="313">rerun was safe</text>
+  <text class="tiny sb f-amber-ink wq-k1m" x="544" y="313">migrates the schema</text>
+  <g class="wq-k1k">
+    <circle class="none s-ink" cx="689" cy="295" r="7" stroke-width="1.5"/>
+    <path class="none s-ink" d="M689 291V295L692 297" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  <rect class="f-line" x="544" y="320" width="148" height="6" rx="3"/>
+  <rect class="f-blue wq-grow wq-b1" x="544" y="320" width="148" height="6" rx="3"/>
+
+  <!-- remote services -->
+  <g class="wq-rem">
+    <path class="wire" d="M704 308H757" marker-end="url(#ah)"/>
+    <path class="wire" d="M736 308V245H757" marker-end="url(#ah)"/>
+    <text class="tiny" x="758" y="208">remote services</text>
+    <rect class="box" x="758" y="218" width="172" height="54" rx="10"/>
+    <text class="label mid" x="844" y="241">Email service</text>
+    <text class="sub mid" x="844" y="259">tells the user</text>
+    <rect class="box" x="758" y="281" width="172" height="54" rx="10"/>
+    <text class="label mid" x="844" y="304">Print partner API</text>
+    <text class="sub mid" x="844" y="322">prints and ships</text>
+    <g class="wq-tk">
+      <circle class="f-green" cx="921" cy="228" r="7"/>
+      <path class="none s-bg" d="M917.5 228l2.5 2.5 4-4.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle class="f-green" cx="921" cy="291" r="7"/>
+      <path class="none s-bg" d="M917.5 291l2.5 2.5 4-4.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- step 1: what each role does -->
+  <g class="p1">
+    <text class="tiny sb f-ink" x="190" y="182">in the request</text>
+    <text class="tiny sb f-ink" x="534" y="186">in the background</text>
+  </g>
+  <g class="wq-ck1"><path class="ck" d="M191 195l3 3 5-6"/><text class="tiny" x="204" y="199">validate the order</text></g>
+  <g class="wq-ck2"><path class="ck" d="M191 211l3 3 5-6"/><text class="tiny" x="204" y="215">save it, queue a job</text></g>
+  <g class="wq-ck3"><path class="ck" d="M191 227l3 3 5-6"/><text class="tiny" x="204" y="231">reply in ~120 ms</text></g>
+  <g class="wq-ck4"><path class="ck" d="M535 199l3 3 5-6"/><text class="tiny" x="548" y="203">render the PDF, ~90 s</text></g>
+  <g class="wq-ck5"><path class="ck" d="M535 216l3 3 5-6"/><text class="tiny" x="548" y="220">store it, mark it ready</text></g>
+  <g class="wq-ck6"><path class="ck" d="M535 233l3 3 5-6"/><text class="tiny" x="548" y="237">email, send to print</text></g>
+
+  <!-- chips on users and stores -->
+  <g class="wq-ub">
+    <rect class="f-green-soft s-green" x="30" y="214" width="108" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny mid sb f-green" x="84" y="229">being prepared</text>
+  </g>
+  <g class="wq-us">
+    <rect class="f-green-soft s-green" x="30" y="214" width="108" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny mid sb f-green" x="84" y="229">still signed in</text>
+  </g>
+  <g class="wq-dbr">
+    <rect class="f-amber-soft s-amber" x="367" y="437" width="120" height="20" rx="10" stroke-width="1.2"/>
+    <text class="tiny mid sb f-amber-ink" x="427" y="451">1042 · rendering</text>
+  </g>
+  <g class="wq-dbd">
+    <rect class="f-green-soft s-green" x="367" y="437" width="120" height="20" rx="10" stroke-width="1.2"/>
+    <text class="tiny mid sb f-green" x="427" y="451">1042 · ready</text>
+  </g>
+  <g class="wq-bp1">
+    <rect class="f-teal-soft s-teal" x="639" y="437" width="72" height="20" rx="10" stroke-width="1.2"/>
+    <text class="tiny mid sb mono f-teal" x="675" y="451">1042.pdf</text>
+  </g>
+  <g class="wq-bp3">
+    <rect class="f-teal-soft s-teal" x="639" y="437" width="72" height="20" rx="10" stroke-width="1.2"/>
+    <text class="tiny mid sb mono f-teal" x="675" y="451">1043.pdf</text>
+  </g>
+  <g class="wq-bdl">
+    <rect class="f-panel s-line" x="524" y="437" width="110" height="20" rx="10" stroke-width="1.2"/>
+    <circle class="none s-ink" cx="535" cy="447" r="5" stroke-width="1.2"/>
+    <path class="none s-ink" d="M535 444.5V447L537 448.3" stroke-width="1.2" stroke-linecap="round"/>
+    <text class="tiny mid sb f-ink" x="588" y="451">−37 old uploads</text>
+  </g>
+  <g class="wq-cs">
+    <rect class="f-orange-soft s-orange" x="206" y="437" width="100" height="20" rx="10" stroke-width="1.2"/>
+    <text class="tiny mid sb f-orange" x="256" y="451">session found</text>
+  </g>
+
+  <!-- step 2: the clock and what each tier scales on -->
+  <g class="p23">
+    <rect class="f-panel s-line" x="30" y="108" width="104" height="26" rx="13" stroke-width="1.5"/>
+    <circle class="none s-muted" cx="45" cy="121" r="6.5" stroke-width="1.5"/>
+    <path class="none s-muted" d="M45 117V121L48 123" stroke-width="1.5" stroke-linecap="round"/>
+    <text class="tiny sb f-ink wq-t19" x="58" y="125">19:00 · peak</text>
+    <text class="tiny sb f-ink wq-t23" x="58" y="125">23:00 · night</text>
+    <text class="tiny sb f-ink wq-t02" x="58" y="125">02:00 · night</text>
+  </g>
+  <g class="p2">
+    <text class="tiny" x="30" y="160">web scales on</text>
+    <text class="tiny b f-ink" x="30" y="174">request rate</text>
+    <rect class="f-line" x="30" y="182" width="96" height="6" rx="3"/>
+    <rect class="f-amber wq-grow wq-mt" x="30" y="182" width="96" height="6" rx="3"/>
+    <text class="tiny mid" x="427" y="326">workers scale on</text>
+    <text class="tiny mid b f-ink" x="427" y="340">queue length</text>
+  </g>
+
+  <!-- step 3: the lease on a message -->
+  <g class="wq-tg">
+    <rect class="f-line" x="374" y="316" width="106" height="5" rx="2.5"/>
+    <rect class="f-amber wq-grow wq-tb" x="374" y="316" width="106" height="5" rx="2.5"/>
+  </g>
+  <text class="tiny mid sb f-amber-ink wq-tt1" x="427" y="337">visibility timeout</text>
+  <text class="tiny mid sb f-purple wq-tt2" x="427" y="337">1043 redelivered</text>
+
+  <!-- step 4: shared schema and code, the worker monolith, next steps -->
+  <g class="wq-lib">
+    <path class="none s-amber" d="M336 330H364M490 330H520" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <rect class="f-amber-soft s-amber" x="364" y="319" width="126" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny mid sb f-amber-ink" x="427" y="334">shared code library</text>
+  </g>
+  <g class="wq-dbx">
+    <rect class="none s-amber" x="356" y="384" width="142" height="78" rx="12" stroke-width="2.5"/>
+    <rect class="f-amber-soft s-amber" x="367" y="437" width="120" height="20" rx="10" stroke-width="1.2"/>
+    <text class="tiny mid sb f-amber-ink" x="427" y="451">one shared schema</text>
+  </g>
+  <g class="wq-werr">
+    <rect class="f-red-soft s-red" x="188" y="296" width="136" height="36" rx="8" stroke-width="2"/>
+    <rect class="f-red-soft s-red" x="188" y="252" width="136" height="36" rx="8" stroke-width="2"/>
+    <text class="tiny end sb f-red" x="316" y="318">500 errors</text>
+    <text class="tiny end sb f-red" x="316" y="274">500 errors</text>
+  </g>
+  <g class="wq-mono">
+    <rect class="f-bg" x="532" y="154" width="172" height="182" rx="10"/>
+    <rect class="f-amber-soft s-amber" x="532" y="154" width="172" height="182" rx="10" stroke-width="1.5"/>
+    <text class="sub sb f-ink" x="544" y="174">worker 1 · all jobs</text>
+  </g>
+  <g class="wq-mj1"><rect class="f-bg s-line" x="544" y="184" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny f-ink" x="554" y="198">render photo books</text></g>
+  <g class="wq-mj2"><rect class="f-bg s-line" x="544" y="208" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny f-ink" x="554" y="222">send emails</text></g>
+  <g class="wq-mj3"><rect class="f-bg s-line" x="544" y="232" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny f-ink" x="554" y="246">import photos</text></g>
+  <g class="wq-mj4"><rect class="f-bg s-line" x="544" y="256" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny f-ink" x="554" y="270">build reports</text></g>
+  <g class="wq-mrel">
+    <text class="tiny mid b f-amber-ink" x="618" y="300">one release cycle</text>
+    <text class="tiny mid" x="618" y="316">for unrelated jobs</text>
+  </g>
+  <g class="wq-pnl">
+    <path class="wire dash" d="M716 245H743" marker-end="url(#ah)"/>
+    <rect class="zone" x="744" y="104" width="186" height="292" rx="14"/>
+    <text class="sub sb f-ink" x="756" y="126">Usual next steps</text>
+    <text class="tiny" x="756" y="148">1 · one queue and worker</text>
+    <text class="tiny" x="756" y="162">per job type</text>
+  </g>
+  <g class="wq-ln1">
+    <rect class="box" x="756" y="174" width="40" height="16" rx="4"/>
+    <rect class="f-purple" x="772" y="178" width="8" height="8" rx="2"/>
+    <rect class="f-purple" x="784" y="178" width="8" height="8" rx="2"/>
+    <line class="wire" x1="796" y1="182" x2="811" y2="182" marker-end="url(#ah)"/>
+    <rect class="box" x="812" y="174" width="110" height="16" rx="4"/>
+    <text class="tiny f-ink" x="820" y="186">render worker</text>
+  </g>
+  <g class="wq-ln2">
+    <rect class="box" x="756" y="196" width="40" height="16" rx="4"/>
+    <rect class="f-purple" x="784" y="200" width="8" height="8" rx="2"/>
+    <line class="wire" x1="796" y1="204" x2="811" y2="204" marker-end="url(#ah)"/>
+    <rect class="box" x="812" y="196" width="110" height="16" rx="4"/>
+    <text class="tiny f-ink" x="820" y="208">email worker</text>
+  </g>
+  <g class="wq-ln3">
+    <rect class="box" x="756" y="218" width="40" height="16" rx="4"/>
+    <rect class="f-purple" x="772" y="222" width="8" height="8" rx="2"/>
+    <rect class="f-purple" x="784" y="222" width="8" height="8" rx="2"/>
+    <line class="wire" x1="796" y1="226" x2="811" y2="226" marker-end="url(#ah)"/>
+    <rect class="box" x="812" y="218" width="110" height="16" rx="4"/>
+    <text class="tiny f-ink" x="820" y="230">import worker</text>
+  </g>
+  <g class="wq-ln4">
+    <rect class="box" x="756" y="240" width="40" height="16" rx="4"/>
+    <rect class="f-purple" x="784" y="244" width="8" height="8" rx="2"/>
+    <line class="wire" x1="796" y1="248" x2="811" y2="248" marker-end="url(#ah)"/>
+    <rect class="box" x="812" y="240" width="110" height="16" rx="4"/>
+    <text class="tiny f-ink" x="820" y="252">report worker</text>
+  </g>
+  <g class="wq-pn2">
+    <line class="wire" x1="838" y1="264" x2="838" y2="281" marker-end="url(#ah)"/>
+    <text class="tiny" x="756" y="300">2 · when the domain grows:</text>
+    <text class="tiny" x="756" y="314">services with their own data</text>
+  </g>
+  <g class="wq-sv1">
+    <rect class="box" x="756" y="326" width="52" height="26" rx="6"/>
+    <text class="tiny mid f-ink" x="782" y="343">orders</text>
+    <path class="f-teal-soft s-teal" d="M772 362v10a10 3.5 0 0 0 20 0v-10" stroke-width="1.2"/>
+    <ellipse class="f-teal-soft s-teal" cx="782" cy="362" rx="10" ry="3.5" stroke-width="1.2"/>
+  </g>
+  <g class="wq-sv2">
+    <rect class="box" x="816" y="326" width="52" height="26" rx="6"/>
+    <text class="tiny mid f-ink" x="842" y="343">books</text>
+    <path class="f-teal-soft s-teal" d="M832 362v10a10 3.5 0 0 0 20 0v-10" stroke-width="1.2"/>
+    <ellipse class="f-teal-soft s-teal" cx="842" cy="362" rx="10" ry="3.5" stroke-width="1.2"/>
+  </g>
+  <g class="wq-sv3">
+    <rect class="box" x="876" y="326" width="52" height="26" rx="6"/>
+    <text class="tiny mid f-ink" x="902" y="343">imports</text>
+    <path class="f-teal-soft s-teal" d="M892 362v10a10 3.5 0 0 0 20 0v-10" stroke-width="1.2"/>
+    <ellipse class="f-teal-soft s-teal" cx="902" cy="362" rx="10" ry="3.5" stroke-width="1.2"/>
+  </g>
+
+  <!-- moving tokens -->
+  <circle class="pkt f-green wq-cdn" r="6"/>
+  <circle class="pkt f-blue wq-o1" r="7"/>
+  <circle class="pkt f-teal wq-h1" r="6"/>
+  <circle class="pkt f-teal wq-s1" r="6"/>
+  <circle class="pkt f-green wq-a1" r="7"/>
+  <circle class="pkt f-teal wq-f1" r="6"/>
+  <circle class="pkt f-teal wq-m1" r="6"/>
+  <circle class="pkt f-blue wq-p1" r="6"/>
+  <circle class="pkt f-blue wq-e1" r="6"/>
+  <rect class="msg wq-j0" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <circle class="pkt f-blue wq-r1" r="6"/>
+  <circle class="pkt f-blue wq-r2" r="6"/>
+  <circle class="pkt f-blue wq-r3" r="6"/>
+  <circle class="pkt f-blue wq-r4" r="6"/>
+  <circle class="pkt f-blue wq-r5" r="6"/>
+  <circle class="pkt f-blue wq-r6" r="6"/>
+  <circle class="pkt f-blue wq-r7" r="6"/>
+  <circle class="pkt f-blue wq-r8" r="6"/>
+  <rect class="msg wq-j1" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <rect class="msg wq-j2" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <rect class="msg wq-j3" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <rect class="msg wq-j4" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <rect class="msg wq-j5" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <rect class="msg wq-j6" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <rect class="msg wq-j7" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <rect class="msg wq-j8" x="-8" y="-8" width="16" height="16" rx="3"/>
+  <g class="wq-jr">
+    <rect class="msg" x="-8" y="-8" width="16" height="16" rx="3"/>
+    <rect class="none s-amber" x="-12" y="-12" width="24" height="24" rx="6" stroke-width="2"/>
+  </g>
+  <g class="wq-ss">
+    <circle class="pkt f-blue" r="7"/>
+    <circle class="f-orange s-bg" cx="7" cy="-7" r="4.5" stroke-width="1.5"/>
+  </g>
+  <circle class="pkt f-orange wq-sq" r="6"/>
+  <circle class="pkt f-orange wq-sa" r="6"/>
+  <circle class="pkt f-green wq-a3" r="7"/>
+  <circle class="pkt f-teal wq-dl" r="6"/>
+  <circle class="pkt f-teal wq-f3" r="6"/>
+  <circle class="pkt f-amber wq-sc" r="7"/>
+  <circle class="pkt f-red wq-bk" r="7"/>
+</g>
+</svg>
