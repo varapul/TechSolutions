@@ -221,7 +221,7 @@ A layered edge is normal: a load balancer or CDN that terminates TLS and filters
 - [RFC 9440 — Client-Cert HTTP Header Field](https://www.rfc-editor.org/rfc/rfc9440)
 - [RFC 9110 — HTTP Semantics (content codings, Vary, 401 and WWW-Authenticate)](https://www.rfc-editor.org/rfc/rfc9110)
 - [RFC 6750 — The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://www.rfc-editor.org/rfc/rfc6750)
-- [BREACH attack](https://www.breachattack.com/)
+- [RFC 7457 — Summarizing Known Attacks on TLS and DTLS (§2.6 Compression Attacks: CRIME, TIME, and BREACH)](https://www.rfc-editor.org/rfc/rfc7457#section-2.6)
 - [HAProxy — The PROXY protocol](https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt)
 - [Elastic Load Balancing — Create an HTTPS listener for your Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html)
 - [Elastic Load Balancing — Authenticate users using an Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html)
