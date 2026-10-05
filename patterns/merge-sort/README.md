@@ -123,7 +123,7 @@ Slicing (`items[:mid]`) copies each half, which keeps the code short but allocat
 - [Binary Heap & Heapsort](../binary-heap/) — A complete binary tree packed into an array keeps the smallest item on top: O(log n) push and pop, the classic priority queue.
 - [Recursion & the Call Stack](../recursion/) — A function calls itself on a smaller input; each call waits on the stack until a base case returns and the answers unwind.
 - [Big-O Notation](../big-o-notation/) — How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows.
-- Two Pointers *(planned)* — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
+- [Two Pointers](../two-pointers/) — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
 
 ## References
 

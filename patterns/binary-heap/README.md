@@ -170,7 +170,7 @@ Heapsort:
 - [Bubble, Selection & Insertion Sort](../elementary-sorts/) — The three simple O(n²) sorts compared, and why insertion sort still runs inside fast library sorts on short runs.
 - [Binary Search Tree](../binary-search-tree/) — Smaller keys left, larger right: O(log n) search and insert while the tree stays balanced, O(n) once it degrades into a list.
 - [Big-O Notation](../big-o-notation/) — How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows.
-- Dijkstra's Shortest Path *(planned)* — Settle the closest unsettled node, relax its edges, repeat: shortest paths from one source when no edge weight is negative.
+- [Dijkstra's Shortest Path](../dijkstra/) — Settle the closest unsettled node, relax its edges, repeat: shortest paths from one source when no edge weight is negative.
 
 ## References
 

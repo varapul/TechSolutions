@@ -11,7 +11,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**100 animated** · 9 planned · 11 categories
+**109 animated** · 0 planned · 11 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -25,7 +25,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
-| 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 9 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
+| 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 
 ## Application Architecture
 
@@ -223,15 +223,15 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Binary Heap & Heapsort**](patterns/binary-heap/) | A complete binary tree packed into an array keeps the smallest item on top: O(log n) push and pop, the classic priority queue. | ✅ animated |
 | [**Hash Table**](patterns/hash-table/) | Hash each key straight to a bucket for O(1) average lookups; colliding keys share a bucket, and the table grows as it fills. | ✅ animated |
 | [**Binary Search Tree**](patterns/binary-search-tree/) | Smaller keys left, larger right: O(log n) search and insert while the tree stays balanced, O(n) once it degrades into a list. | ✅ animated |
-| Two Pointers | Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass. | ⏳ planned |
-| Sliding Window | Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window. | ⏳ planned |
-| Breadth-First Search | Explore a graph level by level from a queue; the first time BFS reaches a node, it has found a path with the fewest edges. | ⏳ planned |
-| Depth-First Search | Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too. | ⏳ planned |
-| Topological Sort | Order tasks so every dependency comes before what needs it, as build tools and package managers do; a cycle makes it impossible. | ⏳ planned |
-| Dijkstra's Shortest Path | Settle the closest unsettled node, relax its edges, repeat: shortest paths from one source when no edge weight is negative. | ⏳ planned |
-| Greedy Algorithms | Take the choice that looks best right now and never revisit it: optimal for some problems, quietly wrong for others. | ⏳ planned |
-| Dynamic Programming | Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table. | ⏳ planned |
-| Backtracking | Build a solution one choice at a time and undo any choice that hits a dead end: N-Queens, sudoku, permutations. | ⏳ planned |
+| [**Two Pointers**](patterns/two-pointers/) | Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass. | ✅ animated |
+| [**Sliding Window**](patterns/sliding-window/) | Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window. | ✅ animated |
+| [**Breadth-First Search**](patterns/breadth-first-search/) | Explore a graph level by level from a queue; the first time BFS reaches a node, it has found a path with the fewest edges. | ✅ animated |
+| [**Depth-First Search**](patterns/depth-first-search/) | Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too. | ✅ animated |
+| [**Topological Sort**](patterns/topological-sort/) | Order tasks so every dependency comes before what needs it, as build tools and package managers do; a cycle makes it impossible. | ✅ animated |
+| [**Dijkstra's Shortest Path**](patterns/dijkstra/) | Settle the closest unsettled node, relax its edges, repeat: shortest paths from one source when no edge weight is negative. | ✅ animated |
+| [**Greedy Algorithms**](patterns/greedy-algorithms/) | Take the choice that looks best right now and never revisit it: optimal for some problems, quietly wrong for others. | ✅ animated |
+| [**Dynamic Programming**](patterns/dynamic-programming/) | Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table. | ✅ animated |
+| [**Backtracking**](patterns/backtracking/) | Build a solution one choice at a time and undo any choice that hits a dead end: N-Queens, sudoku, permutations. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 <!-- END GENERATED: catalog -->

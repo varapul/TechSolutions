@@ -57,7 +57,7 @@ There are four standard ways to visit every node, each in O(n):
 | Post-order | left subtree, right subtree, node | Freeing a tree (children before their parent), evaluating an expression tree (operands before the operator), computing subtree sizes and heights. |
 | Level-order | level by level, left to right, from a queue | Printing or serializing by levels, finding the shallowest node that matches. |
 
-In-order output is sorted because of the property: at any node, the walk first emits the whole left subtree, whose keys are all smaller, in sorted order (the same argument applied to the smaller tree), then the node's own key, then the right subtree, whose keys are all larger. For the tree in step 3, pre-order gives 50 30 20 40 70 60 65 80. The first three are depth-first traversals and level-order is breadth-first; Depth-First Search and Breadth-First Search, planned for this catalog, cover both on graphs.
+In-order output is sorted because of the property: at any node, the walk first emits the whole left subtree, whose keys are all smaller, in sorted order (the same argument applied to the smaller tree), then the node's own key, then the right subtree, whose keys are all larger. For the tree in step 3, pre-order gives 50 30 20 40 70 60 65 80. The first three are depth-first traversals and level-order is breadth-first; [Depth-First Search](../depth-first-search/) and [Breadth-First Search](../breadth-first-search/) cover both on graphs.
 
 ### Height and balance
 
@@ -183,8 +183,8 @@ Stable and in place don't apply to a search tree. Sorting by inserting every ite
 - [Binary Heap & Heapsort](../binary-heap/) — A complete binary tree packed into an array keeps the smallest item on top: O(log n) push and pop, the classic priority queue.
 - [Recursion & the Call Stack](../recursion/) — A function calls itself on a smaller input; each call waits on the stack until a base case returns and the answers unwind.
 - [Big-O Notation](../big-o-notation/) — How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows.
-- Depth-First Search *(planned)* — Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too.
-- Breadth-First Search *(planned)* — Explore a graph level by level from a queue; the first time BFS reaches a node, it has found a path with the fewest edges.
+- [Depth-First Search](../depth-first-search/) — Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too.
+- [Breadth-First Search](../breadth-first-search/) — Explore a graph level by level from a queue; the first time BFS reaches a node, it has found a path with the fewest edges.
 
 ## References
 

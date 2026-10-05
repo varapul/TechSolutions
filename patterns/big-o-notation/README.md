@@ -34,11 +34,11 @@ Big-O notation describes how the **number of basic steps** grows as the input si
 
 **O, Ω and Θ.** Ω(g(n)) is the matching **lower bound**: f(n) ≥ c·g(n) for every n from some n₀ on. Θ(g(n)) means both at once, a **tight** bound. A linear scan is Θ(n); it is also O(n²), which is true but tells you little. Donald Knuth's 1976 letter to SIGACT News proposed the Ω and Θ that computer scientists use today alongside O. In everyday use O usually stands in for Θ: "merge sort is O(n log n)" is meant as "takes about n log n steps", not just "at most".
 
-**Best, average and worst case** are a separate choice from O, Ω and Θ: first pick the inputs you are describing, then bound the cost on them. Searching an unsorted list takes 1 step when the target comes first, n steps when it is missing, and about n/2 on average when it is present at a random position. Quicksort takes Θ(n log n) time on average and Θ(n²) in its worst case. Say which case you mean: a hash table's O(1) is an average, while merge sort's O(n log n) holds even in the worst case.
+**Best, average and worst case** are a separate choice from O, Ω and Θ: first pick the inputs you are describing, then bound the cost on them. Searching an unsorted list takes 1 step when the target comes first, n steps when it is missing, and about n/2 on average when it is present at a random position. [Quicksort](../quicksort/) takes Θ(n log n) time on average and Θ(n²) in its worst case. Say which case you mean: a hash table's O(1) is an average, while merge sort's O(n log n) holds even in the worst case.
 
 **Amortized cost** spreads a rare expensive operation over the cheap ones around it. Appending to a Python list usually writes one pointer into spare capacity. When the capacity runs out, CPython grows the list's array, over-allocating in proportion to its size, and growing can mean copying every element pointer to a new block: one O(n) append. Because each resize makes room for proportionally more appends, n appends cost O(n) in total, so each one is **amortized O(1)**. The [Python wiki](https://wiki.python.org/moin/TimeComplexity) lists append that way and warns that a single call can still take surprisingly long.
 
-**Space complexity** uses the same notation for memory: the extra space an algorithm needs beyond its input. Merge sort needs O(n) extra space for merging, heapsort O(1), and a recursive function holds one stack frame per level of recursion. Time and space often trade: a set of n items costs O(n) memory and turns each membership test from O(n) into O(1) on average.
+**Space complexity** uses the same notation for memory: the extra space an algorithm needs beyond its input. Merge sort needs O(n) extra space for merging, [heapsort](../binary-heap/) O(1), and a recursive function holds one stack frame per level of recursion. Time and space often trade: a set of n items costs O(n) memory and turns each membership test from O(n) into O(1) on average.
 
 **Recognise the class from the shape of the code:**
 
@@ -194,8 +194,8 @@ Big-O is the subject here rather than one algorithm, so this table summarises th
 - [Hash Table](../hash-table/) — Hash each key straight to a bucket for O(1) average lookups; colliding keys share a bucket, and the table grows as it fills.
 - [Recursion & the Call Stack](../recursion/) — A function calls itself on a smaller input; each call waits on the stack until a base case returns and the answers unwind.
 - [Binary Search Tree](../binary-search-tree/) — Smaller keys left, larger right: O(log n) search and insert while the tree stays balanced, O(n) once it degrades into a list.
-- Dynamic Programming *(planned)* — Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table.
-- Sliding Window *(planned)* — Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window.
+- [Dynamic Programming](../dynamic-programming/) — Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table.
+- [Sliding Window](../sliding-window/) — Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window.
 
 ## References
 

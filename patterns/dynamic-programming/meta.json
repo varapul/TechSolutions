@@ -1,0 +1,39 @@
+{
+  "aka": ["DP", "memoization", "tabulation"],
+  "steps": [
+    {
+      "title": "Same subproblems, again",
+      "caption": "Naive best(6) makes 24 calls for 7 amounts: best(0) runs 9 times, best(1) 6 and best(2) 4.",
+      "body": "The fewest coins from 1, 3 and 4 that make n follows `best(n) = 1 + min(best(n − 1), best(n − 3), best(n − 4))`, with `best(0) = 0`. Run as plain recursion, `best(6)` makes **24 calls** for only 7 different amounts: `best(2)` runs 4 times, `best(1)` 6 times and `best(0)` 9 times, so 17 calls redo work that was already done. The count grows exponentially: `best(30)` makes 2,550,408 calls."
+    },
+    {
+      "title": "Top-down: memoize",
+      "caption": "With a memo, each amount is computed once; the other 7 calls just read it. 7 computations, not 24.",
+      "body": "Keep a **memo**, a table of answers by amount: look an amount up before solving it, and store the answer once it is solved. Now each amount is computed once, 7 computations in all, and the other 7 calls return straight from the memo, so 10 of the naive calls never happen. That is **memoization**, or top-down dynamic programming; in Python, `@functools.cache` adds the memo for you."
+    },
+    {
+      "title": "Bottom-up: fill a table",
+      "caption": "dp[0] = 0, then each dp[n] = 1 + the least of the cells 1, 3 and 4 back. dp[6] = 2, from 3 + 3.",
+      "body": "Drop the recursion and fill a table from the smallest amount up: `dp[0] = 0`, then each `dp[n]` is 1 + the minimum of `dp[n − 1]`, `dp[n − 3]` and `dp[n − 4]`, cells that are already filled. `dp[6] = min(dp[5] + 1, dp[3] + 1, dp[2] + 1) = min(3, 2, 3) = 2`. Storing the coin each cell used lets you walk back from 6 to 3 to 0 and read **3 + 3**, the answer that greedy misses: it takes the 4 first and ends with 4 + 1 + 1."
+    },
+    {
+      "title": "Spot it, then table it",
+      "caption": "Same recipe, new problem: the kitten → sitting grid fills to 3 edits: k → s, e → i and insert g.",
+      "body": "The recipe: **define the state**, **write the recurrence**, **set the base cases** and **choose a fill order** in which every cell's inputs come first. For edit distance, `d(i, j)` is the fewest edits that turn the first i letters of *kitten* into the first j of *sitting*; the grid fills row by row to **3**, and tracing back gives k → s, e → i and insert g. The same idea runs diff tools and spell checkers, DNA alignment, query planners choosing join orders, Bellman–Ford shortest paths and TeX's line breaking."
+    }
+  ],
+  "related": ["recursion", "greedy-algorithms", "backtracking", "dijkstra", "cache-aside", "hash-table", "binary-search", "big-o-notation"],
+  "references": [
+    { "title": "Richard Bellman — The theory of dynamic programming (Bulletin of the AMS, 1954)", "url": "https://www.ams.org/journals/bull/1954-60-06/S0002-9904-1954-09848-8/" },
+    { "title": "Stuart Dreyfus — Richard Bellman on the Birth of Dynamic Programming (Operations Research, 2002; archived PDF)", "url": "https://web.archive.org/web/20180821050228/https://pubsonline.informs.org/doi/pdf/10.1287/opre.50.1.48.17791" },
+    { "title": "Robert A. Wagner and Michael J. Fischer — The String-to-String Correction Problem (Journal of the ACM, 1974)", "url": "https://dl.acm.org/doi/10.1145/321796.321811" },
+    { "title": "Saul B. Needleman and Christian D. Wunsch — A general method applicable to the search for similarities in the amino acid sequence of two proteins (1970)", "url": "https://doi.org/10.1016/0022-2836(70)90057-4" },
+    { "title": "P. Griffiths Selinger et al. — Access Path Selection in a Relational Database Management System (SIGMOD 1979)", "url": "https://dl.acm.org/doi/10.1145/582095.582099" },
+    { "title": "Eugene W. Myers — An O(ND) Difference Algorithm and Its Variations (Algorithmica, 1986)", "url": "https://doi.org/10.1007/BF01840446" },
+    { "title": "Python docs — functools.cache", "url": "https://docs.python.org/3/library/functools.html#functools.cache" },
+    { "title": "PostgreSQL docs — Genetic Query Optimizer: query handling as a complex optimization problem", "url": "https://www.postgresql.org/docs/current/geqo-intro.html" },
+    { "title": "PostgreSQL source — the optimizer README (join search by dynamic programming)", "url": "https://github.com/postgres/postgres/blob/master/src/backend/optimizer/README" },
+    { "title": "Git docs — git diff --diff-algorithm", "url": "https://git-scm.com/docs/git-diff" },
+    { "title": "MIT OpenCourseWare 6.006 (Spring 2020) — Lecture 16: Dynamic Programming, Part 2: LCS, LIS, Coins", "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/resources/lecture-16-dynamic-programming-part-2-lcs-lis-coins/" }
+  ]
+}

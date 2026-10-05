@@ -145,7 +145,7 @@ The `while` loop sorts the larger side itself, which keeps the stack O(log n) de
 - [Recursion & the Call Stack](../recursion/) — A function calls itself on a smaller input; each call waits on the stack until a base case returns and the answers unwind.
 - [Big-O Notation](../big-o-notation/) — How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows.
 - [Binary Search](../binary-search/) — Halve a sorted range with every check: about 20 steps find one item among a million, where a scan may need a million.
-- Two Pointers *(planned)* — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
+- [Two Pointers](../two-pointers/) — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
 
 ## References
 

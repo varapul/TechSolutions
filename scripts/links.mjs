@@ -66,11 +66,12 @@ async function worker() {
 }
 await Promise.all(Array.from({ length: 8 }, worker));
 // Some publishers answer automated requests with 403 (e.g. dl.acm.org); check those by hand.
-const BOT_BLOCKERS = /^https:\/\/(dl\.acm\.org|www\.oreilly\.com|academic\.oup\.com)\//;
+// A doi.org link counts too when it redirects to one of them.
+const BOT_BLOCKERS = /^https:\/\/(dl\.acm\.org|www\.oreilly\.com|academic\.oup\.com|epubs\.siam\.org)\//;
 let failed = 0;
 for (const r of results) {
   if (r.code >= 200 && r.code < 300) continue;
-  const soft = r.code === 403 && BOT_BLOCKERS.test(r.url);
+  const soft = r.code === 403 && (BOT_BLOCKERS.test(r.url) || BOT_BLOCKERS.test(r.final));
   if (!soft) failed++;
   console.log(`${soft ? 'warn ' : 'error'} ${r.code || 'ERR'} ${r.url}  [${urls.get(r.url).join(', ')}]${r.final && r.final !== r.url ? `  → ${r.final}` : ''}`);
 }

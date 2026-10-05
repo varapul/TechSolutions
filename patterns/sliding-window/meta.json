@@ -1,0 +1,36 @@
+{
+  "aka": ["moving window", "rolling window"],
+  "steps": [
+    {
+      "title": "Recount every window",
+      "caption": "Recount: add up each window of 3 from scratch. 8 windows × 3 = 24 item reads; the best sum is 17.",
+      "body": "For each of the 8 windows of 3 neighbouring items, add its items up from scratch: 4 + 2 + 7 = 13, then 2 + 7 + 1 = 10, and so on. That is 8 × 3 = **24 item reads** for the sums 13, 10, 16, 12, 16, 14, 13 and 17, and the best is 17 (6 + 2 + 9, the last window). Neighbouring windows share k − 1 items, so most items are read k times: **O(n·k)**."
+    },
+    {
+      "title": "Slide: add one, drop one",
+      "caption": "Slide: add the item that enters, subtract the one that leaves. Same sums and best in 17 reads: O(n).",
+      "body": "Add up the first window once (4 + 2 + 7 = 13). Each slide then **adds the item that enters and subtracts the one that leaves**: 13 − 4 + 1 = 10, 10 − 2 + 8 = 16, and so on, reaching the same sums and the same best with 3 + 7 × 2 = **17 reads instead of 24**. The gap grows with k: for a million items and k = 1,000, sliding needs about 2 million operations where recounting needs about a billion, because sliding is **O(n) whatever k is**."
+    },
+    {
+      "title": "Grow and shrink",
+      "caption": "Variable window: right adds a letter; a repeat makes left jump past its earlier copy. Best: stream.",
+      "body": "A window can change size too. To find the longest stretch of `datastream` without a repeated letter, `right` extends the window one letter at a time, and a last-seen table (a hash map from letter to index) says whether the new letter is already inside it; if so, `left` jumps just past the earlier copy. That happens three times: a at 3 repeats a at 1 (left → 2), t at 5 repeats t at 2 (left → 3), and a at 8 repeats a at 3 (left → 4). The answer is **stream**, length 6, and since each index enters once and leaves at most once, this is **O(n)** as well."
+    },
+    {
+      "title": "Windows in real systems",
+      "caption": "Rate limit, 5 per 60 s: at 52 s the window is full, so 429; at 61 s the 0 s request has aged out.",
+      "body": "A sliding-window rate limiter accepts a request when fewer than 5 accepted requests have timestamps in the last 60 seconds. Requests at 0, 8, 15, 22 and 40 s are accepted; at 52 s the window already holds 5, so the request is refused with **429**; at 61 s the 0 s request has aged out (4 left), so it is accepted, and at 70 s the 8 s request has aged out in turn. The same windows drive moving averages and SLO burn-rate alerts, stream processing (tumbling, hopping and session windows), and TCP flow control, where the receiver's window caps how much unacknowledged data the sender may have in flight."
+    }
+  ],
+  "related": ["two-pointers", "hash-table", "rate-limiting", "slo-error-budgets", "big-o-notation", "binary-search"],
+  "references": [
+    { "title": "Cloudflare — How we built rate limiting capable of scaling to millions of domains (2017)", "url": "https://blog.cloudflare.com/counting-things-a-lot-of-different-things/" },
+    { "title": "Apache Flink 2.3 documentation — Windows", "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/" },
+    { "title": "Apache Kafka 4.3 documentation — Streams DSL: Windowing", "url": "https://kafka.apache.org/43/streams/developer-guide/dsl-api/#windowing" },
+    { "title": "Google SRE Workbook — Alerting on SLOs", "url": "https://sre.google/workbook/alerting-on-slos/" },
+    { "title": "RFC 9293 — Transmission Control Protocol (TCP)", "url": "https://www.rfc-editor.org/rfc/rfc9293.html" },
+    { "title": "Python documentation — collections.deque", "url": "https://docs.python.org/3/library/collections.html#collections.deque" },
+    { "title": "Resilience4j — CircuitBreaker (count-based and time-based sliding windows)", "url": "https://resilience4j.readme.io/docs/circuitbreaker" },
+    { "title": "Andrew Tridgell and Paul Mackerras — The rsync algorithm (rolling checksum)", "url": "https://rsync.samba.org/tech_report/" }
+  ]
+}

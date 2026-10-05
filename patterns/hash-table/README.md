@@ -233,8 +233,8 @@ Stable and in place don't apply to a map. Iteration order is not guaranteed in g
 - [Binary Search Tree](../binary-search-tree/) — Smaller keys left, larger right: O(log n) search and insert while the tree stays balanced, O(n) once it degrades into a list.
 - [Big-O Notation](../big-o-notation/) — How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows.
 - [Binary Search](../binary-search/) — Halve a sorted range with every check: about 20 steps find one item among a million, where a scan may need a million.
-- Two Pointers *(planned)* — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
-- Sliding Window *(planned)* — Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window.
+- [Two Pointers](../two-pointers/) — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
+- [Sliding Window](../sliding-window/) — Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window.
 
 ## References
 

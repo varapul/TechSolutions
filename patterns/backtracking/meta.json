@@ -1,0 +1,41 @@
+{
+  "aka": ["backtracking search", "backtrack programming"],
+  "steps": [
+    {
+      "title": "Choose, check, go deeper",
+      "caption": "Place a queen in row 0, then try row 1 until a square is safe. In row 2 every square is attacked.",
+      "body": "Backtracking builds a solution one choice at a time; here each choice is the square for the next row's queen. The search tries a row's squares from left to right and **checks** each one against the queens already placed: a shared column or diagonal means it is attacked. r0c0 is safe, r1c0 and r1c1 are attacked, r1c2 is safe, and then all four squares of row 2 are attacked: a **dead end** after 8 squares tried."
+    },
+    {
+      "title": "Undo the last choice",
+      "caption": "Undo the last queen and try its next square; when a row runs out, undo one more. Solution: 1 3 0 2.",
+      "body": "At a dead end the search **undoes** its most recent choice and tries the next square in that row; when a row has no squares left, it undoes the choice above it too (undone queens stay in the tree as dashed rings). Removing r1c2 leads to r1c3 and r2c1 and a second dead end in row 3, then row 1 runs out, so r0c0 is removed as well. From r0c1 the search finds r1c3, r2c0 and r3c2: the columns 1, 3, 0, 2, after 26 squares tried, 8 queens placed and 4 removed."
+    },
+    {
+      "title": "Pruning is the point",
+      "caption": "Each attacked square rules out every board below it: 114 of the 256, with only 26 squares tried.",
+      "body": "An attacked square ends its branch of the search tree, so none of the boards below it is ever built: 16 for each attacked square in row 1, 4 in row 2 and 1 in row 3, which makes 114, and the next board in search order is the solution. Brute force would build whole boards and test each one: up to 4⁴ = 256 with one queen per row (4! = 24 if the columns must differ too). Backtracking keeps only the current choices, so it needs O(n) extra space."
+    },
+    {
+      "title": "When the tree explodes",
+      "caption": "(a+)+b against n a's with no b: 2^(n−1) ways to split them, so each extra a doubles the work.",
+      "body": "Pruning helps, but in the worst case backtracking is still exponential. A backtracking regex engine matching `(a+)+b` against n a's with no b tries every way to split the a's into groups, 2ⁿ⁻¹ of them, so 25 a's mean more than 16 million: **catastrophic backtracking**, or ReDoS when an attacker chooses the input. A regex that backtracked too much caused Cloudflare's 27-minute worldwide outage on 2 July 2019; the defences are linear-time engines (RE2, Go's `regexp`, Rust's `regex`), match timeouts, and atomic groups or possessive quantifiers."
+    }
+  ],
+  "related": ["recursion", "depth-first-search", "dynamic-programming", "greedy-algorithms", "big-o-notation"],
+  "references": [
+    { "title": "Solomon W. Golomb and Leonard D. Baumert — Backtrack Programming (Journal of the ACM, 1965)", "url": "https://dl.acm.org/doi/10.1145/321296.321300" },
+    { "title": "Donald E. Knuth — The Art of Computer Programming, Volume 4B, 7.2.2: Backtrack programming", "url": "https://www-cs-faculty.stanford.edu/~knuth/taocp.html" },
+    { "title": "Donald E. Knuth — Dancing Links (arXiv cs/0011047, 2000)", "url": "https://arxiv.org/abs/cs/0011047" },
+    { "title": "Davis, Logemann and Loveland — A machine program for theorem-proving (Communications of the ACM, 1962)", "url": "https://dl.acm.org/doi/10.1145/368273.368557" },
+    { "title": "Peter van Beek — Backtracking Search Algorithms (Handbook of Constraint Programming, 2006, PDF)", "url": "https://cs.uwaterloo.ca/~vanbeek/Publications/survey06.pdf" },
+    { "title": "Peter Norvig — Solving Every Sudoku Puzzle", "url": "https://www.norvig.com/sudoku.html" },
+    { "title": "Cloudflare blog — Details of the Cloudflare outage on July 2, 2019", "url": "https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019/" },
+    { "title": "Russ Cox — Regular Expression Matching Can Be Simple And Fast (2007)", "url": "https://swtch.com/~rsc/regexp/regexp1.html" },
+    { "title": "RE2 — a fast, safe, thread-friendly alternative to backtracking regex engines", "url": "https://github.com/google/re2" },
+    { "title": "OWASP — Regular expression Denial of Service (ReDoS)", "url": "https://community.owasp.org/attacks/Regular_expression_Denial_of_Service_-_ReDoS" },
+    { "title": "Python docs — re: atomic groups and possessive quantifiers (3.11+)", "url": "https://docs.python.org/3/library/re.html" },
+    { "title": "Microsoft Learn — Best practices for regular expressions in .NET (time-outs, NonBacktracking)", "url": "https://learn.microsoft.com/en-us/dotnet/standard/base-types/best-practices-regex" },
+    { "title": "OEIS A000170 — Number of ways of placing n nonattacking queens on an n × n board", "url": "https://oeis.org/A000170" }
+  ]
+}

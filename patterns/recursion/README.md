@@ -142,9 +142,9 @@ Each function does the same work for every input of a given size, so its best, a
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Dynamic Programming *(planned)* — Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table.
-- Depth-First Search *(planned)* — Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too.
-- Backtracking *(planned)* — Build a solution one choice at a time and undo any choice that hits a dead end: N-Queens, sudoku, permutations.
+- [Dynamic Programming](../dynamic-programming/) — Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table.
+- [Depth-First Search](../depth-first-search/) — Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too.
+- [Backtracking](../backtracking/) — Build a solution one choice at a time and undo any choice that hits a dead end: N-Queens, sudoku, permutations.
 - [Merge Sort](../merge-sort/) — Split the list until single items remain, then merge sorted halves back together: O(n log n) every time, and stable.
 - [Quicksort](../quicksort/) — Partition around a pivot, smaller values left and larger right, then sort each side: fast in place, O(n²) when pivots are bad.
 - [Binary Search](../binary-search/) — Halve a sorted range with every check: about 20 steps find one item among a million, where a scan may need a million.

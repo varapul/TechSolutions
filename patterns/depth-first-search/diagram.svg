@@ -1,0 +1,2053 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Depth-First Search</title>
+<desc id="dg-desc">Depth-First Search. Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too. Step 1, Go deep first: From A, each call takes the first unvisited neighbour: A, B, D, G. G has nowhere new to go. Step 2, Back up and branch: Back up to B, resume at its next neighbour E, dive again. C took 4 edges: a path, not the shortest. Step 3, A back edge is a cycle: An edge back to a cell still on the stack means a cycle: here, a spreadsheet's circular reference. Step 4, Uses and limits: One O(V + E) walk finds paths, components, cycles and topological order, but not shortest paths.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">ALGORITHMS &amp; DATA STRUCTURES</text>
+  <text class="title" x="40" y="64">Depth-First Search</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Go deep first</text>
+  <text class="step on p1" x="40" y="518">1 · Go deep first</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Back up and branch</text>
+  <text class="step on p2" x="262" y="518">2 · Back up and branch</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · A back edge is a cycle</text>
+  <text class="step on p3" x="484" y="518">3 · A back edge is a cycle</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Uses and limits</text>
+  <text class="step on p4" x="706" y="518">4 · Uses and limits</text>
+  <text class="caption p1" x="40" y="552">From A, each call takes the first unvisited neighbour: A, B, D, G. G has nowhere new to go.</text>
+  <text class="caption p2" x="40" y="552">Back up to B, resume at its next neighbour E, dive again. C took 4 edges: a path, not the shortest.</text>
+  <text class="caption p3" x="40" y="552">An edge back to a cell still on the stack means a cycle: here, a spreadsheet's circular reference.</text>
+  <text class="caption p4" x="40" y="552">One O(V + E) walk finds paths, components, cycles and topological order, but not shortest paths.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Depth-First Search. Generated from a recorded Python run (scratch trace.py + gen.mjs); 20s loop, 1s = 5%:
+   0-25%   dfs(A) -> B -> D -> G: each frame scans its neighbours in order (caret) and calls the first unvisited one;
+           G's only neighbour D is visited: a dead end (3.96s)
+   25-50%  5.06-9.43s: pop G, D; B resumes at E; E -> F -> C; C sees A visited (A-C dashed); pop C;
+           F -> H; H sees E visited (E-H dashed); H, F, E, B, A finish. Finish order G D C H F E B A
+   50-75%  spreadsheet: run 1 A1 -> B1 -> C1, finishes C1, B1, A1; A1 -> C1 meets a finished cell: no cycle.
+           12.7s C1 edited to = A1 - 3; run 2 A1 -> B1 -> C1 -> A1 meets A1 on the stack (13.92s): back edge, cycle
+   75-100% the finished graph returns; uses and limits appear; 19.5-20s the graph resets to its start */
+.diagram .dfs-nb { font-size: 13px; }
+.diagram .dfs-form { font-size: 14px; }
+.diagram .dfs-h { font-size: 12.5px; font-weight: 600; }
+.diagram .dfs-nbA { opacity: 0; animation: dfs-nbA var(--T) linear infinite; }
+.diagram .dfs-npA { animation: dfs-npA var(--T) linear infinite; }
+.diagram .dfs-ngA { opacity: 0; animation: dfs-ngA var(--T) linear infinite; }
+.diagram .dfs-dA { animation: dfs-dA var(--T) linear infinite; }
+.diagram .dfs-fA { animation: dfs-fA var(--T) linear infinite; }
+.diagram .dfs-fbA { opacity: 0; animation: dfs-fbA var(--T) linear infinite; }
+.diagram .dfs-fpA { animation: dfs-fpA var(--T) linear infinite; }
+.diagram .dfs-fgA { opacity: 0; animation: dfs-fgA var(--T) linear infinite; }
+.diagram .dfs-cA { animation: dfs-cA var(--T) linear infinite; }
+.diagram .dfs-nbB { opacity: 0; animation: dfs-nbB var(--T) linear infinite; }
+.diagram .dfs-npB { animation: dfs-npB var(--T) linear infinite; }
+.diagram .dfs-ngB { opacity: 0; animation: dfs-ngB var(--T) linear infinite; }
+.diagram .dfs-dB { animation: dfs-dB var(--T) linear infinite; }
+.diagram .dfs-fB { animation: dfs-fB var(--T) linear infinite; }
+.diagram .dfs-fbB { opacity: 0; animation: dfs-fbB var(--T) linear infinite; }
+.diagram .dfs-fpB { animation: dfs-fpB var(--T) linear infinite; }
+.diagram .dfs-fgB { opacity: 0; animation: dfs-fgB var(--T) linear infinite; }
+.diagram .dfs-cB { animation: dfs-cB var(--T) linear infinite; }
+.diagram .dfs-nbC { opacity: 0; animation: dfs-nbC var(--T) linear infinite; }
+.diagram .dfs-npC { opacity: 0; animation: dfs-npC var(--T) linear infinite; }
+.diagram .dfs-ngC { opacity: 0; animation: dfs-ngC var(--T) linear infinite; }
+.diagram .dfs-dC { opacity: 0; animation: dfs-dC var(--T) linear infinite; }
+.diagram .dfs-fC { opacity: 0; animation: dfs-fC var(--T) linear infinite; }
+.diagram .dfs-fbC { opacity: 0; animation: dfs-fbC var(--T) linear infinite; }
+.diagram .dfs-fpC { opacity: 0; animation: dfs-fpC var(--T) linear infinite; }
+.diagram .dfs-fgC { opacity: 0; animation: dfs-fgC var(--T) linear infinite; }
+.diagram .dfs-cC { animation: dfs-cC var(--T) linear infinite; }
+.diagram .dfs-nbD { opacity: 0; animation: dfs-nbD var(--T) linear infinite; }
+.diagram .dfs-npD { animation: dfs-npD var(--T) linear infinite; }
+.diagram .dfs-ngD { opacity: 0; animation: dfs-ngD var(--T) linear infinite; }
+.diagram .dfs-dD { animation: dfs-dD var(--T) linear infinite; }
+.diagram .dfs-fD { animation: dfs-fD var(--T) linear infinite; }
+.diagram .dfs-fbD { opacity: 0; animation: dfs-fbD var(--T) linear infinite; }
+.diagram .dfs-fpD { animation: dfs-fpD var(--T) linear infinite; }
+.diagram .dfs-fgD { opacity: 0; animation: dfs-fgD var(--T) linear infinite; }
+.diagram .dfs-cD { animation: dfs-cD var(--T) linear infinite; }
+.diagram .dfs-nbE { opacity: 0; animation: dfs-nbE var(--T) linear infinite; }
+.diagram .dfs-npE { opacity: 0; animation: dfs-npE var(--T) linear infinite; }
+.diagram .dfs-ngE { opacity: 0; animation: dfs-ngE var(--T) linear infinite; }
+.diagram .dfs-dE { opacity: 0; animation: dfs-dE var(--T) linear infinite; }
+.diagram .dfs-fE { opacity: 0; animation: dfs-fE var(--T) linear infinite; }
+.diagram .dfs-fbE { opacity: 0; animation: dfs-fbE var(--T) linear infinite; }
+.diagram .dfs-fpE { opacity: 0; animation: dfs-fpE var(--T) linear infinite; }
+.diagram .dfs-fgE { opacity: 0; animation: dfs-fgE var(--T) linear infinite; }
+.diagram .dfs-cE { animation: dfs-cE var(--T) linear infinite; }
+.diagram .dfs-nbF { opacity: 0; animation: dfs-nbF var(--T) linear infinite; }
+.diagram .dfs-npF { opacity: 0; animation: dfs-npF var(--T) linear infinite; }
+.diagram .dfs-ngF { opacity: 0; animation: dfs-ngF var(--T) linear infinite; }
+.diagram .dfs-dF { opacity: 0; animation: dfs-dF var(--T) linear infinite; }
+.diagram .dfs-fF { opacity: 0; animation: dfs-fF var(--T) linear infinite; }
+.diagram .dfs-fbF { opacity: 0; animation: dfs-fbF var(--T) linear infinite; }
+.diagram .dfs-fpF { opacity: 0; animation: dfs-fpF var(--T) linear infinite; }
+.diagram .dfs-fgF { opacity: 0; animation: dfs-fgF var(--T) linear infinite; }
+.diagram .dfs-cF { animation: dfs-cF var(--T) linear infinite; }
+.diagram .dfs-nbG { animation: dfs-nbG var(--T) linear infinite; }
+.diagram .dfs-npG { opacity: 0; animation: dfs-npG var(--T) linear infinite; }
+.diagram .dfs-ngG { opacity: 0; animation: dfs-ngG var(--T) linear infinite; }
+.diagram .dfs-dG { animation: dfs-dG var(--T) linear infinite; }
+.diagram .dfs-fG { animation: dfs-fG var(--T) linear infinite; }
+.diagram .dfs-fbG { animation: dfs-fbG var(--T) linear infinite; }
+.diagram .dfs-fpG { opacity: 0; animation: dfs-fpG var(--T) linear infinite; }
+.diagram .dfs-fgG { opacity: 0; animation: dfs-fgG var(--T) linear infinite; }
+.diagram .dfs-nbH { opacity: 0; animation: dfs-nbH var(--T) linear infinite; }
+.diagram .dfs-npH { opacity: 0; animation: dfs-npH var(--T) linear infinite; }
+.diagram .dfs-ngH { opacity: 0; animation: dfs-ngH var(--T) linear infinite; }
+.diagram .dfs-dH { opacity: 0; animation: dfs-dH var(--T) linear infinite; }
+.diagram .dfs-fH { opacity: 0; animation: dfs-fH var(--T) linear infinite; }
+.diagram .dfs-fbH { opacity: 0; animation: dfs-fbH var(--T) linear infinite; }
+.diagram .dfs-fpH { opacity: 0; animation: dfs-fpH var(--T) linear infinite; }
+.diagram .dfs-fgH { opacity: 0; animation: dfs-fgH var(--T) linear infinite; }
+.diagram .dfs-cH { animation: dfs-cH var(--T) linear infinite; }
+.diagram .dfs-tbAB { animation: dfs-tbAB var(--T) linear infinite; }
+.diagram .dfs-tgAB { opacity: 0; animation: dfs-tgAB var(--T) linear infinite; }
+.diagram .dfs-tbBD { animation: dfs-tbBD var(--T) linear infinite; }
+.diagram .dfs-tgBD { opacity: 0; animation: dfs-tgBD var(--T) linear infinite; }
+.diagram .dfs-tbDG { animation: dfs-tbDG var(--T) linear infinite; }
+.diagram .dfs-tgDG { opacity: 0; animation: dfs-tgDG var(--T) linear infinite; }
+.diagram .dfs-tbBE { opacity: 0; animation: dfs-tbBE var(--T) linear infinite; }
+.diagram .dfs-tgBE { opacity: 0; animation: dfs-tgBE var(--T) linear infinite; }
+.diagram .dfs-tbEF { opacity: 0; animation: dfs-tbEF var(--T) linear infinite; }
+.diagram .dfs-tgEF { opacity: 0; animation: dfs-tgEF var(--T) linear infinite; }
+.diagram .dfs-tbCF { opacity: 0; animation: dfs-tbCF var(--T) linear infinite; }
+.diagram .dfs-tgCF { opacity: 0; animation: dfs-tgCF var(--T) linear infinite; }
+.diagram .dfs-tbFH { opacity: 0; animation: dfs-tbFH var(--T) linear infinite; }
+.diagram .dfs-tgFH { opacity: 0; animation: dfs-tgFH var(--T) linear infinite; }
+.diagram .dfs-prAC { opacity: 0; animation: dfs-prAC var(--T) linear infinite; }
+.diagram .dfs-xAC { opacity: 0; animation: dfs-xAC var(--T) linear infinite; }
+.diagram .dfs-wAC { animation: dfs-wAC var(--T) linear infinite; }
+.diagram .dfs-xlAC { opacity: 0; animation: dfs-xlAC var(--T) linear infinite; }
+.diagram .dfs-prEH { opacity: 0; animation: dfs-prEH var(--T) linear infinite; }
+.diagram .dfs-xEH { opacity: 0; animation: dfs-xEH var(--T) linear infinite; }
+.diagram .dfs-wEH { animation: dfs-wEH var(--T) linear infinite; }
+.diagram .dfs-xlEH { opacity: 0; animation: dfs-xlEH var(--T) linear infinite; }
+.diagram .dfs-ring { opacity: 0; animation: dfs-ring var(--T) linear infinite; }
+.diagram .dfs-deadG { animation: dfs-deadG var(--T) linear infinite; }
+.diagram .dfs-o1 { opacity: 0; animation: dfs-o1 var(--T) linear infinite; }
+.diagram .dfs-o2 { opacity: 0; animation: dfs-o2 var(--T) linear infinite; }
+.diagram .dfs-o3 { opacity: 0; animation: dfs-o3 var(--T) linear infinite; }
+.diagram .dfs-o4 { opacity: 0; animation: dfs-o4 var(--T) linear infinite; }
+.diagram .dfs-o5 { opacity: 0; animation: dfs-o5 var(--T) linear infinite; }
+.diagram .dfs-o6 { opacity: 0; animation: dfs-o6 var(--T) linear infinite; }
+.diagram .dfs-o7 { opacity: 0; animation: dfs-o7 var(--T) linear infinite; }
+.diagram .dfs-o8 { opacity: 0; animation: dfs-o8 var(--T) linear infinite; }
+.diagram .dfs-path { opacity: 0; animation: dfs-path var(--T) linear infinite; }
+.diagram .dfs-pathtxt { opacity: 0; animation: dfs-pathtxt var(--T) linear infinite; }
+.diagram .dfs-cb-a1 { opacity: 0; animation: dfs-cb-a1 var(--T) linear infinite; }
+.diagram .dfs-cp-a1 { opacity: 0; animation: dfs-cp-a1 var(--T) linear infinite; }
+.diagram .dfs-cg-a1 { opacity: 0; animation: dfs-cg-a1 var(--T) linear infinite; }
+.diagram .dfs-v-a1 { opacity: 0; animation: dfs-v-a1 var(--T) linear infinite; }
+.diagram .dfs-cb-b1 { opacity: 0; animation: dfs-cb-b1 var(--T) linear infinite; }
+.diagram .dfs-cp-b1 { opacity: 0; animation: dfs-cp-b1 var(--T) linear infinite; }
+.diagram .dfs-cg-b1 { opacity: 0; animation: dfs-cg-b1 var(--T) linear infinite; }
+.diagram .dfs-v-b1 { opacity: 0; animation: dfs-v-b1 var(--T) linear infinite; }
+.diagram .dfs-cb-c1 { opacity: 0; animation: dfs-cb-c1 var(--T) linear infinite; }
+.diagram .dfs-cp-c1 { opacity: 0; animation: dfs-cp-c1 var(--T) linear infinite; }
+.diagram .dfs-cg-c1 { opacity: 0; animation: dfs-cg-c1 var(--T) linear infinite; }
+.diagram .dfs-v-c1 { opacity: 0; animation: dfs-v-c1 var(--T) linear infinite; }
+.diagram .dfs-ab-ab { opacity: 0; animation: dfs-ab-ab var(--T) linear infinite; }
+.diagram .dfs-ag-ab { opacity: 0; animation: dfs-ag-ab var(--T) linear infinite; }
+.diagram .dfs-ab-bc { opacity: 0; animation: dfs-ab-bc var(--T) linear infinite; }
+.diagram .dfs-ag-bc { opacity: 0; animation: dfs-ag-bc var(--T) linear infinite; }
+.diagram .dfs-ag-ac { opacity: 0; animation: dfs-ag-ac var(--T) linear infinite; }
+.diagram .dfs-ar-ca { opacity: 0; animation: dfs-ar-ca var(--T) linear infinite; }
+.diagram .dfs-newca { opacity: 0; animation: dfs-newca var(--T) linear infinite; }
+.diagram .dfs-c1old { animation: dfs-c1old var(--T) linear infinite; }
+.diagram .dfs-c1new { opacity: 0; animation: dfs-c1new var(--T) linear infinite; }
+.diagram .dfs-run1 { opacity: 0; animation: dfs-run1 var(--T) linear infinite; }
+.diagram .dfs-run2 { opacity: 0; animation: dfs-run2 var(--T) linear infinite; }
+.diagram .dfs-ok { opacity: 0; animation: dfs-ok var(--T) linear infinite; }
+.diagram .dfs-r1note { opacity: 0; animation: dfs-r1note var(--T) linear infinite; }
+.diagram .dfs-backlbl { opacity: 0; animation: dfs-backlbl var(--T) linear infinite; }
+.diagram .dfs-err { opacity: 0; animation: dfs-err var(--T) linear infinite; }
+.diagram .dfs-f-a1r1 { opacity: 0; animation: dfs-f-a1r1 var(--T) linear infinite; }
+.diagram .dfs-fb-a1r1 { opacity: 0; animation: dfs-fb-a1r1 var(--T) linear infinite; }
+.diagram .dfs-fp-a1r1 { opacity: 0; animation: dfs-fp-a1r1 var(--T) linear infinite; }
+.diagram .dfs-fg-a1r1 { opacity: 0; animation: dfs-fg-a1r1 var(--T) linear infinite; }
+.diagram .dfs-c-a1r1 { animation: dfs-c-a1r1 var(--T) linear infinite; }
+.diagram .dfs-f-b1r1 { opacity: 0; animation: dfs-f-b1r1 var(--T) linear infinite; }
+.diagram .dfs-fb-b1r1 { opacity: 0; animation: dfs-fb-b1r1 var(--T) linear infinite; }
+.diagram .dfs-fp-b1r1 { opacity: 0; animation: dfs-fp-b1r1 var(--T) linear infinite; }
+.diagram .dfs-fg-b1r1 { opacity: 0; animation: dfs-fg-b1r1 var(--T) linear infinite; }
+.diagram .dfs-f-c1r1 { opacity: 0; animation: dfs-f-c1r1 var(--T) linear infinite; }
+.diagram .dfs-fb-c1r1 { opacity: 0; animation: dfs-fb-c1r1 var(--T) linear infinite; }
+.diagram .dfs-fp-c1r1 { opacity: 0; animation: dfs-fp-c1r1 var(--T) linear infinite; }
+.diagram .dfs-fg-c1r1 { opacity: 0; animation: dfs-fg-c1r1 var(--T) linear infinite; }
+.diagram .dfs-f-a1r2 { opacity: 0; animation: dfs-f-a1r2 var(--T) linear infinite; }
+.diagram .dfs-fb-a1r2 { opacity: 0; animation: dfs-fb-a1r2 var(--T) linear infinite; }
+.diagram .dfs-fp-a1r2 { opacity: 0; animation: dfs-fp-a1r2 var(--T) linear infinite; }
+.diagram .dfs-f-b1r2 { opacity: 0; animation: dfs-f-b1r2 var(--T) linear infinite; }
+.diagram .dfs-fb-b1r2 { opacity: 0; animation: dfs-fb-b1r2 var(--T) linear infinite; }
+.diagram .dfs-fp-b1r2 { opacity: 0; animation: dfs-fp-b1r2 var(--T) linear infinite; }
+.diagram .dfs-f-c1r2 { opacity: 0; animation: dfs-f-c1r2 var(--T) linear infinite; }
+.diagram .dfs-fb-c1r2 { opacity: 0; animation: dfs-fb-c1r2 var(--T) linear infinite; }
+.diagram .dfs-fp-c1r2 { opacity: 0; animation: dfs-fp-c1r2 var(--T) linear infinite; }
+.diagram .dfs-u0 { opacity: 0; animation: dfs-u0 var(--T) linear infinite; }
+.diagram .dfs-u1 { opacity: 0; animation: dfs-u1 var(--T) linear infinite; }
+.diagram .dfs-u2 { opacity: 0; animation: dfs-u2 var(--T) linear infinite; }
+.diagram .dfs-u3 { opacity: 0; animation: dfs-u3 var(--T) linear infinite; }
+.diagram .dfs-u4 { opacity: 0; animation: dfs-u4 var(--T) linear infinite; }
+.diagram .dfs-u5 { opacity: 0; animation: dfs-u5 var(--T) linear infinite; }
+.diagram .dfs-u6 { opacity: 0; animation: dfs-u6 var(--T) linear infinite; }
+.diagram .dfs-u7 { opacity: 0; animation: dfs-u7 var(--T) linear infinite; }
+.diagram .dfs-lim1 { opacity: 0; animation: dfs-lim1 var(--T) linear infinite; }
+.diagram .dfs-lim2 { opacity: 0; animation: dfs-lim2 var(--T) linear infinite; }
+.diagram .dfs-cost { opacity: 0; animation: dfs-cost var(--T) linear infinite; }
+@keyframes dfs-nbA {
+  0% { opacity: 0; }
+  2.25% { opacity: 0; }
+  2.75% { opacity: 1; }
+  6.2% { opacity: 1; }
+  6.7% { opacity: 0; }
+  46% { opacity: 0; }
+  46.5% { opacity: 1; }
+  46.65% { opacity: 1; }
+  47.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npA {
+  0% { opacity: 0; }
+  6.2% { opacity: 0; }
+  6.7% { opacity: 1; }
+  46% { opacity: 1; }
+  46.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngA {
+  0% { opacity: 0; }
+  46.65% { opacity: 0; }
+  47.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dA {
+  0% { opacity: 0; }
+  2.25% { opacity: 0; }
+  3% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fA {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  2.2% { opacity: 0; transform: translate(0px, -12px); }
+  3.05% { opacity: 1; transform: translate(0px, 0px); }
+  46.95% { opacity: 1; transform: translate(0px, 0px); }
+  47.95% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbA {
+  0% { opacity: 0; }
+  2.25% { opacity: 0; }
+  2.75% { opacity: 1; }
+  6.2% { opacity: 1; }
+  6.7% { opacity: 0; }
+  46% { opacity: 0; }
+  46.5% { opacity: 1; }
+  46.65% { opacity: 1; }
+  47.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpA {
+  0% { opacity: 0; }
+  6.2% { opacity: 0; }
+  6.7% { opacity: 1; }
+  46% { opacity: 1; }
+  46.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgA {
+  0% { opacity: 0; }
+  46.65% { opacity: 0; }
+  46.95% { opacity: 1; }
+  48.15% { opacity: 1; }
+  48.45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cA {
+  0% { transform: translate(0px, 0px); }
+  46.1% { transform: translate(0px, 0px); }
+  46.6% { transform: translate(26px, 0px); }
+  100% { transform: translate(26px, 0px); }
+}
+@keyframes dfs-nbB {
+  0% { opacity: 0; }
+  6.2% { opacity: 0; }
+  6.7% { opacity: 1; }
+  11.9% { opacity: 1; }
+  12.4% { opacity: 0; }
+  28.05% { opacity: 0; }
+  28.55% { opacity: 1; }
+  29.75% { opacity: 1; }
+  30.25% { opacity: 0; }
+  45.15% { opacity: 0; }
+  45.25% { opacity: 1; }
+  45.65% { opacity: 1; }
+  45.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npB {
+  0% { opacity: 0; }
+  11.9% { opacity: 0; }
+  12.4% { opacity: 1; }
+  28.05% { opacity: 1; }
+  28.55% { opacity: 0; }
+  29.75% { opacity: 0; }
+  30.25% { opacity: 1; }
+  45.15% { opacity: 1; }
+  45.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngB {
+  0% { opacity: 0; }
+  45.25% { opacity: 0; }
+  45.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dB {
+  0% { opacity: 0; }
+  6.2% { opacity: 0; }
+  6.95% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fB {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  6.15% { opacity: 0; transform: translate(0px, -12px); }
+  7% { opacity: 1; transform: translate(0px, 0px); }
+  45.55% { opacity: 1; transform: translate(0px, 0px); }
+  46.55% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbB {
+  0% { opacity: 0; }
+  6.2% { opacity: 0; }
+  6.7% { opacity: 1; }
+  11.9% { opacity: 1; }
+  12.4% { opacity: 0; }
+  28.05% { opacity: 0; }
+  28.55% { opacity: 1; }
+  29.75% { opacity: 1; }
+  30.25% { opacity: 0; }
+  45.15% { opacity: 0; }
+  45.25% { opacity: 1; }
+  45.65% { opacity: 1; }
+  45.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpB {
+  0% { opacity: 0; }
+  11.9% { opacity: 0; }
+  12.4% { opacity: 1; }
+  28.05% { opacity: 1; }
+  28.55% { opacity: 0; }
+  29.75% { opacity: 0; }
+  30.25% { opacity: 1; }
+  45.15% { opacity: 1; }
+  45.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgB {
+  0% { opacity: 0; }
+  45.25% { opacity: 0; }
+  45.55% { opacity: 1; }
+  46.75% { opacity: 1; }
+  47.05% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cB {
+  0% { transform: translate(-26px, 0px); }
+  9.1% { transform: translate(-26px, 0px); }
+  9.6% { transform: translate(0px, 0px); }
+  28.4% { transform: translate(0px, 0px); }
+  28.9% { transform: translate(26px, 0px); }
+  100% { transform: translate(26px, 0px); }
+}
+@keyframes dfs-nbC {
+  0% { opacity: 0; }
+  32.8% { opacity: 0; }
+  33.3% { opacity: 1; }
+  36.05% { opacity: 1; }
+  36.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npC {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngC {
+  0% { opacity: 0; }
+  36.05% { opacity: 0; }
+  36.65% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dC {
+  0% { opacity: 0; }
+  32.8% { opacity: 0; }
+  33.55% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fC {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  32.75% { opacity: 0; transform: translate(0px, -12px); }
+  33.6% { opacity: 1; transform: translate(0px, 0px); }
+  36.35% { opacity: 1; transform: translate(0px, 0px); }
+  37.35% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbC {
+  0% { opacity: 0; }
+  32.8% { opacity: 0; }
+  33.3% { opacity: 1; }
+  36.05% { opacity: 1; }
+  36.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpC {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgC {
+  0% { opacity: 0; }
+  36.05% { opacity: 0; }
+  36.35% { opacity: 1; }
+  37.55% { opacity: 1; }
+  37.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cC {
+  0% { transform: translate(0px, 0px); }
+  35.5% { transform: translate(0px, 0px); }
+  36% { transform: translate(26px, 0px); }
+  100% { transform: translate(26px, 0px); }
+}
+@keyframes dfs-nbD {
+  0% { opacity: 0; }
+  11.9% { opacity: 0; }
+  12.4% { opacity: 1; }
+  17.6% { opacity: 1; }
+  18.1% { opacity: 0; }
+  26.5% { opacity: 0; }
+  26.85% { opacity: 1; }
+  27% { opacity: 1; }
+  27.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npD {
+  0% { opacity: 0; }
+  17.6% { opacity: 0; }
+  18.1% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngD {
+  0% { opacity: 0; }
+  26.85% { opacity: 0; }
+  27.45% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dD {
+  0% { opacity: 0; }
+  11.9% { opacity: 0; }
+  12.65% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fD {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  11.85% { opacity: 0; transform: translate(0px, -12px); }
+  12.7% { opacity: 1; transform: translate(0px, 0px); }
+  27.15% { opacity: 1; transform: translate(0px, 0px); }
+  28.15% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbD {
+  0% { opacity: 0; }
+  11.9% { opacity: 0; }
+  12.4% { opacity: 1; }
+  17.6% { opacity: 1; }
+  18.1% { opacity: 0; }
+  26.5% { opacity: 0; }
+  26.85% { opacity: 1; }
+  27% { opacity: 1; }
+  27.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpD {
+  0% { opacity: 0; }
+  17.6% { opacity: 0; }
+  18.1% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgD {
+  0% { opacity: 0; }
+  26.85% { opacity: 0; }
+  27.15% { opacity: 1; }
+  28.35% { opacity: 1; }
+  28.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cD {
+  0% { transform: translate(-26px, 0px); }
+  14.8% { transform: translate(-26px, 0px); }
+  15.3% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes dfs-nbE {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  30.25% { opacity: 1; }
+  31.55% { opacity: 1; }
+  32.05% { opacity: 0; }
+  43.75% { opacity: 0; }
+  44.25% { opacity: 1; }
+  44.4% { opacity: 1; }
+  44.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npE {
+  0% { opacity: 0; }
+  31.55% { opacity: 0; }
+  32.05% { opacity: 1; }
+  43.75% { opacity: 1; }
+  44.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngE {
+  0% { opacity: 0; }
+  44.4% { opacity: 0; }
+  45% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dE {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  30.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fE {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  29.7% { opacity: 0; transform: translate(0px, -12px); }
+  30.55% { opacity: 1; transform: translate(0px, 0px); }
+  44.7% { opacity: 1; transform: translate(0px, 0px); }
+  45.7% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbE {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  30.25% { opacity: 1; }
+  31.55% { opacity: 1; }
+  32.05% { opacity: 0; }
+  43.75% { opacity: 0; }
+  44.25% { opacity: 1; }
+  44.4% { opacity: 1; }
+  44.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpE {
+  0% { opacity: 0; }
+  31.55% { opacity: 0; }
+  32.05% { opacity: 1; }
+  43.75% { opacity: 1; }
+  44.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgE {
+  0% { opacity: 0; }
+  44.4% { opacity: 0; }
+  44.7% { opacity: 1; }
+  45.9% { opacity: 1; }
+  46.2% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cE {
+  0% { transform: translate(0px, 0px); }
+  30.2% { transform: translate(0px, 0px); }
+  30.7% { transform: translate(26px, 0px); }
+  43.85% { transform: translate(26px, 0px); }
+  44.35% { transform: translate(52px, 0px); }
+  100% { transform: translate(52px, 0px); }
+}
+@keyframes dfs-nbF {
+  0% { opacity: 0; }
+  31.55% { opacity: 0; }
+  32.05% { opacity: 1; }
+  32.8% { opacity: 1; }
+  33.3% { opacity: 0; }
+  36.9% { opacity: 0; }
+  37.4% { opacity: 1; }
+  38.9% { opacity: 1; }
+  39.4% { opacity: 0; }
+  42.9% { opacity: 0; }
+  43% { opacity: 1; }
+  43.4% { opacity: 1; }
+  43.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npF {
+  0% { opacity: 0; }
+  32.8% { opacity: 0; }
+  33.3% { opacity: 1; }
+  36.9% { opacity: 1; }
+  37.4% { opacity: 0; }
+  38.9% { opacity: 0; }
+  39.4% { opacity: 1; }
+  42.9% { opacity: 1; }
+  43.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngF {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dF {
+  0% { opacity: 0; }
+  31.55% { opacity: 0; }
+  32.3% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fF {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  31.5% { opacity: 0; transform: translate(0px, -12px); }
+  32.35% { opacity: 1; transform: translate(0px, 0px); }
+  43.3% { opacity: 1; transform: translate(0px, 0px); }
+  44.3% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbF {
+  0% { opacity: 0; }
+  31.55% { opacity: 0; }
+  32.05% { opacity: 1; }
+  32.8% { opacity: 1; }
+  33.3% { opacity: 0; }
+  36.9% { opacity: 0; }
+  37.4% { opacity: 1; }
+  38.9% { opacity: 1; }
+  39.4% { opacity: 0; }
+  42.9% { opacity: 0; }
+  43% { opacity: 1; }
+  43.4% { opacity: 1; }
+  43.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpF {
+  0% { opacity: 0; }
+  32.8% { opacity: 0; }
+  33.3% { opacity: 1; }
+  36.9% { opacity: 1; }
+  37.4% { opacity: 0; }
+  38.9% { opacity: 0; }
+  39.4% { opacity: 1; }
+  42.9% { opacity: 1; }
+  43.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgF {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.3% { opacity: 1; }
+  44.5% { opacity: 1; }
+  44.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cF {
+  0% { transform: translate(0px, 0px); }
+  37% { transform: translate(0px, 0px); }
+  37.5% { transform: translate(26px, 0px); }
+  37.55% { transform: translate(26px, 0px); }
+  38.05% { transform: translate(52px, 0px); }
+  100% { transform: translate(52px, 0px); }
+}
+@keyframes dfs-nbG {
+  0% { opacity: 0; }
+  17.6% { opacity: 0; }
+  18.1% { opacity: 1; }
+  25.3% { opacity: 1; }
+  25.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npG {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngG {
+  0% { opacity: 0; }
+  25.3% { opacity: 0; }
+  25.9% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dG {
+  0% { opacity: 0; }
+  17.6% { opacity: 0; }
+  18.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fG {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  17.55% { opacity: 0; transform: translate(0px, -12px); }
+  18.4% { opacity: 1; transform: translate(0px, 0px); }
+  25.6% { opacity: 1; transform: translate(0px, 0px); }
+  26.6% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbG {
+  0% { opacity: 0; }
+  17.6% { opacity: 0; }
+  18.1% { opacity: 1; }
+  25.3% { opacity: 1; }
+  25.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpG {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgG {
+  0% { opacity: 0; }
+  25.3% { opacity: 0; }
+  25.6% { opacity: 1; }
+  26.8% { opacity: 1; }
+  27.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-nbH {
+  0% { opacity: 0; }
+  38.9% { opacity: 0; }
+  39.4% { opacity: 1; }
+  42.15% { opacity: 1; }
+  42.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-npH {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ngH {
+  0% { opacity: 0; }
+  42.15% { opacity: 0; }
+  42.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-dH {
+  0% { opacity: 0; }
+  38.9% { opacity: 0; }
+  39.65% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fH {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  38.85% { opacity: 0; transform: translate(0px, -12px); }
+  39.7% { opacity: 1; transform: translate(0px, 0px); }
+  42.45% { opacity: 1; transform: translate(0px, 0px); }
+  43.45% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fbH {
+  0% { opacity: 0; }
+  38.9% { opacity: 0; }
+  39.4% { opacity: 1; }
+  42.15% { opacity: 1; }
+  42.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fpH {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fgH {
+  0% { opacity: 0; }
+  42.15% { opacity: 0; }
+  42.45% { opacity: 1; }
+  43.65% { opacity: 1; }
+  43.95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cH {
+  0% { transform: translate(0px, 0px); }
+  41.6% { transform: translate(0px, 0px); }
+  42.1% { transform: translate(26px, 0px); }
+  100% { transform: translate(26px, 0px); }
+}
+@keyframes dfs-tbAB {
+  0% { opacity: 0; }
+  4.7% { opacity: 0; }
+  5.3% { opacity: 1; }
+  45.25% { opacity: 1; }
+  45.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tgAB {
+  0% { opacity: 0; }
+  45.25% { opacity: 0; }
+  45.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tbBD {
+  0% { opacity: 0; }
+  10.4% { opacity: 0; }
+  11% { opacity: 1; }
+  26.85% { opacity: 1; }
+  27.45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tgBD {
+  0% { opacity: 0; }
+  26.85% { opacity: 0; }
+  27.45% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tbDG {
+  0% { opacity: 0; }
+  16.1% { opacity: 0; }
+  16.7% { opacity: 1; }
+  25.3% { opacity: 1; }
+  25.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tgDG {
+  0% { opacity: 0; }
+  25.3% { opacity: 0; }
+  25.9% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tbBE {
+  0% { opacity: 0; }
+  28.9% { opacity: 0; }
+  29.5% { opacity: 1; }
+  44.4% { opacity: 1; }
+  45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tgBE {
+  0% { opacity: 0; }
+  44.4% { opacity: 0; }
+  45% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tbEF {
+  0% { opacity: 0; }
+  30.7% { opacity: 0; }
+  31.3% { opacity: 1; }
+  43% { opacity: 1; }
+  43.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tgEF {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tbCF {
+  0% { opacity: 0; }
+  31.95% { opacity: 0; }
+  32.55% { opacity: 1; }
+  36.05% { opacity: 1; }
+  36.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tgCF {
+  0% { opacity: 0; }
+  36.05% { opacity: 0; }
+  36.65% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tbFH {
+  0% { opacity: 0; }
+  38.05% { opacity: 0; }
+  38.65% { opacity: 1; }
+  42.15% { opacity: 1; }
+  42.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-tgFH {
+  0% { opacity: 0; }
+  42.15% { opacity: 0; }
+  42.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-prAC {
+  0% { transform: translate(240px, 370px); opacity: 0; }
+  33.3% { transform: translate(240px, 370px); opacity: 0; }
+  33.6% { opacity: 1; }
+  34.7% { transform: translate(181.2px, 332.2px); opacity: 1; }
+  35% { transform: translate(181.2px, 332.2px); opacity: 0; }
+  100% { transform: translate(181.2px, 332.2px); opacity: 0; }
+}
+@keyframes dfs-xAC {
+  0% { opacity: 0; }
+  34.7% { opacity: 0; }
+  35.45% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-wAC {
+  0% { opacity: 1; }
+  34.7% { opacity: 1; }
+  35.45% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-xlAC {
+  0% { opacity: 0; }
+  34.7% { opacity: 0; }
+  35.45% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-prEH {
+  0% { transform: translate(520px, 350px); opacity: 0; }
+  39.4% { transform: translate(520px, 350px); opacity: 0; }
+  39.7% { opacity: 1; }
+  40.8% { transform: translate(461.2px, 320.6px); opacity: 1; }
+  41.1% { transform: translate(461.2px, 320.6px); opacity: 0; }
+  100% { transform: translate(461.2px, 320.6px); opacity: 0; }
+}
+@keyframes dfs-xEH {
+  0% { opacity: 0; }
+  40.8% { opacity: 0; }
+  41.55% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-wEH {
+  0% { opacity: 1; }
+  40.8% { opacity: 1; }
+  41.55% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-xlEH {
+  0% { opacity: 0; }
+  40.8% { opacity: 0; }
+  41.55% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ring {
+  0% { transform: translate(100px, 280px); opacity: 0; }
+  2.25% { transform: translate(100px, 280px); opacity: 0; }
+  2.55% { opacity: 1; }
+  4.7% { transform: translate(100px, 280px); }
+  6.2% { transform: translate(240px, 190px); }
+  10.4% { transform: translate(240px, 190px); }
+  11.9% { transform: translate(380px, 130px); }
+  16.1% { transform: translate(380px, 130px); }
+  17.6% { transform: translate(520px, 160px); }
+  25.3% { transform: translate(520px, 160px); }
+  26.5% { transform: translate(380px, 130px); }
+  26.85% { transform: translate(380px, 130px); }
+  28.05% { transform: translate(240px, 190px); }
+  28.9% { transform: translate(240px, 190px); }
+  29.75% { transform: translate(380px, 280px); }
+  30.7% { transform: translate(380px, 280px); }
+  31.55% { transform: translate(380px, 420px); }
+  31.95% { transform: translate(380px, 420px); }
+  32.8% { transform: translate(240px, 370px); }
+  36.05% { transform: translate(240px, 370px); }
+  36.9% { transform: translate(380px, 420px); }
+  38.05% { transform: translate(380px, 420px); }
+  38.9% { transform: translate(520px, 350px); }
+  42.15% { transform: translate(520px, 350px); }
+  42.9% { transform: translate(380px, 420px); }
+  43% { transform: translate(380px, 420px); }
+  43.75% { transform: translate(380px, 280px); }
+  44.4% { transform: translate(380px, 280px); }
+  45.15% { transform: translate(240px, 190px); }
+  45.25% { transform: translate(240px, 190px); }
+  46% { transform: translate(100px, 280px); }
+  46.65% { transform: translate(100px, 280px); opacity: 1; }
+  46.95% { transform: translate(100px, 280px); opacity: 0; }
+  100% { transform: translate(100px, 280px); opacity: 0; }
+}
+@keyframes dfs-deadG {
+  0% { opacity: 0; }
+  19.78% { opacity: 0; }
+  20.53% { opacity: 1; }
+  25.3% { opacity: 1; }
+  26.05% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o1 {
+  0% { opacity: 0; }
+  25.3% { opacity: 0; }
+  25.8% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o2 {
+  0% { opacity: 0; }
+  26.85% { opacity: 0; }
+  27.35% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o3 {
+  0% { opacity: 0; }
+  36.05% { opacity: 0; }
+  36.55% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o4 {
+  0% { opacity: 0; }
+  42.15% { opacity: 0; }
+  42.65% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o5 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.5% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o6 {
+  0% { opacity: 0; }
+  44.4% { opacity: 0; }
+  44.9% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o7 {
+  0% { opacity: 0; }
+  45.25% { opacity: 0; }
+  45.75% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-o8 {
+  0% { opacity: 0; }
+  46.65% { opacity: 0; }
+  47.15% { opacity: 1; }
+  51% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-path {
+  0% { opacity: 0; }
+  32.8% { opacity: 0; }
+  34.05% { opacity: 1; }
+  51% { opacity: 1; }
+  52.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-pathtxt {
+  0% { opacity: 0; }
+  33.3% { opacity: 0; }
+  34.55% { opacity: 1; }
+  51% { opacity: 1; }
+  52.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cb-a1 {
+  0% { opacity: 0; }
+  51.9% { opacity: 0; }
+  52.4% { opacity: 1; }
+  53.95% { opacity: 1; }
+  54.45% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  62.2% { opacity: 1; }
+  62.7% { opacity: 0; }
+  65% { opacity: 0; }
+  65.5% { opacity: 1; }
+  66.75% { opacity: 1; }
+  67.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cp-a1 {
+  0% { opacity: 0; }
+  53.95% { opacity: 0; }
+  54.45% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  66.75% { opacity: 0; }
+  67.25% { opacity: 1; }
+  76% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cg-a1 {
+  0% { opacity: 0; }
+  62.2% { opacity: 0; }
+  62.7% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-v-a1 {
+  0% { opacity: 0; }
+  62.2% { opacity: 0; }
+  62.95% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cb-b1 {
+  0% { opacity: 0; }
+  53.95% { opacity: 0; }
+  54.45% { opacity: 1; }
+  56% { opacity: 1; }
+  56.5% { opacity: 0; }
+  57.3% { opacity: 0; }
+  57.8% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  66.75% { opacity: 0; }
+  67.25% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cp-b1 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.5% { opacity: 1; }
+  57.3% { opacity: 1; }
+  57.8% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69% { opacity: 1; }
+  76% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cg-b1 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-v-b1 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.25% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cb-c1 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.5% { opacity: 1; }
+  57.3% { opacity: 1; }
+  57.8% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69% { opacity: 1; }
+  76% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cp-c1 {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-cg-c1 {
+  0% { opacity: 0; }
+  57.3% { opacity: 0; }
+  57.8% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-v-c1 {
+  0% { opacity: 0; }
+  57.3% { opacity: 0; }
+  58.05% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ab-ab {
+  0% { opacity: 0; }
+  53.2% { opacity: 0; }
+  53.8% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59.1% { opacity: 0; }
+  66.1% { opacity: 0; }
+  66.7% { opacity: 1; }
+  76% { opacity: 1; }
+  76.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ag-ab {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.1% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ab-bc {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  55.85% { opacity: 1; }
+  57.3% { opacity: 1; }
+  57.9% { opacity: 0; }
+  67.85% { opacity: 0; }
+  68.45% { opacity: 1; }
+  76% { opacity: 1; }
+  76.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ag-bc {
+  0% { opacity: 0; }
+  57.3% { opacity: 0; }
+  57.9% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ag-ac {
+  0% { opacity: 0; }
+  60.3% { opacity: 0; }
+  60.9% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ar-ca {
+  0% { opacity: 0; }
+  69.6% { opacity: 0; }
+  70.35% { opacity: 1; }
+  76% { opacity: 1; }
+  76.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-newca {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.75% { opacity: 1; }
+  76% { opacity: 1; }
+  77.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-c1old {
+  0% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-c1new {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65% { opacity: 1; }
+  76% { opacity: 1; }
+  76.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-run1 {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  51.75% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-run2 {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65% { opacity: 1; }
+  76% { opacity: 1; }
+  76.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-ok {
+  0% { opacity: 0; }
+  60.8% { opacity: 0; }
+  61.55% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-r1note {
+  0% { opacity: 0; }
+  62.65% { opacity: 0; }
+  63.65% { opacity: 1; }
+  76% { opacity: 1; }
+  77% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-backlbl {
+  0% { opacity: 0; }
+  70.1% { opacity: 0; }
+  71.1% { opacity: 1; }
+  76% { opacity: 1; }
+  77% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-err {
+  0% { opacity: 0; }
+  71.35% { opacity: 0; }
+  72.35% { opacity: 1; }
+  76% { opacity: 1; }
+  77% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-f-a1r1 {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  51.85% { opacity: 0; transform: translate(0px, -12px); }
+  52.7% { opacity: 1; transform: translate(0px, 0px); }
+  62.5% { opacity: 1; transform: translate(0px, 0px); }
+  63.5% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fb-a1r1 {
+  0% { opacity: 0; }
+  51.9% { opacity: 0; }
+  52.4% { opacity: 1; }
+  53.95% { opacity: 1; }
+  54.45% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  62.2% { opacity: 1; }
+  62.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fp-a1r1 {
+  0% { opacity: 0; }
+  53.95% { opacity: 0; }
+  54.45% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fg-a1r1 {
+  0% { opacity: 0; }
+  62.2% { opacity: 0; }
+  62.5% { opacity: 1; }
+  63.7% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-c-a1r1 {
+  0% { transform: translate(0px, 0px); }
+  59.7% { transform: translate(0px, 0px); }
+  60.2% { transform: translate(34px, 0px); }
+  100% { transform: translate(34px, 0px); }
+}
+@keyframes dfs-f-b1r1 {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  53.9% { opacity: 0; transform: translate(0px, -12px); }
+  54.75% { opacity: 1; transform: translate(0px, 0px); }
+  58.8% { opacity: 1; transform: translate(0px, 0px); }
+  59.8% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fb-b1r1 {
+  0% { opacity: 0; }
+  53.95% { opacity: 0; }
+  54.45% { opacity: 1; }
+  56% { opacity: 1; }
+  56.5% { opacity: 0; }
+  57.3% { opacity: 0; }
+  57.8% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fp-b1r1 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.5% { opacity: 1; }
+  57.3% { opacity: 1; }
+  57.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fg-b1r1 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  58.8% { opacity: 1; }
+  60% { opacity: 1; }
+  60.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-f-c1r1 {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  55.95% { opacity: 0; transform: translate(0px, -12px); }
+  56.8% { opacity: 1; transform: translate(0px, 0px); }
+  57.6% { opacity: 1; transform: translate(0px, 0px); }
+  58.6% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fb-c1r1 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.5% { opacity: 1; }
+  57.3% { opacity: 1; }
+  57.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fp-c1r1 {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fg-c1r1 {
+  0% { opacity: 0; }
+  57.3% { opacity: 0; }
+  57.6% { opacity: 1; }
+  58.8% { opacity: 1; }
+  59.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-f-a1r2 {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  64.95% { opacity: 0; transform: translate(0px, -12px); }
+  65.8% { opacity: 1; transform: translate(0px, 0px); }
+  76% { opacity: 1; transform: translate(0px, 0px); }
+  77% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fb-a1r2 {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  65.5% { opacity: 1; }
+  66.75% { opacity: 1; }
+  67.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fp-a1r2 {
+  0% { opacity: 0; }
+  66.75% { opacity: 0; }
+  67.25% { opacity: 1; }
+  76% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-f-b1r2 {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  66.7% { opacity: 0; transform: translate(0px, -12px); }
+  67.55% { opacity: 1; transform: translate(0px, 0px); }
+  76% { opacity: 1; transform: translate(0px, 0px); }
+  77% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fb-b1r2 {
+  0% { opacity: 0; }
+  66.75% { opacity: 0; }
+  67.25% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fp-b1r2 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69% { opacity: 1; }
+  76% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-f-c1r2 {
+  0% { opacity: 0; transform: translate(0px, -12px); }
+  68.45% { opacity: 0; transform: translate(0px, -12px); }
+  69.3% { opacity: 1; transform: translate(0px, 0px); }
+  76% { opacity: 1; transform: translate(0px, 0px); }
+  77% { opacity: 0; transform: translate(0px, -12px); }
+  100% { opacity: 0; transform: translate(0px, -12px); }
+}
+@keyframes dfs-fb-c1r2 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69% { opacity: 1; }
+  76% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-fp-c1r2 {
+  0% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dfs-u0 {
+  0% { opacity: 0; }
+  76.75% { opacity: 0; }
+  77.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-u1 {
+  0% { opacity: 0; }
+  77.55% { opacity: 0; }
+  78.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-u2 {
+  0% { opacity: 0; }
+  78.35% { opacity: 0; }
+  79.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-u3 {
+  0% { opacity: 0; }
+  79.15% { opacity: 0; }
+  80.15% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-u4 {
+  0% { opacity: 0; }
+  79.95% { opacity: 0; }
+  80.95% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-u5 {
+  0% { opacity: 0; }
+  80.75% { opacity: 0; }
+  81.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-u6 {
+  0% { opacity: 0; }
+  81.55% { opacity: 0; }
+  82.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-u7 {
+  0% { opacity: 0; }
+  82.35% { opacity: 0; }
+  83.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-lim1 {
+  0% { opacity: 0; }
+  83.75% { opacity: 0; }
+  85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-lim2 {
+  0% { opacity: 0; }
+  85.75% { opacity: 0; }
+  87% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dfs-cost {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  89% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+  <!-- call stack panel: frames slide in on push and lift off on pop -->
+  <g class="p123">
+    <text class="tiny sb" x="650" y="102">call stack</text>
+    <text class="tiny end" x="882" y="102">newest frame on top</text>
+    <text class="tiny" x="792" y="118">neighbours</text>
+    <line class="s-ink" x1="640" y1="338" x2="892" y2="338" stroke-width="2.5" stroke-linecap="round"/>
+    <rect class="f-blue-soft s-blue" x="640" y="424" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text class="tiny" x="660" y="435">running</text>
+    <rect class="f-purple-soft s-purple" x="716" y="424" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text class="tiny" x="736" y="435">waiting on a call</text>
+    <rect class="f-green-soft s-green" x="836" y="424" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text class="tiny" x="856" y="435">finished</text>
+  </g>
+  <g class="p3">
+    <text class="tiny sb" x="640" y="364">the textbook's three colours</text>
+    <text class="tiny" x="640" y="380">white: not reached yet</text>
+    <text class="tiny" x="640" y="395">grey: on the stack, its frame open</text>
+    <text class="tiny" x="640" y="410">black: finished, safe to meet again</text>
+  </g>
+  <g class="p12">
+    <text class="tiny" x="640" y="366"><tspan class="sb">finish order</tspan>, as each frame pops</text>
+    <rect class="box" x="640" y="374" width="30" height="30" rx="7"/>
+    <rect class="box" x="675" y="374" width="30" height="30" rx="7"/>
+    <rect class="box" x="710" y="374" width="30" height="30" rx="7"/>
+    <rect class="box" x="745" y="374" width="30" height="30" rx="7"/>
+    <rect class="box" x="780" y="374" width="30" height="30" rx="7"/>
+    <rect class="box" x="815" y="374" width="30" height="30" rx="7"/>
+    <rect class="box" x="850" y="374" width="30" height="30" rx="7"/>
+    <rect class="box" x="885" y="374" width="30" height="30" rx="7"/>
+    <g class="dfs-o1"><rect class="f-teal-soft s-teal" x="640" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="655" y="394">G</text></g>
+    <g class="dfs-o2"><rect class="f-teal-soft s-teal" x="675" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="690" y="394">D</text></g>
+    <g class="dfs-o3"><rect class="f-teal-soft s-teal" x="710" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="725" y="394">C</text></g>
+    <g class="dfs-o4"><rect class="f-teal-soft s-teal" x="745" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="760" y="394">H</text></g>
+    <g class="dfs-o5"><rect class="f-teal-soft s-teal" x="780" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="795" y="394">F</text></g>
+    <g class="dfs-o6"><rect class="f-teal-soft s-teal" x="815" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="830" y="394">E</text></g>
+    <g class="dfs-o7"><rect class="f-teal-soft s-teal" x="850" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="865" y="394">B</text></g>
+    <g class="dfs-o8"><rect class="f-teal-soft s-teal" x="885" y="374" width="30" height="30" rx="7" stroke-width="1.5"/><text class="label mono mid f-teal" x="900" y="394">A</text></g>
+    <g class="dfs-fA">
+      <rect class="box" x="650" y="294" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbA" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpA" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgA" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="318">dfs(A)</text>
+      <text class="dfs-nb mono" y="317"><tspan x="794">B</tspan><tspan x="820">C</tspan></text>
+      <rect class="f-ink dfs-cA" x="791.5" y="321" width="14" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-fB">
+      <rect class="box" x="650" y="252" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbB" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpB" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgB" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="276">dfs(B)</text>
+      <text class="dfs-nb mono" y="275"><tspan x="794">A</tspan><tspan x="820">D</tspan><tspan x="846">E</tspan></text>
+      <rect class="f-ink dfs-cB" x="817.5" y="279" width="14" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-fC">
+      <rect class="box" x="650" y="126" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbC" x="650" y="126" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpC" x="650" y="126" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgC" x="650" y="126" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="150">dfs(C)</text>
+      <text class="dfs-nb mono" y="149"><tspan x="794">A</tspan><tspan x="820">F</tspan></text>
+      <rect class="f-ink dfs-cC" x="791.5" y="153" width="14" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-fD">
+      <rect class="box" x="650" y="210" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbD" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpD" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgD" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="234">dfs(D)</text>
+      <text class="dfs-nb mono" y="233"><tspan x="794">B</tspan><tspan x="820">G</tspan></text>
+      <rect class="f-ink dfs-cD" x="817.5" y="237" width="14" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-fE">
+      <rect class="box" x="650" y="210" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbE" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpE" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgE" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="234">dfs(E)</text>
+      <text class="dfs-nb mono" y="233"><tspan x="794">B</tspan><tspan x="820">F</tspan><tspan x="846">H</tspan></text>
+      <rect class="f-ink dfs-cE" x="791.5" y="237" width="14" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-fF">
+      <rect class="box" x="650" y="168" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbF" x="650" y="168" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpF" x="650" y="168" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgF" x="650" y="168" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="192">dfs(F)</text>
+      <text class="dfs-nb mono" y="191"><tspan x="794">C</tspan><tspan x="820">E</tspan><tspan x="846">H</tspan></text>
+      <rect class="f-ink dfs-cF" x="791.5" y="195" width="14" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-fG">
+      <rect class="box" x="650" y="168" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbG" x="650" y="168" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpG" x="650" y="168" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgG" x="650" y="168" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="192">dfs(G)</text>
+      <text class="dfs-nb mono" y="191"><tspan x="794">D</tspan></text>
+      <rect class="f-ink" x="791.5" y="195" width="14" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-fH">
+      <rect class="box" x="650" y="126" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fbH" x="650" y="126" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fpH" x="650" y="126" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fgH" x="650" y="126" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="150">dfs(H)</text>
+      <text class="dfs-nb mono" y="149"><tspan x="794">E</tspan><tspan x="820">F</tspan></text>
+      <rect class="f-ink dfs-cH" x="791.5" y="153" width="14" height="2.5" rx="1.25"/>
+    </g>
+  </g>
+  <g class="p3">
+    <g class="dfs-f-a1r1">
+      <rect class="box" x="650" y="294" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fb-a1r1" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fp-a1r1" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fg-a1r1" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="318">dfs(A1)</text>
+      <text class="dfs-nb mono" y="317"><tspan x="794">B1</tspan><tspan x="828">C1</tspan></text>
+      <rect class="f-ink dfs-c-a1r1" x="793" y="321" width="19" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-f-b1r1">
+      <rect class="box" x="650" y="252" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fb-b1r1" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fp-b1r1" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fg-b1r1" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="276">dfs(B1)</text>
+      <text class="dfs-nb mono" y="275"><tspan x="794">C1</tspan></text>
+      <rect class="f-ink" x="793" y="279" width="19" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-f-c1r1">
+      <rect class="box" x="650" y="210" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fb-c1r1" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fp-c1r1" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-green-soft s-green dfs-fg-c1r1" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="234">dfs(C1)</text>
+      <text class="tiny" x="794" y="232">none</text>
+    </g>
+    <g class="dfs-f-a1r2">
+      <rect class="box" x="650" y="294" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fb-a1r2" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fp-a1r2" x="650" y="294" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="318">dfs(A1)</text>
+      <text class="dfs-nb mono" y="317"><tspan x="794">B1</tspan><tspan x="828">C1</tspan></text>
+      <rect class="f-ink" x="793" y="321" width="19" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-f-b1r2">
+      <rect class="box" x="650" y="252" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fb-b1r2" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fp-b1r2" x="650" y="252" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="276">dfs(B1)</text>
+      <text class="dfs-nb mono" y="275"><tspan x="794">C1</tspan></text>
+      <rect class="f-ink" x="793" y="279" width="19" height="2.5" rx="1.25"/>
+    </g>
+    <g class="dfs-f-c1r2">
+      <rect class="box" x="650" y="210" width="232" height="36" rx="9"/>
+      <rect class="f-blue-soft s-blue dfs-fb-c1r2" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <rect class="f-purple-soft s-purple dfs-fp-c1r2" x="650" y="210" width="232" height="36" rx="9" stroke-width="2"/>
+      <text class="label mono" x="664" y="234">dfs(C1)</text>
+      <text class="dfs-nb mono" y="233"><tspan x="794">A1</tspan></text>
+      <rect class="f-ink" x="793" y="237" width="19" height="2.5" rx="1.25"/>
+    </g>
+  </g>
+  <!-- the graph: hidden while step 3 shows the spreadsheet -->
+  <g class="p124">
+    <circle class="f-bg s-teal" cx="49" cy="102" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="49" y="106">1</text>
+    <text class="tiny" x="64" y="106">discovery order: when DFS first reaches a node</text>
+    <line class="wire" x1="100" y1="280" x2="240" y2="190"/>
+    <line class="wire dfs-wAC" x1="100" y1="280" x2="240" y2="370"/>
+    <line class="wire" x1="240" y1="190" x2="380" y2="130"/>
+    <line class="wire" x1="240" y1="190" x2="380" y2="280"/>
+    <line class="wire" x1="240" y1="370" x2="380" y2="420"/>
+    <line class="wire" x1="380" y1="130" x2="520" y2="160"/>
+    <line class="wire" x1="380" y1="280" x2="380" y2="420"/>
+    <line class="wire dfs-wEH" x1="380" y1="280" x2="520" y2="350"/>
+    <line class="wire" x1="380" y1="420" x2="520" y2="350"/>
+    <line class="none s-amber dash dfs-xAC" x1="240" y1="370" x2="100" y2="280" stroke-width="2.5"/>
+    <line class="none s-amber dash dfs-xEH" x1="520" y1="350" x2="380" y2="280" stroke-width="2.5"/>
+    <line class="none s-blue dfs-tbAB" x1="100" y1="280" x2="240" y2="190" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green dfs-tgAB" x1="100" y1="280" x2="240" y2="190" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-blue dfs-tbBD" x1="240" y1="190" x2="380" y2="130" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green dfs-tgBD" x1="240" y1="190" x2="380" y2="130" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-blue dfs-tbDG" x1="380" y1="130" x2="520" y2="160" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green dfs-tgDG" x1="380" y1="130" x2="520" y2="160" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-blue dfs-tbBE" x1="240" y1="190" x2="380" y2="280" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green dfs-tgBE" x1="240" y1="190" x2="380" y2="280" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-blue dfs-tbEF" x1="380" y1="280" x2="380" y2="420" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green dfs-tgEF" x1="380" y1="280" x2="380" y2="420" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-blue dfs-tbCF" x1="380" y1="420" x2="240" y2="370" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green dfs-tgCF" x1="380" y1="420" x2="240" y2="370" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-blue dfs-tbFH" x1="380" y1="420" x2="520" y2="350" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green dfs-tgFH" x1="380" y1="420" x2="520" y2="350" stroke-width="4" stroke-linecap="round"/>
+    <g class="dfs-path">
+      <polyline class="none s-blue" points="100,280 240,190 380,280 380,420 240,370" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.16"/>
+    </g>
+    <circle class="none s-blue dfs-ring" r="27" stroke-width="3"/>
+    <circle class="box" cx="100" cy="280" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbA" cx="100" cy="280" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npA" cx="100" cy="280" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngA" cx="100" cy="280" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="100" y="285">A</text>
+    <circle class="box" cx="240" cy="190" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbB" cx="240" cy="190" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npB" cx="240" cy="190" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngB" cx="240" cy="190" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="240" y="195">B</text>
+    <circle class="box" cx="240" cy="370" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbC" cx="240" cy="370" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npC" cx="240" cy="370" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngC" cx="240" cy="370" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="240" y="375">C</text>
+    <circle class="box" cx="380" cy="130" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbD" cx="380" cy="130" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npD" cx="380" cy="130" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngD" cx="380" cy="130" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="380" y="135">D</text>
+    <circle class="box" cx="380" cy="280" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbE" cx="380" cy="280" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npE" cx="380" cy="280" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngE" cx="380" cy="280" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="380" y="285">E</text>
+    <circle class="box" cx="380" cy="420" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbF" cx="380" cy="420" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npF" cx="380" cy="420" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngF" cx="380" cy="420" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="380" y="425">F</text>
+    <circle class="box" cx="520" cy="160" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbG" cx="520" cy="160" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npG" cx="520" cy="160" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngG" cx="520" cy="160" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="520" y="165">G</text>
+    <circle class="box" cx="520" cy="350" r="20"/>
+    <circle class="f-blue-soft s-blue dfs-nbH" cx="520" cy="350" r="20" stroke-width="2.5"/>
+    <circle class="f-purple-soft s-purple dfs-npH" cx="520" cy="350" r="20" stroke-width="2.5"/>
+    <circle class="f-green-soft s-green dfs-ngH" cx="520" cy="350" r="20" stroke-width="2.5"/>
+    <text class="label mono mid" x="520" y="355">H</text>
+    <g class="dfs-dA"><circle class="f-bg s-teal" cx="79" cy="259" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="79" y="263">1</text></g>
+    <g class="dfs-dB"><circle class="f-bg s-teal" cx="219" cy="169" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="219" y="173">2</text></g>
+    <g class="dfs-dC"><circle class="f-bg s-teal" cx="219" cy="391" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="219" y="395">7</text></g>
+    <g class="dfs-dD"><circle class="f-bg s-teal" cx="359" cy="109" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="359" y="113">3</text></g>
+    <g class="dfs-dE"><circle class="f-bg s-teal" cx="401" cy="259" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="401" y="263">5</text></g>
+    <g class="dfs-dF"><circle class="f-bg s-teal" cx="401" cy="441" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="401" y="445">6</text></g>
+    <g class="dfs-dG"><circle class="f-bg s-teal" cx="541" cy="139" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="541" y="143">4</text></g>
+    <g class="dfs-dH"><circle class="f-bg s-teal" cx="541" cy="371" r="9" stroke-width="1.5"/><text class="tiny mono b mid f-teal" x="541" y="375">8</text></g>
+    <circle class="pkt f-blue dfs-prAC" r="6"/>
+    <circle class="pkt f-blue dfs-prEH" r="6"/>
+    <text class="tiny sb end f-amber-ink dfs-xlAC" x="158" y="346">closes a cycle</text>
+    <text class="tiny sb f-amber-ink dfs-xlEH" x="458" y="304">closes a cycle</text>
+    <g class="dfs-deadG"><rect class="f-amber-soft s-amber" x="484" y="190" width="72" height="20" rx="10" stroke-width="1.5"/><text class="tiny sb mid f-amber-ink" x="520" y="204">dead end</text></g>
+  </g>
+  <g class="p2">
+    <g class="dfs-pathtxt">
+      <text class="sub" x="40" y="440">DFS reached C by <tspan class="mono sb f-blue">A → B → E → F → C</tspan>: 4 edges</text>
+      <text class="sub" x="40" y="460">but C is A's neighbour: a path, not the shortest one</text>
+    </g>
+  </g>
+  <g class="p24">
+    <line class="none s-blue" x1="42" y1="128" x2="52" y2="128" stroke-width="4" stroke-linecap="round"/>
+    <line class="none s-green" x1="58" y1="128" x2="68" y2="128" stroke-width="4" stroke-linecap="round"/>
+    <text class="tiny" x="76" y="132">tree edge</text>
+    <line class="none s-amber dash" x1="140" y1="128" x2="166" y2="128" stroke-width="2.5"/>
+    <text class="tiny" x="174" y="132">non-tree edge</text>
+  </g>
+  <g class="p4">
+    <text class="sub" x="40" y="465">7 tree edges reach all 8 nodes; each dashed edge closes a cycle</text>
+  </g>
+  <!-- step 3: three spreadsheet cells; DFS follows the references -->
+  <g class="p3">
+    <text class="tiny" x="40" y="106"><tspan class="sb">a spreadsheet as a directed graph</tspan>: an arrow points to a cell the formula reads</text>
+    <g class="dfs-run1"><rect class="f-blue-soft s-blue" x="40" y="120" width="58" height="22" rx="11" stroke-width="1.5"/><text class="tiny sb mid f-blue" x="69" y="135">run 1</text></g>
+    <g class="dfs-run2"><rect class="f-amber-soft s-amber" x="40" y="120" width="58" height="22" rx="11" stroke-width="1.5"/><text class="tiny sb mid f-amber-ink" x="69" y="135">run 2</text><text class="tiny" x="108" y="135">after editing C1 to <tspan class="mono sb f-ink">= A1 − 3</tspan></text></g>
+    <path class="wire" d="M140 250C140 212 290 212 290 248" marker-end="url(#ah)"/>
+    <path class="wire" d="M320 250C320 212 470 212 470 248" marker-end="url(#ah)"/>
+    <path class="wire" d="M110 250C110 150 500 150 500 248" marker-end="url(#ah)"/>
+    <path class="wire dfs-newca" d="M485 310C485 392 125 392 125 312" marker-end="url(#ah)"/>
+    <path class="none s-blue dfs-ab-ab" d="M140 250C140 212 290 212 290 248" stroke-width="3" marker-end="url(#ah-blue)"/>
+    <path class="none s-green dfs-ag-ab" d="M140 250C140 212 290 212 290 248" stroke-width="3" marker-end="url(#ah-green)"/>
+    <path class="none s-blue dfs-ab-bc" d="M320 250C320 212 470 212 470 248" stroke-width="3" marker-end="url(#ah-blue)"/>
+    <path class="none s-green dfs-ag-bc" d="M320 250C320 212 470 212 470 248" stroke-width="3" marker-end="url(#ah-green)"/>
+    <path class="none s-green dfs-ag-ac" d="M110 250C110 150 500 150 500 248" stroke-width="3" marker-end="url(#ah-green)"/>
+    <path class="none s-red dfs-ar-ca" d="M485 310C485 392 125 392 125 312" stroke-width="3" marker-end="url(#ah-red)"/>
+    <rect class="box" x="50" y="250" width="150" height="60" rx="8"/>
+    <rect class="f-blue-soft s-blue dfs-cb-a1" x="50" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <rect class="f-purple-soft s-purple dfs-cp-a1" x="50" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <rect class="f-green-soft s-green dfs-cg-a1" x="50" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <text class="tiny sb" x="60" y="267">A1</text>
+    <text class="dfs-form mono mid" x="125" y="291">= B1 + C1</text>
+    <text class="tiny mono b end f-teal dfs-v-a1" x="190" y="267">21</text>
+    <rect class="box" x="230" y="250" width="150" height="60" rx="8"/>
+    <rect class="f-blue-soft s-blue dfs-cb-b1" x="230" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <rect class="f-purple-soft s-purple dfs-cp-b1" x="230" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <rect class="f-green-soft s-green dfs-cg-b1" x="230" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <text class="tiny sb" x="240" y="267">B1</text>
+    <text class="dfs-form mono mid" x="305" y="291">= C1 × 2</text>
+    <text class="tiny mono b end f-teal dfs-v-b1" x="370" y="267">14</text>
+    <rect class="box" x="410" y="250" width="150" height="60" rx="8"/>
+    <rect class="f-blue-soft s-blue dfs-cb-c1" x="410" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <rect class="f-purple-soft s-purple dfs-cp-c1" x="410" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <rect class="f-green-soft s-green dfs-cg-c1" x="410" y="250" width="150" height="60" rx="8" stroke-width="2.5"/>
+    <text class="tiny sb" x="420" y="267">C1</text>
+    <text class="dfs-form mono mid dfs-c1old" x="485" y="291">7</text>
+    <text class="dfs-form mono mid dfs-c1new" x="485" y="291">= A1 − 3</text>
+    <text class="tiny mono b end f-teal dfs-v-c1" x="550" y="267">7</text>
+    <text class="tiny sb f-green dfs-ok" x="508" y="196">finished:</text>
+    <text class="tiny sb f-green dfs-ok" x="508" y="210">no cycle</text>
+    <text class="tiny sb mid f-red dfs-backlbl" x="305" y="392">back edge: A1 is still on the stack</text>
+    <text class="tiny f-green dfs-r1note" x="40" y="420">run 1 finished C1, B1, A1: the order to calculate them</text>
+    <g class="dfs-err"><rect class="f-red-soft s-red" x="40" y="430" width="400" height="30" rx="8" stroke-width="1.5"/><text class="dfs-form sb f-red" x="54" y="450">circular reference: A1 → B1 → C1 → A1</text></g>
+  </g>
+  <!-- step 4: uses and limits -->
+  <g class="p4">
+    <text class="tiny sb" x="616" y="106">where DFS works</text>
+    <g class="dfs-u0"><rect class="box" x="616" y="116" width="146" height="40" rx="8"/><text class="dfs-h" x="626" y="133">path exists?</text><text class="tiny" x="626" y="148">can s reach t at all</text></g>
+    <g class="dfs-u1"><rect class="box" x="770" y="116" width="146" height="40" rx="8"/><text class="dfs-h" x="780" y="133">components</text><text class="tiny" x="780" y="148">one DFS per new start</text></g>
+    <g class="dfs-u2"><rect class="box" x="616" y="164" width="146" height="40" rx="8"/><text class="dfs-h" x="626" y="181">cycle detection</text><text class="tiny" x="626" y="196">a back edge closes one</text></g>
+    <g class="dfs-u3"><rect class="box" x="770" y="164" width="146" height="40" rx="8"/><text class="dfs-h" x="780" y="181">topological order</text><text class="tiny" x="780" y="196">reverse finish order</text></g>
+    <g class="dfs-u4"><rect class="box" x="616" y="212" width="146" height="40" rx="8"/><text class="dfs-h" x="626" y="229">mazes</text><text class="tiny" x="626" y="244">carve one, then solve it</text></g>
+    <g class="dfs-u5"><rect class="box" x="770" y="212" width="146" height="40" rx="8"/><text class="dfs-h" x="780" y="229">flood fill</text><text class="tiny" x="780" y="244">paint one region</text></g>
+    <g class="dfs-u6"><rect class="box" x="616" y="260" width="146" height="40" rx="8"/><text class="dfs-h" x="626" y="277">backtracking</text><text class="tiny" x="626" y="292">try, recurse, undo</text></g>
+    <g class="dfs-u7"><rect class="box" x="770" y="260" width="146" height="40" rx="8"/><text class="dfs-h" x="780" y="277">strong components</text><text class="tiny" x="780" y="292">Tarjan, Kosaraju</text></g>
+    <text class="tiny sb" x="616" y="320">limits</text>
+    <g class="dfs-lim1"><rect class="f-red-soft s-red" x="616" y="328" width="300" height="42" rx="8" stroke-width="1.5"/><text class="dfs-h f-red" x="626" y="345">no shortest paths</text><text class="tiny" x="626" y="361">C took 4 edges, not 1: use BFS (or Dijkstra by weight)</text></g>
+    <g class="dfs-lim2"><rect class="f-amber-soft s-amber" x="616" y="378" width="300" height="42" rx="8" stroke-width="1.5"/><text class="dfs-h f-amber-ink" x="626" y="395">deep graphs exhaust the call stack</text><text class="tiny" x="626" y="411">Python stops at 1000 frames: use an explicit stack</text></g>
+    <g class="dfs-cost"><rect class="f-green-soft s-green" x="616" y="430" width="300" height="28" rx="14" stroke-width="1.5"/><text class="tiny sb mid f-green" x="766" y="448">O(V + E) time · O(V) extra space</text></g>
+  </g>
+</g>
+</svg>
