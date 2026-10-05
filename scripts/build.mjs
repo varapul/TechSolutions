@@ -11,7 +11,7 @@ const pkg = readJSON('package.json');
 const repo = String(pkg.repository?.url ?? pkg.repository ?? '').replace(/^git\+/, '').replace(/\.git$/, '') || null;
 const SITE = {
   name: 'Animated Architecture Patterns',
-  description: 'Self-explaining, looping diagrams of architecture styles, cloud design patterns, auth flows and the algorithms underneath them, for solutions architects and developers.',
+  description: 'Self-explaining, looping diagrams of architecture styles, cloud design patterns, auth flows, the classic GoF design patterns and the algorithms underneath them, for solutions architects and developers.',
 };
 
 const catalog = loadCatalog();
@@ -145,7 +145,7 @@ ${sections}
     </div>
   </div>
 </main>`;
-  return layout({ title: `${SITE.name}: architecture styles, cloud patterns, auth flows and algorithms`, description: SITE.description, body, scripts: ['index.js'] });
+  return layout({ title: `${SITE.name}: architecture styles, cloud patterns, auth flows, design patterns and algorithms`, description: SITE.description, body, scripts: ['index.js'] });
 }
 
 // ---------------------------------------------------------------------------

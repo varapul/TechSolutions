@@ -96,6 +96,16 @@ The *Algorithms & Data Structures* category draws data instead of components. Th
   Untouched data keeps the plain `box` look, and state is shown with an overlay, as above.
 - **Show the cost.** Name the complexity on screen (a chip reading `O(log n)`, say) in the step that explains it, and keep any running count visible while it changes.
 
+## Design pattern diagrams
+
+The *Design Patterns (GoF)* category shows how objects are wired together and how they talk to each other. The canvas, timeline and tokens are the same; these conventions keep the 23 diagrams consistent:
+
+- **One concrete scenario** with real names (a checkout, a text editor, an HTTP client), and on each box a small tag naming its GoF participant (`Context`, `Strategy`, `ConcreteStrategy` …), so a reader can map the scenario onto the pattern.
+- **Keep the structure light.** A class is a `box` with its name in `label` and at most two key members in `sub mono`. Mark an interface with a dashed border and an «interface» tag. Draw *implements* or *extends* as a line ending in a hollow triangle, and *holds a reference to* as a plain wire. Draw only the classes the story needs.
+- **Objects talk with moving tokens.** A method call is a blue token travelling along the reference, labelled with the method in `tiny mono`, and its return travels back in green. Follow the order of a sequence diagram when the order matters.
+- **The four-step arc:** the problem without the pattern (the growing conditional, the duplicated code, the edit that ripples, in red); the pattern's structure applied to the scenario; one call flowing through it at runtime; and the payoff (a new variant added without editing existing classes, in green), together with the cost or the closest relative.
+- **Colour keeps its meaning:** blue for calls, green for returns and for code added without edits, red for the pain point, amber for the part that varies, purple for notifications and events, teal for state that is stored or shared (snapshots, shared intrinsic state, copies), and orange for identity and access (the one instance, a permission check).
+
 ## Example: keyframes from a timeline
 
 ```js
@@ -114,4 +124,5 @@ console.log(track('xx-call', go.segs));                              // go.end i
 - **meta.json:** four steps, each with a `title`, a one-sentence `caption` (shown in the SVG) and a two-to-three-sentence `body` (README table and site, with inline Markdown allowed). `related` holds catalog slugs and `references` holds `{title, url}` pairs with primary sources where possible (standards, vendor architecture centres, the original article or book).
 - **README.md:** keep the sections from the template (*The problem*, *How it works*, *When to use it*, *Trade-offs*, *Implementation notes*). Be concrete and vendor-neutral; name managed services as examples, not requirements.
 - **Algorithm READMEs** add two sections, and `npm run new` scaffolds them for that category: *Code*, a short Python 3 implementation of your own that uses only the standard library, with an example call and its output (run it, with edge cases, before you commit), and *Complexity*, a table of the time in the best, average and worst case, the extra space, and whether it is stable or in place where that applies.
+- **Design pattern READMEs** add a *Code* section, which `npm run new` scaffolds for that category: a short TypeScript example of your own that mirrors the diagram's scenario and runs as is with `node` (Node 22 strips the types, so use only erasable syntax: no `enum`, `namespace`, parameter properties or decorators), with its output; run it, with assertions, before you commit. Paraphrase the pattern's intent instead of quoting the book.
 - Link to another pattern as `../<slug>/`. It works on GitHub, the site rewrites it to that pattern's page, and `npm run check` rejects links to patterns that aren't animated yet.

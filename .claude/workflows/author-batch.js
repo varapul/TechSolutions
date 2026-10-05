@@ -59,8 +59,22 @@ ALGORITHM PATTERN (CONTRIBUTING.md's Algorithm diagrams section defines how thes
 - Code in books and library sources is someone else's text too: write your own implementation and never paste library source.
 - The readers are developers and solutions architects. In Implementation notes, show where the algorithm runs in real systems (language libraries, databases, networks, build tools), and link related architecture patterns where they genuinely connect.`
 
+// Patterns with kind: 'design-pattern' (the Design Patterns (GoF) category) show object structure and collaboration.
+const DESIGN_PATTERN_RULES = `
+
+DESIGN PATTERN (GoF) (CONTRIBUTING.md's Design pattern diagrams section defines how these look. They are new and the other authors in this batch follow the same section, so keep to it: the set should read as one family.)
+- Tell the story with the brief's concrete scenario and real names, and tag each box with its GoF participant (Context, Strategy, ConcreteStrategy …) so a reader can map the scenario onto the pattern.
+- The README template has an extra Code section: TypeScript that runs as is with node (Node 22 strips the types itself, so use only erasable syntax: no enum, namespace, parameter properties or decorators; abstract classes, interfaces, private constructors and readonly fields are fine). Write your own example, about 25 to 60 lines, that mirrors the diagram's scenario and names, with a short usage at the end and its output as comments. Run it with node in scratch, with node:assert checks of the behaviour the diagram shows, before you paste it.
+- Paraphrase: never quote the GoF book's intent statements or any other book's prose. State the intent and the participants in your own words and cite the book.
+- Be precise about what the pattern is and is not: name its closest relatives and how they differ (Decorator, Proxy and Adapter all wrap an object; Strategy and State share a structure), and say where modern language features replace or simplify it (first-class functions, generators, modules).
+- Check claims about real libraries and frameworks (which standard-library classes or framework APIs use the pattern, deprecations, defaults) against current official documentation or source.
+- The readers are developers and solutions architects: where the pattern has an architecture-scale cousin in this catalog (Observer and publish-subscribe, Proxy and ambassador, Command and CQRS, Adapter and anti-corruption layer), link it and say what changes at that scale.`
+
+const KIND_RULES = { algorithm: ALGORITHM_RULES, 'design-pattern': DESIGN_PATTERN_RULES }
+const kindOf = (p) => p.kind ?? (p.algorithm ? 'algorithm' : null)
+
 function authorPrompt(p, note = '') {
-  return `You are authoring ONE animated diagram in ${REPO} (today is ${TODAY}): a public catalog of self-explaining, looping SVG diagrams of architecture patterns and the algorithms underneath them, for solutions architects and developers (https://github.com/varapul/TechSolutions). The finished diagrams in patterns/ set the quality bar; match them.${note}
+  return `You are authoring ONE animated diagram in ${REPO} (today is ${TODAY}): a public catalog of self-explaining, looping SVG diagrams of architecture patterns, the classic GoF design patterns and the algorithms underneath them, for solutions architects and developers (https://github.com/varapul/TechSolutions). The finished diagrams in patterns/ set the quality bar; match them.${note}
 
 Read first: CONTRIBUTING.md (canvas, 20 s / 4-step timeline, phase classes, motion, hold frames, colour language, writing rules); patterns/circuit-breaker/ and patterns/event-driven-architecture/ (diagram.svg, meta.json, README.md) as reference implementations (in each SVG skip the generated block between "<!-- @generated:base" and "<!-- @end:chrome -->"); scripts/lib/motion.mjs (track, windows, keys, route, sec, rules); src/diagram/base.css (classes and colour tokens).
 
@@ -83,17 +97,20 @@ CONTENT RULES (the last batch's review found about two real errors per pattern; 
 - Check every reference URL with curl -sIL and confirm the title matches the page. Cite only URLs you have loaded.
 - Own words only. Never transcribe passages from books, papers or articles, not in files, notes, tool inputs or your own reasoning, and don't ask a fetch tool to quote: the API's output filter ends the response when you do. Take facts from sources and write your own sentences; a README may carry at most a short attributed phrase.
 - In README prose, link other patterns as ../<slug>/ only when that pattern is already animated (patterns/<slug>/ exists); otherwise name it without a link. meta.json "related" may list planned slugs from catalog.json.
-- Keep captions, step bodies, README and diagram labels consistent with each other and with what the animation shows.${p.algorithm ? ALGORITHM_RULES : ''}
+- Keep captions, step bodies, README and diagram labels consistent with each other and with what the animation shows.${KIND_RULES[kindOf(p)] ?? ''}
 
 Return slug, one line per step, whether the check passed, and any compromises.`
 }
 
 function reviewPrompt(group) {
   const list = group.map((p) => `- ${p.slug} ("${p.title}", ${p.category})`).join('\n')
-  const algorithmCheck = group.some((p) => p.algorithm)
+  const kinds = new Set(group.map(kindOf))
+  const algorithmCheck = (kinds.has('algorithm')
     ? `\n5. For algorithm patterns: run the README's Code block with python3, adding edge cases of your own, and re-run the algorithm on the diagram's input to confirm every value, comparison, swap, pointer position, count and result that the diagram, captions and step bodies show. Check the Complexity table, and that the diagram follows CONTRIBUTING.md's Algorithm diagrams section.`
-    : ''
-  return `You are the independent fact-checker for newly authored patterns in ${REPO} (today is ${TODAY}), a public catalog of animated SVG diagrams of architecture patterns and algorithms. Their authors have finished. Review exactly these patterns, and fix what you confirm:
+    : '') + (kinds.has('design-pattern')
+    ? `\n5. For design patterns: run the README's TypeScript with node, adding a few assertions of your own, and confirm that the diagram's objects, call order and values match the code and the captions. Check that the GoF intent and participants are paraphrased correctly (no quoted book text), that the relatives named really differ as stated, that claims about real libraries hold today, and that the diagram follows CONTRIBUTING.md's Design pattern diagrams section.`
+    : '')
+  return `You are the independent fact-checker for newly authored patterns in ${REPO} (today is ${TODAY}), a public catalog of animated SVG diagrams of architecture patterns, GoF design patterns and algorithms. Their authors have finished. Review exactly these patterns, and fix what you confirm:
 ${list}
 
 For each pattern, read patterns/<slug>/meta.json, README.md and diagram.svg (hand-authored part after "<!-- @end:chrome -->"), plus the contact sheets .snapshots/<slug>.png and -dark.png (re-render with npm run snap -- <slug> if they look stale). Check:

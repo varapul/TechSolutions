@@ -1,6 +1,6 @@
 # Animated Architecture Patterns
 
-Self-explaining, looping diagrams of **architecture styles, cloud design patterns, auth flows and the algorithms underneath them**, built for solutions architects and developers who need to show *how* something works, not just *what* it is.
+Self-explaining, looping diagrams of **architecture styles, cloud design patterns, auth flows, the classic GoF design patterns and the algorithms underneath them**, built for solutions architects and developers who need to show *how* something works, not just *what* it is.
 
 <p align="center"><img src="patterns/circuit-breaker/diagram.svg" alt="Animated diagram: Circuit Breaker" width="100%"></p>
 
@@ -11,7 +11,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**109 animated** · 0 planned · 11 categories
+**109 animated** · 23 planned · 12 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -26,6 +26,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
+| 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 0 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
 
 ## Application Architecture
 
@@ -232,6 +233,38 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Greedy Algorithms**](patterns/greedy-algorithms/) | Take the choice that looks best right now and never revisit it: optimal for some problems, quietly wrong for others. | ✅ animated |
 | [**Dynamic Programming**](patterns/dynamic-programming/) | Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table. | ✅ animated |
 | [**Backtracking**](patterns/backtracking/) | Build a solution one choice at a time and undo any choice that hits a dead end: N-Queens, sudoku, permutations. | ✅ animated |
+
+<sub>[↑ Back to contents](#contents)</sub>
+
+## Design Patterns (GoF)
+
+🧩 The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together.
+
+| Pattern | In one line | Status |
+|---|---|:-:|
+| Abstract Factory | Create families of related objects through one interface, so swapping the whole family never touches client code. | ⏳ planned |
+| Builder | Assemble a complex object step by step and validate it once at the end, instead of calling a constructor with ten arguments. | ⏳ planned |
+| Factory Method | Let subclasses decide which class to create: the base class codes against an interface and calls an overridable create method. | ⏳ planned |
+| Prototype | Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep. | ⏳ planned |
+| Singleton | Guarantee one instance with a global access point, and why injecting one shared instance usually serves that need better. | ⏳ planned |
+| Adapter | Wrap an incompatible interface so existing code can use it unchanged: the classic fix for a third-party or legacy API. | ⏳ planned |
+| Bridge | Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n. | ⏳ planned |
+| Composite | Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does. | ⏳ planned |
+| Decorator | Wrap an object to add behaviour at runtime, stacking wrappers instead of multiplying subclasses for every combination. | ⏳ planned |
+| Facade | Give a complex subsystem one simple entry point, so callers make one call instead of orchestrating many classes. | ⏳ planned |
+| Flyweight | Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory. | ⏳ planned |
+| Proxy | Stand in for another object with the same interface to control access to it: lazy loading, caching, access checks, remoting. | ⏳ planned |
+| Chain of Responsibility | Pass a request along a chain of handlers until one handles it, so the sender never needs to know which one will. | ⏳ planned |
+| Command | Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts. | ⏳ planned |
+| Interpreter | Represent a small language's grammar as classes and evaluate a sentence by walking its syntax tree. | ⏳ planned |
+| Iterator | Walk a collection one element at a time without exposing how it is stored: an array, a tree or a stream that never ends. | ⏳ planned |
+| Mediator | Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many. | ⏳ planned |
+| Memento | Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation. | ⏳ planned |
+| Observer | A subject notifies its subscribed observers of every change, so one change updates many dependents it never names. | ⏳ planned |
+| State | Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements. | ⏳ planned |
+| Strategy | Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller. | ⏳ planned |
+| Template Method | Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order. | ⏳ planned |
+| Visitor | Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts. | ⏳ planned |
 
 <sub>[↑ Back to contents](#contents)</sub>
 <!-- END GENERATED: catalog -->
