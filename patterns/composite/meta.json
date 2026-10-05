@@ -1,0 +1,36 @@
+{
+  "aka": ["Object Tree"],
+  "steps": [
+    {
+      "title": "Type checks everywhere",
+      "caption": "usage() asks File or Folder? at every node; each other walk does too, so a new kind edits all four.",
+      "body": "Without a shared interface, the code that walks the tree has to ask what each node is: `usage(n)` returns a **File**'s size, and for a **Folder** it loops over the children and asks the same question of each one. Counting files, finding large files and printing the tree repeat the same `instanceof` branches, so a new kind of node, a **Symlink**, means editing all four functions."
+    },
+    {
+      "title": "One interface for both",
+      "caption": "File and Folder implement Node.size(): a file returns its own size, a folder sums its children's.",
+      "body": "**Node** (the *Component*) declares `name` and `size()`, and both kinds of node implement it. **File** (a *Leaf*) returns its own size; **Folder** (the *Composite*) keeps its children as `Node[]` and returns the sum of their `size()` calls, without asking which kind each child is: `assets/` calls `logo.png` and `icons/` the same way. The client, the usage report, talks only to `Node`."
+    },
+    {
+      "title": "One call, the whole tree",
+      "caption": "project.size() runs down the tree and the sums come back up: icons 4, src 15, assets 52, project 71.",
+      "body": "The report makes one call, `project.size()`. Each folder passes it on to its children, each file answers with its own size, and the sums climb back up: icons/ 2 + 2 = 4, src/ 12 + 3 = 15, assets/ 48 + 4 = 52 and project/ 52 + 4 + 15 = **71 KB**. The diagram moves one level at a time; at runtime the calls go depth-first, finishing one child before starting the next, and reach the same totals."
+    },
+    {
+      "title": "Uniform, with a catch",
+      "caption": "A Symlink leaf joins and Folder stays untouched. The catch: where add(child) lives, and no cycles.",
+      "body": "A new kind of leaf, **Symlink** (`brand.png → ../logo.png`), implements `Node` and joins `icons/`; `Folder` needs no change. It reports 0 KB because it counts the link, not the file it points to, as `du` does by default; following the link would count `logo.png` twice. The catch is child management: `add(child)` on `Node` keeps every node alike but makes a File refuse it (*transparency*), `add()` only on `Folder` makes clients know the type (*safety*), and either way `add()` must refuse a folder that would end up inside itself. The DOM, AWT's `Container`, React components and compilers' syntax trees are all built this way."
+    }
+  ],
+  "related": ["decorator", "iterator", "visitor", "chain-of-responsibility", "builder", "command", "flyweight", "interpreter", "gateway-aggregation"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Composite", "url": "https://refactoring.guru/design-patterns/composite" },
+    { "title": "MDN — Node (Web APIs)", "url": "https://developer.mozilla.org/en-US/docs/Web/API/Node" },
+    { "title": "MDN — Node: appendChild() method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild" },
+    { "title": "Java SE 27 API — java.awt.Container", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.desktop/java/awt/Container.html" },
+    { "title": "React documentation — Thinking in React", "url": "https://react.dev/learn/thinking-in-react" },
+    { "title": "GNU Coreutils manual — du invocation", "url": "https://www.gnu.org/software/coreutils/manual/html_node/du-invocation.html" },
+    { "title": "Melnik et al. — Dremel: Interactive Analysis of Web-Scale Datasets (VLDB 2010)", "url": "https://research.google/pubs/dremel-interactive-analysis-of-web-scale-datasets-2/" }
+  ]
+}

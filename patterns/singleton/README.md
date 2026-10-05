@@ -120,7 +120,7 @@ The fix works because an `async` function runs synchronously up to its first `aw
 ## Related patterns
 
 - [Factory Method](../factory-method/) — Let subclasses decide which class to create: the base class codes against an interface and calls an overridable create method.
-- Abstract Factory *(planned)* — Create families of related objects through one interface, so swapping the whole family never touches client code.
+- [Abstract Factory](../abstract-factory/) — Create families of related objects through one interface, so swapping the whole family never touches client code.
 - [Facade](../facade/) — Give a complex subsystem one simple entry point, so callers make one call instead of orchestrating many classes.
 - Flyweight *(planned)* — Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory.
 - [Leader Election](../leader-election/) — Instances elect one coordinator; another takes over when its lease expires.

@@ -148,8 +148,8 @@ Push sent: Your code is 4721
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Abstract Factory *(planned)* — Create families of related objects through one interface, so swapping the whole family never touches client code.
-- Template Method *(planned)* — Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order.
+- [Abstract Factory](../abstract-factory/) — Create families of related objects through one interface, so swapping the whole family never touches client code.
+- [Template Method](../template-method/) — Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order.
 - Prototype *(planned)* — Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep.
 - [Builder](../builder/) — Assemble a complex object step by step and validate it once at the end, instead of calling a constructor with ten arguments.
 - [Strategy](../strategy/) — Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller.

@@ -1,0 +1,40 @@
+{
+  "aka": ["Kit"],
+  "steps": [
+    {
+      "title": "Hard-coded and mixable",
+      "caption": "ReceiptService calls new on S3 and SQS itself; a half-done Azure move pairs S3 with Service Bus.",
+      "body": "`ReceiptService` calls `new S3BlobStore()` and `new SqsQueue()` itself, in `issue()`, in `reissue()` and wherever else it needs them. Halfway through a move to Azure, `issue()` already sends to a `ServiceBusQueue` but still stores the PDF in S3: a mixed family that nothing in the code prevents, and each of the three remaining `new` calls is one more edit."
+    },
+    {
+      "title": "One factory per family",
+      "caption": "ReceiptService gets an InfraFactory at startup and asks it for both products, so they always match.",
+      "body": "`ReceiptService` (the *Client*) receives an `InfraFactory` (the *AbstractFactory*) at startup and calls `createBlobStore()` and `createQueue()` on it, so it knows only the `BlobStore` and `Queue` interfaces (the *AbstractProducts*). Each *ConcreteFactory* creates one family's *ConcreteProducts*: `AwsFactory` makes an `S3BlobStore` and an `SqsQueue`. Whatever the service holds therefore comes from one family."
+    },
+    {
+      "title": "Swap the whole family",
+      "caption": "issue(1001) runs on AWS, then Azure, then in memory for a test: only INFRA at startup changes.",
+      "body": "`issue(1001)` stores `receipts/1001.pdf` with `put()` and then sends `{receiptId: 1001}` with `send()`. With `INFRA=aws` the factory is `AwsFactory`, so that is an S3 put and an SQS send; with `azure` the same code writes to Blob Storage and Service Bus, and a test sets `memory` and runs without any cloud. `ReceiptService` never changes."
+    },
+    {
+      "title": "Add families, not products",
+      "caption": "GcpFactory adds a family with no edits; createCache() would change InfraFactory and every factory.",
+      "body": "Google Cloud is one more row, `GcpFactory` with `GcsBlobStore` and `PubSubQueue`, plus one more `INFRA` value, and no existing class changes. A new kind of product is the opposite: `createCache()` changes the `InfraFactory` interface and therefore every factory, which is the pattern's known cost. ADO.NET's `DbProviderFactory`, Java's `DocumentBuilderFactory.newInstance()` and Swing's look and feels follow the pattern, and at system scale ports and adapters do the same job, with the risk that a cloud-neutral port shrinks to the lowest common denominator."
+    }
+  ],
+  "related": ["factory-method", "builder", "prototype", "singleton", "facade", "hexagonal-architecture"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Abstract Factory", "url": "https://refactoring.guru/design-patterns/abstract-factory" },
+    { "title": "Microsoft Learn — DbProviderFactory Class (System.Data.Common)", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.data.common.dbproviderfactory" },
+    { "title": "Microsoft Learn — Obtaining a DbProviderFactory (ADO.NET)", "url": "https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/obtaining-a-dbproviderfactory" },
+    { "title": "Java SE 27 API — javax.xml.parsers.DocumentBuilderFactory", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.xml/javax/xml/parsers/DocumentBuilderFactory.html" },
+    { "title": "Java SE 27 API — javax.swing.UIManager", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.desktop/javax/swing/UIManager.html" },
+    { "title": "Alistair Cockburn — Hexagonal Architecture (the original 2005 article)", "url": "https://alistair.cockburn.us/hexagonal-architecture" },
+    { "title": "Mark Seemann — Composition Root", "url": "https://blog.ploeh.dk/2011/07/28/CompositionRoot/" },
+    { "title": "Spring Framework reference — Environment Abstraction (bean definition profiles)", "url": "https://docs.spring.io/spring-framework/reference/core/beans/environment.html" },
+    { "title": "Gregor Hohpe — Don't get locked up into avoiding lock-in (martinfowler.com, 2019)", "url": "https://martinfowler.com/articles/oss-lockin.html" },
+    { "title": "Amazon SQS Developer Guide — Standard queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html" },
+    { "title": "Microsoft Learn — Azure Service Bus message sessions (FIFO)", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sessions" }
+  ]
+}

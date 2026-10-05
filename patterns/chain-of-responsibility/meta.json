@@ -1,0 +1,36 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "The sender decides",
+      "caption": "ExpenseService picks the approver with if/else: it knows every limit, so a new VP edits it again.",
+      "body": "`ExpenseService.submit(e)` holds an `if … else if` ladder over the amount and calls `teamLead`, `manager`, `director` or `cfo` itself, so it knows every approver and every limit: EUR 4,200 goes straight to the manager. When a reorganisation adds a **VP** level (up to EUR 200,000), the ladder gets another branch, and the sender is edited and tested again although the expenses it sends haven't changed."
+    },
+    {
+      "title": "Link the handlers",
+      "caption": "Each approver approves within its limit or passes the expense on; the sender knows only the first.",
+      "body": "The approvers become one chain. Each is a *ConcreteHandler* that extends **Approver** (the *Handler*), which holds a `next` reference and implements `handle(e)`: approve if `canApprove(e)`, otherwise return `next.handle(e)`. The chain is wired once, outside the sender (`teamLead.setNext(manager)` …), and **ExpenseService** (the *Client*) keeps only `first` and sends every expense there."
+    },
+    {
+      "title": "Pass it on until handled",
+      "caption": "EUR 300 stops at TeamLead (1 hop), 4,200 at Manager (2 hops) and 18,000 at Director (3 hops).",
+      "body": "Every expense enters at TeamLead and travels along the `next` references until a link can approve it. **EUR 300** stops at TeamLead after 1 hop, **EUR 4,200** passes TeamLead and stops at Manager after 2, and **EUR 18,000** passes two links and stops at Director after 3. `handle()` returns who approved and after how many hops, and the log records both, so it is always clear which link handled what."
+    },
+    {
+      "title": "Relink, don't edit",
+      "caption": "One changed next reference links in a VP: EUR 120,000 stops there, and ExpenseService is untouched.",
+      "body": "The reorganisation is one changed reference: Director's `next` now points to the new **VP** (up to EUR 200,000), whose `next` is CFO, so EUR 120,000 stops at VP after 4 hops and `ExpenseService` is untouched. **CFO** approves whatever reaches it, the default at the end; without one, an expense nobody takes falls off the chain. The same idea runs DOM event bubbling, middleware in Express and ASP.NET Core (where each link acts and then calls `next`), Servlet filter chains and Python's logger hierarchy."
+    }
+  ],
+  "related": ["composite", "command", "decorator", "mediator", "observer", "pipes-and-filters", "api-gateway"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Chain of Responsibility", "url": "https://refactoring.guru/design-patterns/chain-of-responsibility" },
+    { "title": "MDN — Event bubbling", "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling" },
+    { "title": "MDN — Event: stopPropagation() method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" },
+    { "title": "Express — Using middleware", "url": "https://expressjs.com/en/guide/using-middleware/" },
+    { "title": "Microsoft Learn — ASP.NET Core middleware", "url": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/" },
+    { "title": "Jakarta Servlet 6.1 API — FilterChain", "url": "https://jakarta.ee/specifications/servlet/6.1/apidocs/jakarta.servlet/jakarta/servlet/filterchain" },
+    { "title": "Python documentation — logging (Logger.propagate)", "url": "https://docs.python.org/3/library/logging.html#logging.Logger.propagate" }
+  ]
+}

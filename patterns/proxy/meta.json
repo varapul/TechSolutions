@@ -1,0 +1,35 @@
+{
+  "aka": ["Surrogate"],
+  "steps": [
+    {
+      "title": "Load everything up front",
+      "caption": "GalleryPage creates 20 FullPhotos and each reads 12 MB: 240 MB before first paint, for one photo.",
+      "body": "`GalleryPage` fills `photos: Photo[]` with `new FullPhoto(name)` for all 20 thumbnails, and each `FullPhoto` constructor reads its full-size file, 12 MB. The page holds **20 × 12 MB = 240 MB** and paints only after the last load, although the user opens a single photo, #7: 228 MB of it is never shown."
+    },
+    {
+      "title": "A stand-in, same interface",
+      "caption": "PhotoProxy implements Photo but keeps only a file name: 20 proxies, 0 MB, and GalleryPage unchanged.",
+      "body": "`PhotoProxy` (the *Proxy*) implements the same `Photo` interface (the *Subject*) as `FullPhoto` (the *RealSubject*), but it keeps only the file name and an empty `real` reference. Creating 20 of them reads **0 MB**, so the page paints at once. `GalleryPage` (the *Client*) still holds `Photo[]` and calls `display()`: only the line that creates the photos changed."
+    },
+    {
+      "title": "Load on first use",
+      "caption": "Opening #7: the proxy creates FullPhoto (12 MB) and forwards display(); opening it again reuses it.",
+      "body": "The user opens #7. `PhotoProxy.display()` finds `real` empty, creates `FullPhoto('IMG_0007.jpg')`, which reads its 12 MB, and forwards `display()` to it; the result travels back to the page. The second open finds `real` set and forwards straight away, so the page has read **12 MB once** instead of 240 MB up front."
+    },
+    {
+      "title": "Other proxies, same shape",
+      "caption": "ProtectedPhoto refuses bob before anything is forwarded; remote and caching proxies share the shape.",
+      "body": "The same shape controls access for other reasons. `ProtectedPhoto`, a *protection proxy*, checks that the signed-in user owns the private photo and refuses bob before anything is forwarded; a *remote proxy* such as a gRPC client stub sends each call over the network, and a *caching proxy* answers repeat calls itself. JavaScript's `Proxy`, Java's `java.lang.reflect.Proxy` (behind Spring AOP's interface-based proxies) and Hibernate's lazy-loading proxies generate them for you, and at network scale the idea becomes an [ambassador](../ambassador/), an [API gateway](../api-gateway/), a [CDN](../cdn-edge-caching/) or the sidecars of a [service mesh](../service-mesh/)."
+    }
+  ],
+  "related": ["decorator", "adapter", "facade", "ambassador", "api-gateway", "cdn-edge-caching", "service-mesh", "sidecar"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Proxy", "url": "https://refactoring.guru/design-patterns/proxy" },
+    { "title": "MDN — Proxy (JavaScript)", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy" },
+    { "title": "Java SE 27 API — java.lang.reflect.Proxy", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/reflect/Proxy.html" },
+    { "title": "Spring Framework reference — Proxying Mechanisms (AOP)", "url": "https://docs.spring.io/spring-framework/reference/core/aop/proxying.html" },
+    { "title": "Hibernate ORM 7.4 — A Short Guide to Hibernate 7 (proxies, lazy fetching, N+1 selects)", "url": "https://docs.hibernate.org/orm/7.4/introduction/html_single/" },
+    { "title": "gRPC — Introduction to gRPC (client stubs)", "url": "https://grpc.io/docs/what-is-grpc/introduction/" }
+  ]
+}

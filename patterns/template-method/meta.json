@@ -1,0 +1,36 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Copy-paste importers",
+      "caption": "Each importer copies the whole import: the name-check fix reached CsvImporter, not JsonImporter.",
+      "body": "`CsvImporter` and `JsonImporter` each implement the whole import in their own `run(file)`: open the file, read the rows, parse each row, validate each record, save the valid ones and close. Only the parsing line differs, so five of the six steps are copies. When products with empty names slipped through, the name check was added to `CsvImporter`'s copy and missed in `JsonImporter`'s, which still saves a product without a name."
+    },
+    {
+      "title": "The skeleton in the base",
+      "caption": "run() lives once in DataImporter and calls the steps in order; subclasses fill in parse() only.",
+      "body": "The steps move into the abstract **DataImporter** (the *AbstractClass*), whose `run(file)` is the **template method**: it exists once and calls open, read rows, parse, validate, save and close in that order. `parse(row)` is an **abstract step** that each *ConcreteClass* must supply, and `validate(rec)` is a **hook**, with a default (the name must not be empty) that a subclass may override. The base class calls the subclass and not the other way round: the *Hollywood principle*, don't call us, we'll call you."
+    },
+    {
+      "title": "One run, step by step",
+      "caption": "run('products.csv'): parse runs in CsvImporter, the default hook rejects 1003: 4 saved, 1 rejected.",
+      "body": "`run('products.csv')` is called on a `CsvImporter`, so the inherited `run()` executes: it opens the file and reads 5 rows, and each `this.parse(row)` is dispatched to **CsvImporter**, which splits the row at the commas. CsvImporter doesn't override `validate`, so the default runs and rejects **1003** for its empty name. The 4 valid records are saved and the file is closed: **4 saved, 1 rejected**."
+    },
+    {
+      "title": "Hooks, and the alternative",
+      "caption": "JsonImporter overrides the hook to also require a positive price; DataImporter stays untouched.",
+      "body": "**JsonImporter** overrides the hook, calling `super.validate(rec)` and also requiring a positive price, without an edit to `DataImporter` or `CsvImporter`. Java's `AbstractList` (implement `get` and `size`, inherit the rest) and Python's `unittest.TestCase` (`setUp`, the test method, `tearDown`) work this way, and Spring's `JdbcTemplate` gets the same effect with callbacks instead of subclasses. The cost is inheritance: every variant is a subclass coupled to its base class, which is why [Strategy](../strategy/) is the usual alternative; one of the steps is often a [factory method](../factory-method/), and at system scale a fixed sequence of stages becomes [Pipes and Filters](../pipes-and-filters/)."
+    }
+  ],
+  "related": ["strategy", "factory-method", "builder", "pipes-and-filters"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Template Method", "url": "https://refactoring.guru/design-patterns/template-method" },
+    { "title": "Martin Fowler — Form Template Method (refactoring catalog, first edition)", "url": "https://refactoring.com/catalog/formTemplateMethod.html" },
+    { "title": "Martin Fowler — InversionOfControl", "url": "https://martinfowler.com/bliki/InversionOfControl.html" },
+    { "title": "Java SE 27 API — java.util.AbstractList", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/AbstractList.html" },
+    { "title": "Python documentation — unittest (TestCase, setUp, tearDown)", "url": "https://docs.python.org/3/library/unittest.html" },
+    { "title": "Spring Framework reference — Using the JDBC core classes (JdbcTemplate)", "url": "https://docs.spring.io/spring-framework/reference/data-access/jdbc/core.html" },
+    { "title": "TypeScript 4.3 release notes — override and the --noImplicitOverride flag", "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-3.html" }
+  ]
+}

@@ -190,9 +190,9 @@ Hello world!
 ## Related patterns
 
 - Memento *(planned)* — Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation.
-- Composite *(planned)* — Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does.
+- [Composite](../composite/) — Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does.
 - [Strategy](../strategy/) — Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller.
-- Chain of Responsibility *(planned)* — Pass a request along a chain of handlers until one handles it, so the sender never needs to know which one will.
+- [Chain of Responsibility](../chain-of-responsibility/) — Pass a request along a chain of handlers until one handles it, so the sender never needs to know which one will.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 - [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.

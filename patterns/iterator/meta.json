@@ -1,0 +1,40 @@
+{
+  "aka": ["Cursor"],
+  "steps": [
+    {
+      "title": "The loop knows the storage",
+      "caption": "Three callers each page the API by hand, so switching it to cursor tokens edits all three loops.",
+      "body": "`exportCsv()`, `sendReceipts()` and `syncCrm()` each contain the same paging loop: start at page 1, call `orders.getPage(page)`, go through `res.orders`, stop when `hasMore` is false, otherwise `page++`. Every caller knows how the API splits its data, so when the API moves to cursor tokens, all three loops must change, and the next caller will copy the loop again."
+    },
+    {
+      "title": "An iterator hides it",
+      "caption": "orders.all() returns an iterator that keeps the cursor and a buffer; the loop never sees a page.",
+      "body": "`OrdersApi.all()` is a factory method: every call returns a new iterator, the generator object that the async generator function `allOrders()` creates, and the caller writes only `for await (const order of orders.all())`. The paging loop now lives in one place, and the generator's local variables are the iterator's state: the cursor (`page`) and the buffer (what is left of the current page). Nothing has run yet: a generator's body starts on the first `next()`."
+    },
+    {
+      "title": "Lazy, one page at a time",
+      "caption": "One order per next(): page 1 serves three, the 4th fetches page 2, and break ends it before page 3.",
+      "body": "The first `next()` starts the generator, which fetches page 1; 1002 and 1003 then come out of its buffer without another request, and asking for the 4th order fetches page 2. After 1004 the preview breaks, `for await` calls the iterator's `return()`, and the generator stops, so page 3 is never requested: 2 requests instead of 3."
+    },
+    {
+      "title": "Same loop, any structure",
+      "caption": "The same for…of walks an array, a tree in order and an endless generator cut short by take(5).",
+      "body": "`for…of` asks each source for an iterator and calls `next()` until `done`: the array's built-in iterator, an in-order generator over a binary search tree (1001 to 1007, sorted), and an endless generator that `take(5)` stops after five values. JavaScript, Python, Java and C# all build the pattern into the language. The cost is one more object per walk, and a collection that changes during the walk needs a defined answer: Java's `ArrayList` iterator throws `ConcurrentModificationException`."
+    }
+  ],
+  "related": ["composite", "visitor", "factory-method", "memento", "binary-search-tree", "publish-subscribe", "pipes-and-filters"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "MDN — Iteration protocols", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols" },
+    { "title": "MDN — function* (generator functions)", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*" },
+    { "title": "MDN — for await...of", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of" },
+    { "title": "Python documentation — Built-in Types: iterator and generator types", "url": "https://docs.python.org/3/library/stdtypes.html#iterator-types" },
+    { "title": "Java SE 27 API — java.util.Iterator", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Iterator.html" },
+    { "title": "Java SE 27 API — ConcurrentModificationException", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/ConcurrentModificationException.html" },
+    { "title": "Microsoft Learn — Iterators (C#)", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/iterators" },
+    { "title": "Stripe API reference — Auto-pagination", "url": "https://docs.stripe.com/api/pagination/auto" },
+    { "title": "Stripe API reference — Pagination (cursor-based, starting_after)", "url": "https://docs.stripe.com/api/pagination" },
+    { "title": "Markus Winand — We need tool support for keyset pagination", "url": "https://use-the-index-luke.com/no-offset" },
+    { "title": "Refactoring.Guru — Iterator", "url": "https://refactoring.guru/design-patterns/iterator" }
+  ]
+}

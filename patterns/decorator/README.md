@@ -157,10 +157,10 @@ assert.deepEqual(inside.lines, ['→ GET /orders', '← 503', '→ GET /orders',
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Proxy *(planned)* — Stand in for another object with the same interface to control access to it: lazy loading, caching, access checks, remoting.
+- [Proxy](../proxy/) — Stand in for another object with the same interface to control access to it: lazy loading, caching, access checks, remoting.
 - [Adapter](../adapter/) — Wrap an incompatible interface so existing code can use it unchanged: the classic fix for a third-party or legacy API.
-- Composite *(planned)* — Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does.
-- Chain of Responsibility *(planned)* — Pass a request along a chain of handlers until one handles it, so the sender never needs to know which one will.
+- [Composite](../composite/) — Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does.
+- [Chain of Responsibility](../chain-of-responsibility/) — Pass a request along a chain of handlers until one handles it, so the sender never needs to know which one will.
 - [Strategy](../strategy/) — Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller.
 - [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.

@@ -1,0 +1,37 @@
+{
+  "aka": ["Objects for States"],
+  "steps": [
+    {
+      "title": "A switch in every method",
+      "caption": "pay(), ship() and cancel() each switch on status: 12 branches, and a new state edits all three.",
+      "body": "`Order` keeps a `status` field, and `pay()`, `ship()` and `cancel()` each `switch` on it: four cases per method, 12 branches in all, and the rules for one status, such as *Shipped*, are spread over three methods. A fraud review, **OnHold**, needs a new case in all three switches; miss one, as `cancel()` does here, and cancelling an order on hold silently does nothing."
+    },
+    {
+      "title": "One class per state",
+      "caption": "Each state becomes a class with its own pay(), ship() and cancel(); Order delegates to its state.",
+      "body": "Each status becomes a class that implements **OrderState** (the *State*), so the same 12 behaviours are now grouped by state instead of by method. `Order` (the *Context*) holds its current state object and hands every call to it, and each *ConcreteState* decides what the call means: it returns the next state, which `Order` switches to, or refuses with a reason. Each `→` cell is one arrow of the state diagram."
+    },
+    {
+      "title": "The state decides",
+      "caption": "pay() takes the order from Pending to Paid and ship() to Shipped; cancel() in Shipped is refused.",
+      "body": "The client calls `order.pay()`: `Order` passes it to **Pending**, which returns **Paid**, and the reference moves; `ship()` then takes the order to **Shipped**. The same `cancel()` that would cancel a pending or paid order is refused in Shipped (too late, start a return), so the state stays as it is and the client gets the error. The log records all three calls."
+    },
+    {
+      "title": "A new state, one class",
+      "caption": "OnHold is one new class plus one changed line in Pending; Order and the other states are untouched.",
+      "body": "**OnHold**, a fraud review between Pending and Paid, is one new class (`pay()` goes on to Paid once the review has cleared, `ship()` is refused, `cancel()` cancels), and the only edit is one line in **Pending**, whose `pay()` now returns OnHold. Unlike [Strategy](../strategy/), which the client picks, states replace one another, and a state with no fields can be one shared instance. Large machines are often written as tables or statecharts, and at system scale a [circuit breaker](../circuit-breaker/) and a [saga orchestrator](../saga-orchestration/) are state machines too."
+    }
+  ],
+  "related": ["strategy", "flyweight", "singleton", "memento", "circuit-breaker", "saga-orchestration"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "David Harel — Statecharts: A Visual Formalism for Complex Systems (Science of Computer Programming, 1987)", "url": "https://doi.org/10.1016/0167-6423(87)90035-9" },
+    { "title": "W3C — State Chart XML (SCXML): State Machine Notation for Control Abstraction (Recommendation, 2015)", "url": "https://www.w3.org/TR/scxml/" },
+    { "title": "OMG — Unified Modeling Language 2.5.1 (state machines: clause 14)", "url": "https://www.omg.org/spec/UML/2.5.1/" },
+    { "title": "Stately — XState documentation", "url": "https://stately.ai/docs/xstate" },
+    { "title": "AWS Step Functions — Learn about state machines in Step Functions", "url": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-statemachines.html" },
+    { "title": "Azure Architecture Center — Circuit Breaker pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker" },
+    { "title": "Refactoring.Guru — State", "url": "https://refactoring.guru/design-patterns/state" },
+    { "title": "Martin Fowler — Replace Type Code with Subclasses (refactoring catalog)", "url": "https://refactoring.com/catalog/replaceTypeCodeWithSubclasses.html" }
+  ]
+}

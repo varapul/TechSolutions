@@ -159,7 +159,7 @@ The book draws two of these lines itself. A facade defines a new interface, wher
 
 - [Adapter](../adapter/) — Wrap an incompatible interface so existing code can use it unchanged: the classic fix for a third-party or legacy API.
 - Mediator *(planned)* — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
-- Abstract Factory *(planned)* — Create families of related objects through one interface, so swapping the whole family never touches client code.
+- [Abstract Factory](../abstract-factory/) — Create families of related objects through one interface, so swapping the whole family never touches client code.
 - [Singleton](../singleton/) — Guarantee one instance with a global access point, and why injecting one shared instance usually serves that need better.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Gateway Aggregation](../gateway-aggregation/) — Fan one client request out to several services and merge the answers into one response.

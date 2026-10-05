@@ -1,0 +1,1136 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Abstract Factory</title>
+<desc id="dg-desc">Abstract Factory. Create families of related objects through one interface, so swapping the whole family never touches client code. Step 1, Hard-coded and mixable: ReceiptService calls new on S3 and SQS itself; a half-done Azure move pairs S3 with Service Bus. Step 2, One factory per family: ReceiptService gets an InfraFactory at startup and asks it for both products, so they always match. Step 3, Swap the whole family: issue(1001) runs on AWS, then Azure, then in memory for a test: only INFRA at startup changes. Step 4, Add families, not products: GcpFactory adds a family with no edits; createCache() would change InfraFactory and every factory.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DESIGN PATTERNS (GOF)</text>
+  <text class="title" x="40" y="64">Abstract Factory</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Hard-coded and mixable</text>
+  <text class="step on p1" x="40" y="518">1 · Hard-coded and mixable</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · One factory per family</text>
+  <text class="step on p2" x="262" y="518">2 · One factory per family</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Swap the whole family</text>
+  <text class="step on p3" x="484" y="518">3 · Swap the whole family</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Add families, not products</text>
+  <text class="step on p4" x="706" y="518">4 · Add families, not products</text>
+  <text class="caption p1" x="40" y="552">ReceiptService calls new on S3 and SQS itself; a half-done Azure move pairs S3 with Service Bus.</text>
+  <text class="caption p2" x="40" y="552">ReceiptService gets an InfraFactory at startup and asks it for both products, so they always match.</text>
+  <text class="caption p3" x="40" y="552">issue(1001) runs on AWS, then Azure, then in memory for a test: only INFRA at startup changes.</text>
+  <text class="caption p4" x="40" y="552">GcpFactory adds a family with no edits; createCache() would change InfraFactory and every factory.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Abstract Factory. Timeline (20s loop, 1s = 5%):
+   0-25%   step 1: issue() and reissue() new up S3BlobStore and SqsQueue; 1.2s issue() is moved to ServiceBusQueue
+           (red), 2.2s the mixed pair is flagged, 2.6s callout, 3.4s note
+   25-50%  step 2: ReceiptService fields 5.05, interfaces 5.3, product tags + memory row 5.8, factories 6.3, legend 6.6,
+           startup INFRA=aws 6.8; createBlobStore() 7.15-8, createQueue() 8.12-8.98; callout 9.06
+   50-75%  step 3: issue(1001) with aws 10.08-11.25, azure 11.39-12.64, memory 12.78-14.24 (put, then send)
+   75-100% step 4: GCP row 15.3, INFRA=gcp 15.85, createCache() 16.55 ripples down the factories 16.75-17.44,
+           chips 17.75/18.15; everything from steps 2-4 fades 19.5-20 and the step-1 picture (.p1) returns 0-0.3 */
+.diagram .af-b3 { opacity: 0; animation: af-b3 var(--T) linear infinite; }
+.diagram .af-gcp { opacity: 0; animation: af-gcp var(--T) linear infinite; }
+.diagram .af-mixrow { opacity: 1; animation: af-mixrow var(--T) linear infinite; }
+.diagram .af-pre { opacity: 0; animation: af-pre var(--T) linear infinite; }
+.diagram .af-edit { opacity: 1; animation: af-edit var(--T) linear infinite; }
+.diagram .af-mix { opacity: 1; animation: af-mix var(--T) linear infinite; }
+.diagram .af-call1 { opacity: 1; animation: af-call1 var(--T) linear infinite; }
+.diagram .af-rs2 { opacity: 0; animation: af-rs2 var(--T) linear infinite; }
+.diagram .af-hdr { opacity: 0; animation: af-hdr var(--T) linear infinite; }
+.diagram .af-hl1 { opacity: 0; animation: af-hl1 var(--T) linear infinite; }
+.diagram .af-hl2 { opacity: 0; animation: af-hl2 var(--T) linear infinite; }
+.diagram .af-prod { opacity: 0; animation: af-prod var(--T) linear infinite; }
+.diagram .af-fac { opacity: 0; animation: af-fac var(--T) linear infinite; }
+.diagram .af-note { opacity: 0; animation: af-note var(--T) linear infinite; }
+.diagram .af-v0 { opacity: 0; animation: af-v0 var(--T) linear infinite; }
+.diagram .af-v1 { opacity: 0; animation: af-v1 var(--T) linear infinite; }
+.diagram .af-v2 { opacity: 0; animation: af-v2 var(--T) linear infinite; }
+.diagram .af-v3 { opacity: 0; animation: af-v3 var(--T) linear infinite; }
+.diagram .af-am0 { opacity: 0; animation: af-am0 var(--T) linear infinite; }
+.diagram .af-am1 { opacity: 0; animation: af-am1 var(--T) linear infinite; }
+.diagram .af-am2 { opacity: 0; animation: af-am2 var(--T) linear infinite; }
+.diagram .af-am3 { opacity: 0; animation: af-am3 var(--T) linear infinite; }
+.diagram .af-new0 { opacity: 0; animation: af-new0 var(--T) linear infinite; }
+.diagram .af-new1 { opacity: 0; animation: af-new1 var(--T) linear infinite; }
+.diagram .af-sb0 { opacity: 0; animation: af-sb0 var(--T) linear infinite; }
+.diagram .af-sq0 { opacity: 0; animation: af-sq0 var(--T) linear infinite; }
+.diagram .af-sb1 { opacity: 0; animation: af-sb1 var(--T) linear infinite; }
+.diagram .af-sq1 { opacity: 0; animation: af-sq1 var(--T) linear infinite; }
+.diagram .af-sb2 { opacity: 0; animation: af-sb2 var(--T) linear infinite; }
+.diagram .af-sq2 { opacity: 0; animation: af-sq2 var(--T) linear infinite; }
+.diagram .af-sb3 { opacity: 0; animation: af-sb3 var(--T) linear infinite; }
+.diagram .af-sq3 { opacity: 0; animation: af-sq3 var(--T) linear infinite; }
+.diagram .af-call2 { opacity: 0; animation: af-call2 var(--T) linear infinite; }
+.diagram .af-iss { opacity: 0; animation: af-iss var(--T) linear infinite; }
+.diagram .af-lock { opacity: 0; animation: af-lock var(--T) linear infinite; }
+.diagram .af-tk0 { opacity: 0; animation: af-tk0 var(--T) linear infinite; }
+.diagram .af-tk1 { opacity: 0; animation: af-tk1 var(--T) linear infinite; }
+.diagram .af-tk2 { opacity: 0; animation: af-tk2 var(--T) linear infinite; }
+.diagram .af-tk3 { opacity: 0; animation: af-tk3 var(--T) linear infinite; }
+.diagram .af-tk4 { opacity: 0; animation: af-tk4 var(--T) linear infinite; }
+.diagram .af-tk5 { opacity: 0; animation: af-tk5 var(--T) linear infinite; }
+.diagram .af-logh { opacity: 0; animation: af-logh var(--T) linear infinite; }
+.diagram .af-log0 { opacity: 0; animation: af-log0 var(--T) linear infinite; }
+.diagram .af-log1 { opacity: 0; animation: af-log1 var(--T) linear infinite; }
+.diagram .af-log2 { opacity: 0; animation: af-log2 var(--T) linear infinite; }
+.diagram .af-gnote { opacity: 0; animation: af-gnote var(--T) linear infinite; }
+.diagram .af-ext { opacity: 0; animation: af-ext var(--T) linear infinite; }
+.diagram .af-rp0 { opacity: 0; animation: af-rp0 var(--T) linear infinite; }
+.diagram .af-rp1 { opacity: 0; animation: af-rp1 var(--T) linear infinite; }
+.diagram .af-rp2 { opacity: 0; animation: af-rp2 var(--T) linear infinite; }
+.diagram .af-rp3 { opacity: 0; animation: af-rp3 var(--T) linear infinite; }
+.diagram .af-rnote { opacity: 0; animation: af-rnote var(--T) linear infinite; }
+.diagram .af-note1 { opacity: 1; animation: af-note1 var(--T) linear infinite; }
+.diagram .af-leg { opacity: 0; animation: af-leg var(--T) linear infinite; }
+.diagram .af-trace { opacity: 0; animation: af-trace var(--T) linear infinite; }
+.diagram .af-ch1 { opacity: 0; animation: af-ch1 var(--T) linear infinite; }
+.diagram .af-ch2 { opacity: 0; animation: af-ch2 var(--T) linear infinite; }
+.diagram .af-tok { opacity: 0; }
+.diagram .af-call { animation: af-call var(--T) linear infinite; }
+.diagram .af-ret { animation: af-ret var(--T) linear infinite; }
+.diagram .af-rip { animation: af-rip var(--T) linear infinite; }
+@keyframes af-b3 {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-gcp {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-mixrow {
+  0% { opacity: 0; }
+  11% { opacity: 0; }
+  12.5% { opacity: 1; }
+  95% { opacity: 1; }
+  96.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-pre {
+  0% { opacity: 1; }
+  6% { opacity: 1; }
+  7.25% { opacity: 0; }
+  95% { opacity: 0; }
+  96.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes af-edit {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  7.5% { opacity: 1; }
+  95% { opacity: 1; }
+  96.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-mix {
+  0% { opacity: 0; }
+  11% { opacity: 0; }
+  12.5% { opacity: 1; }
+  95% { opacity: 1; }
+  96.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-call1 {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  14.5% { opacity: 1; }
+  95% { opacity: 1; }
+  96.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-rs2 {
+  0% { opacity: 0; }
+  25.25% { opacity: 0; }
+  26.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-hdr {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  28% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-hl1 {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.25% { opacity: 1; }
+  40.017% { opacity: 1; }
+  40.767% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-hl2 {
+  0% { opacity: 0; }
+  40.367% { opacity: 0; }
+  41.117% { opacity: 1; }
+  44.883% { opacity: 1; }
+  45.633% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-prod {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-fac {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  33% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-note {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  35.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-v0 {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.75% { opacity: 1; }
+  56.55% { opacity: 1; }
+  57.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-v1 {
+  0% { opacity: 0; }
+  56.55% { opacity: 0; }
+  57.3% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-v2 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.25% { opacity: 1; }
+  79.25% { opacity: 1; }
+  80% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-v3 {
+  0% { opacity: 0; }
+  79.25% { opacity: 0; }
+  80% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-am0 {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.75% { opacity: 1; }
+  56.55% { opacity: 1; }
+  57.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-am1 {
+  0% { opacity: 0; }
+  56.55% { opacity: 0; }
+  57.3% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-am2 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.25% { opacity: 1; }
+  79.25% { opacity: 1; }
+  80% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-am3 {
+  0% { opacity: 0; }
+  79.25% { opacity: 0; }
+  80% { opacity: 1; }
+  82.75% { opacity: 1; }
+  83.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-new0 {
+  0% { opacity: 0; }
+  37.733% { opacity: 0; }
+  38.733% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-new1 {
+  0% { opacity: 0; }
+  42.6% { opacity: 0; }
+  43.6% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-sb0 {
+  0% { opacity: 0; }
+  40.017% { opacity: 0; }
+  40.767% { opacity: 1; }
+  56.55% { opacity: 1; }
+  57.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-sq0 {
+  0% { opacity: 0; }
+  44.883% { opacity: 0; }
+  45.633% { opacity: 1; }
+  56.55% { opacity: 1; }
+  57.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-sb1 {
+  0% { opacity: 0; }
+  56.55% { opacity: 0; }
+  57.3% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-sq1 {
+  0% { opacity: 0; }
+  56.55% { opacity: 0; }
+  57.3% { opacity: 1; }
+  63.5% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-sb2 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.25% { opacity: 1; }
+  79.25% { opacity: 1; }
+  80% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-sq2 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.25% { opacity: 1; }
+  79.25% { opacity: 1; }
+  80% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-sb3 {
+  0% { opacity: 0; }
+  79.25% { opacity: 0; }
+  80% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-sq3 {
+  0% { opacity: 0; }
+  79.25% { opacity: 0; }
+  80% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-call2 {
+  0% { opacity: 0; }
+  45.283% { opacity: 0; }
+  46.783% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-iss {
+  0% { opacity: 0; }
+  50.15% { opacity: 0; }
+  50.9% { opacity: 1; }
+  71.217% { opacity: 1; }
+  72.467% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-lock {
+  0% { opacity: 0; }
+  56.55% { opacity: 0; }
+  58.05% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-tk0 {
+  0% { opacity: 0; }
+  51.8% { opacity: 0; }
+  52.3% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-tk1 {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.25% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-tk2 {
+  0% { opacity: 0; }
+  58.45% { opacity: 0; }
+  58.95% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-tk3 {
+  0% { opacity: 0; }
+  61.6% { opacity: 0; }
+  62.1% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-tk4 {
+  0% { opacity: 0; }
+  65.667% { opacity: 0; }
+  66.167% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-tk5 {
+  0% { opacity: 0; }
+  69.35% { opacity: 0; }
+  69.85% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-logh {
+  0% { opacity: 0; }
+  50.4% { opacity: 0; }
+  51.9% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-log0 {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  57% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-log1 {
+  0% { opacity: 0; }
+  63.2% { opacity: 0; }
+  63.95% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-log2 {
+  0% { opacity: 0; }
+  71.217% { opacity: 0; }
+  71.967% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-gnote {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  81% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-ext {
+  0% { opacity: 0; }
+  82.75% { opacity: 0; }
+  84.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-rp0 {
+  0% { opacity: 0; }
+  84.423% { opacity: 0; }
+  85.173% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-rp1 {
+  0% { opacity: 0; }
+  85.346% { opacity: 0; }
+  86.096% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-rp2 {
+  0% { opacity: 0; }
+  86.269% { opacity: 0; }
+  87.019% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-rp3 {
+  0% { opacity: 0; }
+  87.192% { opacity: 0; }
+  87.942% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-rnote {
+  0% { opacity: 0; }
+  85.25% { opacity: 0; }
+  86.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-note1 {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  18.5% { opacity: 1; }
+  95% { opacity: 1; }
+  96.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-leg {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  34.5% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-trace {
+  0% { opacity: 0; }
+  50.4% { opacity: 0; }
+  51.9% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes af-ch1 {
+  0% { opacity: 0; }
+  88.75% { opacity: 0; }
+  90.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-ch2 {
+  0% { opacity: 0; }
+  90.75% { opacity: 0; }
+  92.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes af-call {
+  0% { transform: translate(148px, 135px); opacity: 0; }
+  35.75% { transform: translate(148px, 135px); opacity: 0; }
+  36% { opacity: 1; }
+  36.5% { transform: translate(148px, 151px); opacity: 1; }
+  36.75% { transform: translate(148px, 151px); opacity: 0; }
+  36.8% { transform: translate(271px, 216px); opacity: 0; }
+  36.917% { transform: translate(278px, 216px); }
+  37.05% { opacity: 1; }
+  37.383% { transform: translate(278px, 244px); }
+  37.633% { transform: translate(293px, 244px); opacity: 1; }
+  37.883% { transform: translate(293px, 244px); opacity: 0; }
+  40.617% { transform: translate(148px, 135px); opacity: 0; }
+  40.867% { opacity: 1; }
+  41.367% { transform: translate(148px, 151px); opacity: 1; }
+  41.617% { transform: translate(148px, 151px); opacity: 0; }
+  41.667% { transform: translate(271px, 216px); opacity: 0; }
+  41.783% { transform: translate(278px, 216px); }
+  41.917% { opacity: 1; }
+  42.25% { transform: translate(278px, 244px); }
+  42.5% { transform: translate(293px, 244px); opacity: 1; }
+  42.75% { transform: translate(293px, 244px); opacity: 0; }
+  50.65% { transform: translate(604px, 135px); opacity: 0; }
+  50.9% { opacity: 1; }
+  51.1% { transform: translate(604px, 151px); opacity: 1; }
+  51.35% { transform: translate(604px, 151px); opacity: 0; }
+  51.4% { transform: translate(700px, 221px); opacity: 0; }
+  51.619% { transform: translate(700px, 244px); }
+  51.65% { opacity: 1; }
+  51.8% { transform: translate(681px, 244px); opacity: 1; }
+  52.05% { transform: translate(681px, 244px); opacity: 0; }
+  53.6% { transform: translate(822px, 135px); opacity: 0; }
+  53.85% { opacity: 1; }
+  54.05% { transform: translate(822px, 151px); opacity: 1; }
+  54.3% { transform: translate(822px, 151px); opacity: 0; }
+  54.35% { transform: translate(918px, 221px); opacity: 0; }
+  54.569% { transform: translate(918px, 244px); }
+  54.6% { opacity: 1; }
+  54.75% { transform: translate(899px, 244px); opacity: 1; }
+  55% { transform: translate(899px, 244px); opacity: 0; }
+  57.2% { transform: translate(604px, 135px); opacity: 0; }
+  57.45% { opacity: 1; }
+  57.65% { transform: translate(604px, 151px); opacity: 1; }
+  57.9% { transform: translate(604px, 151px); opacity: 0; }
+  57.95% { transform: translate(700px, 221px); opacity: 0; }
+  58.2% { opacity: 1; }
+  58.344% { transform: translate(700px, 292px); }
+  58.45% { transform: translate(681px, 292px); opacity: 1; }
+  58.7% { transform: translate(681px, 292px); opacity: 0; }
+  60.35% { transform: translate(822px, 135px); opacity: 0; }
+  60.6% { opacity: 1; }
+  60.8% { transform: translate(822px, 151px); opacity: 1; }
+  61.05% { transform: translate(822px, 151px); opacity: 0; }
+  61.1% { transform: translate(918px, 221px); opacity: 0; }
+  61.35% { opacity: 1; }
+  61.494% { transform: translate(918px, 292px); }
+  61.6% { transform: translate(899px, 292px); opacity: 1; }
+  61.85% { transform: translate(899px, 292px); opacity: 0; }
+  64.15% { transform: translate(604px, 135px); opacity: 0; }
+  64.4% { opacity: 1; }
+  64.6% { transform: translate(604px, 151px); opacity: 1; }
+  64.85% { transform: translate(604px, 151px); opacity: 0; }
+  64.9% { transform: translate(700px, 221px); opacity: 0; }
+  65.15% { opacity: 1; }
+  65.561% { transform: translate(700px, 340px); }
+  65.667% { transform: translate(681px, 340px); opacity: 1; }
+  65.917% { transform: translate(681px, 340px); opacity: 0; }
+  67.833% { transform: translate(822px, 135px); opacity: 0; }
+  68.083% { opacity: 1; }
+  68.283% { transform: translate(822px, 151px); opacity: 1; }
+  68.533% { transform: translate(822px, 151px); opacity: 0; }
+  68.583% { transform: translate(918px, 221px); opacity: 0; }
+  68.833% { opacity: 1; }
+  69.244% { transform: translate(918px, 340px); }
+  69.35% { transform: translate(899px, 340px); opacity: 1; }
+  69.6% { transform: translate(899px, 340px); opacity: 0; }
+  100% { transform: translate(899px, 340px); opacity: 0; }
+}
+@keyframes af-ret {
+  0% { transform: translate(293px, 244px); opacity: 0; }
+  38.133% { transform: translate(293px, 244px); opacity: 0; }
+  38.383% { opacity: 1; transform: translate(278px, 244px); }
+  38.85% { transform: translate(278px, 216px); }
+  38.967% { transform: translate(271px, 216px); opacity: 1; }
+  39.217% { transform: translate(271px, 216px); opacity: 0; }
+  39.267% { transform: translate(148px, 151px); opacity: 0; }
+  39.517% { opacity: 1; }
+  40.017% { transform: translate(148px, 135px); opacity: 1; }
+  40.267% { transform: translate(148px, 135px); opacity: 0; }
+  43% { transform: translate(293px, 244px); opacity: 0; }
+  43.25% { opacity: 1; transform: translate(278px, 244px); }
+  43.717% { transform: translate(278px, 216px); }
+  43.833% { transform: translate(271px, 216px); opacity: 1; }
+  44.083% { transform: translate(271px, 216px); opacity: 0; }
+  44.133% { transform: translate(148px, 151px); opacity: 0; }
+  44.383% { opacity: 1; }
+  44.883% { transform: translate(148px, 135px); opacity: 1; }
+  45.133% { transform: translate(148px, 135px); opacity: 0; }
+  52.15% { transform: translate(681px, 244px); opacity: 0; }
+  52.331% { transform: translate(700px, 244px); }
+  52.4% { opacity: 1; }
+  52.55% { transform: translate(700px, 221px); opacity: 1; }
+  52.8% { transform: translate(700px, 221px); opacity: 0; }
+  52.85% { transform: translate(604px, 151px); opacity: 0; }
+  53.1% { opacity: 1; }
+  53.3% { transform: translate(604px, 135px); opacity: 1; }
+  53.55% { transform: translate(604px, 135px); opacity: 0; }
+  55.1% { transform: translate(899px, 244px); opacity: 0; }
+  55.281% { transform: translate(918px, 244px); }
+  55.35% { opacity: 1; }
+  55.5% { transform: translate(918px, 221px); opacity: 1; }
+  55.75% { transform: translate(918px, 221px); opacity: 0; }
+  55.8% { transform: translate(822px, 151px); opacity: 0; }
+  56.05% { opacity: 1; }
+  56.25% { transform: translate(822px, 135px); opacity: 1; }
+  56.5% { transform: translate(822px, 135px); opacity: 0; }
+  58.8% { transform: translate(681px, 292px); opacity: 0; }
+  58.906% { transform: translate(700px, 292px); }
+  59.05% { opacity: 1; }
+  59.3% { transform: translate(700px, 221px); opacity: 1; }
+  59.55% { transform: translate(700px, 221px); opacity: 0; }
+  59.6% { transform: translate(604px, 151px); opacity: 0; }
+  59.85% { opacity: 1; }
+  60.05% { transform: translate(604px, 135px); opacity: 1; }
+  60.3% { transform: translate(604px, 135px); opacity: 0; }
+  61.95% { transform: translate(899px, 292px); opacity: 0; }
+  62.056% { transform: translate(918px, 292px); }
+  62.2% { opacity: 1; }
+  62.45% { transform: translate(918px, 221px); opacity: 1; }
+  62.7% { transform: translate(918px, 221px); opacity: 0; }
+  62.75% { transform: translate(822px, 151px); opacity: 0; }
+  63% { opacity: 1; }
+  63.2% { transform: translate(822px, 135px); opacity: 1; }
+  63.45% { transform: translate(822px, 135px); opacity: 0; }
+  66.017% { transform: translate(681px, 340px); opacity: 0; }
+  66.122% { transform: translate(700px, 340px); }
+  66.267% { opacity: 1; }
+  66.783% { transform: translate(700px, 221px); opacity: 1; }
+  67.033% { transform: translate(700px, 221px); opacity: 0; }
+  67.083% { transform: translate(604px, 151px); opacity: 0; }
+  67.333% { opacity: 1; }
+  67.533% { transform: translate(604px, 135px); opacity: 1; }
+  67.783% { transform: translate(604px, 135px); opacity: 0; }
+  69.7% { transform: translate(899px, 340px); opacity: 0; }
+  69.806% { transform: translate(918px, 340px); }
+  69.95% { opacity: 1; }
+  70.467% { transform: translate(918px, 221px); opacity: 1; }
+  70.717% { transform: translate(918px, 221px); opacity: 0; }
+  70.767% { transform: translate(822px, 151px); opacity: 0; }
+  71.017% { opacity: 1; }
+  71.217% { transform: translate(822px, 135px); opacity: 1; }
+  71.467% { transform: translate(822px, 135px); opacity: 0; }
+  100% { transform: translate(822px, 135px); opacity: 0; }
+}
+@keyframes af-rip {
+  0% { transform: translate(271px, 216px); opacity: 0; }
+  83.75% { transform: translate(271px, 216px); opacity: 0; }
+  83.885% { transform: translate(278px, 216px); }
+  84% { opacity: 1; }
+  87.192% { transform: translate(278px, 388px); opacity: 1; }
+  87.442% { transform: translate(278px, 388px); opacity: 0; }
+  100% { transform: translate(278px, 388px); opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- bands: one row per family (AWS and Azure exist from step 1) -->
+<rect class="f-orange-soft" x="492" y="222" width="434" height="44" rx="11"/>
+<rect class="f-purple-soft" x="492" y="270" width="434" height="44" rx="11"/>
+<g class="af-b3">
+<rect class="f-panel-2" x="492" y="318" width="434" height="44" rx="11"/>
+</g>
+<g class="af-gcp">
+<rect class="f-green-soft" x="492" y="366" width="434" height="44" rx="11"/>
+</g>
+<!-- ReceiptService: the Client -->
+<rect class="box" x="36" y="92" width="888" height="42" rx="10"/>
+<text class="label" x="48" y="109">ReceiptService</text>
+<!-- products of the AWS and Azure families exist in every step -->
+<rect class="box" x="500" y="224" width="180" height="40" rx="9"/><text class="tiny sb f-orange" x="509" y="239">AWS</text><text class="label" x="509" y="257">S3BlobStore</text>
+<rect class="box" x="718" y="224" width="180" height="40" rx="9"/><text class="tiny sb f-orange" x="727" y="239">AWS</text><text class="label" x="727" y="257">SqsQueue</text>
+<rect class="box" x="500" y="272" width="180" height="40" rx="9"/><text class="tiny sb f-purple" x="509" y="287">Azure</text><text class="label" x="509" y="305">AzureBlobStore</text>
+<rect class="box" x="718" y="272" width="180" height="40" rx="9"/><text class="tiny sb f-purple" x="727" y="287">Azure</text><text class="label" x="727" y="305">ServiceBusQueue</text>
+<g class="p1">
+<!-- step 1 (the static frame): two methods new up their own clients -->
+<rect class="f-panel-2" x="288" y="98" width="630" height="15" rx="4"/>
+<rect class="f-panel-2" x="288" y="116" width="630" height="15" rx="4"/>
+<g class="af-mixrow">
+<rect class="f-red-soft" x="288" y="98" width="630" height="15" rx="4"/>
+</g>
+<text class="sub mono f-ink" x="296" y="109">issue(id)</text>
+<text class="sub mono f-ink" x="296" y="126">reissue(id)</text>
+<text class="sub mono f-ink" x="510" y="109">new S3BlobStore()</text>
+<text class="sub mono f-ink" x="510" y="126">new S3BlobStore()</text>
+<text class="sub mono f-ink" x="728" y="126">new SqsQueue()</text>
+<g class="af-pre">
+<text class="sub mono f-ink" x="728" y="109">new SqsQueue()</text>
+<line class="s-red dash" x1="850" y1="134" x2="850" y2="223" stroke-width="2" marker-end="url(#ah-red)"/>
+</g>
+<g class="af-edit">
+<text class="sub mono sb f-red" x="728" y="109">new ServiceBusQueue()</text>
+<text class="tiny sb f-red" x="48" y="126">moving to Azure: 1 of 4 new calls edited</text>
+<path class="none s-red dash" d="M914 134V292H899" stroke-width="2" marker-end="url(#ah-red)"/>
+</g>
+<line class="s-red dash" x1="560" y1="134" x2="560" y2="223" stroke-width="2" marker-end="url(#ah-red)"/>
+<line class="s-red dash" x1="620" y1="134" x2="620" y2="223" stroke-width="2" marker-end="url(#ah-red)"/>
+<line class="s-red dash" x1="780" y1="134" x2="780" y2="223" stroke-width="2" marker-end="url(#ah-red)"/>
+<g class="af-mix">
+<rect class="f-red-soft s-red" x="500" y="224" width="180" height="40" rx="9" stroke-width="2"/>
+<rect class="f-red-soft s-red" x="718" y="272" width="180" height="40" rx="9" stroke-width="2"/>
+</g>
+<g class="af-call1">
+<rect class="f-red-soft s-red" x="150" y="236" width="322" height="46" rx="10" stroke-width="1.2"/>
+<circle class="f-red" cx="168" cy="259" r="8"/><path class="none s-bg" d="M164.5 255.5l7 7M171.5 255.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+<text class="tiny sb f-red" x="184" y="255">issue() now stores in S3 but sends to Service Bus:</text>
+<text class="tiny f-red" x="184" y="270">a mixed family that nothing in the code prevents</text>
+</g>
+</g>
+<g class="af-rs2">
+<rect class="f-panel-2 s-line" x="164" y="97" width="44" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="186" y="109">Client</text>
+<text class="tiny mono f-ink" x="48" y="126">ReceiptService(f: InfraFactory)</text>
+<text class="sub mono f-ink" x="296" y="126">issue(id)</text>
+<text class="sub mono f-ink" x="510" y="109">blob: BlobStore</text>
+<text class="sub mono f-ink" x="728" y="109">queue: Queue</text>
+</g>
+<g class="af-hdr">
+<line class="wire" x1="148" y1="134" x2="148" y2="151" marker-end="url(#ah)"/>
+<line class="wire" x1="604" y1="134" x2="604" y2="151" marker-end="url(#ah)"/>
+<line class="wire" x1="822" y1="134" x2="822" y2="151" marker-end="url(#ah)"/>
+<text class="tiny mono" x="156" y="147">createBlobStore(), createQueue()</text>
+<text class="tiny mono" x="612" y="147">put(key, pdf)</text>
+<text class="tiny mono" x="830" y="147">send(msg)</text>
+<rect class="box dash" x="36" y="152" width="224" height="80" rx="10"/>
+<text class="tiny" x="48" y="167">«interface»</text>
+<rect class="f-panel-2 s-line" x="156" y="158" width="98" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="205" y="170">AbstractFactory</text>
+<text class="label" x="48" y="187">InfraFactory</text>
+<text class="sub mono" x="48" y="206">createBlobStore(): BlobStore</text>
+<text class="sub mono" x="48" y="223">createQueue(): Queue</text>
+<rect class="box dash" x="500" y="152" width="208" height="56" rx="10"/>
+<text class="tiny" x="512" y="167">«interface»</text>
+<rect class="f-panel-2 s-line" x="602" y="158" width="100" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="652" y="170">AbstractProduct</text>
+<text class="label" x="512" y="187">BlobStore</text>
+<text class="sub mono" x="512" y="202">put(key, pdf)</text>
+<rect class="box dash" x="718" y="152" width="208" height="56" rx="10"/>
+<text class="tiny" x="730" y="167">«interface»</text>
+<rect class="f-panel-2 s-line" x="820" y="158" width="100" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="870" y="170">AbstractProduct</text>
+<text class="label" x="730" y="187">Queue</text>
+<text class="sub mono" x="730" y="202">send(msg)</text>
+</g>
+<g class="af-hl1">
+<rect class="f-blue-soft" x="154" y="138" width="115" height="12" rx="3"/>
+</g>
+<g class="af-hl2">
+<rect class="f-blue-soft" x="280" y="138" width="89" height="12" rx="3"/>
+</g>
+<g class="af-prod">
+<path class="wire dash" d="M700 220V340M700 244H680M700 292H680M700 340H680"/>
+<path class="f-bg s-wire" d="M700 208L707 220H693Z" stroke-width="2" stroke-linejoin="round"/>
+<path class="wire dash" d="M918 220V340M918 244H898M918 292H898M918 340H898"/>
+<path class="f-bg s-wire" d="M918 208L925 220H911Z" stroke-width="2" stroke-linejoin="round"/>
+<rect class="f-panel-2 s-line" x="570" y="228" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="622" y="240">ConcreteProduct</text>
+<rect class="f-panel-2 s-line" x="788" y="228" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="840" y="240">ConcreteProduct</text>
+<rect class="f-panel-2 s-line" x="570" y="276" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="622" y="288">ConcreteProduct</text>
+<rect class="f-panel-2 s-line" x="788" y="276" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="840" y="288">ConcreteProduct</text>
+<rect class="box" x="500" y="320" width="180" height="40" rx="9"/><text class="tiny sb f-muted" x="509" y="335">memory</text><text class="label" x="509" y="353">MemoryBlobStore</text>
+<rect class="box" x="718" y="320" width="180" height="40" rx="9"/><text class="tiny sb f-muted" x="727" y="335">memory</text><text class="label" x="727" y="353">MemoryQueue</text>
+<rect class="f-panel-2 s-line" x="570" y="324" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="622" y="336">ConcreteProduct</text>
+<rect class="f-panel-2 s-line" x="788" y="324" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="840" y="336">ConcreteProduct</text>
+</g>
+<g class="af-fac">
+<path class="wire dash" d="M271 216H278V340M278 244H294M278 292H294M278 340H294"/>
+<path class="f-bg s-wire" d="M260 216L271 209V223Z" stroke-width="2" stroke-linejoin="round"/>
+<line class="wire dash" x1="464" y1="244" x2="491" y2="244" marker-end="url(#ah)"/>
+<line class="wire dash" x1="464" y1="292" x2="491" y2="292" marker-end="url(#ah)"/>
+<line class="wire dash" x1="464" y1="340" x2="491" y2="340" marker-end="url(#ah)"/>
+<rect class="box" x="294" y="224" width="170" height="40" rx="9"/><text class="tiny sb f-orange" x="303" y="239">AWS</text><rect class="f-panel-2 s-line" x="358" y="228" width="100" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="408" y="240">ConcreteFactory</text><text class="label" x="303" y="257">AwsFactory</text>
+<rect class="box" x="294" y="272" width="170" height="40" rx="9"/><text class="tiny sb f-purple" x="303" y="287">Azure</text><rect class="f-panel-2 s-line" x="358" y="276" width="100" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="408" y="288">ConcreteFactory</text><text class="label" x="303" y="305">AzureFactory</text>
+<rect class="box" x="294" y="320" width="170" height="40" rx="9"/><text class="tiny sb f-muted" x="303" y="335">memory</text><rect class="f-panel-2 s-line" x="358" y="324" width="100" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="408" y="336">ConcreteFactory</text><text class="label" x="303" y="353">InMemoryFactory</text>
+</g>
+<g class="af-note">
+<path class="box" d="M286 152H452L464 164V208H286Z"/>
+<path class="none s-line" d="M452 152V164H464" stroke-width="1.5"/>
+<text class="tiny sb f-muted" x="296" y="166">startup</text>
+<text class="tiny mono f-ink" x="344" y="166">INFRA=</text>
+<text class="sub mono f-ink" x="296" y="184">f = factories[INFRA]</text>
+<text class="sub mono f-ink" x="296" y="201">new ReceiptService(f)</text>
+</g>
+<g class="af-v0">
+<text class="tiny mono sb f-orange" x="383.72" y="166">aws</text>
+</g>
+<g class="af-v1">
+<text class="tiny mono sb f-purple" x="383.72" y="166">azure</text>
+</g>
+<g class="af-v2">
+<text class="tiny mono sb f-muted" x="383.72" y="166">memory</text>
+</g>
+<g class="af-v3">
+<text class="tiny mono sb f-green" x="383.72" y="166">gcp</text>
+</g>
+<g class="af-am0">
+<rect class="f-amber-soft s-amber" x="294" y="224" width="170" height="40" rx="9" stroke-width="2.5"/>
+</g>
+<g class="af-am1">
+<rect class="f-amber-soft s-amber" x="294" y="272" width="170" height="40" rx="9" stroke-width="2.5"/>
+</g>
+<g class="af-am2">
+<rect class="f-amber-soft s-amber" x="294" y="320" width="170" height="40" rx="9" stroke-width="2.5"/>
+</g>
+<g class="af-am3">
+<rect class="f-amber-soft s-amber" x="294" y="368" width="170" height="40" rx="9" stroke-width="2.5"/>
+</g>
+<g class="af-new0">
+<rect class="f-green-soft s-green" x="500" y="224" width="180" height="40" rx="9" stroke-width="2"/>
+</g>
+<g class="af-new1">
+<rect class="f-green-soft s-green" x="718" y="224" width="180" height="40" rx="9" stroke-width="2"/>
+</g>
+<g class="af-sb0">
+<rect class="f-orange-soft s-orange" x="510" y="115" width="88.82" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="518" y="126">S3BlobStore</text>
+</g>
+<g class="af-sq0">
+<rect class="f-orange-soft s-orange" x="728" y="115" width="68.96" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="736" y="126">SqsQueue</text>
+</g>
+<g class="af-sb1">
+<rect class="f-purple-soft s-purple" x="510" y="115" width="108.68" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="518" y="126">AzureBlobStore</text>
+</g>
+<g class="af-sq1">
+<rect class="f-purple-soft s-purple" x="728" y="115" width="115.3" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="736" y="126">ServiceBusQueue</text>
+</g>
+<g class="af-sb2">
+<rect class="f-panel-2 s-wire" x="510" y="115" width="115.3" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="518" y="126">MemoryBlobStore</text>
+</g>
+<g class="af-sq2">
+<rect class="f-panel-2 s-wire" x="728" y="115" width="88.82" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="736" y="126">MemoryQueue</text>
+</g>
+<g class="af-sb3">
+<rect class="f-green-soft s-green" x="510" y="115" width="95.44" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="518" y="126">GcsBlobStore</text>
+</g>
+<g class="af-sq3">
+<rect class="f-green-soft s-green" x="728" y="115" width="88.82" height="15" rx="7.5" stroke-width="1"/><text class="tiny mono f-ink" x="736" y="126">PubSubQueue</text>
+</g>
+<g class="af-call2">
+<text class="tiny sb f-ink" x="44" y="258">ReceiptService sees interfaces only</text>
+<text class="tiny" x="44" y="274">and gets both products from one</text>
+<text class="tiny" x="44" y="289">factory, so they always match</text>
+</g>
+<g class="af-iss">
+<rect class="f-blue-soft" x="292" y="116" width="72" height="15" rx="4"/>
+</g>
+<g class="af-lock">
+<rect class="f-green-soft s-green" x="292" y="98" width="92" height="15" rx="7.5" stroke-width="1.2"/>
+<rect class="f-green" x="300" y="104" width="9" height="7" rx="1.5"/><path class="none s-green" d="M302 104.5V102.5a2.5 2.5 0 0 1 5 0V104.5" stroke-width="1.5"/>
+<text class="tiny sb f-green" x="314" y="109">unchanged</text>
+</g>
+<g class="af-tk0">
+<circle class="f-green" cx="666" cy="252" r="7"/><path class="none s-bg" d="M662.5 252l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g class="af-tk1">
+<circle class="f-green" cx="884" cy="252" r="7"/><path class="none s-bg" d="M880.5 252l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g class="af-tk2">
+<circle class="f-green" cx="666" cy="300" r="7"/><path class="none s-bg" d="M662.5 300l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g class="af-tk3">
+<circle class="f-green" cx="884" cy="300" r="7"/><path class="none s-bg" d="M880.5 300l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g class="af-tk4">
+<circle class="f-green" cx="666" cy="348" r="7"/><path class="none s-bg" d="M662.5 348l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g class="af-tk5">
+<circle class="f-green" cx="884" cy="348" r="7"/><path class="none s-bg" d="M880.5 348l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g class="af-logh">
+<text class="tiny sb f-ink" x="44" y="258">issue(1001), same code, three runs</text>
+</g>
+<g class="af-log0">
+<circle class="f-orange" cx="49" cy="272" r="4"/>
+<text class="tiny mono sb f-orange" x="58" y="276">aws</text>
+<text class="tiny" x="108" y="276">S3 put, SQS send</text>
+</g>
+<g class="af-log1">
+<circle class="f-purple" cx="49" cy="289" r="4"/>
+<text class="tiny mono sb f-purple" x="58" y="293">azure</text>
+<text class="tiny" x="108" y="293">Blob put, Service Bus send</text>
+</g>
+<g class="af-log2">
+<circle class="f-muted" cx="49" cy="306" r="4"/>
+<text class="tiny mono sb f-muted" x="58" y="310">memory</text>
+<text class="tiny" x="108" y="310">Map set, array push (test)</text>
+</g>
+<g class="af-gcp">
+<path class="none s-green dash" d="M278 340V388H294" stroke-width="2"/>
+<path class="none s-green dash" d="M700 340V388H680" stroke-width="2"/>
+<path class="none s-green dash" d="M918 340V388H898" stroke-width="2"/>
+<line class="s-green dash" x1="464" y1="388" x2="491" y2="388" stroke-width="2" marker-end="url(#ah-green)"/>
+<rect class="box" x="294" y="368" width="170" height="40" rx="9"/><text class="tiny sb f-green" x="303" y="383">GCP</text><rect class="f-panel-2 s-line" x="358" y="372" width="100" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="408" y="384">ConcreteFactory</text><text class="label" x="303" y="401">GcpFactory</text>
+<rect class="f-green-soft s-green" x="294" y="368" width="170" height="40" rx="9" stroke-width="1.5"/>
+<rect class="box" x="500" y="368" width="180" height="40" rx="9"/><text class="tiny sb f-green" x="509" y="383">GCP</text><text class="label" x="509" y="401">GcsBlobStore</text>
+<rect class="f-green-soft s-green" x="500" y="368" width="180" height="40" rx="9" stroke-width="1.5"/>
+<rect class="f-panel-2 s-line" x="570" y="372" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="622" y="384">ConcreteProduct</text>
+<rect class="box" x="718" y="368" width="180" height="40" rx="9"/><text class="tiny sb f-green" x="727" y="383">GCP</text><text class="label" x="727" y="401">PubSubQueue</text>
+<rect class="f-green-soft s-green" x="718" y="368" width="180" height="40" rx="9" stroke-width="1.5"/>
+<rect class="f-panel-2 s-line" x="788" y="372" width="104" height="16" rx="8" stroke-width="1"/><text class="tiny sb mid f-muted" x="840" y="384">ConcreteProduct</text>
+</g>
+<g class="af-gnote">
+<text class="tiny sb f-green" x="44" y="392">a new family: three classes, no edits</text>
+</g>
+<g class="af-ext">
+<rect class="f-red-soft s-red" x="40" y="237" width="216" height="20" rx="6" stroke-width="1.2"/>
+<text class="sub mono sb f-red" x="48" y="251">+ createCache(): Cache</text>
+</g>
+<g class="af-rp0">
+<rect class="f-red-soft s-red" x="294" y="224" width="170" height="40" rx="9" stroke-width="2"/>
+</g>
+<g class="af-rp1">
+<rect class="f-red-soft s-red" x="294" y="272" width="170" height="40" rx="9" stroke-width="2"/>
+</g>
+<g class="af-rp2">
+<rect class="f-red-soft s-red" x="294" y="320" width="170" height="40" rx="9" stroke-width="2"/>
+</g>
+<g class="af-rp3">
+<rect class="f-red-soft s-red" x="294" y="368" width="170" height="40" rx="9" stroke-width="2"/>
+</g>
+<g class="af-rnote">
+<text class="tiny sb f-red" x="44" y="275">a new product edits the interface</text>
+<text class="tiny f-red" x="44" y="290">and all four factories, and every</text>
+<text class="tiny f-red" x="44" y="305">family needs its own Cache class</text>
+</g>
+<g class="p1">
+<g class="af-note1">
+<rect class="f-red-soft s-red" x="232" y="430" width="496" height="26" rx="13" stroke-width="1.2"/>
+<circle class="f-red" cx="249" cy="443" r="8"/><path class="none s-bg" d="M245.5 439.5l7 7M252.5 439.5l-7 7" stroke-width="2" stroke-linecap="round"/>
+<text class="tiny sb f-red" x="264" y="447">Every new is another edit, and nothing stops a half-done move from mixing clouds</text>
+</g>
+</g>
+<g class="af-leg">
+<path class="wire dash" d="M214 443H232"/>
+<path class="f-bg s-wire" d="M232 437L244 443L232 449Z" stroke-width="2" stroke-linejoin="round"/>
+<text class="tiny" x="252" y="447">implements</text>
+<line class="wire dash" x1="326" y1="443" x2="354" y2="443" marker-end="url(#ah)"/>
+<text class="tiny" x="362" y="447">creates</text>
+<line class="wire" x1="410" y1="443" x2="438" y2="443" marker-end="url(#ah)"/>
+<text class="tiny" x="446" y="447">calls</text>
+<rect class="f-orange-soft" x="484" y="436" width="26" height="14" rx="4"/>
+<text class="tiny" x="518" y="447">one row = one family</text>
+<rect class="f-amber-soft s-amber" x="634" y="436" width="26" height="14" rx="4" stroke-width="1.5"/>
+<text class="tiny" x="668" y="447">the factory INFRA picks</text>
+</g>
+<g class="af-trace">
+<circle class="f-blue" cx="184" cy="443" r="8"/>
+<text class="tiny mid b f-bg" x="184" y="447">1</text>
+<text class="tiny mono f-ink" x="197" y="447">issue(1001)</text>
+<text class="tiny mid" x="281.82" y="447">→</text>
+<circle class="f-blue" cx="303.82" cy="443" r="8"/>
+<text class="tiny mid b f-bg" x="303.82" y="447">2</text>
+<text class="tiny mono f-ink" x="316.82" y="447">blob.put('receipts/1001.pdf', pdf)</text>
+<text class="tiny mid" x="553.9" y="447">→</text>
+<circle class="f-blue" cx="575.9" cy="443" r="8"/>
+<text class="tiny mid b f-bg" x="575.9" y="447">3</text>
+<text class="tiny mono f-ink" x="588.9" y="447">queue.send({ receiptId: 1001 })</text>
+</g>
+<g class="af-ch1">
+<text class="tiny sb f-muted" x="150" y="433">seen in</text>
+<rect class="f-panel-2 s-line" x="196" y="420" width="166" height="18" rx="9" stroke-width="1"/><text class="tiny mid" x="279" y="433">ADO.NET DbProviderFactory</text>
+<rect class="f-panel-2 s-line" x="370" y="420" width="278" height="18" rx="9" stroke-width="1"/><text class="tiny mid" x="509" y="433">Java <tspan class="mono">DocumentBuilderFactory.newInstance()</tspan></text>
+<rect class="f-panel-2 s-line" x="656" y="420" width="190" height="18" rx="9" stroke-width="1"/><text class="tiny mid" x="751" y="433">Swing look-and-feel UI delegates</text>
+</g>
+<g class="af-ch2">
+<text class="tiny sb f-muted" x="150" y="459">at system scale</text>
+<rect class="f-panel-2 s-line" x="244" y="446" width="180" height="18" rx="9" stroke-width="1"/><text class="tiny mid" x="334" y="459">ports and adapters (hexagonal)</text>
+<text class="tiny f-amber-ink" x="434" y="459">but a cloud-neutral port drifts toward the lowest common denominator</text>
+</g>
+<circle class="pkt f-blue af-tok af-call" r="7"/>
+<circle class="pkt f-green af-tok af-ret" r="7"/>
+<circle class="pkt f-red af-tok af-rip" r="6"/>
+</g>
+</svg>

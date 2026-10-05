@@ -205,7 +205,7 @@ First-class functions remove most of the ceremony. An observer can simply be a c
 - [Webhooks](../webhooks/) — Notify subscribers by calling their HTTP endpoints, with signatures, retries and idempotency.
 - Mediator *(planned)* — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
 - [Command](../command/) — Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts.
-- State *(planned)* — Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements.
+- [State](../state/) — Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements.
 
 ## References
 

@@ -171,8 +171,8 @@ Output:
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- State *(planned)* — Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements.
-- Template Method *(planned)* — Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order.
+- [State](../state/) — Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements.
+- [Template Method](../template-method/) — Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order.
 - Bridge *(planned)* — Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n.
 - [Command](../command/) — Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts.
 - [Decorator](../decorator/) — Wrap an object to add behaviour at runtime, stacking wrappers instead of multiplying subclasses for every combination.
