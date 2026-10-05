@@ -166,7 +166,7 @@ The last assertion is the pattern's promise: every call in a run comes from the 
 
 - [Factory Method](../factory-method/) — Let subclasses decide which class to create: the base class codes against an interface and calls an overridable create method.
 - [Builder](../builder/) — Assemble a complex object step by step and validate it once at the end, instead of calling a constructor with ten arguments.
-- Prototype *(planned)* — Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep.
+- [Prototype](../prototype/) — Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep.
 - [Singleton](../singleton/) — Guarantee one instance with a global access point, and why injecting one shared instance usually serves that need better.
 - [Facade](../facade/) — Give a complex subsystem one simple entry point, so callers make one call instead of orchestrating many classes.
 - [Hexagonal (Ports & Adapters)](../hexagonal-architecture/) — Domain logic at the core; UIs, databases and queues plug in through ports and adapters.

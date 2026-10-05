@@ -177,12 +177,12 @@ project/ 71 KB
 
 - [Decorator](../decorator/) — Wrap an object to add behaviour at runtime, stacking wrappers instead of multiplying subclasses for every combination.
 - [Iterator](../iterator/) — Walk a collection one element at a time without exposing how it is stored: an array, a tree or a stream that never ends.
-- Visitor *(planned)* — Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts.
+- [Visitor](../visitor/) — Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts.
 - [Chain of Responsibility](../chain-of-responsibility/) — Pass a request along a chain of handlers until one handles it, so the sender never needs to know which one will.
 - [Builder](../builder/) — Assemble a complex object step by step and validate it once at the end, instead of calling a constructor with ten arguments.
 - [Command](../command/) — Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts.
-- Flyweight *(planned)* — Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory.
-- Interpreter *(planned)* — Represent a small language's grammar as classes and evaluate a sentence by walking its syntax tree.
+- [Flyweight](../flyweight/) — Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory.
+- [Interpreter](../interpreter/) — Represent a small language's grammar as classes and evaluate a sentence by walking its syntax tree.
 - [Gateway Aggregation](../gateway-aggregation/) — Fan one client request out to several services and merge the answers into one response.
 
 ## References

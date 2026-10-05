@@ -148,7 +148,7 @@ preview: 1001 1002 1003 1004 (2 requests)
 - Data that is too big to load at once, arrives over time or never ends: handle it one element at a time and stop when you have enough.
 - Several ways to walk one structure (in-order and level-order, forwards and backwards), or several walks under way at once.
 - Generic code, such as copying, filtering, batching or paging, that should work on any collection.
-- Prefer something else when the language's own collections and loops already do the job (use them), when you need random access, a length or several passes (load the data into an array), or when what happens to each element depends on its type more than on the order of the walk (*Visitor*, planned).
+- Prefer something else when the language's own collections and loops already do the job (use them), when you need random access, a length or several passes (load the data into an array), or when what happens to each element depends on its type more than on the order of the walk ([Visitor](../visitor/)).
 
 ## Trade-offs
 
@@ -168,18 +168,18 @@ preview: 1001 1002 1003 1004 (2 requests)
 - **Helpers compose lazily.** The ES2025 iterator helpers (`map`, `filter`, `take`, `drop`, `flatMap` and others) and Python's `itertools` return new iterators, so `ids().filter((id) => id % 2 === 0).take(5)` reads ten IDs to find five even ones and never asks for the eleventh.
 - **Relatives.**
   - [Composite](../composite/): the tree that an iterator often walks. Composite defines the structure; Iterator defines an order in which to visit it.
-  - *Visitor* (planned): one operation per element type, often applied while an iterator walks the structure. The iterator decides the order, and the visitor decides what happens to each element.
+  - [Visitor](../visitor/): one operation per element type, often applied while an iterator walks the structure. The iterator decides the order, and the visitor decides what happens to each element.
   - [Factory Method](../factory-method/): the aggregate's `all()`, `[Symbol.iterator]()` or `iterator()` creates the iterator, and each collection class picks its own.
-  - *Memento* (planned): an iterator's position, captured so that a walk can resume later. An API's opaque cursor token works like one: the client hands it back without looking inside.
+  - [Memento](../memento/): an iterator's position, captured so that a walk can resume later. An API's opaque cursor token works like one: the client hands it back without looking inside.
 - **At architecture scale.** In [Publish-Subscribe](../publish-subscribe/) over a log, each subscriber keeps a cursor, an offset into the log that it advances and commits, so many readers walk the same log independently and resume after a restart. At that scale the iterator's position has to be stored outside the process, and the collection keeps growing while it is read. [Change Data Capture](../change-data-capture/) consumers work the same way, each with its own offset. A chain of lazy iterators (`filter`, `map`, `take`) is a pull pipeline inside one process, and [Pipes and Filters](../pipes-and-filters/) is the same shape when the filters are separate components connected by queues.
 
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
 - [Composite](../composite/) — Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does.
-- Visitor *(planned)* — Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts.
+- [Visitor](../visitor/) — Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts.
 - [Factory Method](../factory-method/) — Let subclasses decide which class to create: the base class codes against an interface and calls an overridable create method.
-- Memento *(planned)* — Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation.
+- [Memento](../memento/) — Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation.
 - [Binary Search Tree](../binary-search-tree/) — Smaller keys left, larger right: O(log n) search and insert while the tree stays balanced, O(n) once it degrades into a list.
 - [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 - [Pipes and Filters](../pipes-and-filters/) — Split processing into independent stages connected by channels.

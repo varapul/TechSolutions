@@ -217,9 +217,9 @@ What changes at that scale: the state lives in a database or in the workflow ser
 ## Related patterns
 
 - [Strategy](../strategy/) — Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller.
-- Flyweight *(planned)* — Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory.
+- [Flyweight](../flyweight/) — Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory.
 - [Singleton](../singleton/) — Guarantee one instance with a global access point, and why injecting one shared instance usually serves that need better.
-- Memento *(planned)* — Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation.
+- [Memento](../memento/) — Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation.
 - [Circuit Breaker](../circuit-breaker/) — Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers.
 - [Saga (Orchestration)](../saga-orchestration/) — A coordinator runs local transactions in sequence and triggers compensations when one fails.
 

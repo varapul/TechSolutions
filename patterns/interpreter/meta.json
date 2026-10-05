@@ -1,0 +1,41 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Rules frozen in code",
+      "caption": "Targeting lives in nested ifs in FlagService: each change is a code edit and a deploy, for everyone.",
+      "body": "The targeting for the `new-checkout` flag is nested `if`s in `FlagService.isEnabled()`: Thailand, and either the pro plan or more than ten seats. When Marketing asks to add Malaysia and teams over five seats, a developer edits the code, and the change goes through review, CI and a deploy like any release. When Sales asks for a rule just for Acme there is nowhere to put it: the same `if`s run for every customer."
+    },
+    {
+      "title": "Grammar as classes",
+      "caption": "Each grammar rule becomes a class with interpret(ctx), and the rule text is parsed once into a tree.",
+      "body": "The rule becomes text in a tiny language, `country = 'TH' and (plan = 'pro' or seats > 10)`, and each construct of its grammar becomes a class that implements **Expr** (the *AbstractExpression*): the comparisons **Equals** and **GreaterThan** are *TerminalExpressions*, and **And** and **Or**, which hold other expressions, are *NonterminalExpressions*; parentheses only group, so they need no class. Parsing is a separate step: when the rule is saved, a parser turns the text into a tree of these objects once, leaves first, and **FlagService** (the *Client*) keeps its root. Each account's attributes become the **Context** that the tree is evaluated against."
+    },
+    {
+      "title": "Evaluate against a context",
+      "caption": "interpret(ctx) runs down the tree and each node returns true or false: #1 is true, #2 and #3 false.",
+      "body": "FlagService calls `rule.interpret(ctx)` with account #1's attributes (TH, free plan, 12 seats). **And** asks its left child first: `Equals(country, 'TH')` returns true, so And asks **Or**, whose `Equals(plan, 'pro')` returns false and `GreaterThan(seats, 10)` true, so Or and then And return **true**. Account #2 has 5 seats, so GreaterThan, Or and And return **false**; for account #3 (JP) the first Equals is already false, and And returns **false** without asking Or at all."
+    },
+    {
+      "title": "Small languages only",
+      "caption": "Rules are now data, changed without a deploy. Keep the grammar small, and never eval() user rules.",
+      "body": "Changing the rule is now a text edit that goes live without a deploy, and each customer can have a rule of its own. The pattern suits a small, stable grammar: each new construct is another class plus a parser change, bigger languages need a real parser and are usually compiled to closures or bytecode, and rules that users write must never reach `eval()`, only an interpreter with limits on nesting, size and run time. Feature-flag targeting ([Feature Flags](../feature-flags/)), policy languages such as OPA's Rego ([Policy-Based Authorization](../policy-based-authorization/)), CEL in Kubernetes and Envoy, regex engines and SQL `WHERE` clauses are interpreters too; the tree is a [Composite](../composite/), and further operations over it fit [Visitor](../visitor/)."
+    }
+  ],
+  "related": ["composite", "visitor", "flyweight", "iterator", "feature-flags", "policy-based-authorization"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Robert Nystrom — Crafting Interpreters (free online)", "url": "https://craftinginterpreters.com/" },
+    { "title": "Crafting Interpreters — Representing Code", "url": "https://craftinginterpreters.com/representing-code.html" },
+    { "title": "cel-expr/cel-spec — Common Expression Language specification", "url": "https://github.com/cel-expr/cel-spec" },
+    { "title": "Kubernetes documentation — Common Expression Language in Kubernetes", "url": "https://kubernetes.io/docs/reference/using-api/cel/" },
+    { "title": "Envoy documentation — Attributes", "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/advanced/attributes" },
+    { "title": "Open Policy Agent documentation — Policy Language", "url": "https://www.openpolicyagent.org/docs/policy-language" },
+    { "title": "flagd documentation — Definition Overview (targeting rules)", "url": "https://flagd.dev/reference/flag-definitions/" },
+    { "title": "Spring Framework reference — Evaluation (Spring Expression Language)", "url": "https://docs.spring.io/spring-framework/reference/core/expressions/evaluation.html" },
+    { "title": "PostgreSQL documentation — What Is JIT compilation?", "url": "https://www.postgresql.org/docs/current/jit-reason.html" },
+    { "title": "SQLite — The SQLite Bytecode Engine", "url": "https://www.sqlite.org/opcode.html" },
+    { "title": "MDN — eval()", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval" },
+    { "title": "Martin Fowler with Rebecca Parsons — Domain-Specific Languages (2010)", "url": "https://martinfowler.com/books/dsl.html" }
+  ]
+}

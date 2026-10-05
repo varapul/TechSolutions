@@ -11,7 +11,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**125 animated** · 7 planned · 12 categories
+**132 animated** · 0 planned · 12 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -26,7 +26,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
-| 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 16 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
+| 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
 
 ## Application Architecture
 
@@ -245,26 +245,26 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Abstract Factory**](patterns/abstract-factory/) | Create families of related objects through one interface, so swapping the whole family never touches client code. | ✅ animated |
 | [**Builder**](patterns/builder/) | Assemble a complex object step by step and validate it once at the end, instead of calling a constructor with ten arguments. | ✅ animated |
 | [**Factory Method**](patterns/factory-method/) | Let subclasses decide which class to create: the base class codes against an interface and calls an overridable create method. | ✅ animated |
-| Prototype | Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep. | ⏳ planned |
+| [**Prototype**](patterns/prototype/) | Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep. | ✅ animated |
 | [**Singleton**](patterns/singleton/) | Guarantee one instance with a global access point, and why injecting one shared instance usually serves that need better. | ✅ animated |
 | [**Adapter**](patterns/adapter/) | Wrap an incompatible interface so existing code can use it unchanged: the classic fix for a third-party or legacy API. | ✅ animated |
-| Bridge | Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n. | ⏳ planned |
+| [**Bridge**](patterns/bridge/) | Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n. | ✅ animated |
 | [**Composite**](patterns/composite/) | Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does. | ✅ animated |
 | [**Decorator**](patterns/decorator/) | Wrap an object to add behaviour at runtime, stacking wrappers instead of multiplying subclasses for every combination. | ✅ animated |
 | [**Facade**](patterns/facade/) | Give a complex subsystem one simple entry point, so callers make one call instead of orchestrating many classes. | ✅ animated |
-| Flyweight | Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory. | ⏳ planned |
+| [**Flyweight**](patterns/flyweight/) | Share the common, immutable part of many similar objects and keep only what differs in each one, to cut memory. | ✅ animated |
 | [**Proxy**](patterns/proxy/) | Stand in for another object with the same interface to control access to it: lazy loading, caching, access checks, remoting. | ✅ animated |
 | [**Chain of Responsibility**](patterns/chain-of-responsibility/) | Pass a request along a chain of handlers until one handles it, so the sender never needs to know which one will. | ✅ animated |
 | [**Command**](patterns/command/) | Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts. | ✅ animated |
-| Interpreter | Represent a small language's grammar as classes and evaluate a sentence by walking its syntax tree. | ⏳ planned |
+| [**Interpreter**](patterns/interpreter/) | Represent a small language's grammar as classes and evaluate a sentence by walking its syntax tree. | ✅ animated |
 | [**Iterator**](patterns/iterator/) | Walk a collection one element at a time without exposing how it is stored: an array, a tree or a stream that never ends. | ✅ animated |
-| Mediator | Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many. | ⏳ planned |
-| Memento | Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation. | ⏳ planned |
+| [**Mediator**](patterns/mediator/) | Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many. | ✅ animated |
+| [**Memento**](patterns/memento/) | Capture an object's state in a snapshot only it can read, so it can be restored later without breaking encapsulation. | ✅ animated |
 | [**Observer**](patterns/observer/) | A subject notifies its subscribed observers of every change, so one change updates many dependents it never names. | ✅ animated |
 | [**State**](patterns/state/) | Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements. | ✅ animated |
 | [**Strategy**](patterns/strategy/) | Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller. | ✅ animated |
 | [**Template Method**](patterns/template-method/) | Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order. | ✅ animated |
-| Visitor | Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts. | ⏳ planned |
+| [**Visitor**](patterns/visitor/) | Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 <!-- END GENERATED: catalog -->

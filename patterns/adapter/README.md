@@ -174,7 +174,7 @@ Checkout's own tests then need no provider at all: they get a fake `PaymentGatew
 - [Facade](../facade/) — Give a complex subsystem one simple entry point, so callers make one call instead of orchestrating many classes.
 - [Decorator](../decorator/) — Wrap an object to add behaviour at runtime, stacking wrappers instead of multiplying subclasses for every combination.
 - [Proxy](../proxy/) — Stand in for another object with the same interface to control access to it: lazy loading, caching, access checks, remoting.
-- Bridge *(planned)* — Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n.
+- [Bridge](../bridge/) — Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n.
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
 - [Hexagonal (Ports & Adapters)](../hexagonal-architecture/) — Domain logic at the core; UIs, databases and queues plug in through ports and adapters.
 

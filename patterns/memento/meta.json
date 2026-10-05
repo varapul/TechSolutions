@@ -1,0 +1,44 @@
+{
+  "aka": ["Token", "Snapshot"],
+  "steps": [
+    {
+      "title": "Undo needs private state",
+      "caption": "History must remember the editor's state, but its fields are private, and a blur has no inverse.",
+      "body": "`History` has to remember how the photo looked before each edit, but `ImageEditor` keeps `#brightness`, `#blur` and `#pixels` private. Making them public would let History copy them, and would also let any code write them (`editor.blur = -3`) and tie every caller to how the editor stores its state. Undoing with an inverse operation doesn't work either: a blur averages neighbouring pixels, and many different photos blur to the same result."
+    },
+    {
+      "title": "A sealed snapshot",
+      "caption": "save() seals the editor's state in an EditorSnapshot; History keeps it unread; restore() unseals it.",
+      "body": "Before an edit, the app calls `history.backup()`, which asks `editor.save()` for a snapshot. The editor (the *Originator*) copies its own fields into a new `EditorSnapshot` (the *Memento*) that only an `ImageEditor` can open. History (the *Caretaker*) stacks it, seeing nothing but a label, and on undo hands it back to `editor.restore(snap)`, which unseals it and copies the values back."
+    },
+    {
+      "title": "Edit, snapshot, restore",
+      "caption": "Save, Brightness +20; save, Blur 3. Undo restores blur 0, then brightness 0: the exact pixels.",
+      "body": "History saves the state (brightness 0, blur 0), then *Brightness +20* runs; it saves again (brightness 20, blur 0), then *Blur 3* runs. The first undo pops the newest snapshot and restores blur 0, with brightness still 20; the second restores brightness 0. Each restore copies back the saved pixels, so the photo comes back exactly, although the blur has no inverse."
+    },
+    {
+      "title": "The cost, and the cousins",
+      "caption": "A 12 MP snapshot is 48 MB, ten are 480 MB: limit the history, save what changed, share the rest.",
+      "body": "A full snapshot of a 12-megapixel RGBA photo is 48 MB, so ten undo steps hold 480 MB. Editors limit the history, save only the tiles an edit touched, or share unchanged data between snapshots (copy-on-write, immutable state). [Command](../command/) undoes by running an inverse operation instead, and a command can keep a memento to undo itself. The idea also shows up in the state objects of `history.pushState()`, in the time travel of Redux DevTools, in database and VM snapshots, and in the snapshots that spare [Event Sourcing](../event-sourcing/) from replaying every event."
+    }
+  ],
+  "related": ["command", "prototype", "iterator", "state", "event-sourcing", "disaster-recovery-strategies"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Memento", "url": "https://refactoring.guru/design-patterns/memento" },
+    { "title": "MDN — Private elements", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" },
+    { "title": "MDN — WeakMap", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap" },
+    { "title": "TypeScript Handbook — Classes (private and #private)", "url": "https://www.typescriptlang.org/docs/handbook/2/classes.html" },
+    { "title": "MDN — The structured clone algorithm", "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm" },
+    { "title": "MDN — History: pushState() method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/History/pushState" },
+    { "title": "Redux — Redux Essentials, Part 1: Redux Overview and Concepts", "url": "https://redux.js.org/tutorials/essentials/part-1-overview-concepts" },
+    { "title": "Redux DevTools — Extension API arguments (maxAge)", "url": "https://github.com/reduxjs/redux-devtools/blob/main/extension/docs/API/Arguments.md" },
+    { "title": "GIMP 3.0 User Manual — Undoing", "url": "https://docs.gimp.org/3.0/en/gimp-concepts-undo.html" },
+    { "title": "KDE Krita source — kis_memento_manager.h (tile-based undo)", "url": "https://github.com/KDE/krita/blob/master/libs/image/tiles3/kis_memento_manager.h" },
+    { "title": "Martin Fowler — Event Sourcing", "url": "https://martinfowler.com/eaaDev/EventSourcing.html" },
+    { "title": "Microsoft Learn — Database snapshots (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/databases/database-snapshots-sql-server" },
+    { "title": "Microsoft Learn — Hyper-V: using checkpoints", "url": "https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/checkpoints" },
+    { "title": "AWS — Amazon EBS snapshots", "url": "https://docs.aws.amazon.com/ebs/latest/userguide/ebs-snapshots.html" },
+    { "title": "Immer — Introduction to Immer", "url": "https://immerjs.github.io/immer/" }
+  ]
+}

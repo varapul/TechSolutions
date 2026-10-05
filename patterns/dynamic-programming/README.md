@@ -169,7 +169,7 @@ Each function does the same work for every input of a given size, so its best, a
 
 ## References
 
-- [Richard Bellman — The theory of dynamic programming (Bulletin of the AMS, 1954)](https://www.ams.org/journals/bull/1954-60-06/S0002-9904-1954-09848-8/)
+- [Richard Bellman — The theory of dynamic programming (Bulletin of the AMS, 1954)](https://doi.org/10.1090/S0002-9904-1954-09848-8)
 - [Stuart Dreyfus — Richard Bellman on the Birth of Dynamic Programming (Operations Research, 2002; archived PDF)](https://web.archive.org/web/20180821050228/https://pubsonline.informs.org/doi/pdf/10.1287/opre.50.1.48.17791)
 - [Robert A. Wagner and Michael J. Fischer — The String-to-String Correction Problem (Journal of the ACM, 1974)](https://dl.acm.org/doi/10.1145/321796.321811)
 - [Saul B. Needleman and Christian D. Wunsch — A general method applicable to the search for similarities in the amino acid sequence of two proteins (1970)](https://doi.org/10.1016/0022-2836(70)90057-4)

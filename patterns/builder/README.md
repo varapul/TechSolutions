@@ -177,7 +177,7 @@ assert.throws(() => { req.timeoutMs = 0; }, TypeError);
 
 - [Factory Method](../factory-method/) — Let subclasses decide which class to create: the base class codes against an interface and calls an overridable create method.
 - [Abstract Factory](../abstract-factory/) — Create families of related objects through one interface, so swapping the whole family never touches client code.
-- Prototype *(planned)* — Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep.
+- [Prototype](../prototype/) — Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep.
 - [Composite](../composite/) — Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does.
 - [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.
 

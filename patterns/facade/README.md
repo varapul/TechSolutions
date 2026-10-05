@@ -141,7 +141,7 @@ Skip it when:
 | Facade | a new, simpler one over several objects | make a subsystem easy to use, without new features |
 | [Adapter](../adapter/) | the one its callers already expect | make one existing class fit |
 | [Decorator](../decorator/) | the same as the object it wraps | add behaviour at runtime |
-| Proxy | the same as its subject | control access: create lazily, call remotely, check permissions |
+| [Proxy](../proxy/) | the same as its subject | control access: create lazily, call remotely, check permissions |
 | Mediator | one its colleagues call, and it calls them | coordinate the interactions among peers |
 
 The book draws two of these lines itself. A facade defines a new interface, where an adapter reuses one that already exists. And a mediator's colleagues know it and communicate through it, and it often carries behaviour that belongs to none of them, while a facade only makes the subsystem easier to use and its classes don't know it exists. Abstract Factory works alongside a facade, creating the subsystem's objects without naming their concrete classes, or replaces it when the only goal is to hide platform-specific classes.
@@ -158,7 +158,7 @@ The book draws two of these lines itself. A facade defines a new interface, wher
 ## Related patterns
 
 - [Adapter](../adapter/) — Wrap an incompatible interface so existing code can use it unchanged: the classic fix for a third-party or legacy API.
-- Mediator *(planned)* — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
+- [Mediator](../mediator/) — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
 - [Abstract Factory](../abstract-factory/) — Create families of related objects through one interface, so swapping the whole family never touches client code.
 - [Singleton](../singleton/) — Guarantee one instance with a global access point, and why injecting one shared instance usually serves that need better.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.

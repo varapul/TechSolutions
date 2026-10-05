@@ -1,0 +1,41 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Nine edits, mixed concerns",
+      "caption": "total(), toCsv() and tax() go into every line class: 3 × 3 = 9 edits, and each class mixes concerns.",
+      "body": "Each operation on the invoice is written as a method on every kind of line: `total()`, `toCsv()` and then `tax()` go into **ProductLine**, **ServiceLine** and **ShippingLine**, so three operations cost 3 × 3 = **9 edits**, and every line class ends up mixing pricing, CSV formatting and tax rules. The alternative leaves the classes alone and writes one function per operation that checks `instanceof` on each line, which repeats the same three type checks in every function."
+    },
+    {
+      "title": "Operations as visitors",
+      "caption": "Each line keeps one method, accept(v); each operation becomes one visitor class, a method per kind.",
+      "body": "Every line class gets one method, `accept(v)`, which calls the visitor method for its own kind: `ProductLine` calls `v.visitProduct(this)`. **InvoiceVisitor** (the *Visitor*) declares one method per kind of line, and each operation becomes one class (a *ConcreteVisitor*) that holds its rule for every kind: **TotalVisitor** prices each kind its own way and **CsvVisitor** writes one row per line. `Invoice` (the *ObjectStructure*) walks its lines and hands each one the visitor; tax returns in step 4 as a visitor of its own."
+    },
+    {
+      "title": "Double dispatch",
+      "caption": "Two hops per line: line.accept(v), then v.visitProduct(this) or its kin; TotalVisitor sums 88.50.",
+      "body": "`invoice.accept(totalVisitor)` calls `line.accept(v)` on each line, and the line calls back `v.visitProduct(this)`, `v.visitService(this)` or `v.visitShipping(this)`. That is **double dispatch**: the first call is resolved by the line's class, which picks the method, and the second by the visitor's class, which picks the code. The sum builds up inside the visitor, 24.00 + 60.00 + 4.50 = **EUR 88.50**, and the same walk with a `CsvVisitor` runs its methods instead and writes `product,Mug,24.00` and the other two rows."
+    },
+    {
+      "title": "Add operations, not kinds",
+      "caption": "TaxVisitor is one new class (EUR 16.80) and no line changes; a new DiscountLine edits every visitor.",
+      "body": "**TaxVisitor** (an illustrative 20 % on products and services, none on shipping) is one new class that returns **EUR 16.80**, and no line class changes. A new kind of line is the opposite: **DiscountLine** needs `visitDiscount()` on `InvoiceVisitor` and so in every visitor, the same trade-off as [Abstract Factory](../abstract-factory/), where new families are cheap and new kinds of product are not. ESLint rules, Babel plugins and Java's `FileVisitor` are visitors; when the set of kinds is closed, a TypeScript union with an exhaustive `switch`, or Java's `switch` over a sealed interface, gives the same split without `accept()`."
+    }
+  ],
+  "related": ["composite", "iterator", "interpreter", "abstract-factory", "strategy", "event-sourcing"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Visitor", "url": "https://refactoring.guru/design-patterns/visitor" },
+    { "title": "Refactoring.Guru — Visitor and Double Dispatch", "url": "https://refactoring.guru/design-patterns/visitor-double-dispatch" },
+    { "title": "Philip Wadler — The Expression Problem (1998)", "url": "https://homepages.inf.ed.ac.uk/wadler/papers/expression/expression.txt" },
+    { "title": "ESLint documentation — Custom Rules", "url": "https://eslint.org/docs/latest/extend/custom-rules" },
+    { "title": "Jamie Kyle — Babel Plugin Handbook: Visitors", "url": "https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md#visitors" },
+    { "title": "Java SE 27 API — java.nio.file.FileVisitor", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/nio/file/FileVisitor.html" },
+    { "title": "Java SE 27 API — javax.lang.model.element.ElementVisitor", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.compiler/javax/lang/model/element/ElementVisitor.html" },
+    { "title": "Python documentation — ast.NodeVisitor", "url": "https://docs.python.org/3/library/ast.html#ast.NodeVisitor" },
+    { "title": "TypeScript Handbook — Narrowing: exhaustiveness checking", "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking" },
+    { "title": "OpenJDK — JEP 441: Pattern Matching for switch", "url": "https://openjdk.org/jeps/441" },
+    { "title": "OpenJDK — JEP 409: Sealed Classes", "url": "https://openjdk.org/jeps/409" },
+    { "title": "Julia documentation — Methods (multiple dispatch)", "url": "https://docs.julialang.org/en/v1/manual/methods/" }
+  ]
+}

@@ -138,9 +138,9 @@ Push sent: Your code is 4721
   - Python: `logging.Logger.makeRecord()`, above.
   - Qt: [`QMainWindow::createPopupMenu()`](https://doc.qt.io/qt-6/qmainwindow.html#createPopupMenu) is virtual. The main window calls it when the user opens a context menu, and a subclass reimplements it to return its own menu.
 - **Relatives.**
-  - *Template Method*: `send()` is a small template method whose varying step is creation. Factory methods are usually called from template methods, and Factory Method is often described as a Template Method specialised for creating objects.
-  - *Abstract Factory*: a separate factory object with one creation method for each product in a family, and those methods are often factory methods. .NET's [`DbProviderFactory`](https://learn.microsoft.com/en-us/dotnet/api/system.data.common.dbproviderfactory), with `CreateConnection()`, `CreateCommand()` and `CreateParameter()`, is one.
-  - *Prototype*: creates objects by copying a configured instance, so it needs no creator subclasses, but it needs a reliable copy.
+  - [Template Method](../template-method/): `send()` is a small template method whose varying step is creation. Factory methods are usually called from template methods, and Factory Method is often described as a Template Method specialised for creating objects.
+  - [Abstract Factory](../abstract-factory/): a separate factory object with one creation method for each product in a family, and those methods are often factory methods. .NET's [`DbProviderFactory`](https://learn.microsoft.com/en-us/dotnet/api/system.data.common.dbproviderfactory), with `CreateConnection()`, `CreateCommand()` and `CreateParameter()`, is one.
+  - [Prototype](../prototype/): creates objects by copying a configured instance, so it needs no creator subclasses, but it needs a reliable copy.
   - [Builder](../builder/): assembles one complex object step by step, where Factory Method decides in one call which class to instantiate.
   - [Singleton](../singleton/): a factory method may hand out a shared instance instead of a new one, and its callers can't tell the difference.
 - **At architecture scale.** In [Hexagonal Architecture](../hexagonal-architecture/) the core owns a port, an interface like `Channel`, and adapters implement it. It is the same inversion, but the choice of implementation moves from a subclass override to the composition root at start-up, and the implementations are adapters to real systems (an SMTP server, an SMS gateway, a push service). A [Microkernel](../microkernel/) goes one step further: plug-ins contribute implementations to extension points that the core looks up at runtime.
@@ -150,7 +150,7 @@ Push sent: Your code is 4721
 
 - [Abstract Factory](../abstract-factory/) — Create families of related objects through one interface, so swapping the whole family never touches client code.
 - [Template Method](../template-method/) — Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order.
-- Prototype *(planned)* — Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep.
+- [Prototype](../prototype/) — Create new objects by copying a configured prototype instead of building them from scratch, and know when a copy must go deep.
 - [Builder](../builder/) — Assemble a complex object step by step and validate it once at the end, instead of calling a constructor with ten arguments.
 - [Strategy](../strategy/) — Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller.
 - [Singleton](../singleton/) — Guarantee one instance with a global access point, and why injecting one shared instance usually serves that need better.

@@ -1,0 +1,35 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Everyone talks to everyone",
+      "caption": "Each widget calls the others: 4 × 3 = 12 references. A fifth widget makes 20 and edits all four.",
+      "body": "Without a mediator the widgets call each other: when the country changes, `CountrySelect` calls `postcode.setFormat()`, `shipping.reload()` and `pay.disable()`, `PostcodeField` calls `pay.enable()` once the postcode is valid, and `ShippingOptions` disables Pay while it reloads. Wired to each other, four widgets hold 4 × 3 = **12 references**, and the rule for Pay is spread over three classes. A fifth widget, a gift-wrap checkbox, makes it 5 × 4 = 20 and adds a field to all four classes."
+    },
+    {
+      "title": "Talk to the mediator",
+      "caption": "Each widget knows only the mediator and notifies it; the mediator holds the rules and calls widgets.",
+      "body": "Each widget (a *Colleague*) now holds one reference, to the `Mediator` interface, and only reports what happened: `mediator.notify(this, 'changed')`. `CheckoutMediator` (the *ConcreteMediator*) holds the four widgets and the rules, and calls the right ones. The mesh collapses into a star: 12 references become 4 (with 10 widgets, 90 become 10), and a gift-wrap checkbox now costs one reference and one new rule in `CheckoutMediator`, with no other widget edited."
+    },
+    {
+      "title": "One change, coordinated",
+      "caption": "Thailand: the mediator sets 5 digits, reloads shipping, disables Pay. Typing 10110 then enables Pay.",
+      "body": "The user picks **Thailand**: `CountrySelect` notifies the mediator, whose country rule calls `postcode.setFormat('5 digits')`, `shipping.reload('TH')` and `pay.disable()`, in that order. The user types **10110**: `PostcodeField` notifies, the mediator checks it against the 5-digit format and calls `pay.enable()`. Notifications come in (purple) and calls go out (blue); no widget calls another."
+    },
+    {
+      "title": "Costs, and cousins",
+      "caption": "Every rule lands in the mediator: split it before it is a god object. At scale: sagas and hub-spoke.",
+      "body": "The mediator concentrates the interaction logic, so every new rule lands in `CheckoutMediator` and it can grow into a god object: split it by area (address, payment) and keep the widgets dumb. Unlike [Observer](../observer/), where each listener decides for itself, a mediator owns the rules, though it is often built on notifications; unlike [Facade](../facade/), whose subsystem never knows it exists, colleagues know and call their mediator. At system scale a [saga orchestrator](../saga-orchestration/) coordinates services the way a mediator coordinates widgets, [choreography](../saga-choreography/) is the mesh, and a [hub-and-spoke network](../hub-spoke-network/) replaces a full mesh of peerings with one hub."
+    }
+  ],
+  "related": ["observer", "facade", "chain-of-responsibility", "command", "saga-orchestration", "saga-choreography", "hub-spoke-network"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Mediator", "url": "https://refactoring.guru/design-patterns/mediator" },
+    { "title": "Azure Architecture Center — Saga design pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga" },
+    { "title": "Azure Architecture Center — Hub-spoke network topology in Azure", "url": "https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke" },
+    { "title": "MediatR — Simple mediator implementation in .NET (GitHub)", "url": "https://github.com/LuckyPennySoftware/MediatR" },
+    { "title": "MediatR — The Simple Yet Powerful Mediator (mediatr.io: editions and licensing)", "url": "https://mediatr.io/" },
+    { "title": "React — Sharing State Between Components", "url": "https://react.dev/learn/sharing-state-between-components" }
+  ]
+}

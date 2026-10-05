@@ -44,7 +44,8 @@ for (const f of pages) {
 const index = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 watch(index, 'index.html');
 await index.goto(`file://${dist}/index.html`);
-for (let y = 0; y < 20000; y += 800) { // scroll so lazy previews load
+// Scroll the whole page so every lazy preview loads (the index grows with the catalog).
+for (let y = 0; y < (await index.evaluate(() => document.documentElement.scrollHeight)); y += 800) {
   await index.evaluate((v) => window.scrollTo(0, v), y);
   await index.waitForTimeout(40);
 }

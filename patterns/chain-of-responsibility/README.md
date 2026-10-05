@@ -151,7 +151,7 @@ Output:
   - [Composite](../composite/) often supplies the links: a node that can't handle a request passes it to its parent.
   - [Command](../command/) is often what travels down the chain.
   - [Observer](../observer/) delivers every notification to every subscriber. A chain offers the request to one handler after another until one takes it.
-  - *Mediator* also spares the sender from knowing its receivers, but routes every message through one central object that decides who talks to whom. A chain has no centre: each link knows only the next.
+  - [Mediator](../mediator/) also spares the sender from knowing its receivers, but routes every message through one central object that decides who talks to whom. A chain has no centre: each link knows only the next.
 - **At architecture scale.**
   - An [API gateway](../api-gateway/) runs every request through a sequence of policies (authentication, rate limiting, caching, routing), and any one of them can answer on its own: a 401 for a missing token, a 429 for an exhausted quota, a response from the cache. That is the middleware style at the network edge. The order of the policies is configuration, a request that fails one never reaches a service, and the price is the latency every policy adds to every request.
   - [Pipes and Filters](../pipes-and-filters/) also moves data along a line of independent steps, but every filter processes every message that reaches it, and in that diagram the filters are separate services joined by queues. It is a pipeline of transformations, not a search for the one handler that takes the request.
@@ -162,7 +162,7 @@ Output:
 - [Composite](../composite/) — Treat single objects and groups of objects through one interface, so a whole tree answers a question the way one leaf does.
 - [Command](../command/) — Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts.
 - [Decorator](../decorator/) — Wrap an object to add behaviour at runtime, stacking wrappers instead of multiplying subclasses for every combination.
-- Mediator *(planned)* — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
+- [Mediator](../mediator/) — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
 - [Observer](../observer/) — A subject notifies its subscribed observers of every change, so one change updates many dependents it never names.
 - [Pipes and Filters](../pipes-and-filters/) — Split processing into independent stages connected by channels.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.

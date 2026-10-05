@@ -1,0 +1,39 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Set up from scratch",
+      "caption": "pdf(), email() and export() each repeat the same five setup calls, and export() has drifted.",
+      "body": "Without the pattern, every place that needs a quarterly report builds it from nothing: `new Report()`, then four setters for the title, the theme (font Inter, accent teal), the three sections and the chart defaults. `ReportService` repeats those five calls in `pdf()`, `email()` and `export()`, so every change to the standard setup has to reach all three. Here two changes missed one of them: `export()` still uses the old blue accent and has no Costs section."
+    },
+    {
+      "title": "Clone a ready prototype",
+      "caption": "registry.get('quarterly').clone() returns a new Report set up the same; only its title changes.",
+      "body": "The setup now happens once: at start-up the application registers configured reports, `quarterly` and `monthly`, in a `PrototypeRegistry` (the GoF book calls it a *prototype manager*). `ReportService` calls `registry.get('quarterly').clone()`, gets back a new `Report` with the same theme and sections, and changes only what differs: the title becomes `Q4 report`. The *Prototype* interface declares `clone()`, and `Report`, which implements it, is the *ConcretePrototype*."
+    },
+    {
+      "title": "Shallow copy, shared trap",
+      "caption": "{ ...quarterly } shares sections, so push('Forecast') gives both 4; clone() leaves quarterly at 3.",
+      "body": "A shallow copy, made with `{ ...quarterly }` or `Object.assign({}, quarterly)`, copies only the top level: the copy has its own fields, but its `sections` field points at the prototype's array. So `q4.sections.push('Forecast')` changes the prototype as well, and both now show 4 sections, as will every later copy. `clone()` copies the array too, so after the same push the prototype keeps its 3 sections and the copy has 4."
+    },
+    {
+      "title": "Deep copies and limits",
+      "caption": "structuredClone() copies deeply but returns a plain Object, so Report implements its own clone().",
+      "body": "`structuredClone()` copies nested data deeply, cycles included, but not the prototype chain: the result is a plain object, `instanceof Report` is false and calling `clone()` on it throws a `TypeError`. So a class writes `clone()` itself, with a constructor call that keeps the class, and shares parts that never change, such as the frozen theme, instead of copying them. The same idea appears as Java's `Object.clone()` (to be used with care, *Effective Java* Item 13), Python's `copy` module and, at system scale, Kubernetes pod templates, [deployment stamps](../deployment-stamps/) and [machine images](../immutable-infrastructure/); JavaScript's prototype chain is a different thing, since it delegates property lookups and copies nothing."
+    }
+  ],
+  "related": ["abstract-factory", "factory-method", "builder", "composite", "memento", "flyweight", "deployment-stamps", "immutable-infrastructure"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "MDN — Window: structuredClone() method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone" },
+    { "title": "MDN — The structured clone algorithm", "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm" },
+    { "title": "MDN — Inheritance and the prototype chain", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain" },
+    { "title": "MDN — Spread syntax (...): copying objects", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax" },
+    { "title": "Java SE 27 API — Object.clone()", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#clone()" },
+    { "title": "Java SE 27 API — Cloneable", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Cloneable.html" },
+    { "title": "Joshua Bloch — Effective Java, 3rd edition (Item 13: Override clone judiciously)", "url": "https://www.informit.com/store/effective-java-9780134685991" },
+    { "title": "Python documentation — copy: Shallow and deep copy operations", "url": "https://docs.python.org/3/library/copy.html" },
+    { "title": "Kubernetes documentation — Pods: pod templates", "url": "https://kubernetes.io/docs/concepts/workloads/pods/#pod-templates" },
+    { "title": "refactoring.guru — Prototype", "url": "https://refactoring.guru/design-patterns/prototype" }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Every Tree holds it all",
+      "caption": "100,000 Trees each keep a name, a colour and their own 2 KB icon: 207.2 MB, almost all of it copies.",
+      "body": "The map draws 100,000 street trees of 5 species, and each marker is a full `Tree` object: its own `x` and `y`, plus the species' name, colour and a fresh copy of its 2 KB icon. At 2,048 bytes for the icon and 24 bytes for the position and a reference, that is 100,000 × 2,072 bytes ≈ **207.2 MB**, and 98.8% of it is the same five icons, copied."
+    },
+    {
+      "title": "Split shared from unique",
+      "caption": "Name, colour and icon move into 5 immutable TreeTypes; each Tree keeps x, y and a type reference.",
+      "body": "What is the same for every oak (name, colour, icon) is **intrinsic** state: it moves into an immutable `TreeType`, the *Flyweight*. What differs from marker to marker, `x` and `y`, is **extrinsic** state and stays in each `Tree` (the *Context*), next to a reference to its type. A `TreeFactory` (the *FlyweightFactory*) keeps a map from species to `TreeType`, returns the one it already has and creates each type only once."
+    },
+    {
+      "title": "Plant 100,000, create 5",
+      "caption": "Planting asks the factory each time: the first oak creates Oak, later oaks reuse it. 2.41 MB in all.",
+      "body": "Planting calls `factory.get(species)` for every marker. The first oak misses, so the factory creates the Oak `TreeType` and keeps it; the second oak gets the same object back, and once all five species exist the map stops growing: 99,995 of the 100,000 calls return a type that already exists. Drawing passes the extrinsic state in, as `type.draw(canvas, x, y)`, and memory falls to 5 × 2,048 + 100,000 × 24 bytes ≈ **2.41 MB**, 86 times less."
+    },
+    {
+      "title": "Rules, and where it hides",
+      "caption": "Shared means immutable: one write recolours every oak. Seen in interning, glyphs, GPU instancing.",
+      "body": "Every oak shares one object, so `oak.colour = 'red'` recolours every oak on the map: a flyweight has to be immutable. Compare flyweights by value unless the factory guarantees one object per value, and give the factory a policy for types nobody uses any more, such as eviction or weak references. The same sharing is behind Java's `Integer.valueOf()` cache and `String.intern()`, Python's `sys.intern()`, one glyph object per character in text layout, GPU instanced drawing such as WebGL's `drawArraysInstanced()`, and the image layers that containers on one host share."
+    }
+  ],
+  "related": ["composite", "state", "singleton", "prototype", "factory-method", "cache-aside"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Flyweight", "url": "https://refactoring.guru/design-patterns/flyweight" },
+    { "title": "Java SE 27 API — Integer.valueOf(int)", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Integer.html#valueOf(int)" },
+    { "title": "Java SE 27 API — String.intern()", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html#intern()" },
+    { "title": "Python documentation — sys.intern()", "url": "https://docs.python.org/3/library/sys.html#sys.intern" },
+    { "title": "MDN — WebGL2RenderingContext: drawArraysInstanced() method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/drawArraysInstanced" },
+    { "title": "Docker Docs — Storage drivers (images and layers)", "url": "https://docs.docker.com/engine/storage/drivers/" },
+    { "title": "MDN — WeakRef", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef" },
+    { "title": "MDN — FinalizationRegistry", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry" }
+  ]
+}

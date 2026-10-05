@@ -1,0 +1,38 @@
+{
+  "aka": ["Handle/Body"],
+  "steps": [
+    {
+      "title": "A class for every pair",
+      "caption": "One class per shape and renderer pair, 3 × 3 = 9: a new renderer adds a column, a new shape a row.",
+      "body": "Without the pattern, every class answers two questions at once, which shape and which output: `SvgCircle`, `CanvasCircle`, `PdfCircle`, `SvgRectangle` … 3 shapes × 3 renderers = **9 classes**. A fourth renderer, `Ascii`, adds a whole column (3 × 4 = 12) and a fourth shape, `Hexagon`, a whole row (4 × 4 = 16). Meanwhile the SVG code is copied into every `Svg…` class and the circle geometry into every `…Circle` class."
+    },
+    {
+      "title": "Two hierarchies, a bridge",
+      "caption": "Shape holds a Renderer and draws only with its primitives; renderers never see a shape. 3 + 3 = 6.",
+      "body": "The two questions become two hierarchies. `Shape` (the *Abstraction*) holds a `Renderer` (the *Implementor*), and `Circle`, `Rectangle` and `Triangle` (*RefinedAbstractions*) draw themselves only through its primitives, `circle(x, y, r)` and `polygon(points)`, while `SvgRenderer`, `CanvasRenderer` and `PdfRenderer` (*ConcreteImplementors*) implement those primitives and know nothing about shapes. The reference from `Shape` to `Renderer` is the bridge, and 3 + 3 = **6 classes** replace the 9."
+    },
+    {
+      "title": "A call across the bridge",
+      "caption": "Circle calls renderer.circle(50, 50, 40) across the bridge: svg gives <circle>, canvas arc() calls.",
+      "body": "`new Circle(svg, 50, 50, 40).draw()` runs Circle's one line, `renderer.circle(50, 50, 40)`. The call crosses the bridge to `SvgRenderer`, and `<circle cx=\"50\" cy=\"50\" r=\"40\"/>` comes back. The same `Circle` class built with `canvas` gets `ctx.beginPath()`, `ctx.arc(50, 50, 40, 0, 2 * Math.PI)` and `ctx.stroke()` instead: the shape's code is identical, and only the object behind the bridge differs."
+    },
+    {
+      "title": "Grow either side",
+      "caption": "AsciiRenderer draws every shape and Hexagon works with every renderer: 4 + 4 = 8 classes, not 16.",
+      "body": "`AsciiRenderer` is one new class that every shape can use at once, and `Hexagon` is one new class that every renderer can draw: 4 shapes and 4 renderers take 4 + 4 = **8 classes** instead of 16, and neither side was edited. Unlike an *Adapter*, which makes existing classes fit after the fact, a bridge is planned up front so that both sides can grow; *Strategy* shares its structure but swaps a single algorithm, and an *Abstract Factory* can pick the renderer that suits the platform. JDBC drivers and Qt's paint engines work this way, and ports and adapters apply the same split to a whole application."
+    }
+  ],
+  "related": ["adapter", "strategy", "abstract-factory", "decorator", "hexagonal-architecture"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Bridge", "url": "https://refactoring.guru/design-patterns/bridge" },
+    { "title": "Java SE 27 API — java.sql.DriverManager", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.sql/java/sql/DriverManager.html" },
+    { "title": "Java SE 27 API — java.sql.Driver", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.sql/java/sql/Driver.html" },
+    { "title": "Qt 6 documentation — Paint System", "url": "https://doc.qt.io/qt-6/paintsystem.html" },
+    { "title": "Qt 6 documentation — QPaintEngine Class", "url": "https://doc.qt.io/qt-6/qpaintengine.html" },
+    { "title": "MDN — circle (SVG element)", "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/circle" },
+    { "title": "MDN — CanvasRenderingContext2D: arc() method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc" },
+    { "title": "Alistair Cockburn — Hexagonal Architecture (2005)", "url": "https://alistair.cockburn.us/hexagonal-architecture/" },
+    { "title": "cppreference — PImpl", "url": "https://en.cppreference.com/cpp/language/pimpl" }
+  ]
+}

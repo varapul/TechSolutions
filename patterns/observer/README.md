@@ -47,7 +47,7 @@ Most event APIs mix the two. A DOM `Event` pushes its `type` (and a `CustomEvent
 - **Observer** works inside one process. The subject holds direct references to its observers and calls them itself, usually synchronously. Nothing is stored: an observer that subscribes after a change never hears about it, and the subject and its observers live and fail together.
 - **[Publish-subscribe](../publish-subscribe/)** puts a broker between the two sides. Publishers send to a named topic and know nothing about the subscribers, a durable subscription keeps messages while its subscriber is away, and delivery is usually at least once, so subscribers have to cope with duplicates. That decoupling in space and time is what lets an [event-driven architecture](../event-driven-architecture/) connect services that are deployed, scaled and restarted independently. The two names are sometimes used for the same thing; in this catalog *publish-subscribe* means the broker-based pattern.
 - **[Webhooks](../webhooks/)** are Observer between organisations, over HTTP: subscribing means registering a URL, and notifying means sending an HTTP `POST` to it. Because that call crosses the internet, the provider signs and retries every delivery, and the receiver verifies the signature, answers quickly and drops duplicates.
-- **Chain of Responsibility** also hands a request to receivers the sender doesn't know, but passes it along a line of handlers until one of them takes it. Observer gives every notification to every subscriber.
+- **[Chain of Responsibility](../chain-of-responsibility/)** also hands a request to receivers the sender doesn't know, but passes it along a line of handlers until one of them takes it. Observer gives every notification to every subscriber.
 - **Mediator** solves a different problem. Observer lets one object broadcast to any number of objects it doesn't know. Mediator puts one object in the middle of a group whose members would otherwise all talk to each other, and lets it coordinate them. The two combine well: a common way to build a mediator is to have the members subscribe to events that the mediator publishes.
 
 ### Reactive streams and signals
@@ -203,7 +203,7 @@ First-class functions remove most of the ceremony. An observer can simply be a c
 - [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Webhooks](../webhooks/) — Notify subscribers by calling their HTTP endpoints, with signatures, retries and idempotency.
-- Mediator *(planned)* — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
+- [Mediator](../mediator/) — Route the interactions between objects through one mediator, so many-to-many dependencies become one-to-many.
 - [Command](../command/) — Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts.
 - [State](../state/) — Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements.
 

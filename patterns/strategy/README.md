@@ -130,7 +130,7 @@ Output:
 - A conditional that switches on a type code or a method name, especially when the same switch appears in several places.
 - Variants that should be developed, tested or owned separately, or added as plug-ins.
 - Not when the variants differ only in their numbers. Three of the four rules here are one formula, a base price plus a price per kilogram (`Standard` is 4.90 + 0 × kg, `ByWeight` 0 + 1.50 × kg, `Express` 12 + 1 × kg), and if every rule had that shape, a table of rates would beat four classes. Strategy pays off when the algorithms differ in kind, like the threshold in `FreeOver50`.
-- Not for two variants that will never change (an `if` is clearer), and not when an object should change its behaviour by itself as it moves from state to state (that is *State*).
+- Not for two variants that will never change (an `if` is clearer), and not when an object should change its behaviour by itself as it moves from state to state (that is [State](../state/)).
 
 ## Trade-offs
 
@@ -149,7 +149,7 @@ Output:
   - Python's [key functions](https://docs.python.org/3/howto/sorting.html): `list.sort()`, `sorted()`, `min()`, `max()`, `heapq.nsmallest()` and `heapq.nlargest()` take a `key` function, called once per element to compute what is compared. `functools.cmp_to_key()` adapts an old-style comparison function.
 
   An interface with methods is still clearer when a strategy has **several operations that vary together** (the price, the delivery estimate and the label shown to the customer), when it carries its own configuration, or when it needs a name to be listed, registered and logged. A class keeps those together, and the compiler checks that each strategy implements all of them.
-- **Share stateless strategies.** None of the shipping rules keeps state, so one instance of each can serve every checkout, even across threads, and the book suggests sharing such strategies the way *Flyweight* shares objects. Java's `String.CASE_INSENSITIVE_ORDER` is one shared `Comparator` instance. A strategy with per-use state, such as a round-robin position, needs one instance per context or has to keep that state somewhere else.
+- **Share stateless strategies.** None of the shipping rules keeps state, so one instance of each can serve every checkout, even across threads, and the book suggests sharing such strategies the way [Flyweight](../flyweight/) shares objects. Java's `String.CASE_INSENSITIVE_ORDER` is one shared `Comparator` instance. A strategy with per-use state, such as a round-robin position, needs one instance per context or has to keep that state somewhere else.
 - **A default.** The context can start with a sensible strategy, `Standard` here, so simple clients don't have to choose. The book also describes a context that works without any strategy object and falls back to its own behaviour.
 - **Test each strategy alone, and the context with a stub.** A strategy is a function of its inputs: `new FreeOver50().cost({ kg: 3, subtotal: 5000 })` should return 0, and a subtotal of 4999 should return 490. `Checkout` doesn't need a real rule at all: in TypeScript, `new Checkout({ cost: () => 123 })` is enough, without a mocking library.
 - **Money.** Keep amounts in integer minor units or a decimal type, and round in one agreed place. These rules produce whole cents, so they never round.
@@ -159,9 +159,9 @@ Output:
   - Node.js: [Passport](https://www.passportjs.org/concepts/authentication/strategies/) calls each authentication mechanism a *strategy*, and an application registers the ones it uses with `passport.use()`.
   - The sort functions above.
 - **Relatives.** Several patterns share Strategy's shape, an object that delegates part of its work to another object through an interface. They differ in intent:
-  - *State* has the same structure, but the state objects (or the context) switch to the next state as requests arrive, and the client usually doesn't take part. With Strategy the client picks the object, and strategies don't know about each other.
-  - *Template Method* fixes the skeleton of an algorithm in a base class and lets subclasses fill in steps. That is inheritance, decided per class when the code is written. Strategy swaps the whole algorithm by composition, per object, while the program runs.
-  - *Bridge* also delegates to an implementation object, but its purpose is structural: it splits one hierarchy into two that grow independently (shapes and renderers, say), and it is usually designed up front. A strategy is one interchangeable algorithm.
+  - [State](../state/) has the same structure, but the state objects (or the context) switch to the next state as requests arrive, and the client usually doesn't take part. With Strategy the client picks the object, and strategies don't know about each other.
+  - [Template Method](../template-method/) fixes the skeleton of an algorithm in a base class and lets subclasses fill in steps. That is inheritance, decided per class when the code is written. Strategy swaps the whole algorithm by composition, per object, while the program runs.
+  - [Bridge](../bridge/) also delegates to an implementation object, but its purpose is structural: it splits one hierarchy into two that grow independently (shapes and renderers, say), and it is usually designed up front. A strategy is one interchangeable algorithm.
   - [Command](../command/) turns a request, what to do and with which arguments, into an object so it can be queued, logged or undone. A strategy is *how* the context does a job it already knows it has to do.
   - [Decorator](../decorator/) wraps an object and adds behaviour around its calls while keeping its interface. Strategy replaces behaviour inside the object; the book contrasts the two as changing an object's "skin" versus its "guts".
 - **At architecture scale.**
@@ -173,7 +173,7 @@ Output:
 
 - [State](../state/) — Let an object change its behaviour when its state changes by delegating to state objects instead of growing switch statements.
 - [Template Method](../template-method/) — Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order.
-- Bridge *(planned)* — Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n.
+- [Bridge](../bridge/) — Split an abstraction from its implementation so both vary independently: m shapes and n renderers need m + n classes, not m × n.
 - [Command](../command/) — Turn a request into an object that can be queued, logged, undone and redone, decoupling who asks from who acts.
 - [Decorator](../decorator/) — Wrap an object to add behaviour at runtime, stacking wrappers instead of multiplying subclasses for every combination.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
