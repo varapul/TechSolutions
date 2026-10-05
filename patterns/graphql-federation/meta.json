@@ -1,0 +1,63 @@
+{
+  "aka": ["Apollo Federation", "Federated GraphQL", "Supergraph"],
+  "steps": [
+    {
+      "title": "One graph, many teams",
+      "caption": "Each team publishes its subgraph; composition merges them into one supergraph or fails the build.",
+      "body": "Each team owns a **subgraph** and publishes its schema from its own build. `Product` is an **entity**: `@key(fields: \"id\")` lets Reviews add `reviews` and Inventory add `inStock` to the type that Products defines. **Composition** merges the three schemas into one **supergraph schema** for the router. When Inventory also defines `price`, as a `String` where Products has `Float!`, composition fails in Inventory's build and nothing is deployed."
+    },
+    {
+      "title": "Router plans each query",
+      "caption": "One query, one endpoint: Products first, then Reviews and Inventory in parallel by key, then merge.",
+      "body": "The mobile app sends `query { product(id: 42) { name price reviews { rating } inStock } }` to the router's single endpoint. The **query planner** splits it by field ownership: Products resolves `product(id: 42)` and returns `name`, `price` and the key `id`; then Reviews and Inventory are asked **in parallel**, through their `_entities` field, for the `reviews` and `inStock` of `Product` 42. The router merges the three results into one response shaped exactly like the query."
+    },
+    {
+      "title": "Checked before they ship",
+      "caption": "Removing rating would break the mobile app's query, so the check blocks it; adding stars ships.",
+      "body": "The Reviews team removes `Review.rating`. Its build runs a **schema check**: the change still composes, but the registry compares it with the operations clients actually sent in the last 7 days, finds that the mobile app's query still reads `rating`, and **blocks the change as breaking**. Adding a `stars` field instead passes, so Reviews ships v13 on its own schedule and the router loads the new supergraph; Products and Inventory don't redeploy."
+    },
+    {
+      "title": "Know the costs",
+      "caption": "Mind hops, N+1, costly queries, authorisation and the router; a failed subgraph gives partial data.",
+      "body": "Entity fetches that wait for a key run in sequence, so each round adds latency, and a subgraph that loads entities one at a time makes a database call per key unless it batches them. Clients write the queries, so limit depth and cost or allow only persisted, trusted operations (see [Rate Limiting](../rate-limiting/)); the router can check scopes, but each subgraph must still authorise access. The router is on every request's path: scale it, monitor it and [trace](../distributed-tracing/) each query across the subgraphs. When Inventory fails, the client still gets `name`, `price` and `reviews`, with `inStock: null` and an entry in `errors`."
+    }
+  ],
+  "related": ["gateway-aggregation", "backends-for-frontends", "api-gateway", "microservices", "distributed-tracing", "rate-limiting", "jwt-validation", "token-exchange"],
+  "references": [
+    { "title": "GraphQL Specification (September 2025 edition)", "url": "https://spec.graphql.org/September2025/" },
+    { "title": "GraphQL Specification — Handling Execution Errors", "url": "https://spec.graphql.org/September2025/#sec-Handling-Execution-Errors" },
+    { "title": "GraphQL.org — GraphQL federation", "url": "https://graphql.org/learn/federation/" },
+    { "title": "GraphQL.org — Security", "url": "https://graphql.org/learn/security/" },
+    { "title": "GraphQL Foundation — GraphQL Federation specification (formerly Composite Schemas), repository", "url": "https://github.com/graphql/graphql-federation-spec" },
+    { "title": "GraphQL Federation specification — prerelease working draft", "url": "https://graphql.github.io/graphql-federation-spec/draft/" },
+    { "title": "Apollo — Introduction to Apollo Federation", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/federation" },
+    { "title": "Apollo — Introduction to Entities", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/entities/intro" },
+    { "title": "Apollo — Apollo Federation Directives", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/reference/directives" },
+    { "title": "Apollo — Apollo Federation Subgraph Specification", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/reference/subgraph-spec" },
+    { "title": "Apollo — Schema Composition", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/composition" },
+    { "title": "Apollo — Query Plans", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/reference/query-plans" },
+    { "title": "Apollo — Apollo Federation Changelog", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/reference/versions" },
+    { "title": "Apollo — Apollo Federation Error Codes", "url": "https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/reference/errors" },
+    { "title": "Apollo — Handling the N+1 Problem", "url": "https://www.apollographql.com/docs/graphos/schema-design/guides/handling-n-plus-one" },
+    { "title": "Apollo — Schema Checks", "url": "https://www.apollographql.com/docs/graphos/platform/schema-management/checks" },
+    { "title": "Apollo — Apollo Router", "url": "https://www.apollographql.com/docs/graphos/routing/about-router" },
+    { "title": "Apollo — Safelisting with Persisted Queries", "url": "https://www.apollographql.com/docs/graphos/platform/security/persisted-queries" },
+    { "title": "Apollo — Demand Control", "url": "https://www.apollographql.com/docs/graphos/routing/security/demand-control" },
+    { "title": "Apollo — Authorization in the GraphOS Router", "url": "https://www.apollographql.com/docs/graphos/routing/security/authorization" },
+    { "title": "Apollo — @defer Directive Support", "url": "https://www.apollographql.com/docs/graphos/routing/operations/defer" },
+    { "title": "Apollo — Response Caching", "url": "https://www.apollographql.com/docs/graphos/routing/performance/caching/response-caching/overview" },
+    { "title": "Apollo — Subgraph Error Inclusion", "url": "https://www.apollographql.com/docs/graphos/routing/observability/subgraph-error-inclusion" },
+    { "title": "Apollo Blog — Securing Apollo Federation Subgraphs: Context and Best Practices (2026)", "url": "https://www.apollographql.com/blog/securing-apollo-federation-subgraphs-context-and-best-practices" },
+    { "title": "WunderGraph — Cosmo Router", "url": "https://cosmo-docs.wundergraph.com/router/intro" },
+    { "title": "WunderGraph — Cosmo Schema Checks", "url": "https://cosmo-docs.wundergraph.com/studio/schema-checks" },
+    { "title": "The Guild — Hive Gateway", "url": "https://the-guild.dev/graphql/hive/docs/gateway" },
+    { "title": "The Guild — Hive Router", "url": "https://the-guild.dev/graphql/hive/docs/router" },
+    { "title": "The Guild — Hive Schema Registry", "url": "https://the-guild.dev/graphql/hive/docs/schema-registry" },
+    { "title": "The Guild — The Guild has acquired Grafbase (2026)", "url": "https://the-guild.dev/graphql/hive/blog/acquired-grafbase" },
+    { "title": "ChilliCream — Fusion", "url": "https://chillicream.com/docs/fusion" },
+    { "title": "Netflix DGS Framework — Federation", "url": "https://netflix.github.io/dgs/federation/" },
+    { "title": "The Guild — Schema Stitching", "url": "https://the-guild.dev/graphql/stitching" },
+    { "title": "GraphQL — DataLoader", "url": "https://github.com/graphql/dataloader" },
+    { "title": "IBM — GraphQL Cost Directives specification", "url": "https://ibm.github.io/graphql-specs/cost-spec.html" }
+  ]
+}

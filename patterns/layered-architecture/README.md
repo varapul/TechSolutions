@@ -126,7 +126,7 @@ Where it hurts (step 4):
 - [Modular Monolith](../modular-monolith/) — One deployable unit built from strongly bounded modules that talk through explicit interfaces.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 - [Web-Queue-Worker](../web-queue-worker/) — A web front end hands slow work to background workers through a queue.
-- Microkernel (Plug-in) *(planned)* — A minimal core system extended by independent plug-in modules.
+- [Microkernel (Plug-in)](../microkernel/) — A minimal core system extended by independent plug-in modules.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 

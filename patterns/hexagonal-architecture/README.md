@@ -109,7 +109,7 @@ AWS's guidance makes the same point from the cost side: the extra adapter code p
 - [Modular Monolith](../modular-monolith/) — One deployable unit built from strongly bounded modules that talk through explicit interfaces.
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
-- Microkernel (Plug-in) *(planned)* — A minimal core system extended by independent plug-in modules.
+- [Microkernel (Plug-in)](../microkernel/) — A minimal core system extended by independent plug-in modules.
 - [Branch by Abstraction](../branch-by-abstraction/) — Introduce an abstraction, build the new implementation behind it, then switch over.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 

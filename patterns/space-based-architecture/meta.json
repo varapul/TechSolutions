@@ -1,0 +1,38 @@
+{
+  "aka": ["SBA", "Cloud architecture pattern"],
+  "steps": [
+    {
+      "title": "Database bottleneck",
+      "caption": "Every seat check is a database query, so adding app servers only pushes the database to 100%.",
+      "body": "Ticket sales open at 10:00 and 200,000 users arrive for 50,000 seats. The app servers keep no data, so every seat check and every reservation is a database query, and the two servers the autoscaler adds only send more of them. The database reaches 100% CPU with lock waits, and the p95 response time climbs to seconds."
+    },
+    {
+      "title": "In-memory units",
+      "caption": "Units load the seats into memory and answer from it; the data grid copies A-12 to unit 2.",
+      "body": "Each **processing unit** is the application plus an in-memory copy of the data it needs, here the seat map, which a **data reader** loads from the database when the units start. The **messaging grid** routes each request to a unit, which answers from memory with no database call. When unit 1 sells A-12, the **data grid** replicates the change to unit 2 within milliseconds."
+    },
+    {
+      "title": "Asynchronous writes",
+      "caption": "Each change also goes onto a data pump; a data writer updates the database in the background.",
+      "body": "Every change also goes onto a **data pump**, an asynchronous queue, and a **data writer** applies it to the database in the background. Nothing on the request path waits for the database: it becomes the durable record instead of the working store, and it is read only when units start with empty memory."
+    },
+    {
+      "title": "Elastic, with trade-offs",
+      "caption": "The deployment manager runs 2 to 8 units. Units 1 and 2 both sold B-7: a data collision.",
+      "body": "As users arrive, the **deployment manager** starts units (from 2 up to 8), each copying the seats from a peer before it serves, and stops them after the rush. The costs: units 1 and 2 both sold B-7 before either update replicated (a **data collision**; give each section one owning unit, or detect and resolve conflicts), the replicated data must fit in every unit's memory, the database lags behind, and a crash before a change reaches a durable queue loses it. It suits spiky, high-concurrency workloads such as ticketing, auctions and flash sales, not large data sets that need complex queries."
+    }
+  ],
+  "related": ["cache-aside", "autoscaling", "sharding", "cqrs", "read-replicas", "event-driven-architecture", "load-balancing", "microservices"],
+  "references": [
+    { "title": "Mark Richards — Lesson 166: Space-Based Architecture (Software Architecture Monday)", "url": "https://developertoarchitect.com/lessons/lesson166.html" },
+    { "title": "Mark Richards — Lesson 174: Replicated Caching and Data Collisions", "url": "https://www.developertoarchitect.com/lessons/lesson174.html" },
+    { "title": "GigaSpaces docs — Space-Based Architecture", "url": "https://docs.gigaspaces.com/latest/overview/space-based-architecture.html" },
+    { "title": "GigaSpaces docs — Asynchronous Persistency: Mirror Service", "url": "https://docs.gigaspaces.com/latest/dev-java/asynchronous-persistency-with-the-mirror.html" },
+    { "title": "Hazelcast docs — Replicated Map", "url": "https://docs.hazelcast.com/hazelcast/latest/data-structures/replicated-map" },
+    { "title": "Hazelcast docs — Configuring a MapStore (write-behind)", "url": "https://docs.hazelcast.com/hazelcast/latest/mapstore/configuration-guide" },
+    { "title": "Apache Ignite docs — Data Partitioning", "url": "https://ignite.apache.org/docs/ignite2/latest/data-modeling/data-partitioning" },
+    { "title": "Apache Ignite docs — External Storage (write-behind caching)", "url": "https://ignite.apache.org/docs/ignite2/latest/persistence/external-storage" },
+    { "title": "David Gelernter — Generative Communication in Linda (ACM TOPLAS, 1985)", "url": "https://www.cs.unc.edu/~stotts/COMP590-059-f21/slides/lindaGenerative.pdf" },
+    { "title": "JavaSpaces Service Specification (Apache River)", "url": "https://river.apache.org/release-doc/current/specs/html/js-spec.html" }
+  ]
+}

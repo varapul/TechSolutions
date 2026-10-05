@@ -1,0 +1,40 @@
+{
+  "aka": ["Hub-spoke topology", "Hub-and-spoke VPC", "Star topology"],
+  "steps": [
+    {
+      "title": "Every network, own edge",
+      "caption": "Each network runs its own firewall, VPN, internet exit and DNS, and Prod and Data share one range.",
+      "body": "Without a shared hub, every workload network builds its own edge: its own **firewall**, its own **VPN** to on-premises, its own internet exit and its own DNS. That is three times the cost and the configuration, and the firewall rule sets drift apart. Prod and Data were both given `10.1.0.0/16`, and networks with overlapping ranges can't be peered or routed to each other without renumbering one of them (or translating addresses)."
+    },
+    {
+      "title": "A hub of shared services",
+      "caption": "One hub holds the shared firewall, gateway, DNS and bastion; each workload gets a peered spoke.",
+      "body": "A **hub** network holds the shared services: one firewall, one gateway to on-premises (VPN or a dedicated circuit), a DNS resolver and a bastion host. Each workload lives in a **spoke** that is peered to the hub only; a central platform team owns the hub, and each workload team owns its spoke. One address plan keeps every range unique, so Data is renumbered to `10.3.0.0/16`."
+    },
+    {
+      "title": "Traffic through the hub",
+      "caption": "Spokes route via the hub firewall: Prod reaches Data only through it; on-premises enters at the hub.",
+      "body": "Peering is **not transitive**: Prod and Data are each peered to the hub but not to each other, so Prod has no route to Data. A route table in every spoke sends internet traffic (`0.0.0.0/0`), other spokes (`10.0.0.0/8`) and on-premises (`192.168.0.0/16`) to the firewall's private address `10.0.1.4`, which allows Prod → Data, denies Dev → Data and logs every decision. On-premises traffic comes in through the hub's gateway (**gateway transit**), and a route on the gateway subnet sends it through the same firewall; the spokes resolve names with the hub's DNS resolver."
+    },
+    {
+      "title": "Grow, know the limits",
+      "caption": "A new spoke is a template plus one peering, but the hub has limits: throughput, quotas, cost per GB.",
+      "body": "Adding the Analytics spoke takes a template and one peering. The limits show up in the hub: the firewall is now a shared dependency and a throughput bottleneck (scale it and make it zone-redundant), every network has quotas on peerings and routes, and traffic through the hub adds per-GB charges for peering or transit and for the firewall. Managed hubs such as **Azure Virtual WAN**, **AWS Transit Gateway** and **Google Network Connectivity Center** do the transit routing for you, and a multi-region estate usually gets one hub per region."
+    }
+  ],
+  "related": ["private-endpoints", "zero-trust-access", "gatekeeper", "multi-region-active-active", "deployment-stamps", "cell-based-architecture", "mutual-tls", "load-balancing"],
+  "references": [
+    { "title": "Azure Architecture Center — Hub-spoke network topology in Azure", "url": "https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke" },
+    { "title": "Cloud Adoption Framework — Define an Azure network topology", "url": "https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/define-an-azure-network-topology" },
+    { "title": "Microsoft Learn — Azure Virtual Network peering", "url": "https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview" },
+    { "title": "Microsoft Learn — Azure virtual network traffic routing", "url": "https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview" },
+    { "title": "Microsoft Learn — Azure Virtual WAN overview", "url": "https://learn.microsoft.com/en-us/azure/virtual-wan/virtual-wan-about" },
+    { "title": "AWS Whitepaper — Building a Scalable and Secure Multi-VPC AWS Network Infrastructure", "url": "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/welcome.html" },
+    { "title": "AWS Whitepaper — Centralized network security for VPC-to-VPC and on-premises to VPC traffic", "url": "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/centralized-network-security-for-vpc-to-vpc-and-on-premises-to-vpc-traffic.html" },
+    { "title": "Amazon VPC — How AWS Transit Gateway works", "url": "https://docs.aws.amazon.com/vpc/latest/tgw/how-transit-gateways-work.html" },
+    { "title": "Amazon VPC — How VPC peering connections work", "url": "https://docs.aws.amazon.com/vpc/latest/peering/vpc-peering-basics.html" },
+    { "title": "Google Cloud Architecture Center — Hub-and-spoke network architecture", "url": "https://docs.cloud.google.com/architecture/deploy-hub-spoke-vpc-network-topology" },
+    { "title": "Google Cloud — VPC Network Peering", "url": "https://docs.cloud.google.com/vpc/docs/vpc-peering" },
+    { "title": "Google Cloud — Network Connectivity Center overview", "url": "https://docs.cloud.google.com/network-connectivity/docs/network-connectivity-center/concepts/overview" }
+  ]
+}

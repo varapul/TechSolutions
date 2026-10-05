@@ -1,0 +1,35 @@
+{
+  "aka": ["Pipeline architecture", "Processing pipeline"],
+  "steps": [
+    {
+      "title": "One big processing step",
+      "caption": "One service does every stage: slow resizing sets the pace, and it scales, deploys and fails as one.",
+      "body": "A single **photo service** validates, resizes, watermarks, tags and publishes each upload in one function. Resizing is the slowest stage (5 photos a second per copy), so taking 20 a second means running 4 copies of the *whole* service just to get 4 resizers, though one copy of every other stage would do. A new watermark means redeploying all of it, and when tagging fails the retry starts from the top and resizes the photo again."
+    },
+    {
+      "title": "Split into filters",
+      "caption": "Each stage becomes a filter with one job; a pipe (a queue) carries the photo to the next filter.",
+      "body": "Each stage becomes a **filter**: a small, separately deployed service with one job that reads from its input **pipe** (here a queue) and writes its result to its output pipe. Filters share nothing else, no memory, no database and no calls to each other, so the photo flows Validate → Resize → Watermark → Tag → Publish with one pipe between each pair, from the uploads (the *source*) to the catalogue and the CDN (the *sinks*)."
+    },
+    {
+      "title": "Scale and change one stage",
+      "caption": "Resize alone scales to 4 instances (4 × 5 = 20/s); Safety slots in, and Tag is reused for videos.",
+      "body": "With 20 photos a second arriving and one Resize doing 5, Resize's input pipe grows by 15 a second, so **Resize alone** scales out to 4 instances (4 × 5 = 20 a second) and the pipe stops growing; every other filter stays at one instance. A content-safety filter is **inserted** between Validate and Resize: Validate now writes to a new pipe and Safety writes into Resize's existing one, with no change to any other filter. The same Tag filter is **reused** in a second pipeline, for videos."
+    },
+    {
+      "title": "Failures and the price",
+      "caption": "Watermark crashes, so its photo is processed again; a photo that always fails is dead-lettered.",
+      "body": "Watermark crashes while holding photo 7f3; the message was never acknowledged, so it reappears in its pipe and a restarted instance watermarks it again, without redoing the resize (**at-least-once** delivery, so filters must be [idempotent](../idempotent-consumer/)). Photo 9c1 fails at Publish on every try and is moved to a [dead-letter queue](../dead-letter-queue/) after 3, while a correlation ID in every message ties each photo's hops together ([distributed tracing](../distributed-tracing/)). The price: the data is serialised at every hop, there are more parts to run and watch, latency adds up over the hops, and no transaction spans the stages, so 9c1 was resized, watermarked and tagged but never published."
+    }
+  ],
+  "related": ["competing-consumers", "queue-based-load-leveling", "claim-check", "medallion-architecture", "dead-letter-queue", "idempotent-consumer", "event-driven-architecture", "saga-orchestration"],
+  "references": [
+    { "title": "Azure Architecture Center — Pipes and Filters pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/pipes-and-filters" },
+    { "title": "Enterprise Integration Patterns — Pipes and Filters", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/PipesAndFilters.html" },
+    { "title": "Doug McIlroy — 1964 Bell Labs memo on coupling programs, retyped by Dennis Ritchie (Prophetic Petroglyphs)", "url": "https://www.nokia.com/bell-labs/about/dennis-m-ritchie/mdmpipe.html" },
+    { "title": "Dennis M. Ritchie — The Evolution of the Unix Time-sharing System", "url": "https://www.nokia.com/bell-labs/about/dennis-m-ritchie/hist.html" },
+    { "title": "Apache Kafka — Kafka Streams core concepts", "url": "https://kafka.apache.org/43/streams/core-concepts/" },
+    { "title": "Apache Beam — Programming guide", "url": "https://beam.apache.org/documentation/programming-guide/" },
+    { "title": "Enterprise Integration Patterns — Content-Based Router", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html" }
+  ]
+}

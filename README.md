@@ -11,17 +11,17 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**82 animated** · 9 planned · 10 categories
+**91 animated** · 0 planned · 10 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
-| 🏛️ | [Application Architecture](#application-architecture) | 8 / 10 | The big-picture shapes: how a system is split into parts and how those parts talk to each other. |
-| ☁️ | [Cloud Infrastructure](#cloud-infrastructure) | 8 / 9 | Where workloads run, and how they scale, stay available and recover from disaster. |
-| 🔐 | [Identity & Access (Auth)](#identity--access-auth) | 13 / 15 | Authentication and authorization flows: who is calling, and what they are allowed to do. |
-| 🚪 | [API & Edge](#api--edge) | 8 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
-| 📨 | [Messaging & Integration](#messaging--integration) | 10 / 12 | Asynchronous communication, and coordinating work that spans several services. |
+| 🏛️ | [Application Architecture](#application-architecture) | 10 / 10 | The big-picture shapes: how a system is split into parts and how those parts talk to each other. |
+| ☁️ | [Cloud Infrastructure](#cloud-infrastructure) | 9 / 9 | Where workloads run, and how they scale, stay available and recover from disaster. |
+| 🔐 | [Identity & Access (Auth)](#identity--access-auth) | 15 / 15 | Authentication and authorization flows: who is calling, and what they are allowed to do. |
+| 🚪 | [API & Edge](#api--edge) | 9 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
+| 📨 | [Messaging & Integration](#messaging--integration) | 12 / 12 | Asynchronous communication, and coordinating work that spans several services. |
 | 🗄️ | [Data Management](#data-management) | 9 / 9 | Storing, scaling, caching and synchronising data across services. |
-| 🛡️ | [Resilience & Reliability](#resilience--reliability) | 8 / 9 | Keep serving when dependencies are slow, overloaded or down. |
+| 🛡️ | [Resilience & Reliability](#resilience--reliability) | 9 / 9 | Keep serving when dependencies are slow, overloaded or down. |
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
@@ -39,8 +39,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Serverless (Functions)**](patterns/serverless/) | Functions start per event, scale out automatically and scale to zero when idle. | ✅ animated |
 | [**Hexagonal (Ports & Adapters)**](patterns/hexagonal-architecture/) | Domain logic at the core; UIs, databases and queues plug in through ports and adapters. | ✅ animated |
 | [**Web-Queue-Worker**](patterns/web-queue-worker/) | A web front end hands slow work to background workers through a queue. | ✅ animated |
-| Microkernel (Plug-in) | A minimal core system extended by independent plug-in modules. | ⏳ planned |
-| Space-Based | Processing units share an in-memory data grid, taking the database off the hot path. | ⏳ planned |
+| [**Microkernel (Plug-in)**](patterns/microkernel/) | A minimal core system extended by independent plug-in modules. | ✅ animated |
+| [**Space-Based**](patterns/space-based-architecture/) | Processing units share an in-memory data grid, taking the database off the hot path. | ✅ animated |
 | [**Cell-Based Architecture**](patterns/cell-based-architecture/) | Many isolated, identical cells behind a thin router contain the blast radius of any failure. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
@@ -58,7 +58,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Load Balancing**](patterns/load-balancing/) | Spread requests across healthy instances and stop sending to unhealthy ones. | ✅ animated |
 | [**CDN & Edge Caching**](patterns/cdn-edge-caching/) | Serve static content from edge locations close to users; only cache misses reach the origin. | ✅ animated |
 | [**Deployment Stamps**](patterns/deployment-stamps/) | Deploy many independent copies of the whole stack, each serving a subset of tenants. | ✅ animated |
-| Hub-and-Spoke Network | Shared services and egress in a central hub network; workloads live in peered spokes. | ⏳ planned |
+| [**Hub-and-Spoke Network**](patterns/hub-spoke-network/) | Shared services and egress in a central hub network; workloads live in peered spokes. | ✅ animated |
 | [**Private Endpoints**](patterns/private-endpoints/) | Reach managed cloud services over private IPs instead of the public internet. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
@@ -76,12 +76,12 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Refresh Token Rotation**](patterns/refresh-token-rotation/) | Short-lived access tokens, single-use refresh tokens, and reuse detection that revokes the whole family. | ✅ animated |
 | [**Sessions vs Tokens**](patterns/sessions-vs-tokens/) | Server-side sessions versus self-contained tokens: where the state lives and how you revoke it. | ✅ animated |
 | [**Token Exchange (On-Behalf-Of)**](patterns/token-exchange/) | Swap an incoming user token for a narrowly scoped one before calling a downstream API. | ✅ animated |
-| Device Authorization Grant | Sign in on a TV or CLI by approving a short code on your phone. | ⏳ planned |
+| [**Device Authorization Grant**](patterns/device-authorization-grant/) | Sign in on a TV or CLI by approving a short code on your phone. | ✅ animated |
 | [**SAML 2.0 Single Sign-On**](patterns/saml-sso/) | Enterprise SSO: the identity provider posts a signed assertion to the app through the browser. | ✅ animated |
 | [**Federated Identity**](patterns/federated-identity/) | Let an external identity provider authenticate users; the application trusts its tokens. | ✅ animated |
 | [**Mutual TLS (mTLS)**](patterns/mutual-tls/) | Client and server both present certificates, so every connection is authenticated both ways. | ✅ animated |
 | [**Valet Key**](patterns/valet-key/) | Give clients a short-lived, narrowly scoped URL to read or write storage directly. | ✅ animated |
-| Gatekeeper | A hardened broker validates and sanitises requests before they reach trusted hosts. | ⏳ planned |
+| [**Gatekeeper**](patterns/gatekeeper/) | A hardened broker validates and sanitises requests before they reach trusted hosts. | ✅ animated |
 | [**Policy-Based Authorization**](patterns/policy-based-authorization/) | Services ask a central policy engine for allow/deny decisions (RBAC, ABAC, ReBAC). | ✅ animated |
 | [**Zero Trust Access**](patterns/zero-trust-access/) | No implicit trust from network location: verify identity, device and context on every request. | ✅ animated |
 
@@ -101,7 +101,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Ambassador**](patterns/ambassador/) | An out-of-process proxy that handles outbound connectivity (retries, TLS, routing) for a client. | ✅ animated |
 | [**Service Mesh**](patterns/service-mesh/) | Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code. | ✅ animated |
 | [**Webhooks**](patterns/webhooks/) | Notify subscribers by calling their HTTP endpoints, with signatures, retries and idempotency. | ✅ animated |
-| GraphQL Federation | A router composes one graph from many services' subgraphs and plans each query across them. | ⏳ planned |
+| [**GraphQL Federation**](patterns/graphql-federation/) | Subgraphs from many services compose into one graph; a router plans each query across them. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 
@@ -121,8 +121,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Saga (Choreography)**](patterns/saga-choreography/) | Services react to each other's events to complete a workflow, with no central coordinator. | ✅ animated |
 | [**Dead-Letter Queue**](patterns/dead-letter-queue/) | Park messages that keep failing so they stop blocking the queue and can be inspected. | ✅ animated |
 | [**Idempotent Consumer**](patterns/idempotent-consumer/) | Remember processed message IDs so a redelivered message has no extra effect. | ✅ animated |
-| Claim Check | Put the large payload in storage and send only a reference through the broker. | ⏳ planned |
-| Pipes and Filters | Split processing into independent stages connected by channels. | ⏳ planned |
+| [**Claim Check**](patterns/claim-check/) | Put the large payload in storage and send only a reference through the broker. | ✅ animated |
+| [**Pipes and Filters**](patterns/pipes-and-filters/) | Split processing into independent stages connected by channels. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 
@@ -156,7 +156,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Timeout & Fallback**](patterns/timeout-and-fallback/) | Bound every remote call and degrade gracefully when the time runs out. | ✅ animated |
 | [**Rate Limiting & Throttling**](patterns/rate-limiting/) | Cap how fast each client may call (token bucket) and shed the excess with 429s. | ✅ animated |
 | [**Health Endpoint Monitoring**](patterns/health-endpoint-monitoring/) | Expose liveness and readiness checks that load balancers and monitors probe. | ✅ animated |
-| Leader Election | Instances elect one coordinator; another takes over when its lease expires. | ⏳ planned |
+| [**Leader Election**](patterns/leader-election/) | Instances elect one coordinator; another takes over when its lease expires. | ✅ animated |
 | [**Compensating Transaction**](patterns/compensating-transaction/) | Undo the completed steps of a multi-step operation that failed part-way. | ✅ animated |
 | [**Chaos Engineering**](patterns/chaos-engineering/) | Inject failures on purpose to prove the system degrades the way you expect. | ✅ animated |
 

@@ -116,7 +116,7 @@ When **not** to use it:
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 - [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
-- Pipes and Filters *(planned)* — Split processing into independent stages connected by channels.
+- [Pipes and Filters](../pipes-and-filters/) — Split processing into independent stages connected by channels.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 

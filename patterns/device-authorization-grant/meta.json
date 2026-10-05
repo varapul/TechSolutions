@@ -1,0 +1,37 @@
+{
+  "aka": ["Device code flow", "Device flow"],
+  "steps": [
+    {
+      "title": "Ask for a code",
+      "caption": "The TV sends its client_id and scope, and gets a secret device_code plus the user code WDJB-MJHT.",
+      "body": "The TV app is a public client, so it sends only its `client_id` and the `scope` it wants to the **device authorization endpoint**. The server stores a pending request and answers with a long, random `device_code` that the TV keeps to itself, a short `user_code` (WDJB-MJHT), the `verification_uri`, an optional `verification_uri_complete` for a QR code, `expires_in` (900 s here) and the polling `interval` (5 s). The TV tells the user where to go and which code to enter."
+    },
+    {
+      "title": "Approve on the phone",
+      "caption": "The user enters WDJB-MJHT on the phone, signs in with MFA and approves. The TV never sees passwords.",
+      "body": "The user opens example.com/device on their phone and enters WDJB-MJHT (scanning the QR code, which carries `verification_uri_complete`, skips the typing), then signs in the usual way, including MFA. The consent screen names the app and the device, and tells the user to allow it only if they started this on a TV in front of them. They tap **Allow** and the request is marked approved; the password and the second factor went only to the authorization server, never to the TV."
+    },
+    {
+      "title": "The TV polls",
+      "caption": "Meanwhile the TV polls /token: pending, a slow_down that adds 5 s, then access and refresh tokens.",
+      "body": "From the start, the TV polls the **token endpoint** with `grant_type=urn:ietf:params:oauth:grant-type:device_code` and its `device_code`, waiting `interval` seconds between polls. While the request is pending the answer is `authorization_pending`; a poll that comes too soon gets `slow_down`, and the TV adds 5 s to its interval for good. The first poll after approval returns an access token and a refresh token, and the TV shows the user's library."
+    },
+    {
+      "title": "Other endings, phishing",
+      "caption": "A denial or a 15-minute expiry ends the flow. The risk: a phished user approves an attacker's code.",
+      "body": "If the user taps Deny the next poll returns `access_denied`; if nobody approves within `expires_in`, it returns `expired_token`, and the TV gets a new code only when the user asks for one. The risk this flow adds is **remote phishing**: an attacker starts a flow on their own device and sends the code to a victim with a pretext, and if the victim approves, the attacker's device receives the tokens. Defences: a consent screen that names the app and the device and warns, a short expiry, rate limits on code entry, and enabling the grant only for clients that need it."
+    }
+  ],
+  "related": ["oauth2-authorization-code-pkce", "openid-connect", "refresh-token-rotation", "oauth2-client-credentials", "sessions-vs-tokens", "jwt-validation", "federated-identity", "zero-trust-access"],
+  "references": [
+    { "title": "RFC 8628 — OAuth 2.0 Device Authorization Grant", "url": "https://www.rfc-editor.org/rfc/rfc8628" },
+    { "title": "RFC 10027 (BCP 247) — Best Current Practice for Security of Cross-Device Flows", "url": "https://www.rfc-editor.org/rfc/rfc10027" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "Microsoft identity platform — OAuth 2.0 device authorization grant", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-device-code" },
+    { "title": "Microsoft Entra — Conditional Access: Authentication flows", "url": "https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-authentication-flows" },
+    { "title": "Google for Developers — OAuth 2.0 for TV and Limited-Input Device Applications", "url": "https://developers.google.com/identity/protocols/oauth2/limited-input-device" },
+    { "title": "GitHub Docs — Authorizing OAuth apps (device flow)", "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow" },
+    { "title": "OpenID Connect Client-Initiated Backchannel Authentication (CIBA) Core 1.0", "url": "https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html" },
+    { "title": "Microsoft Security Blog — Storm-2372 conducts device code phishing campaign", "url": "https://www.microsoft.com/en-us/security/blog/2025/02/13/storm-2372-conducts-device-code-phishing-campaign/" }
+  ]
+}

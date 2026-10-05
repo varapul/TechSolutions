@@ -133,10 +133,10 @@ Endpoints add up: one per resource, per sub-resource, per zone and per network t
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns
 
-- Hub-and-Spoke Network *(planned)* — Shared services and egress in a central hub network; workloads live in peered spokes.
+- [Hub-and-Spoke Network](../hub-spoke-network/) — Shared services and egress in a central hub network; workloads live in peered spokes.
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 - [Mutual TLS (mTLS)](../mutual-tls/) — Client and server both present certificates, so every connection is authenticated both ways.
-- Gatekeeper *(planned)* — A hardened broker validates and sanitises requests before they reach trusted hosts.
+- [Gatekeeper](../gatekeeper/) — A hardened broker validates and sanitises requests before they reach trusted hosts.
 - [Valet Key](../valet-key/) — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Multi-Region Active-Active](../multi-region-active-active/) — Serve users from several regions at once and shift traffic away from a region that fails.

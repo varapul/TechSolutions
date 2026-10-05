@@ -1,0 +1,40 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "One exposed host",
+      "caption": "The app faces the internet and holds the keys: one bad file name hands both to an attacker.",
+      "body": "Without a gatekeeper, the internet-facing claims service both parses untrusted uploads and holds the credentials for the claims database and the document store. One parsing bug is enough: here a crafted upload named `../../config` lands outside the upload folder, the attacker gets code running on the host, and the keys to every policy, claim and document are right there."
+    },
+    {
+      "title": "Split the roles",
+      "caption": "A keyless gatekeeper validates and sanitises each request; only it can reach the trusted host.",
+      "body": "A **gatekeeper** in its own perimeter zone now receives every request. It authenticates the caller, checks the size before reading the body, decodes the request once and validates that form against the contract (known fields only, an allowed content type that matches the actual bytes, safe file-name characters), then forwards a rebuilt, clean request over the one internal endpoint (port 8443, mutual TLS). It holds no data-store credentials: the **trusted host** behind it holds them, and network rules let nothing but the gatekeeper reach that host."
+    },
+    {
+      "title": "Stopped at the gate",
+      "caption": "Bad uploads get 400 and 413 at the gate. A breached gatekeeper has no keys and only one way onward.",
+      "body": "An upload named `../../config` fails the file-name rule and gets `400 Bad Request`; a 48 MB body fails the size check and gets `413 Content Too Large` before the body is read. Both are logged, and the trusted host never sees either. When the gatekeeper itself is breached, the attacker finds no keys or connection strings there, the network rules allow only the internal endpoint, and the trusted host validates the crafted request it receives and refuses it: defence in depth."
+    },
+    {
+      "title": "The costs",
+      "caption": "An extra hop, a tier to scale, rules to maintain; unlike a valet key, it stays in the data path.",
+      "body": "The protection has a price: an extra hop and more processing on every request, another tier to scale and keep available (a single instance is a single point of failure), validation rules that must change whenever the service's contract does, and the temptation to put business logic in the gatekeeper. A [valet key](../valet-key/) makes the opposite trade and takes the application out of the data path; a gatekeeper stays in it on purpose, so that every request is inspected."
+    }
+  ],
+  "related": ["valet-key", "api-gateway", "gateway-offloading", "zero-trust-access", "private-endpoints", "mutual-tls", "rate-limiting", "hub-spoke-network"],
+  "references": [
+    { "title": "Azure Architecture Center — Gatekeeper pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/gatekeeper" },
+    { "title": "OWASP Cheat Sheet Series — Input Validation Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html" },
+    { "title": "OWASP Cheat Sheet Series — File Upload Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html" },
+    { "title": "Microsoft Learn — What is Azure Web Application Firewall on Azure Application Gateway?", "url": "https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview" },
+    { "title": "Microsoft Learn — Web Application Firewall request and file upload size limits", "url": "https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-request-size-limits" },
+    { "title": "Microsoft Learn — Application Gateway V1 retirement and migration to V2", "url": "https://learn.microsoft.com/en-us/azure/application-gateway/v1-retirement" },
+    { "title": "AWS WAF Developer Guide — AWS WAF", "url": "https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html" },
+    { "title": "AWS WAF Developer Guide — Oversize web request components in AWS WAF", "url": "https://docs.aws.amazon.com/waf/latest/developerguide/waf-oversize-request-components.html" },
+    { "title": "Microsoft Learn — API Management policy reference: validate-content", "url": "https://learn.microsoft.com/en-us/azure/api-management/validate-content-policy" },
+    { "title": "Azure Architecture Center — Valet Key pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/valet-key" },
+    { "title": "RFC 9110 — HTTP Semantics (400, 413 and 415 status codes)", "url": "https://www.rfc-editor.org/rfc/rfc9110" },
+    { "title": "RFC 9112 — HTTP/1.1, section 11.2: Request Smuggling", "url": "https://www.rfc-editor.org/rfc/rfc9112#section-11.2" }
+  ]
+}

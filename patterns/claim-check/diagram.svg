@@ -1,0 +1,742 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Claim Check</title>
+<desc id="dg-desc">Claim Check. Put the large payload in storage and send only a reference through the broker. Step 1, A message too big: Intake publishes the 25 MB claim with its photos as one message; the 256 KB topic rejects it. Step 2, Store, then send a check: First upload the 25 MB payload to blob storage, then publish a 1 KB claim check that points to it. Step 3, Redeem the claim check: Each consumer fetches the payload by its reference and checks the sha256; the filter reads metadata. Step 4, Lifecycle and safety: Delete the payload once both are done or after 30 days; a check that finds it gone is dead-lettered.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">MESSAGING &amp; INTEGRATION</text>
+  <text class="title" x="40" y="64">Claim Check</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A message too big</text>
+  <text class="step on p1" x="40" y="518">1 · A message too big</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Store, then send a check</text>
+  <text class="step on p2" x="262" y="518">2 · Store, then send a check</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Redeem the claim check</text>
+  <text class="step on p3" x="484" y="518">3 · Redeem the claim check</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Lifecycle and safety</text>
+  <text class="step on p4" x="706" y="518">4 · Lifecycle and safety</text>
+  <text class="caption p1" x="40" y="552">Intake publishes the 25 MB claim with its photos as one message; the 256 KB topic rejects it.</text>
+  <text class="caption p2" x="40" y="552">First upload the 25 MB payload to blob storage, then publish a 1 KB claim check that points to it.</text>
+  <text class="caption p3" x="40" y="552">Each consumer fetches the payload by its reference and checks the sha256; the filter reads metadata.</text>
+  <text class="caption p4" x="40" y="552">Delete the payload once both are done or after 30 days; a check that finds it gone is dead-lettered.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Claim Check. Timeline (20s loop, 1s = 5%), generated by a scratch script with scripts/lib/motion.mjs:
+   0-25%   intake sends the 25 MB claim as one message; the 256 KB topic rejects it (1.8s)
+   25-50%  ① the payload goes to storage (5.4-6.6s), ② then a 1 KB claim check is published (7.0-7.6s)
+   50-75%  copies go to Damage assessment (filter type = auto) and Archive; each fetches and verifies the payload
+   75-100% both done -> payload deleted (16s); the 31-day orphan expires (16.7s);
+           an older check reaches Archive, its payload is gone: 404 (17.3s) -> dead-letter queue (18.3s) */
+.diagram .legend { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .ev.dead { stroke: var(--red); stroke-width: 2.5; }
+.diagram .pay { fill: var(--teal); stroke: var(--bg); stroke-width: 2; }
+.diagram .evt { font-size: 10.5px; font-weight: 700; fill: var(--bg); }
+.diagram .badge { stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; stroke: var(--bg); }
+.diagram .icon { fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.diagram .cc-big { opacity: 0; animation: cc-big var(--T) linear infinite; }
+.diagram .cc-bigx { opacity: 0; animation: cc-bigx var(--T) linear infinite; }
+.diagram .cc-up { opacity: 0; animation: cc-up var(--T) linear infinite; }
+.diagram .cc-row1 { opacity: 0; animation: cc-row1 var(--T) linear infinite; }
+.diagram .cc-stored { opacity: 0; animation: cc-stored var(--T) linear infinite; }
+.diagram .cc-ok1 { opacity: 0; animation: cc-ok1 var(--T) linear infinite; }
+.diagram .cc-pok { opacity: 0; animation: cc-pok var(--T) linear infinite; }
+.diagram .cc-chk { opacity: 0; animation: cc-chk var(--T) linear infinite; }
+.diagram .cc-chk2 { opacity: 0; animation: cc-chk2 var(--T) linear infinite; }
+.diagram .cc-fok { opacity: 0; animation: cc-fok var(--T) linear infinite; }
+.diagram .cc-reqa { opacity: 0; animation: cc-reqa var(--T) linear infinite; }
+.diagram .cc-dla { opacity: 0; animation: cc-dla var(--T) linear infinite; }
+.diagram .cc-worka { opacity: 0; animation: cc-worka var(--T) linear infinite; }
+.diagram .cc-a1 { opacity: 0; animation: cc-a1 var(--T) linear infinite; }
+.diagram .cc-a2 { opacity: 0; animation: cc-a2 var(--T) linear infinite; }
+.diagram .cc-reqb { opacity: 0; animation: cc-reqb var(--T) linear infinite; }
+.diagram .cc-dlb { opacity: 0; animation: cc-dlb var(--T) linear infinite; }
+.diagram .cc-workb { opacity: 0; animation: cc-workb var(--T) linear infinite; }
+.diagram .cc-b1 { opacity: 0; animation: cc-b1 var(--T) linear infinite; }
+.diagram .cc-b2 { opacity: 0; animation: cc-b2 var(--T) linear infinite; }
+.diagram .cc-done { opacity: 0; animation: cc-done var(--T) linear infinite; }
+.diagram .cc-del { opacity: 0; animation: cc-del var(--T) linear infinite; }
+.diagram .cc-row2 { opacity: 0; animation: cc-row2 var(--T) linear infinite; }
+.diagram .cc-orph { opacity: 0; animation: cc-orph var(--T) linear infinite; }
+.diagram .cc-exp { opacity: 0; animation: cc-exp var(--T) linear infinite; }
+.diagram .cc-old { opacity: 0; animation: cc-old var(--T) linear infinite; }
+.diagram .cc-reqc { opacity: 0; animation: cc-reqc var(--T) linear infinite; }
+.diagram .cc-404 { opacity: 0; animation: cc-404 var(--T) linear infinite; }
+.diagram .cc-bfail { opacity: 0; animation: cc-bfail var(--T) linear infinite; }
+.diagram .cc-dpath { opacity: 0; animation: cc-dpath var(--T) linear infinite; }
+.diagram .cc-dead { opacity: 0; animation: cc-dead var(--T) linear infinite; }
+.diagram .cc-dq0 { opacity: 0; animation: cc-dq0 var(--T) linear infinite; }
+.diagram .cc-dq1 { opacity: 0; animation: cc-dq1 var(--T) linear infinite; }
+.diagram .cc-rej { animation: cc-rej var(--T) linear infinite; }
+.diagram .cc-pfail { animation: cc-pfail var(--T) linear infinite; }
+@keyframes cc-big {
+  0% { transform: translate(211px, 268px); opacity: 0; }
+  3% { transform: translate(211px, 268px); opacity: 0; }
+  4% { opacity: 1; }
+  9% { transform: translate(266px, 268px); opacity: 1; }
+  10% { transform: translate(266px, 268px); opacity: 0; }
+  100% { transform: translate(266px, 268px); opacity: 0; }
+}
+@keyframes cc-bigx {
+  0% { transform: translate(266px, 268px); opacity: 0; }
+  9% { transform: translate(266px, 268px); opacity: 0; }
+  10% { opacity: 1; }
+  11.5% { transform: translate(236px, 268px); opacity: 1; }
+  12.5% { transform: translate(236px, 268px); opacity: 0; }
+  100% { transform: translate(236px, 268px); opacity: 0; }
+}
+@keyframes cc-rej {
+  0% { opacity: 0; }
+  9.25% { opacity: 0; }
+  10% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-pfail {
+  0% { opacity: 0; }
+  9.75% { opacity: 0; }
+  10.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-up {
+  0% { transform: translate(211px, 246px); opacity: 0; }
+  27% { transform: translate(211px, 246px); opacity: 0; }
+  28% { opacity: 1; }
+  28.167% { transform: translate(246px, 246px); }
+  31.833% { transform: translate(246px, 136px); }
+  32.933% { transform: translate(279px, 136px); opacity: 1; }
+  33.933% { transform: translate(279px, 136px); opacity: 0; }
+  100% { transform: translate(279px, 136px); opacity: 0; }
+}
+@keyframes cc-row1 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.75% { opacity: 1; }
+  82% { opacity: 1; }
+  84% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-stored {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34.5% { opacity: 1; }
+  77% { opacity: 1; }
+  78% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-ok1 {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  37.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-pok {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.5% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-chk {
+  0% { transform: translate(198px, 268px); opacity: 0; }
+  35% { transform: translate(198px, 268px); opacity: 0; }
+  36% { opacity: 1; }
+  38.029% { transform: translate(410px, 268px); }
+  50.5% { transform: translate(410px, 268px); }
+  53% { transform: translate(551px, 268px); opacity: 1; }
+  54% { transform: translate(551px, 268px); opacity: 0; }
+  100% { transform: translate(551px, 268px); opacity: 0; }
+}
+@keyframes cc-chk2 {
+  0% { transform: translate(410px, 268px); opacity: 0; }
+  50.5% { transform: translate(410px, 268px); opacity: 0; }
+  51.175% { transform: translate(464px, 268px); }
+  51.5% { opacity: 1; }
+  51.875% { transform: translate(464px, 324px); }
+  55.95% { transform: translate(790px, 324px); }
+  56.1% { transform: translate(790px, 312px); opacity: 1; }
+  57.1% { transform: translate(790px, 312px); opacity: 0; }
+  100% { transform: translate(790px, 312px); opacity: 0; }
+}
+@keyframes cc-fok {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-reqa {
+  0% { transform: translate(645px, 226px); opacity: 0; }
+  53.5% { transform: translate(645px, 226px); opacity: 0; }
+  54% { opacity: 1; }
+  54.75% { transform: translate(645px, 190px); opacity: 1; }
+  55.25% { transform: translate(645px, 190px); opacity: 0; }
+  100% { transform: translate(645px, 190px); opacity: 0; }
+}
+@keyframes cc-dla {
+  0% { transform: translate(645px, 160px); opacity: 0; }
+  55% { transform: translate(645px, 160px); opacity: 0; }
+  55.75% { opacity: 1; }
+  58% { transform: translate(645px, 216px); opacity: 1; }
+  58.75% { transform: translate(645px, 216px); opacity: 0; }
+  100% { transform: translate(645px, 216px); opacity: 0; }
+}
+@keyframes cc-worka {
+  0% { opacity: 0; }
+  58.25% { opacity: 0; }
+  59.25% { opacity: 1; }
+  62.75% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-a1 {
+  0% { opacity: 0; }
+  58.25% { opacity: 0; }
+  59.25% { opacity: 1; }
+  62.75% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-a2 {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-reqb {
+  0% { transform: translate(835px, 226px); opacity: 0; }
+  56.6% { transform: translate(835px, 226px); opacity: 0; }
+  57.1% { opacity: 1; }
+  57.85% { transform: translate(835px, 190px); opacity: 1; }
+  58.35% { transform: translate(835px, 190px); opacity: 0; }
+  100% { transform: translate(835px, 190px); opacity: 0; }
+}
+@keyframes cc-dlb {
+  0% { transform: translate(835px, 160px); opacity: 0; }
+  58.1% { transform: translate(835px, 160px); opacity: 0; }
+  58.85% { opacity: 1; }
+  61.1% { transform: translate(835px, 216px); opacity: 1; }
+  61.85% { transform: translate(835px, 216px); opacity: 0; }
+  100% { transform: translate(835px, 216px); opacity: 0; }
+}
+@keyframes cc-workb {
+  0% { opacity: 0; }
+  61.35% { opacity: 0; }
+  62.35% { opacity: 1; }
+  65.85% { opacity: 1; }
+  66.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-b1 {
+  0% { opacity: 0; }
+  61.35% { opacity: 0; }
+  62.35% { opacity: 1; }
+  65.85% { opacity: 1; }
+  66.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-b2 {
+  0% { opacity: 0; }
+  66.1% { opacity: 0; }
+  67.1% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-done {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.25% { opacity: 1; }
+  80.25% { opacity: 1; }
+  81.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-del {
+  0% { opacity: 0; }
+  80.25% { opacity: 0; }
+  81.25% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-row2 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.5% { opacity: 1; }
+  86.25% { opacity: 1; }
+  88.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-orph {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.5% { opacity: 1; }
+  83.25% { opacity: 1; }
+  84.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-exp {
+  0% { opacity: 0; }
+  83.25% { opacity: 0; }
+  84.25% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-old {
+  0% { transform: translate(620px, 324px); opacity: 0; }
+  76.25% { transform: translate(620px, 324px); opacity: 0; }
+  77.25% { opacity: 1; }
+  80.75% { transform: translate(620px, 324px); }
+  84.019% { transform: translate(790px, 324px); }
+  84.25% { transform: translate(790px, 312px); opacity: 1; }
+  85.25% { transform: translate(790px, 312px); opacity: 0; }
+  100% { transform: translate(790px, 312px); opacity: 0; }
+}
+@keyframes cc-reqc {
+  0% { transform: translate(835px, 226px); opacity: 0; }
+  85% { transform: translate(835px, 226px); opacity: 0; }
+  85.5% { opacity: 1; }
+  86.25% { transform: translate(835px, 190px); opacity: 1; }
+  86.75% { transform: translate(835px, 190px); opacity: 0; }
+  100% { transform: translate(835px, 190px); opacity: 0; }
+}
+@keyframes cc-404 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.25% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-bfail {
+  0% { opacity: 0; }
+  86.75% { opacity: 0; }
+  87.75% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-dpath {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89.5% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-dead {
+  0% { transform: translate(890px, 312px); opacity: 0; }
+  89% { transform: translate(890px, 312px); opacity: 0; }
+  90% { opacity: 1; }
+  91.5% { transform: translate(890px, 406px); }
+  98.75% { transform: translate(890px, 406px); opacity: 1; }
+  99.75% { transform: translate(890px, 406px); opacity: 0; }
+  100% { transform: translate(890px, 406px); opacity: 0; }
+}
+@keyframes cc-dq0 {
+  0% { opacity: 1; }
+  91.5% { opacity: 1; }
+  92% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cc-dq1 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- ===== message card (top left): the 25 MB message, then the claim check, then lifetimes ===== -->
+  <rect class="box" x="30" y="96" width="188" height="116" rx="10"/>
+  <g class="p1">
+    <text class="legend" x="44" y="116">ONE MESSAGE · 25 MB</text>
+    <text class="tiny" x="44" y="136">claim form (JSON)</text>
+    <text class="tiny end f-ink" x="204" y="136">30 KB</text>
+    <text class="tiny" x="44" y="153">12 damage photos</text>
+    <text class="tiny end f-ink" x="204" y="153">≈ 25 MB</text>
+    <line class="s-line" x1="44" y1="163" x2="204" y2="163" stroke-width="1"/>
+    <text class="tiny" x="44" y="179">broker limit</text>
+    <text class="tiny end f-ink" x="204" y="179">256 KB</text>
+    <text class="tiny sb f-red" x="44" y="199">✕ about 100× too large</text>
+  </g>
+  <g class="p23">
+    <text class="legend" x="44" y="116">CLAIM CHECK · ~1 KB</text>
+    <text class="tiny" x="44" y="136">ref</text>
+    <text class="tiny mono f-ink" x="94" y="136">claims/7f3a.zip</text>
+    <text class="tiny" x="44" y="153">type</text>
+    <text class="tiny mono f-ink" x="94" y="153">auto</text>
+    <text class="tiny" x="44" y="170">size</text>
+    <text class="tiny mono f-ink" x="94" y="170">25 MB</text>
+    <text class="tiny" x="44" y="187">sha256</text>
+    <text class="tiny mono f-ink" x="94" y="187">9c41…e07b</text>
+    <text class="tiny f-faint" x="44" y="204">the photos stay in storage</text>
+  </g>
+  <g class="p4">
+    <text class="legend" x="44" y="116">LIFETIMES</text>
+    <text class="tiny sb f-ink" x="44" y="135">claim check</text>
+    <text class="tiny end" x="204" y="135">14 d TTL + retries</text>
+    <rect class="f-purple" x="44" y="140" width="75" height="7" rx="2"/>
+    <rect class="f-amber" x="119" y="140" width="37" height="7" rx="2"/>
+    <text class="tiny sb f-ink" x="44" y="164">payload</text>
+    <text class="tiny end" x="204" y="164">30 d lifecycle rule</text>
+    <rect class="f-teal" x="44" y="169" width="160" height="7" rx="2"/>
+    <path class="none s-muted" d="M156 183V187H204V183" stroke-width="1.2"/>
+    <text class="tiny" x="44" y="200">no check outlives it</text>
+    <text class="tiny sb mid f-green" x="180" y="200">margin</text>
+  </g>
+
+  <!-- ===== blob storage: the claim-check store ===== -->
+  <rect class="box" x="300" y="96" width="620" height="88" rx="12"/>
+  <g class="icon s-teal" stroke-width="2">
+    <ellipse cx="327" cy="113" rx="12" ry="4.5"/>
+    <path d="M315 113V135A12 4.5 0 0 0 339 135V113"/>
+    <path d="M315 124A12 4.5 0 0 0 339 124"/>
+  </g>
+  <text class="label" x="350" y="123">Blob storage</text>
+  <text class="sub" x="350" y="140">claim-check store</text>
+  <!-- objects -->
+  <g class="cc-row1">
+    <path class="f-teal" d="M482 120h7l3 3v9h-10z"/>
+    <text class="tiny mono f-ink" x="498" y="130">claims/7f3a.zip</text>
+    <text class="tiny sb end f-ink" x="642" y="130">25 MB</text>
+    <text class="tiny sb end f-green cc-stored" x="726" y="130">stored ✓</text>
+    <text class="tiny sb end f-green cc-done" x="726" y="130">✓ 2 of 2 done</text>
+    <g class="cc-del">
+      <line class="s-muted" x1="496" y1="126" x2="644" y2="126" stroke-width="1.5"/>
+      <text class="tiny sb end f-muted" x="726" y="130">deleted</text>
+    </g>
+  </g>
+  <g class="cc-row2">
+    <path class="f-amber" d="M482 145h7l3 3v9h-10z"/>
+    <text class="tiny mono f-ink" x="498" y="155">claims/9b2c.zip</text>
+    <text class="tiny sb end f-ink" x="642" y="155">18 MB</text>
+    <text class="tiny sb end f-amber-ink cc-orph" x="726" y="155">orphan, 31 d</text>
+    <g class="cc-exp">
+      <line class="s-muted" x1="496" y1="151" x2="644" y2="151" stroke-width="1.5"/>
+      <text class="tiny sb end f-muted" x="726" y="155">expired</text>
+    </g>
+  </g>
+  <!-- the store's own rules -->
+  <circle class="none s-orange" cx="750" cy="118" r="4.5" stroke-width="2"/><path class="none s-orange" d="M754.5 118H765M761 118V122M765 118V121.5" stroke-width="2" stroke-linecap="round"/>
+  <text class="tiny" x="772" y="122"><tspan class="sb f-ink">write:</tspan> intake only</text>
+  <text class="tiny" x="772" y="137"><tspan class="sb f-ink">read:</tspan> each consumer</text>
+  <g class="p4">
+    <circle class="icon s-amber" cx="754" cy="155" r="5.5"/>
+    <path class="icon s-amber" d="M754 151.5V155L756.5 156.5"/>
+    <text class="tiny" x="772" y="159"><tspan class="sb f-ink">expires</tspan> after 30 days</text>
+    <rect class="icon s-teal" x="749" y="171" width="10" height="7.5" rx="1.5"/>
+    <path class="icon s-teal" d="M751 171V168.5A3 3 0 0 1 757 168.5V171"/>
+    <text class="tiny" x="772" y="177"><tspan class="sb f-ink">encrypted</tspan> at rest</text>
+  </g>
+
+  <!-- ===== producer ===== -->
+  <rect class="box" x="36" y="232" width="154" height="72" rx="12"/>
+  <text class="label mid" x="113" y="258">Claims intake</text>
+  <text class="sub mid" x="113" y="275">claim + 12 photos</text>
+  <text class="tiny sb mid f-red cc-pfail" x="113" y="294">✕ message rejected</text>
+  <text class="tiny sb mid f-green cc-pok" x="113" y="294">✓ stored, then sent</text>
+
+  <!-- upload (to storage) and publish (to the topic) -->
+  <path class="wire" d="M190 246H246V136H299" marker-end="url(#ah)"/>
+  <line class="wire" x1="190" y1="268" x2="287" y2="268" marker-end="url(#ah)"/>
+  <g class="p2">
+    <circle class="f-ink" cx="246" cy="196" r="8"/>
+    <text class="tiny b mid f-bg" x="246" y="200">1</text>
+    <text class="tiny sb f-ink" x="272" y="200">store</text>
+    <circle class="f-ink" cx="238" cy="268" r="8"/>
+    <text class="tiny b mid f-bg" x="238" y="272">2</text>
+    <text class="tiny sb mid f-ink" x="238" y="293">publish</text>
+  </g>
+
+  <!-- ===== message broker: topic with a size limit, two subscriptions ===== -->
+  <rect class="zone" x="272" y="212" width="280" height="126" rx="14"/>
+  <text class="tiny sb" x="284" y="228">message broker</text>
+  <rect class="box" x="288" y="236" width="156" height="66" rx="10"/>
+  <text class="tiny" x="300" y="251">topic <tspan class="mono sb f-ink">claims</tspan></text>
+  <rect class="f-bg s-line" x="300" y="259" width="132" height="18" rx="5" stroke-width="1"/>
+  <text class="tiny b mid f-ink" x="366" y="294">max 256 KB per message</text>
+  <g class="cc-rej">
+    <rect class="f-red-soft s-red" x="288" y="236" width="156" height="66" rx="10" stroke-width="1.5"/>
+    <text class="tiny b mid f-red" x="366" y="272">✕ 25 MB &gt; 256 KB</text>
+    <circle class="f-red" cx="288" cy="242" r="8"/>
+    <path class="badge" d="M285 239l6 6M291 239l-6 6"/>
+  </g>
+  <g class="cc-ok1">
+    <circle class="f-green" cx="288" cy="242" r="8"/>
+    <path class="badge" d="M284.5 242l2.5 2.5 4.5-5"/>
+  </g>
+
+  <!-- subscriptions -->
+  <line class="wire" x1="444" y1="268" x2="559" y2="268" marker-end="url(#ah)"/>
+  <path class="wire" d="M464 268V324H790V305" marker-end="url(#ah)"/>
+  <circle class="f-wire" cx="464" cy="268" r="3.5"/>
+  <text class="tiny mid" x="504" y="284">filter</text>
+  <text class="tiny mono mid f-ink" x="504" y="297">type = auto</text>
+  <g class="cc-fok">
+    <circle class="f-green" cx="552" cy="290" r="7"/>
+    <path class="badge" d="M549 290l2 2 3.8-4.2"/>
+  </g>
+  <text class="tiny" x="476" y="318">all claims</text>
+
+  <!-- ===== consumers ===== -->
+  <rect class="box" x="560" y="232" width="170" height="72" rx="12"/>
+  <rect class="none s-purple cc-worka" x="560" y="232" width="170" height="72" rx="12" stroke-width="2.5"/>
+  <text class="label mid" x="645" y="257">Damage assessment</text>
+  <text class="sub mid" x="645" y="274">scores the photos</text>
+  <text class="tiny sb mid f-green cc-a1" x="645" y="294">✓ sha256 matches</text>
+  <text class="tiny sb mid f-green cc-a2" x="645" y="294">✓ claim assessed</text>
+
+  <rect class="box" x="750" y="232" width="170" height="72" rx="12"/>
+  <rect class="none s-purple cc-workb" x="750" y="232" width="170" height="72" rx="12" stroke-width="2.5"/>
+  <text class="label mid" x="835" y="257">Archive</text>
+  <text class="sub mid" x="835" y="274">keeps every claim</text>
+  <text class="tiny sb mid f-green cc-b1" x="835" y="294">✓ sha256 matches</text>
+  <text class="tiny sb mid f-green cc-b2" x="835" y="294">✓ claim archived</text>
+  <text class="tiny sb mid f-red cc-bfail" x="835" y="294">✕ payload not found</text>
+
+  <!-- reads straight from storage -->
+  <line class="wire dash" x1="645" y1="185" x2="645" y2="231" marker-end="url(#ah)"/>
+  <line class="wire dash" x1="835" y1="185" x2="835" y2="231" marker-end="url(#ah)"/>
+  <g class="p3">
+    <text class="tiny mono mid f-ink" x="740" y="204">GET claims/7f3a.zip</text>
+    <circle class="none s-orange" cx="676" cy="216" r="4" stroke-width="1.8"/><path class="none s-orange" d="M680 216H689M686 216V219.5M689 216V219" stroke-width="1.8" stroke-linecap="round"/>
+    <text class="tiny sb f-orange" x="694" y="220">own read-only access</text>
+  </g>
+  <g class="cc-404">
+    <circle class="f-red" cx="835" cy="208" r="8"/>
+    <path class="badge" d="M832 205l6 6M838 205l-6 6"/>
+    <text class="tiny b end f-red" x="821" y="212">404 not found</text>
+  </g>
+
+  <!-- dead-letter queue of the archive subscription -->
+  <g class="cc-dpath">
+    <line class="s-red dash" x1="890" y1="305" x2="890" y2="357" stroke-width="2" marker-end="url(#ah-red)"/>
+    <text class="tiny sb end f-red" x="882" y="340">dead-lettered</text>
+  </g>
+  <g class="p4">
+    <rect class="box" x="760" y="358" width="160" height="62" rx="10"/>
+    <text class="tiny sb f-ink" x="772" y="376">dead-letter queue</text>
+    <text class="tiny" x="772" y="391">archive subscription</text>
+    <text class="tiny" x="772" y="409">depth</text>
+    <text class="tiny mono b f-green cc-dq0" x="806" y="409">0</text>
+    <text class="tiny mono b f-red cc-dq1" x="806" y="409">1</text>
+    <rect class="f-bg s-line" x="876" y="396" width="28" height="20" rx="5" stroke-width="1"/>
+  </g>
+
+  <!-- ===== size panel (bottom left): bars to scale against the limit ===== -->
+  <rect class="box" x="30" y="346" width="420" height="122" rx="10"/>
+  <text class="legend" x="44" y="366">MESSAGE SIZE VS THE 256 KB LIMIT</text>
+  <text class="tiny" x="44" y="391">claim + photos</text>
+  <rect class="f-panel-2" x="140" y="381" width="252" height="12" rx="3"/>
+  <rect class="f-red" x="140" y="381" width="252" height="12" rx="3"/>
+  <path class="f-panel" d="M318 379H328L321 395H311Z"/>
+  <text class="tiny b end f-red" x="436" y="391">25 MB</text>
+  <g class="p234">
+    <text class="tiny" x="44" y="419">claim check</text>
+    <rect class="f-panel-2" x="140" y="409" width="252" height="12" rx="3"/>
+    <rect class="f-green" x="140" y="409" width="3" height="12" rx="1"/>
+    <text class="tiny b end f-green" x="436" y="419">~1 KB</text>
+  </g>
+  <line class="s-ink" x1="200" y1="375" x2="200" y2="427" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text class="tiny sb mid f-ink" x="200" y="442">limit 256 KB</text>
+  <text class="tiny f-faint" x="44" y="459">to scale: the 25 MB bar, 100× the limit, is cut off</text>
+
+  <!-- ===== what this step shows (bottom middle) ===== -->
+  <rect class="box" x="470" y="346" width="274" height="122" rx="10"/>
+  <g class="p1">
+    <text class="legend" x="484" y="366">WHY NOT RAISE THE LIMIT?</text>
+    <text class="tiny" x="484" y="385">A bigger limit, or 100 smaller messages,</text>
+    <text class="tiny" x="484" y="400">only moves the problem. Large messages</text>
+    <text class="tiny" x="484" y="415">slow the broker for everyone, cost more</text>
+    <text class="tiny" x="484" y="430">(some brokers bill per 64 KB), sit in</text>
+    <text class="tiny" x="484" y="445">memory on every replica, and are copied</text>
+    <text class="tiny" x="484" y="460">again for every consumer.</text>
+  </g>
+  <g class="p2">
+    <text class="legend" x="484" y="366">STORE FIRST, THEN PUBLISH</text>
+    <text class="tiny" x="484" y="385">Publish only after the upload succeeds.</text>
+    <text class="tiny" x="484" y="400">The other way round, a consumer could</text>
+    <text class="tiny" x="484" y="415">ask for a payload that isn't there yet.</text>
+    <text class="tiny" x="484" y="430">The key comes from the claim ID, so a</text>
+    <text class="tiny" x="484" y="445">retried upload overwrites the object</text>
+    <text class="tiny" x="484" y="460">instead of leaving a second copy.</text>
+  </g>
+  <g class="p3">
+    <text class="legend" x="484" y="366">REDEEMING THE CLAIM CHECK</text>
+    <text class="tiny" x="484" y="385">The filter routes on type = auto: on the</text>
+    <text class="tiny" x="484" y="400">metadata alone, downloading nothing.</text>
+    <text class="tiny" x="484" y="415">Each consumer fetches the 25 MB itself,</text>
+    <text class="tiny" x="484" y="430">with its own read-only access, and checks</text>
+    <text class="tiny" x="484" y="445">the sha256 before it trusts the bytes.</text>
+    <text class="tiny" x="484" y="460">Archive does the same, independently.</text>
+  </g>
+  <g class="p4">
+    <text class="legend" x="484" y="366">WHO DELETES THE PAYLOAD?</text>
+    <text class="tiny" x="484" y="385">The last consumer to finish (2 of 2), or</text>
+    <text class="tiny" x="484" y="400">a lifecycle rule after 30 days, longer</text>
+    <text class="tiny" x="484" y="415">than the message TTL plus retries.</text>
+    <text class="tiny" x="484" y="430">A failed publish leaves an orphan: only</text>
+    <text class="tiny" x="484" y="445">the age rule removes it. A check whose</text>
+    <text class="tiny" x="484" y="460">payload is gone is dead-lettered.</text>
+  </g>
+
+  <!-- ===== tokens ===== -->
+  <g class="cc-big"><rect class="ev" x="-21" y="-14" width="42" height="28" rx="6"/><text class="evt mid" y="4">25 MB</text></g>
+  <g class="cc-bigx"><rect class="f-red pkt" x="-21" y="-14" width="42" height="28" rx="6"/><text class="evt mid" y="4">25 MB</text></g>
+  <g class="cc-up"><rect class="pay" x="-21" y="-13" width="42" height="26" rx="6"/><text class="evt mid" y="4">25 MB</text></g>
+  <rect class="ev cc-chk" x="-8" y="-8" width="16" height="16" rx="4"/>
+  <rect class="ev cc-chk2" x="-8" y="-8" width="16" height="16" rx="4"/>
+  <circle class="pkt f-blue cc-reqa" r="5"/>
+  <g class="cc-dla"><rect class="pay" x="-20" y="-12" width="40" height="24" rx="5"/><text class="evt mid" y="4">25 MB</text></g>
+  <circle class="pkt f-blue cc-reqb" r="5"/>
+  <g class="cc-dlb"><rect class="pay" x="-20" y="-12" width="40" height="24" rx="5"/><text class="evt mid" y="4">25 MB</text></g>
+  <g class="cc-old"><rect class="ev" x="-8" y="-8" width="16" height="16" rx="4"/><text class="tiny b mid f-purple" y="-10">older check</text></g>
+  <circle class="pkt f-blue cc-reqc" r="5"/>
+  <rect class="ev dead cc-dead" x="-8" y="-8" width="16" height="16" rx="4"/>
+</g>
+</svg>

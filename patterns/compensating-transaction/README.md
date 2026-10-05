@@ -44,7 +44,7 @@ Don't use it when everything lives in one database: a local transaction gives yo
 - **Others see the in-between state.** Until the compensation runs, the seat is sold out for other travellers and the charge sits on the card. A saga has no isolation, so teams add countermeasures: a *semantic lock* that marks a record as in progress (Richardson's saga examples create the order in a PENDING state), a *pessimistic view* that reorders the saga so that updates land in the retriable steps at the end, rereading a value before overwriting it, and updates that commute. Chris Richardson's book *Microservices Patterns* covers these in depth.
 - **Undo is rarely perfect.** Fees remain, an email has been read, money has been paid out, a parcel has shipped. For those, the compensation is a correction: an apology, a refund, a credit note.
 - **Twice the logic.** Every step that can be undone needs an undo that someone writes, reviews and keeps in step with the forward code, plus enough stored data to run it.
-- **Compensations run rarely, so they break unnoticed.** Test them on purpose: make each step fail in turn in integration tests and check what is left, and inject faults in a test environment (the planned Chaos Engineering pattern).
+- **Compensations run rarely, so they break unnoticed.** Test them on purpose: make each step fail in turn in integration tests and check what is left, and inject faults in a test environment (see [Chaos Engineering](../chaos-engineering/)).
 - **It needs observability.** Correlate each operation with its compensations end to end, alert when a compensation fails, and keep a dashboard of instances that are stuck or waiting for a person.
 
 ## Implementation notes

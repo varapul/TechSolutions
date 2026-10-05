@@ -123,7 +123,7 @@ A key authorises a request; it doesn't open a network path. Azure Storage applie
 
 ### Where it sits among other patterns
 
-- **Gatekeeper** (planned) makes the opposite trade: a hardened broker stays in the path and validates and sanitises every request before it reaches trusted storage. Choose it when data must be inspected before it is stored; choose a valet key when the store can enforce the limits and validation can happen afterwards.
+- **[Gatekeeper](../gatekeeper/)** makes the opposite trade: a hardened broker stays in the path and validates and sanitises every request before it reaches trusted storage. Choose it when data must be inspected before it is stored; choose a valet key when the store can enforce the limits and validation can happen afterwards.
 - **Tokens for APIs.** [JWT validation](../jwt-validation/) and [OAuth 2.0 client credentials](../oauth2-client-credentials/) are about calling APIs as a user or as a service. A valet key is narrower: permission for one storage operation, which the store verifies without knowing who Ana is.
 - **[Zero trust access](../zero-trust-access/).** Each request carries its own short-lived, least-privilege proof, and the resource verifies it every time, which fits a zero trust design. The storage sees no user or device context, though, so the access policy belongs where the key is issued.
 - **Background work.** The event that starts the scan usually feeds a queue and a pool of workers, as in Web-Queue-Worker and [competing consumers](../competing-consumers/).
@@ -165,7 +165,7 @@ A key authorises a request; it doesn't open a network path. Azure Storage applie
 
 - [Private Endpoints](../private-endpoints/) — Reach managed cloud services over private IPs instead of the public internet.
 - [CDN & Edge Caching](../cdn-edge-caching/) — Serve static content from edge locations close to users; only cache misses reach the origin.
-- Gatekeeper *(planned)* — A hardened broker validates and sanitises requests before they reach trusted hosts.
+- [Gatekeeper](../gatekeeper/) — A hardened broker validates and sanitises requests before they reach trusted hosts.
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - [OAuth 2.0 Client Credentials](../oauth2-client-credentials/) — Machine-to-machine access tokens, with no user involved.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.

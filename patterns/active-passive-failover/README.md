@@ -160,7 +160,7 @@ Managed services are named as examples; their behaviour was checked against the 
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
-- Leader Election *(planned)* — Instances elect one coordinator; another takes over when its lease expires.
+- [Leader Election](../leader-election/) — Instances elect one coordinator; another takes over when its lease expires.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Chaos Engineering](../chaos-engineering/) — Inject failures on purpose to prove the system degrades the way you expect.
 

@@ -1,0 +1,1219 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Pipes and Filters</title>
+<desc id="dg-desc">Pipes and Filters. Split processing into independent stages connected by channels. Step 1, One big processing step: One service does every stage: slow resizing sets the pace, and it scales, deploys and fails as one. Step 2, Split into filters: Each stage becomes a filter with one job; a pipe (a queue) carries the photo to the next filter. Step 3, Scale and change one stage: Resize alone scales to 4 instances (4 × 5 = 20/s); Safety slots in, and Tag is reused for videos. Step 4, Failures and the price: Watermark crashes, so its photo is processed again; a photo that always fails is dead-lettered.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">MESSAGING &amp; INTEGRATION</text>
+  <text class="title" x="40" y="64">Pipes and Filters</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · One big processing step</text>
+  <text class="step on p1" x="40" y="518">1 · One big processing step</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Split into filters</text>
+  <text class="step on p2" x="262" y="518">2 · Split into filters</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Scale and change one stage</text>
+  <text class="step on p3" x="484" y="518">3 · Scale and change one stage</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Failures and the price</text>
+  <text class="step on p4" x="706" y="518">4 · Failures and the price</text>
+  <text class="caption p1" x="40" y="552">One service does every stage: slow resizing sets the pace, and it scales, deploys and fails as one.</text>
+  <text class="caption p2" x="40" y="552">Each stage becomes a filter with one job; a pipe (a queue) carries the photo to the next filter.</text>
+  <text class="caption p3" x="40" y="552">Resize alone scales to 4 instances (4 × 5 = 20/s); Safety slots in, and Tag is reused for videos.</text>
+  <text class="caption p4" x="40" y="552">Watermark crashes, so its photo is processed again; a photo that always fails is dead-lettered.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Pipes and Filters. One set of numbers: 20 photos arrive per second; one Resize instance does 5/s,
+   every other filter at least 20/s on one instance. Timeline (20 s loop, 1 s = 5%):
+   0-25%   one service, one function: the stage highlight runs validate -> resize (slow) -> watermark -> tag;
+           tag fails at 2.12 s, the retry starts from the top and resizes again; published at ~4.4 s
+   25-50%  the stages become filters joined by pipes; one photo flows through all five (done 8.68 s)
+   50-75%  readouts appear; Resize's pipe grows 15/s (depth 0 -> 30 by 12 s) until Resize has 4 instances;
+           the right-hand filters slide right (12.15-12.65 s) and Safety is inserted; a video pipeline
+           reuses Tag (video photo done 14.34 s)
+   75-100% 9c1 fails at Publish 3 times and is dead-lettered (17.26 s); Watermark crashes holding 7f3 (16.3 s),
+           7f3 returns to its pipe and a restarted instance redoes it; 7f3 is published at ~18.85 s.
+           Safety, its pipe and the extra Resize instances fade out from 19.5 s.
+   The pipeline right of Validate is one group (pf-mv) drawn at its step-2 position; it is translated
+   122px right from 12.65 s and jumps back during step 1, while it is hidden. */
+.diagram .pf-fn { font-size: 12.5px; font-weight: 600; }
+.diagram .pf-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .pf-ph { fill: var(--purple); stroke: var(--bg); stroke-width: 1.5; }
+.diagram .pf-mt { fill: var(--bg); }
+.diagram .pf-msg { fill: var(--purple); }
+.diagram .pf-b9 { font-size: 9.5px; font-weight: 700; }
+.diagram .pf-okc { opacity: 0; animation: pf-okc var(--T) linear infinite; }
+.diagram .pf-okd { opacity: 0; animation: pf-okd var(--T) linear infinite; }
+.diagram .pf-m0 { opacity: 0; animation: pf-m0 var(--T) linear infinite; }
+.diagram .pf-m1 { opacity: 0; animation: pf-m1 var(--T) linear infinite; }
+.diagram .pf-m2 { opacity: 0; animation: pf-m2 var(--T) linear infinite; }
+.diagram .pf-m3 { opacity: 0; animation: pf-m3 var(--T) linear infinite; }
+.diagram .pf-m4 { opacity: 0; animation: pf-m4 var(--T) linear infinite; }
+.diagram .pf-mx { opacity: 0; animation: pf-mx var(--T) linear infinite; }
+.diagram .pf-mok { opacity: 0; animation: pf-mok var(--T) linear infinite; }
+.diagram .pf-retry { opacity: 1; animation: pf-retry var(--T) linear infinite; }
+.diagram .pf-twice { opacity: 1; animation: pf-twice var(--T) linear infinite; }
+.diagram .pf-in1 { opacity: 0; animation: pf-in1 var(--T) linear infinite; }
+.diagram .pf-t2 { opacity: 0; animation: pf-t2 var(--T) linear infinite; }
+.diagram .pf-tA { opacity: 0; animation: pf-tA var(--T) linear infinite; }
+.diagram .pf-tB { opacity: 0; animation: pf-tB var(--T) linear infinite; }
+.diagram .pf-oc { opacity: 0; animation: pf-oc var(--T) linear infinite; }
+.diagram .pf-od { opacity: 0; animation: pf-od var(--T) linear infinite; }
+.diagram .pf-a1 { opacity: 0; animation: pf-a1 var(--T) linear infinite; }
+.diagram .pf-a2 { opacity: 0; animation: pf-a2 var(--T) linear infinite; }
+.diagram .pf-a3 { opacity: 0; animation: pf-a3 var(--T) linear infinite; }
+.diagram .pf-vt { opacity: 0; animation: pf-vt var(--T) linear infinite; }
+.diagram .pf-k0 { opacity: 0; animation: pf-k0 var(--T) linear infinite; }
+.diagram .pf-k1 { opacity: 0; animation: pf-k1 var(--T) linear infinite; }
+.diagram .pf-k2 { opacity: 0; animation: pf-k2 var(--T) linear infinite; }
+.diagram .pf-k3 { opacity: 0; animation: pf-k3 var(--T) linear infinite; }
+.diagram .pf-k4 { opacity: 0; animation: pf-k4 var(--T) linear infinite; }
+.diagram .pf-pfail { opacity: 0; animation: pf-pfail var(--T) linear infinite; }
+.diagram .pf-c0 { opacity: 0; animation: pf-c0 var(--T) linear infinite; }
+.diagram .pf-c1 { opacity: 0; animation: pf-c1 var(--T) linear infinite; }
+.diagram .pf-c2 { opacity: 0; animation: pf-c2 var(--T) linear infinite; }
+.diagram .pf-c3 { opacity: 0; animation: pf-c3 var(--T) linear infinite; }
+.diagram .pf-c4 { opacity: 0; animation: pf-c4 var(--T) linear infinite; }
+.diagram .pf-d1z { opacity: 0; animation: pf-d1z var(--T) linear infinite; }
+.diagram .pf-d1o { opacity: 0; animation: pf-d1o var(--T) linear infinite; }
+.diagram .pf-d2z { opacity: 0; animation: pf-d2z var(--T) linear infinite; }
+.diagram .pf-d2o { opacity: 0; animation: pf-d2o var(--T) linear infinite; }
+.diagram .pf-d3z { opacity: 0; animation: pf-d3z var(--T) linear infinite; }
+.diagram .pf-d3o { opacity: 0; animation: pf-d3o var(--T) linear infinite; }
+.diagram .pf-d0z { opacity: 0; animation: pf-d0z var(--T) linear infinite; }
+.diagram .pf-d0o { opacity: 0; animation: pf-d0o var(--T) linear infinite; }
+.diagram .pf-d0g1 { opacity: 0; animation: pf-d0g1 var(--T) linear infinite; }
+.diagram .pf-d0g2 { opacity: 0; animation: pf-d0g2 var(--T) linear infinite; }
+.diagram .pf-d0g3 { opacity: 0; animation: pf-d0g3 var(--T) linear infinite; }
+.diagram .pf-d0g4 { opacity: 0; animation: pf-d0g4 var(--T) linear infinite; }
+.diagram .pf-d0g5 { opacity: 0; animation: pf-d0g5 var(--T) linear infinite; }
+.diagram .pf-q1 { opacity: 0; animation: pf-q1 var(--T) linear infinite; }
+.diagram .pf-q2 { opacity: 0; animation: pf-q2 var(--T) linear infinite; }
+.diagram .pf-q3 { opacity: 0; animation: pf-q3 var(--T) linear infinite; }
+.diagram .pf-slow { opacity: 0; animation: pf-slow var(--T) linear infinite; }
+.diagram .pf-st1 { opacity: 0; animation: pf-st1 var(--T) linear infinite; }
+.diagram .pf-st2 { opacity: 0; animation: pf-st2 var(--T) linear infinite; }
+.diagram .pf-st3 { opacity: 0; animation: pf-st3 var(--T) linear infinite; }
+.diagram .pf-r1 { opacity: 0; animation: pf-r1 var(--T) linear infinite; }
+.diagram .pf-x4 { opacity: 0; animation: pf-x4 var(--T) linear infinite; }
+.diagram .pf-r4 { opacity: 0; animation: pf-r4 var(--T) linear infinite; }
+.diagram .pf-mv { animation: pf-mv var(--T) linear infinite; }
+.diagram .pf-saf { opacity: 0; animation: pf-saf var(--T) linear infinite; }
+.diagram .pf-new { opacity: 0; animation: pf-new var(--T) linear infinite; }
+.diagram .pf-ext { animation: pf-ext var(--T) linear infinite; }
+.diagram .pf-vid { opacity: 0; animation: pf-vid var(--T) linear infinite; }
+.diagram .pf-same { opacity: 0; animation: pf-same var(--T) linear infinite; }
+.diagram .pf-wsub { opacity: 0; animation: pf-wsub var(--T) linear infinite; }
+.diagram .pf-crash { opacity: 0; animation: pf-crash var(--T) linear infinite; }
+.diagram .pf-w2x { opacity: 0; animation: pf-w2x var(--T) linear infinite; }
+.diagram .pf-reborn { opacity: 0; animation: pf-reborn var(--T) linear infinite; }
+.diagram .pf-try1 { opacity: 0; animation: pf-try1 var(--T) linear infinite; }
+.diagram .pf-try2 { opacity: 0; animation: pf-try2 var(--T) linear infinite; }
+.diagram .pf-try3 { opacity: 0; animation: pf-try3 var(--T) linear infinite; }
+.diagram .pf-dl0 { opacity: 0; animation: pf-dl0 var(--T) linear infinite; }
+.diagram .pf-dl1 { opacity: 0; animation: pf-dl1 var(--T) linear infinite; }
+@keyframes pf-okc {
+  0% { opacity: 0; }
+  22.5% { opacity: 0; }
+  23% { opacity: 1; }
+  24.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47% { opacity: 1; }
+  49.75% { opacity: 1; }
+  50.25% { opacity: 0; }
+  95% { opacity: 0; }
+  95.5% { opacity: 1; }
+  99.75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pf-okd {
+  0% { opacity: 0; }
+  22.5% { opacity: 0; }
+  23% { opacity: 1; }
+  24.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47% { opacity: 1; }
+  49.75% { opacity: 1; }
+  50.25% { opacity: 0; }
+  95% { opacity: 0; }
+  95.5% { opacity: 1; }
+  99.75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pf-m0 {
+  0% { opacity: 0; }
+  2.1% { opacity: 0; }
+  2.35% { opacity: 1; }
+  3.1% { opacity: 1; }
+  3.35% { opacity: 0; }
+  12.5% { opacity: 0; }
+  12.75% { opacity: 1; }
+  13.4% { opacity: 1; }
+  13.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-m1 {
+  0% { opacity: 0; }
+  3.1% { opacity: 0; }
+  3.35% { opacity: 1; }
+  8.1% { opacity: 1; }
+  8.35% { opacity: 0; }
+  13.4% { opacity: 0; }
+  13.65% { opacity: 1; }
+  18.4% { opacity: 1; }
+  18.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-m2 {
+  0% { opacity: 0; }
+  8.1% { opacity: 0; }
+  8.35% { opacity: 1; }
+  9.1% { opacity: 1; }
+  9.35% { opacity: 0; }
+  18.4% { opacity: 0; }
+  18.65% { opacity: 1; }
+  19.2% { opacity: 1; }
+  19.45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-m3 {
+  0% { opacity: 0; }
+  9.1% { opacity: 0; }
+  9.35% { opacity: 1; }
+  10.6% { opacity: 1; }
+  10.85% { opacity: 0; }
+  19.2% { opacity: 0; }
+  19.45% { opacity: 1; }
+  20% { opacity: 1; }
+  20.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-m4 {
+  0% { opacity: 0; }
+  20% { opacity: 0; }
+  20.25% { opacity: 1; }
+  20.8% { opacity: 1; }
+  21.05% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-mx {
+  0% { opacity: 0; }
+  10.6% { opacity: 0; }
+  10.85% { opacity: 1; }
+  20% { opacity: 1; }
+  20.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-mok {
+  0% { opacity: 0; }
+  20% { opacity: 0; }
+  20.25% { opacity: 1; }
+  24.75% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-retry {
+  0% { opacity: 0; }
+  10.6% { opacity: 0; }
+  12.1% { opacity: 1; }
+  24.75% { opacity: 1; }
+  26.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-twice {
+  0% { opacity: 0; }
+  13.4% { opacity: 0; }
+  14.15% { opacity: 1; }
+  24.75% { opacity: 1; }
+  25.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-in1 {
+  0% { transform: translate(80px, 170px); opacity: 0; }
+  1% { transform: translate(80px, 170px); opacity: 0; }
+  1.25% { opacity: 1; }
+  2.1% { transform: translate(116px, 170px); opacity: 1; }
+  2.35% { transform: translate(116px, 170px); opacity: 0; }
+  100% { transform: translate(116px, 170px); opacity: 0; }
+}
+@keyframes pf-t2 {
+  0% { transform: translate(80px, 170px); opacity: 0; }
+  27% { transform: translate(80px, 170px); opacity: 0; }
+  27.25% { opacity: 1; }
+  27.7% { transform: translate(122px, 170px); opacity: 1; }
+  27.95% { transform: translate(122px, 170px); opacity: 0; }
+  29.2% { transform: translate(192px, 170px); opacity: 0; }
+  29.45% { opacity: 1; }
+  30.95% { transform: translate(244px, 170px); opacity: 1; }
+  31.2% { transform: translate(244px, 170px); opacity: 0; }
+  33.7% { transform: translate(314px, 170px); opacity: 0; }
+  33.95% { opacity: 1; }
+  35.4% { transform: translate(366px, 170px); opacity: 1; }
+  35.65% { transform: translate(366px, 170px); opacity: 0; }
+  36.9% { transform: translate(436px, 170px); opacity: 0; }
+  37.15% { opacity: 1; }
+  38.65% { transform: translate(488px, 170px); opacity: 1; }
+  38.9% { transform: translate(488px, 170px); opacity: 0; }
+  40.15% { transform: translate(558px, 170px); opacity: 0; }
+  40.4% { opacity: 1; }
+  41.9% { transform: translate(610px, 170px); opacity: 1; }
+  42.15% { transform: translate(610px, 170px); opacity: 0; }
+  100% { transform: translate(610px, 170px); opacity: 0; }
+}
+@keyframes pf-tA {
+  0% { transform: translate(436px, 170px); opacity: 0; }
+  77.5% { transform: translate(436px, 170px); opacity: 0; }
+  77.75% { opacity: 1; }
+  79.1% { transform: translate(488px, 170px); opacity: 1; }
+  79.35% { transform: translate(488px, 170px); opacity: 0; }
+  81.7% { transform: translate(488px, 170px); opacity: 0; }
+  81.95% { opacity: 1; }
+  82.8% { transform: translate(464px, 170px); }
+  85% { transform: translate(464px, 170px); }
+  85.7% { transform: translate(488px, 170px); opacity: 1; }
+  85.95% { transform: translate(488px, 170px); opacity: 0; }
+  87.5% { transform: translate(558px, 170px); opacity: 0; }
+  87.75% { opacity: 1; }
+  89.1% { transform: translate(610px, 170px); opacity: 1; }
+  89.35% { transform: translate(610px, 170px); opacity: 0; }
+  90.3% { transform: translate(680px, 170px); opacity: 0; }
+  90.55% { opacity: 1; }
+  91.9% { transform: translate(732px, 170px); opacity: 1; }
+  92.15% { transform: translate(732px, 170px); opacity: 0; }
+  93.1% { transform: translate(802px, 170px); opacity: 0; }
+  93.35% { opacity: 1; }
+  93.45% { transform: translate(822px, 170px); }
+  93.85% { transform: translate(822px, 145px); }
+  94.25% { transform: translate(847px, 145px); opacity: 1; }
+  94.5% { transform: translate(847px, 145px); opacity: 0; }
+  100% { transform: translate(847px, 145px); opacity: 0; }
+}
+@keyframes pf-tB {
+  0% { transform: translate(708px, 170px); opacity: 0; }
+  75% { transform: translate(708px, 170px); opacity: 0; }
+  75.25% { opacity: 1; }
+  75.6% { transform: translate(708px, 170px); }
+  76.1% { transform: translate(732px, 170px); opacity: 1; }
+  76.35% { transform: translate(732px, 170px); opacity: 0; }
+  77.5% { transform: translate(732px, 170px); opacity: 0; }
+  77.75% { opacity: 1; }
+  78.3% { transform: translate(708px, 170px); }
+  78.6% { transform: translate(708px, 170px); }
+  79.1% { transform: translate(732px, 170px); opacity: 1; }
+  79.35% { transform: translate(732px, 170px); opacity: 0; }
+  80.5% { transform: translate(732px, 170px); opacity: 0; }
+  80.75% { opacity: 1; }
+  81.3% { transform: translate(708px, 170px); }
+  81.6% { transform: translate(708px, 170px); }
+  82.1% { transform: translate(732px, 170px); opacity: 1; }
+  82.35% { transform: translate(732px, 170px); opacity: 0; }
+  83.5% { transform: translate(732px, 170px); opacity: 0; }
+  83.75% { opacity: 1; }
+  84.3% { transform: translate(708px, 170px); }
+  86.3% { transform: translate(708px, 284px); }
+  98.5% { transform: translate(708px, 284px); opacity: 1; }
+  98.75% { transform: translate(708px, 284px); opacity: 0; }
+  100% { transform: translate(708px, 284px); opacity: 0; }
+}
+@keyframes pf-oc {
+  0% { transform: translate(704px, 170px); opacity: 0; }
+  20.8% { transform: translate(704px, 170px); opacity: 0; }
+  21.05% { opacity: 1; }
+  21.45% { transform: translate(822px, 170px); }
+  21.6% { transform: translate(822px, 145px); }
+  21.75% { transform: translate(847px, 145px); opacity: 1; }
+  22% { transform: translate(847px, 145px); opacity: 0; }
+  43.4% { transform: translate(680px, 170px); opacity: 0; }
+  43.65% { opacity: 1; }
+  44.75% { transform: translate(822px, 170px); }
+  45% { transform: translate(822px, 145px); }
+  45.25% { transform: translate(847px, 145px); opacity: 1; }
+  45.5% { transform: translate(847px, 145px); opacity: 0; }
+  100% { transform: translate(847px, 145px); opacity: 0; }
+}
+@keyframes pf-od {
+  0% { transform: translate(704px, 170px); opacity: 0; }
+  20.8% { transform: translate(704px, 170px); opacity: 0; }
+  21.05% { opacity: 1; }
+  21.45% { transform: translate(822px, 170px); }
+  21.65% { transform: translate(822px, 209px); }
+  21.8% { transform: translate(847px, 209px); opacity: 1; }
+  22.05% { transform: translate(847px, 209px); opacity: 0; }
+  43.4% { transform: translate(680px, 170px); opacity: 0; }
+  43.65% { opacity: 1; }
+  44.75% { transform: translate(822px, 170px); }
+  45.15% { transform: translate(822px, 209px); }
+  45.4% { transform: translate(847px, 209px); opacity: 1; }
+  45.65% { transform: translate(847px, 209px); opacity: 0; }
+  93.1% { transform: translate(802px, 170px); opacity: 0; }
+  93.35% { opacity: 1; }
+  93.45% { transform: translate(822px, 170px); }
+  94.1% { transform: translate(822px, 209px); }
+  94.5% { transform: translate(847px, 209px); opacity: 1; }
+  94.75% { transform: translate(847px, 209px); opacity: 0; }
+  100% { transform: translate(847px, 209px); opacity: 0; }
+}
+@keyframes pf-a1 {
+  0% { transform: translate(80px, 170px); opacity: 0; }
+  50.5% { transform: translate(80px, 170px); opacity: 0; }
+  50.75% { opacity: 1; }
+  51.1% { transform: translate(122px, 170px); opacity: 1; }
+  51.35% { transform: translate(122px, 170px); opacity: 0; }
+  51.7% { transform: translate(192px, 170px); opacity: 0; }
+  51.95% { opacity: 1; }
+  52.3% { transform: translate(202px, 170px); opacity: 1; }
+  52.55% { transform: translate(202px, 170px); opacity: 0; }
+  54.5% { transform: translate(80px, 170px); opacity: 0; }
+  54.75% { opacity: 1; }
+  55.1% { transform: translate(122px, 170px); opacity: 1; }
+  55.35% { transform: translate(122px, 170px); opacity: 0; }
+  55.7% { transform: translate(192px, 170px); opacity: 0; }
+  55.95% { opacity: 1; }
+  56.3% { transform: translate(202px, 170px); opacity: 1; }
+  56.55% { transform: translate(202px, 170px); opacity: 0; }
+  100% { transform: translate(202px, 170px); opacity: 0; }
+}
+@keyframes pf-a2 {
+  0% { transform: translate(80px, 170px); opacity: 0; }
+  52.5% { transform: translate(80px, 170px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.1% { transform: translate(122px, 170px); opacity: 1; }
+  53.35% { transform: translate(122px, 170px); opacity: 0; }
+  53.7% { transform: translate(192px, 170px); opacity: 0; }
+  53.95% { opacity: 1; }
+  54.3% { transform: translate(202px, 170px); opacity: 1; }
+  54.55% { transform: translate(202px, 170px); opacity: 0; }
+  56.5% { transform: translate(80px, 170px); opacity: 0; }
+  56.75% { opacity: 1; }
+  57.1% { transform: translate(122px, 170px); opacity: 1; }
+  57.35% { transform: translate(122px, 170px); opacity: 0; }
+  57.7% { transform: translate(192px, 170px); opacity: 0; }
+  57.95% { opacity: 1; }
+  58.3% { transform: translate(202px, 170px); opacity: 1; }
+  58.55% { transform: translate(202px, 170px); opacity: 0; }
+  100% { transform: translate(202px, 170px); opacity: 0; }
+}
+@keyframes pf-a3 {
+  0% { transform: translate(80px, 170px); opacity: 0; }
+  58.5% { transform: translate(80px, 170px); opacity: 0; }
+  58.75% { opacity: 1; }
+  59.1% { transform: translate(122px, 170px); opacity: 1; }
+  59.35% { transform: translate(122px, 170px); opacity: 0; }
+  59.7% { transform: translate(192px, 170px); opacity: 0; }
+  59.95% { opacity: 1; }
+  60.3% { transform: translate(202px, 170px); opacity: 1; }
+  60.55% { transform: translate(202px, 170px); opacity: 0; }
+  100% { transform: translate(202px, 170px); opacity: 0; }
+}
+@keyframes pf-vt {
+  0% { transform: translate(436px, 280px); opacity: 0; }
+  65% { transform: translate(436px, 280px); opacity: 0; }
+  65.25% { opacity: 1; }
+  66.1% { transform: translate(488px, 280px); opacity: 1; }
+  66.35% { transform: translate(488px, 280px); opacity: 0; }
+  66.85% { transform: translate(558px, 280px); opacity: 0; }
+  67.1% { opacity: 1; }
+  68.1% { transform: translate(610px, 280px); opacity: 1; }
+  68.35% { transform: translate(610px, 280px); opacity: 0; }
+  68.85% { transform: translate(680px, 280px); opacity: 0; }
+  69.1% { opacity: 1; }
+  70.1% { transform: translate(732px, 280px); opacity: 1; }
+  70.35% { transform: translate(732px, 280px); opacity: 0; }
+  70.6% { transform: translate(802px, 280px); opacity: 0; }
+  70.85% { opacity: 1; }
+  71.3% { transform: translate(887px, 280px); }
+  71.7% { transform: translate(887px, 233px); opacity: 1; }
+  71.95% { transform: translate(887px, 233px); opacity: 0; }
+  100% { transform: translate(887px, 233px); opacity: 0; }
+}
+@keyframes pf-k0 {
+  0% { opacity: 0; }
+  27.7% { opacity: 0; }
+  27.95% { opacity: 1; }
+  29.2% { opacity: 1; }
+  29.45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-k1 {
+  0% { opacity: 0; }
+  30.933% { opacity: 0; }
+  31.183% { opacity: 1; }
+  33.683% { opacity: 1; }
+  33.933% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-k2 {
+  0% { opacity: 0; }
+  35.417% { opacity: 0; }
+  35.667% { opacity: 1; }
+  36.917% { opacity: 1; }
+  37.167% { opacity: 0; }
+  79.1% { opacity: 0; }
+  79.35% { opacity: 1; }
+  81.5% { opacity: 1; }
+  81.75% { opacity: 0; }
+  85.7% { opacity: 0; }
+  85.95% { opacity: 1; }
+  87.5% { opacity: 1; }
+  87.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-k3 {
+  0% { opacity: 0; }
+  38.65% { opacity: 0; }
+  38.9% { opacity: 1; }
+  40.15% { opacity: 1; }
+  40.4% { opacity: 0; }
+  89.1% { opacity: 0; }
+  89.35% { opacity: 1; }
+  90.3% { opacity: 1; }
+  90.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-k4 {
+  0% { opacity: 0; }
+  41.883% { opacity: 0; }
+  42.133% { opacity: 1; }
+  43.383% { opacity: 1; }
+  43.633% { opacity: 0; }
+  76.1% { opacity: 0; }
+  76.35% { opacity: 1; }
+  77.3% { opacity: 1; }
+  77.55% { opacity: 0; }
+  79.1% { opacity: 0; }
+  79.35% { opacity: 1; }
+  80.3% { opacity: 1; }
+  80.55% { opacity: 0; }
+  82.1% { opacity: 0; }
+  82.35% { opacity: 1; }
+  83.3% { opacity: 1; }
+  83.55% { opacity: 0; }
+  91.9% { opacity: 0; }
+  92.15% { opacity: 1; }
+  93.1% { opacity: 1; }
+  93.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-pfail {
+  0% { opacity: 0; }
+  77.3% { opacity: 0; }
+  77.55% { opacity: 1; }
+  78.55% { opacity: 1; }
+  78.8% { opacity: 0; }
+  80.3% { opacity: 0; }
+  80.55% { opacity: 1; }
+  81.55% { opacity: 1; }
+  81.8% { opacity: 0; }
+  83.3% { opacity: 0; }
+  83.55% { opacity: 1; }
+  84.55% { opacity: 1; }
+  84.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-c0 {
+  0% { opacity: 0; }
+  29.2% { opacity: 0; }
+  29.7% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-c1 {
+  0% { opacity: 0; }
+  33.683% { opacity: 0; }
+  34.183% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-c2 {
+  0% { opacity: 0; }
+  36.917% { opacity: 0; }
+  37.417% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-c3 {
+  0% { opacity: 0; }
+  40.15% { opacity: 0; }
+  40.65% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-c4 {
+  0% { opacity: 0; }
+  43.383% { opacity: 0; }
+  43.883% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d1z {
+  0% { opacity: 1; }
+  33.683% { opacity: 1; }
+  33.933% { opacity: 0; }
+  35.417% { opacity: 0; }
+  35.667% { opacity: 1; }
+  77.5% { opacity: 1; }
+  77.75% { opacity: 0; }
+  79.1% { opacity: 0; }
+  79.35% { opacity: 1; }
+  81.7% { opacity: 1; }
+  81.95% { opacity: 0; }
+  85.7% { opacity: 0; }
+  85.95% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-d1o {
+  0% { opacity: 0; }
+  33.683% { opacity: 0; }
+  33.933% { opacity: 1; }
+  35.417% { opacity: 1; }
+  35.667% { opacity: 0; }
+  77.5% { opacity: 0; }
+  77.75% { opacity: 1; }
+  79.1% { opacity: 1; }
+  79.35% { opacity: 0; }
+  81.7% { opacity: 0; }
+  81.95% { opacity: 1; }
+  85.7% { opacity: 1; }
+  85.95% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d2z {
+  0% { opacity: 1; }
+  36.917% { opacity: 1; }
+  37.167% { opacity: 0; }
+  38.65% { opacity: 0; }
+  38.9% { opacity: 1; }
+  87.5% { opacity: 1; }
+  87.75% { opacity: 0; }
+  89.1% { opacity: 0; }
+  89.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-d2o {
+  0% { opacity: 0; }
+  36.917% { opacity: 0; }
+  37.167% { opacity: 1; }
+  38.65% { opacity: 1; }
+  38.9% { opacity: 0; }
+  87.5% { opacity: 0; }
+  87.75% { opacity: 1; }
+  89.1% { opacity: 1; }
+  89.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d3z {
+  0% { opacity: 1; }
+  40.15% { opacity: 1; }
+  40.4% { opacity: 0; }
+  41.883% { opacity: 0; }
+  42.133% { opacity: 1; }
+  75% { opacity: 1; }
+  75.25% { opacity: 0; }
+  84.3% { opacity: 0; }
+  84.55% { opacity: 1; }
+  90.3% { opacity: 1; }
+  90.55% { opacity: 0; }
+  91.9% { opacity: 0; }
+  92.15% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-d3o {
+  0% { opacity: 0; }
+  40.15% { opacity: 0; }
+  40.4% { opacity: 1; }
+  41.883% { opacity: 1; }
+  42.133% { opacity: 0; }
+  75% { opacity: 0; }
+  75.25% { opacity: 1; }
+  84.3% { opacity: 1; }
+  84.55% { opacity: 0; }
+  90.3% { opacity: 0; }
+  90.55% { opacity: 1; }
+  91.9% { opacity: 1; }
+  92.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d0z {
+  0% { opacity: 1; }
+  29.2% { opacity: 1; }
+  29.45% { opacity: 0; }
+  30.933% { opacity: 0; }
+  31.183% { opacity: 1; }
+  52% { opacity: 1; }
+  52.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d0o {
+  0% { opacity: 0; }
+  29.2% { opacity: 0; }
+  29.45% { opacity: 1; }
+  30.933% { opacity: 1; }
+  31.183% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d0g1 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  52.25% { opacity: 1; }
+  54% { opacity: 1; }
+  54.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d0g2 {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  54.25% { opacity: 1; }
+  56% { opacity: 1; }
+  56.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d0g3 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.25% { opacity: 1; }
+  58% { opacity: 1; }
+  58.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d0g4 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.25% { opacity: 1; }
+  60% { opacity: 1; }
+  60.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-d0g5 {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  60.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-q1 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  52.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-q2 {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  54.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-q3 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-slow {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.5% { opacity: 1; }
+  60% { opacity: 1; }
+  61.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-st1 {
+  0% { opacity: 0; }
+  57.75% { opacity: 0; }
+  58.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-st2 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-st3 {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  60% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-r1 {
+  0% { opacity: 1; }
+  60% { opacity: 1; }
+  60.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-x4 {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  60% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-r4 {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  60.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-mv {
+  0% { transform: translateX(122px); }
+  12.5% { transform: translateX(122px); }
+  12.55% { transform: translateX(0px); }
+  60.75% { transform: translateX(0px); }
+  63.25% { transform: translateX(122px); }
+  100% { transform: translateX(122px); }
+}
+@keyframes pf-saf {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-new {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-ext {
+  0% { opacity: 0; }
+  1.5% { opacity: 1; }
+  60.75% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-vid {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  65.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-same {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  66.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-wsub {
+  0% { opacity: 1; }
+  81.5% { opacity: 1; }
+  81.75% { opacity: 0; }
+  88% { opacity: 0; }
+  88.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pf-crash {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  81.75% { opacity: 1; }
+  84.5% { opacity: 1; }
+  84.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-w2x {
+  0% { opacity: 0; }
+  85.7% { opacity: 0; }
+  86.45% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pf-reborn {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  84.75% { opacity: 1; }
+  88% { opacity: 1; }
+  89% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-try1 {
+  0% { opacity: 0; }
+  76.1% { opacity: 0; }
+  76.35% { opacity: 1; }
+  79.1% { opacity: 1; }
+  79.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-try2 {
+  0% { opacity: 0; }
+  79.1% { opacity: 0; }
+  79.35% { opacity: 1; }
+  82.1% { opacity: 1; }
+  82.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-try3 {
+  0% { opacity: 0; }
+  82.1% { opacity: 0; }
+  82.35% { opacity: 1; }
+  86.3% { opacity: 1; }
+  86.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-dl0 {
+  0% { opacity: 1; }
+  86.3% { opacity: 1; }
+  86.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pf-dl1 {
+  0% { opacity: 0; }
+  86.3% { opacity: 0; }
+  86.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+<!-- source -> first stage: the monolith (step 1) or Validate (steps 2-4) -->
+<line class="wire p1" x1="100" y1="170" x2="115" y2="170" marker-end="url(#ah)"/>
+<line class="wire p234" x1="100" y1="170" x2="121" y2="170" marker-end="url(#ah)"/>
+<!-- Publish -> sinks; the long lead from slot 4 is only needed before Safety is inserted -->
+<line class="wire pf-ext" x1="680" y1="170" x2="802" y2="170"/>
+<path class="wire" d="M802 170H822V145H847" marker-end="url(#ah)"/>
+<path class="wire" d="M802 170H822V209H847" marker-end="url(#ah)"/>
+<!-- source: product photos being uploaded -->
+<rect class="box" x="34" y="140" width="66" height="60" rx="10"/>
+<g transform="translate(62 157)"><rect class="f-purple-soft s-purple" x="-9" y="-7" width="18" height="14" rx="3" stroke-width="1.2"/></g>
+<g transform="translate(70 162)"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<text class="pf-fn mid" x="67" y="189">Uploads</text>
+<text class="tiny mid" x="67" y="218">20 photos/s</text>
+<!-- sinks: the product catalogue and the CDN -->
+<rect class="box" x="848" y="122" width="78" height="46" rx="10"/>
+<rect class="f-teal-soft s-teal" x="848" y="122" width="78" height="46" rx="10" stroke-width="1.5"/>
+<text class="pf-fn mid" x="887" y="143">Catalogue</text>
+<text class="tiny mid" x="887" y="158">product pages</text>
+<rect class="box" x="848" y="186" width="78" height="46" rx="10"/>
+<rect class="f-teal-soft s-teal" x="848" y="186" width="78" height="46" rx="10" stroke-width="1.5"/>
+<text class="pf-fn mid" x="887" y="207">CDN</text>
+<text class="tiny mid" x="887" y="222">image files</text>
+<g class="pf-okc"><circle class="f-green" cx="850" cy="123" r="7"/><path class="none s-bg" d="M846.5 123l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="pf-okd"><circle class="f-green" cx="850" cy="187" r="7"/><path class="none s-bg" d="M846.5 187l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- step 1: one service runs every stage in one function; 4 copies just to get 4 resizers -->
+<g class="p1">
+<rect class="box" x="134" y="144" width="570" height="86" rx="12"/>
+<rect class="box" x="128" y="138" width="570" height="86" rx="12"/>
+<rect class="box" x="122" y="132" width="570" height="86" rx="12"/>
+<rect class="box" x="116" y="126" width="570" height="86" rx="12"/>
+<text class="label" x="116" y="114">Photo service</text>
+<text class="tiny" x="228" y="114">one deployable; process(photo) runs every stage</text>
+<rect class="f-amber-soft s-amber" x="560" y="102" width="144" height="18" rx="9" stroke-width="1.2"/>
+<text class="tiny mid sb f-amber-ink" x="632" y="115">× 4 copies, for 4 resizers</text>
+<rect class="f-bg s-line" x="121" y="157" width="72" height="26" rx="6" stroke-width="1.5"/>
+<line class="s-muted" x1="194" y1="170" x2="242" y2="170" stroke-width="1.5" marker-end="url(#ah-muted)"/>
+<rect class="f-bg s-line" x="243" y="157" width="72" height="26" rx="6" stroke-width="1.5"/>
+<line class="s-muted" x1="316" y1="170" x2="364" y2="170" stroke-width="1.5" marker-end="url(#ah-muted)"/>
+<rect class="f-bg s-line" x="365" y="157" width="72" height="26" rx="6" stroke-width="1.5"/>
+<line class="s-muted" x1="438" y1="170" x2="486" y2="170" stroke-width="1.5" marker-end="url(#ah-muted)"/>
+<rect class="f-bg s-line" x="487" y="157" width="72" height="26" rx="6" stroke-width="1.5"/>
+<line class="s-muted" x1="560" y1="170" x2="608" y2="170" stroke-width="1.5" marker-end="url(#ah-muted)"/>
+<rect class="f-bg s-line" x="609" y="157" width="72" height="26" rx="6" stroke-width="1.5"/>
+<text class="tiny mid f-amber-ink sb" x="271" y="150">slow: 5/s</text>
+<text class="tiny mid" x="401" y="150">in-process calls</text>
+<rect class="none s-purple pf-m0" x="121" y="157" width="72" height="26" rx="6" stroke-width="2.5"/>
+<rect class="f-amber-soft s-amber pf-m1" x="243" y="157" width="72" height="26" rx="6" stroke-width="2.5"/>
+<rect class="none s-purple pf-m2" x="365" y="157" width="72" height="26" rx="6" stroke-width="2.5"/>
+<rect class="none s-purple pf-m3" x="487" y="157" width="72" height="26" rx="6" stroke-width="2.5"/>
+<rect class="none s-purple pf-m4" x="609" y="157" width="72" height="26" rx="6" stroke-width="2.5"/>
+<text class="tiny mid mono f-ink" x="157" y="174">validate</text>
+<text class="tiny mid mono f-ink" x="279" y="174">resize</text>
+<text class="tiny mid mono f-ink" x="401" y="174">watermark</text>
+<text class="tiny mid mono f-ink" x="523" y="174">tag</text>
+<text class="tiny mid mono f-ink" x="645" y="174">publish</text>
+<g class="pf-mx"><circle class="f-red" cx="557" cy="158" r="7"/><path class="none s-bg" d="M554 155l6 6M560 155l-6 6" stroke-width="2" stroke-linecap="round"/></g>
+<g class="pf-mok"><circle class="f-green" cx="557" cy="158" r="7"/><path class="none s-bg" d="M553.5 158l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="pf-retry">
+<path class="none s-red dash" d="M523 183V192Q523 198 517 198H163Q157 198 157 192V185" stroke-width="1.8" marker-end="url(#ah-red)"/>
+<rect class="f-bg" x="281" y="190" width="200" height="16" rx="4"/>
+<text class="tiny mid sb f-red" x="381" y="202">tag fails: retry runs it all again</text>
+</g>
+<g class="pf-twice"><circle class="f-amber" cx="313" cy="157" r="8"/><text class="pf-b9 mid f-bg" x="313" y="160.5">2×</text></g>
+<text class="tiny end" x="113" y="252">copies run</text><text class="tiny end" x="113" y="271">needed</text>
+<text class="tiny mid mono b" x="157" y="252">4</text><text class="tiny mid mono b f-green" x="157" y="271">1</text>
+<text class="tiny mid mono b" x="279" y="252">4</text><text class="tiny mid mono b f-amber-ink" x="279" y="271">4</text>
+<text class="tiny mid mono b" x="401" y="252">4</text><text class="tiny mid mono b f-green" x="401" y="271">1</text>
+<text class="tiny mid mono b" x="523" y="252">4</text><text class="tiny mid mono b f-green" x="523" y="271">1</text>
+<text class="tiny mid mono b" x="645" y="252">4</text><text class="tiny mid mono b f-green" x="645" y="271">1</text>
+<line class="s-line" x1="47" y1="259" x2="685" y2="259" stroke-width="1"/>
+<text class="tiny" x="697" y="252">copies of each stage</text><text class="tiny" x="697" y="271">at 20 photos/s</text>
+</g>
+<!-- steps 2-4: filters joined by pipes -->
+<g class="p234">
+<rect class="box" x="122" y="140" width="70" height="60" rx="10"/><text class="pf-fn mid" x="157" y="168">Validate</text><text class="tiny mid" x="157" y="184">check file</text>
+<g class="p34"><text class="tiny mid mono" x="157" y="238">1 × 50/s</text></g>
+<g class="pf-mv">
+<line class="wire" x1="192" y1="170" x2="243" y2="170" marker-end="url(#ah)"/><rect class="f-panel s-line" x="194" y="160" width="38" height="20" rx="10" stroke-width="1.5"/><text class="tiny end" x="215" y="130">depth</text>
+<text class="tiny b mono f-green pf-d0z" x="218" y="130">0</text>
+<text class="tiny b mono f-amber-ink pf-d0g1" x="218" y="130">6</text>
+<text class="tiny b mono f-amber-ink pf-d0g2" x="218" y="130">12</text>
+<text class="tiny b mono f-amber-ink pf-d0g3" x="218" y="130">18</text>
+<text class="tiny b mono f-amber-ink pf-d0g4" x="218" y="130">24</text>
+<text class="tiny b mono f-amber-ink pf-d0g5" x="218" y="130">30</text>
+<text class="tiny b mono  pf-d0o" x="218" y="130">1</text>
+<rect class="pf-msg pf-q1" x="217" y="165" width="10" height="10" rx="2.5"/>
+<rect class="pf-msg pf-q2" x="206" y="165" width="10" height="10" rx="2.5"/>
+<rect class="pf-msg pf-q3" x="195" y="165" width="10" height="10" rx="2.5"/>
+<rect class="f-panel s-green pf-st3" x="244" y="158" width="70" height="60" rx="10" stroke-width="1.5"/>
+<rect class="f-panel s-green pf-st2" x="244" y="152" width="70" height="60" rx="10" stroke-width="1.5"/>
+<rect class="f-panel s-green pf-st1" x="244" y="146" width="70" height="60" rx="10" stroke-width="1.5"/>
+<rect class="box" x="244" y="140" width="70" height="60" rx="10"/><text class="pf-fn mid" x="279" y="168">Resize</text><text class="tiny mid" x="279" y="184">make sizes</text>
+<g class="pf-x4"><rect class="f-green" x="263" y="119" width="32" height="15" rx="7.5"/><text class="tiny mid b f-bg" x="279" y="130.5">×4</text></g>
+<rect class="f-amber-soft s-amber pf-slow" x="244" y="140" width="70" height="60" rx="10" stroke-width="1.5"/>
+<g class="p34"><text class="tiny mid mono b f-amber-ink pf-r1" x="279" y="238">1 × 5/s</text><text class="tiny mid mono b f-green pf-r4" x="279" y="238">4 × 5 = 20/s</text></g>
+<line class="wire" x1="314" y1="170" x2="365" y2="170" marker-end="url(#ah)"/><rect class="f-panel s-line" x="316" y="160" width="38" height="20" rx="10" stroke-width="1.5"/><text class="tiny end" x="337" y="130">depth</text>
+<text class="tiny b mono f-green pf-d1z" x="340" y="130">0</text>
+<text class="tiny b mono  pf-d1o" x="340" y="130">1</text>
+<rect class="box" x="366" y="140" width="70" height="60" rx="10"/><text class="pf-fn mid" x="401" y="168">Watermark</text>
+<text class="tiny mid pf-wsub" x="401" y="184">add logo</text>
+<g class="pf-crash"><rect class="f-red-soft s-red" x="366" y="140" width="70" height="60" rx="10" stroke-width="2"/><text class="tiny mid sb f-red" x="401" y="184">✕ crashed</text></g>
+<g class="pf-reborn"><rect class="f-green-soft s-green" x="366" y="140" width="70" height="60" rx="10" stroke-width="2"/><text class="tiny mid sb f-green" x="401" y="184">restarted</text></g>
+<g class="p34"><text class="tiny mid mono" x="401" y="238">1 × 25/s</text></g>
+<g class="pf-w2x"><circle class="f-amber" cx="434" cy="142" r="8"/><text class="pf-b9 mid f-bg" x="434" y="145.5">2×</text></g>
+<line class="wire" x1="436" y1="170" x2="487" y2="170" marker-end="url(#ah)"/><rect class="f-panel s-line" x="438" y="160" width="38" height="20" rx="10" stroke-width="1.5"/><text class="tiny end" x="459" y="130">depth</text>
+<text class="tiny b mono f-green pf-d2z" x="462" y="130">0</text>
+<text class="tiny b mono  pf-d2o" x="462" y="130">1</text>
+<rect class="box" x="488" y="140" width="70" height="60" rx="10"/><text class="pf-fn mid" x="523" y="168">Tag</text><text class="tiny mid" x="523" y="184">add labels</text>
+<rect class="f-blue-soft s-blue pf-same" x="488" y="140" width="70" height="60" rx="10" stroke-width="2"/>
+<g class="p34"><text class="tiny mid mono" x="523" y="238">1 × 40/s</text></g>
+<line class="wire" x1="558" y1="170" x2="609" y2="170" marker-end="url(#ah)"/><rect class="f-panel s-line" x="560" y="160" width="38" height="20" rx="10" stroke-width="1.5"/><text class="tiny end" x="581" y="130">depth</text>
+<text class="tiny b mono f-green pf-d3z" x="584" y="130">0</text>
+<text class="tiny b mono  pf-d3o" x="584" y="130">1</text>
+<rect class="box" x="610" y="140" width="70" height="60" rx="10"/><text class="pf-fn mid" x="645" y="168">Publish</text><text class="tiny mid" x="645" y="184">go live</text>
+<rect class="f-red-soft s-red pf-pfail" x="610" y="140" width="70" height="60" rx="10" stroke-width="2"/>
+<g class="p34"><text class="tiny mid mono" x="645" y="238">1 × 50/s</text></g>
+<rect class="none s-purple pf-k1" x="244" y="140" width="70" height="60" rx="10" stroke-width="2.5"/>
+<rect class="none s-purple pf-k2" x="366" y="140" width="70" height="60" rx="10" stroke-width="2.5"/>
+<rect class="none s-purple pf-k3" x="488" y="140" width="70" height="60" rx="10" stroke-width="2.5"/>
+<rect class="none s-purple pf-k4" x="610" y="140" width="70" height="60" rx="10" stroke-width="2.5"/>
+<g class="pf-c1"><circle class="f-green" cx="279" cy="218" r="7"/><path class="none s-bg" d="M275.5 218l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="pf-c2"><circle class="f-green" cx="401" cy="218" r="7"/><path class="none s-bg" d="M397.5 218l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="pf-c3"><circle class="f-green" cx="523" cy="218" r="7"/><path class="none s-bg" d="M519.5 218l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="pf-c4"><circle class="f-green" cx="645" cy="218" r="7"/><path class="none s-bg" d="M641.5 218l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</g>
+<g class="pf-saf">
+<line class="wire" x1="192" y1="170" x2="243" y2="170" marker-end="url(#ah)"/><rect class="f-panel s-line" x="194" y="160" width="38" height="20" rx="10" stroke-width="1.5"/><text class="tiny end" x="215" y="130">depth</text>
+<text class="tiny b mono f-green " x="218" y="130">0</text>
+<rect class="box" x="244" y="140" width="70" height="60" rx="10"/><text class="pf-fn mid" x="279" y="168">Safety</text><text class="tiny mid" x="279" y="184">scan image</text>
+<g class="pf-new"><rect class="f-green-soft s-green" x="244" y="140" width="70" height="60" rx="10" stroke-width="2"/><rect class="f-green" x="261" y="119" width="36" height="15" rx="7.5"/><text class="tiny mid b f-bg" x="279" y="130.5">NEW</text></g>
+<text class="tiny mid mono" x="279" y="238">1 × 30/s</text>
+</g>
+<rect class="none s-purple pf-k0" x="122" y="140" width="70" height="60" rx="10" stroke-width="2.5"/>
+<g class="pf-c0"><circle class="f-green" cx="157" cy="218" r="7"/><path class="none s-bg" d="M153.5 218l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</g>
+<!-- step 3: a second pipeline for videos reuses the Tag filter -->
+<g class="pf-vid">
+<text class="tiny end" x="358" y="284">video pipeline</text>
+<rect class="box" x="366" y="262" width="70" height="36" rx="10"/><text class="pf-fn mid" x="401" y="284">Videos</text>
+<line class="wire" x1="436" y1="280" x2="487" y2="280" marker-end="url(#ah)"/>
+<rect class="box" x="488" y="262" width="70" height="36" rx="10"/><text class="pf-fn mid" x="523" y="284">Transcode</text>
+<line class="wire" x1="558" y1="280" x2="609" y2="280" marker-end="url(#ah)"/><rect class="f-panel s-line" x="560" y="271" width="38" height="18" rx="9" stroke-width="1.5"/>
+<rect class="box" x="610" y="262" width="70" height="36" rx="10"/><rect class="f-blue-soft s-blue" x="610" y="262" width="70" height="36" rx="10" stroke-width="2"/><text class="pf-fn mid" x="645" y="278">Tag</text><text class="tiny mid sb f-blue" x="645" y="292">same filter</text>
+<line class="wire" x1="680" y1="280" x2="731" y2="280" marker-end="url(#ah)"/><rect class="f-panel s-line" x="682" y="271" width="38" height="18" rx="9" stroke-width="1.5"/>
+<rect class="box" x="732" y="262" width="70" height="36" rx="10"/><text class="pf-fn mid" x="767" y="284">Package</text>
+<path class="wire" d="M802 280H887V233" marker-end="url(#ah)"/>
+</g>
+<!-- step 4: the dead-letter queue behind Publish's pipe -->
+<g class="p4">
+<line class="s-red dash" x1="708" y1="181" x2="708" y2="259" stroke-width="1.8" marker-end="url(#ah-red)"/>
+<rect class="box" x="686" y="260" width="162" height="40" rx="10"/>
+<rect class="f-red-soft s-red" x="686" y="260" width="162" height="40" rx="10" stroke-width="1.5"/>
+<text class="tiny sb" x="726" y="277">dead-letter queue</text>
+<text class="tiny" x="726" y="292">depth</text>
+<text class="tiny b mono f-green pf-dl0" x="759" y="292">0</text><text class="tiny b mono f-red pf-dl1" x="759" y="292">1</text>
+</g>
+<g class="pf-try1"><text class="tiny end sb f-red" x="701" y="197">try 1</text></g>
+<g class="pf-try2"><text class="tiny end sb f-red" x="701" y="197">try 2</text></g>
+<g class="pf-try3"><text class="tiny end sb f-red" x="701" y="197">try 3</text></g>
+<rect class="box" x="34" y="318" width="892" height="148" rx="12"/>
+<g class="p1">
+<text class="pf-hd" x="52" y="342">ONE SERVICE, EVERY STAGE</text>
+<circle class="f-amber" cx="62" cy="366" r="7"/><text class="sub f-ink" x="80" y="370"><tspan class="b">Pace.</tspan> Every photo waits for resizing, the slowest</text><text class="sub f-ink" x="80" y="388">stage at 5 photos a second.</text>
+<circle class="f-amber" cx="482" cy="366" r="7"/><text class="sub f-ink" x="500" y="370"><tspan class="b">Scale.</tspan> 20 photos/s need 4 resizers, so you run</text><text class="sub f-ink" x="500" y="388">4 copies of the whole service.</text>
+<circle class="f-amber" cx="62" cy="424" r="7"/><text class="sub f-ink" x="80" y="428"><tspan class="b">Change.</tspan> A new watermark means testing and</text><text class="sub f-ink" x="80" y="446">redeploying all of it.</text>
+<circle class="f-red" cx="482" cy="424" r="7"/><text class="sub f-ink" x="500" y="428"><tspan class="b">Failure.</tspan> When tagging fails, the retry starts over</text><text class="sub f-ink" x="500" y="446">and the costly resize runs again.</text>
+</g>
+<g class="p2">
+<text class="pf-hd" x="52" y="342">FILTERS JOINED BY PIPES</text>
+<rect class="box" x="52" y="356" width="44" height="28" rx="6"/><text class="sub f-ink" x="110" y="370"><tspan class="b">Filter:</tspan> one job. It reads its input pipe, writes</text><text class="sub f-ink" x="110" y="388">its output pipe and shares nothing else.</text>
+<line class="wire" x1="500" y1="370" x2="546" y2="370" marker-end="url(#ah)"/><rect class="f-panel s-line" x="502" y="361" width="34" height="18" rx="9" stroke-width="1.5"/><text class="sub f-ink" x="560" y="370"><tspan class="b">Pipe:</tspan> a queue between two filters. It holds</text><text class="sub f-ink" x="560" y="388">each photo until the next filter takes it.</text>
+<g transform="translate(74 424)"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g><text class="sub f-ink" x="110" y="428"><tspan class="b">Source and sinks:</tspan> uploads feed the pipeline;</text><text class="sub f-ink" x="110" y="446">the catalogue and the CDN receive its output.</text>
+<g class=""><circle class="f-green" cx="523" cy="424" r="8"/><path class="none s-bg" d="M519.5 424l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><text class="sub f-ink" x="560" y="428"><tspan class="b">On its own:</tspan> each filter is built, deployed and</text><text class="sub f-ink" x="560" y="446">scaled alone; only the message format is shared.</text>
+</g>
+<g class="p3">
+<text class="pf-hd" x="52" y="342">ONE STAGE AT A TIME</text><text class="tiny end" x="908" y="342">under each filter: instances × photos per second each</text>
+<circle class="f-amber" cx="62" cy="366" r="7"/><text class="sub f-ink" x="80" y="370"><tspan class="b">Backs up.</tspan> 20 photos arrive each second and one</text><text class="sub f-ink" x="80" y="388">Resize does 5, so its pipe grows by 15 a second.</text>
+<circle class="f-green" cx="482" cy="366" r="7"/><text class="sub f-ink" x="500" y="370"><tspan class="b">Scale one.</tspan> Resize alone goes to 4 instances: 4 × 5 = 20</text><text class="sub f-ink" x="500" y="388">a second, and its pipe stops growing. The rest stay at 1.</text>
+<circle class="f-green" cx="62" cy="424" r="7"/><text class="sub f-ink" x="80" y="428"><tspan class="b">Insert one.</tspan> Safety goes in between Validate and</text><text class="sub f-ink" x="80" y="446">Resize. No other filter changes.</text>
+<circle class="f-blue" cx="482" cy="424" r="7"/><text class="sub f-ink" x="500" y="428"><tspan class="b">Reuse one.</tspan> The same Tag filter also runs in a</text><text class="sub f-ink" x="500" y="446">second pipeline, for videos.</text>
+</g>
+<g class="p4">
+<text class="pf-hd" x="52" y="342">WHEN A FILTER FAILS</text>
+<circle class="f-red" cx="62" cy="362" r="7"/><text class="sub f-ink" x="80" y="366">Watermark crashed holding <tspan class="mono b f-purple">7f3</tspan>. It went back to its pipe</text><text class="sub f-ink" x="80" y="384">and only Watermark ran again, so make filters idempotent.</text>
+<circle class="f-red" cx="62" cy="401" r="7"/><text class="sub f-ink" x="80" y="405"><tspan class="mono b f-purple">9c1</tspan> failed at Publish 3 times, so the broker</text><text class="sub f-ink" x="80" y="423">moved it to the dead-letter queue.</text>
+<circle class="f-purple" cx="62" cy="440" r="7"/><text class="sub f-ink" x="80" y="444">A correlation ID travels with each photo and is</text><text class="sub f-ink" x="80" y="462">logged at every hop, so one search finds them all.</text>
+<line class="s-line" x1="478" y1="332" x2="478" y2="452" stroke-width="1"/>
+<text class="pf-hd" x="498" y="342">WHAT THE PIPES COST</text>
+<text class="sub f-ink" x="498" y="366">• Every hop serialises the photo and stores it again.</text><text class="sub f-ink" x="498" y="384">• 6 filters and 5 pipes to deploy, scale and watch.</text><text class="sub f-ink" x="498" y="402">• Each hop adds queueing and network latency.</text><text class="sub f-ink" x="498" y="420">• No transaction spans the stages: <tspan class="mono b f-purple">9c1</tspan> was resized,</text><text class="sub f-ink" x="498" y="438">   watermarked and tagged, but never published.</text>
+</g>
+<!-- photos -->
+<g class="pf-in1"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-oc"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-od"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-t2"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-a1"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-a2"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-a3"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-vt"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/></g>
+<g class="pf-tA"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/><text class="tiny mid mono b f-purple" y="-12">7f3</text></g>
+<g class="pf-tB"><rect class="pf-ph" x="-9" y="-7" width="18" height="14" rx="3"/><path class="pf-mt" d="M-6 5L-2 0L1 3L3 1L7 5Z"/><circle class="pf-mt" cx="3.5" cy="-2.5" r="1.6"/><text class="tiny mid mono b f-purple" y="-12">9c1</text></g>
+</g>
+</svg>

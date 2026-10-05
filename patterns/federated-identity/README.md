@@ -33,7 +33,7 @@ Federation separates *who is this?* from *what may they do here?* The applicatio
 
 At sign-in the relying party redirects the browser to the user's IdP. The IdP authenticates the user under its own policies (password, passkey, MFA) and returns a signed ID token or assertion. The relying party verifies the signature with the IdP's published keys, checks the issuer, the audience, the expiry and, in OpenID Connect, the nonce, and then starts its own session. [OpenID Connect](../openid-connect/) walks through that exchange, and [JWT Validation](../jwt-validation/) covers the key handling.
 
-**Protocols.** OpenID Connect, an identity layer on OAuth 2.0 with JSON tokens, is the usual choice for new applications, including mobile and single-page ones. SAML 2.0, with XML assertions usually posted through the browser, is still common in enterprise SaaS, and most IdPs speak both; its flow is the subject of the planned SAML 2.0 Single Sign-On pattern. WS-Federation is an older protocol that Microsoft Entra ID still accepts. Use it only for legacy applications that can do nothing else.
+**Protocols.** OpenID Connect, an identity layer on OAuth 2.0 with JSON tokens, is the usual choice for new applications, including mobile and single-page ones. SAML 2.0, with XML assertions usually posted through the browser, is still common in enterprise SaaS, and most IdPs speak both; its flow is the subject of the [SAML 2.0 Single Sign-On](../saml-sso/) pattern. WS-Federation is an older protocol that Microsoft Entra ID still accepts. Use it only for legacy applications that can do nothing else.
 
 **A federation broker** sits between the application and many IdPs. NIST SP 800-63C-4 calls it a federation proxy: it is a relying party towards each upstream IdP and an identity provider towards the application, and the assertions it issues name the broker as the issuer. The application keeps one trust, one protocol and one claim format, while the broker handles home realm discovery, protocol translation (SAML in, OpenID Connect out), claims mapping, and a separate trust with each upstream provider. Examples as of 2026:
 
@@ -43,7 +43,7 @@ At sign-in the relying party redirects the browser to the user's IdP. The IdP au
 
 **What the application still owns.** Federation hands over authentication, not everything else:
 
-- **Authorization.** The IdP says who the user is and perhaps which groups they belong to; the application decides what that allows. Map external groups to your own roles at the broker or at sign-in, and keep the decisions in the application (or in a policy engine, the subject of the planned Policy-Based Authorization pattern).
+- **Authorization.** The IdP says who the user is and perhaps which groups they belong to; the application decides what that allows. Map external groups to your own roles at the broker or at sign-in, and keep the decisions in the application (or in a policy engine: see [Policy-Based Authorization](../policy-based-authorization/)).
 - **Its local profile.** A record keyed on the federated identifier, holding what only the application knows: settings, roles, what the user owns.
 - **Its session.** After validating the token the application runs its own session, and the token's lifetime is not the session's. [Sessions vs Tokens](../sessions-vs-tokens/) compares the options.
 

@@ -1,0 +1,47 @@
+{
+  "aka": ["Reference-based messaging", "Payload offloading"],
+  "steps": [
+    {
+      "title": "A message too big",
+      "caption": "Intake publishes the 25 MB claim with its photos as one message; the 256 KB topic rejects it.",
+      "body": "Claims intake sends claim `7f3a`, a 30 KB form plus twelve photos (25 MB in all), as one message, and the topic, which accepts at most 256 KB per message, rejects it. A higher limit, or a hundred smaller messages, would only move the problem: large messages slow the broker for everyone, cost more where billing is per 64 KB chunk, sit in memory and on every replica, and are copied again to every consumer."
+    },
+    {
+      "title": "Store, then send a check",
+      "caption": "First upload the 25 MB payload to blob storage, then publish a 1 KB claim check that points to it.",
+      "body": "Intake first uploads the payload to blob storage as `claims/7f3a.zip`, a key derived from the claim ID, and waits for the upload to succeed. Only then does it publish a **claim check** of about 1 KB: where the payload is, plus what consumers need to route and decide (claim type, size and SHA-256 checksum). Published the other way round, a consumer could ask for a payload that isn't there yet."
+    },
+    {
+      "title": "Redeem the claim check",
+      "caption": "Each consumer fetches the payload by its reference and checks the sha256; the filter reads metadata.",
+      "body": "The broker routes on the metadata alone: the damage-assessment subscription filters on `type = auto` and downloads nothing. Each consumer then fetches the 25 MB straight from storage with its own read-only access (or a short-lived read-only URL it asks for separately, a [valet key](../valet-key/)), checks the SHA-256 and processes the claim. Archive redeems the same claim check independently."
+    },
+    {
+      "title": "Lifecycle and safety",
+      "caption": "Delete the payload once both are done or after 30 days; a check that finds it gone is dead-lettered.",
+      "body": "Someone has to delete the payload: the last consumer to finish (here 2 of 2), or a storage lifecycle rule that expires it after 30 days, longer than the message TTL plus retries. A publish that fails after the upload leaves an orphan that only the age rule removes, and a claim check that outlives its payload gets a not-found and goes to a [dead-letter queue](../dead-letter-queue/). The store now holds the data, so it needs its own access control and encryption."
+    }
+  ],
+  "related": ["valet-key", "publish-subscribe", "dead-letter-queue", "idempotent-consumer", "event-driven-architecture", "transactional-outbox", "competing-consumers", "pipes-and-filters"],
+  "references": [
+    { "title": "Enterprise Integration Patterns — Claim Check", "url": "https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html" },
+    { "title": "Azure Architecture Center — Claim Check pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check" },
+    { "title": "Amazon SQS — Managing large messages using Java and Amazon S3 (Extended Client Library)", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html" },
+    { "title": "Amazon SQS — Message quotas", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html" },
+    { "title": "Amazon SNS — Publishing large messages", "url": "https://docs.aws.amazon.com/sns/latest/dg/large-message-payloads.html" },
+    { "title": "AWS What's New — Amazon SQS increases maximum message payload size to 1 MiB (August 2025)", "url": "https://aws.amazon.com/about-aws/whats-new/2025/08/amazon-sqs-max-payload-size-1mib/" },
+    { "title": "AWS What's New — Amazon SNS now supports message payloads up to 1 MiB (September 2026)", "url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-sns-1mib-support/" },
+    { "title": "Amazon SQS — Pricing (each 64 KB chunk of a payload is billed as one request)", "url": "https://aws.amazon.com/sqs/pricing/" },
+    { "title": "Azure Service Bus — Quotas and limits", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quotas" },
+    { "title": "Azure Service Bus — Premium tier and large message support", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-premium-messaging" },
+    { "title": "Azure Service Bus — Message expiration (time to live)", "url": "https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-expiration" },
+    { "title": "Azure Event Hubs — Quotas and limits", "url": "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas" },
+    { "title": "Google Cloud Pub/Sub — Quotas and limits", "url": "https://docs.cloud.google.com/pubsub/quotas" },
+    { "title": "Apache Kafka — Broker configs (message.max.bytes)", "url": "https://kafka.apache.org/43/configuration/broker-configs/#brokerconfigs_message.max.bytes" },
+    { "title": "Amazon S3 — Event notifications", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html" },
+    { "title": "Azure Event Grid — Azure Blob Storage as an Event Grid source", "url": "https://learn.microsoft.com/en-us/azure/event-grid/event-schema-blob-storage" },
+    { "title": "Amazon S3 — Expiring objects with S3 Lifecycle", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html" },
+    { "title": "Azure Blob Storage — Lifecycle management overview", "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview" },
+    { "title": "Amazon SQS Extended Client Library for Java (GitHub)", "url": "https://github.com/awslabs/amazon-sqs-java-extended-client-lib" }
+  ]
+}

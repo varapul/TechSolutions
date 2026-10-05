@@ -64,7 +64,7 @@ The hash only works one way. Seeing the challenge in step 1 doesn't reveal the v
 - [Refresh Token Rotation](../refresh-token-rotation/) — Short-lived access tokens, single-use refresh tokens, and reuse detection that revokes the whole family.
 - [Backends for Frontends (BFF)](../backends-for-frontends/) — A dedicated backend per client type, shaped for exactly what that UI needs.
 - [OAuth 2.0 Client Credentials](../oauth2-client-credentials/) — Machine-to-machine access tokens, with no user involved.
-- Device Authorization Grant *(planned)* — Sign in on a TV or CLI by approving a short code on your phone.
+- [Device Authorization Grant](../device-authorization-grant/) — Sign in on a TV or CLI by approving a short code on your phone.
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 - [Federated Identity](../federated-identity/) — Let an external identity provider authenticate users; the application trusts its tokens.
 

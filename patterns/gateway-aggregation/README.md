@@ -153,7 +153,7 @@ An [API gateway](../api-gateway/) routes each request to one service and applies
 
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Backends for Frontends (BFF)](../backends-for-frontends/) — A dedicated backend per client type, shaped for exactly what that UI needs.
-- GraphQL Federation *(planned)* — A router composes one graph from many services' subgraphs and plans each query across them.
+- [GraphQL Federation](../graphql-federation/) — Subgraphs from many services compose into one graph; a router plans each query across them.
 - [Gateway Offloading](../gateway-offloading/) — Move TLS termination, authentication and compression out of every service into the gateway.
 - [Timeout & Fallback](../timeout-and-fallback/) — Bound every remote call and degrade gracefully when the time runs out.
 - [Circuit Breaker](../circuit-breaker/) — Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers.

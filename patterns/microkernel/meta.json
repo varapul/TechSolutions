@@ -1,0 +1,40 @@
+{
+  "aka": ["Plug-in architecture"],
+  "steps": [
+    {
+      "title": "A small core, plug-ins",
+      "caption": "At start-up the core reads each plug-in's manifest, registers it and wires its contributions in.",
+      "body": "The **core** keeps only what every user needs: the window, opening, editing and saving files, settings, a **plug-in registry**, the plug-in lifecycle and the **extension points**, which are contracts for language support, commands and views. Each plug-in ships a **manifest** that declares what it adds, when it should activate and which versions of the core API it needs. At start-up the core reads the manifests without running any plug-in code, registers each plug-in and wires its contributions in: Git activates at start-up, and Python activates because a `.py` file is open. Most of what the user now sees comes from plug-ins."
+    },
+    {
+      "title": "Add without touching core",
+      "caption": "Markdown preview is installed and starts when the first .md file opens; the core is not redeployed.",
+      "body": "A **Markdown preview** plug-in is installed. The core finds its manifest and registers its command and view, but runs none of its code yet: the plug-in **activates lazily**, the first time a Markdown file is opened. Nothing in the core or in the other plug-ins is changed or redeployed, and the Python plug-in is upgraded from 1.4 to 1.5 on its own schedule."
+    },
+    {
+      "title": "Contain a hung plug-in",
+      "caption": "Git hangs in a loop. The editor stays responsive; the core restarts the plug-in host without Git.",
+      "body": "The plug-ins run in a separate **plug-in host process** and reach the core only through its API. When the Git plug-in hangs in an endless loop, the plug-ins that share the host stall with it, but the editor keeps responding to typing. The core notices that the host has stopped answering and tells the user, who can restart the host or, as here, disable Git and restart the host without it. The host is **sandboxed**, so a plug-in can do only what the API grants it."
+    },
+    {
+      "title": "The API is the hard part",
+      "caption": "API v2 renames a method: v1 plug-ins work through a compat layer, and a 0.x plug-in is refused.",
+      "body": "The core API moves to **version 2**, which renames `addCommand()` to `registerCommand()`. Plug-ins that declare API 1.x keep working through a **compatibility layer**, deprecated now and removed in v3, while an old plug-in that needs API 0.x, whose support is already gone, is **refused at load time** instead of failing later. The contract has other costs too: plug-ins that depend on each other, two plug-ins competing for one extension point, start-up time when many activate early, and the number of combinations to test."
+    }
+  ],
+  "related": ["hexagonal-architecture", "layered-architecture", "modular-monolith", "microservices", "sidecar", "anti-corruption-layer", "feature-flags"],
+  "references": [
+    { "title": "Mark Richards — Software Architecture Patterns (O'Reilly; 1st edition 2015, 2nd edition 2022), listed on the author's publications page", "url": "https://www.developertoarchitect.com/books.html" },
+    { "title": "Mark Richards — Software Architecture Monday, Lesson 160: Microkernel Architecture", "url": "https://developertoarchitect.com/lessons/lesson160.html" },
+    { "title": "OSGi Core Release 8 specification", "url": "https://docs.osgi.org/specification/osgi.core/8.0.0/" },
+    { "title": "Visual Studio Code — Extension Host", "url": "https://code.visualstudio.com/api/advanced-topics/extension-host" },
+    { "title": "Visual Studio Code — Extension Manifest", "url": "https://code.visualstudio.com/api/references/extension-manifest" },
+    { "title": "Visual Studio Code — Activation Events", "url": "https://code.visualstudio.com/api/references/activation-events" },
+    { "title": "Visual Studio Code — Extension runtime security", "url": "https://code.visualstudio.com/docs/configure/extensions/extension-runtime-security" },
+    { "title": "Eclipse Platform Plug-in Developer Guide — The runtime plug-in model", "url": "https://help.eclipse.org/latest/topic/org.eclipse.platform.doc.isv/guide/runtime_model.htm" },
+    { "title": "Jenkins developer documentation — Extensibility", "url": "https://www.jenkins.io/doc/developer/extensibility/" },
+    { "title": "Java SE 25 API — java.util.ServiceLoader", "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/ServiceLoader.html" },
+    { "title": "Semantic Versioning 2.0.0", "url": "https://semver.org/spec/v2.0.0.html" },
+    { "title": "Zed — Extension Capabilities", "url": "https://zed.dev/docs/extensions/capabilities" }
+  ]
+}

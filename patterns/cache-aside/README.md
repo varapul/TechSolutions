@@ -90,7 +90,7 @@ If the whole data set is small and rarely changes, skip lazy loading: load it al
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [CDN & Edge Caching](../cdn-edge-caching/) — Serve static content from edge locations close to users; only cache misses reach the origin.
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
-- Space-Based *(planned)* — Processing units share an in-memory data grid, taking the database off the hot path.
+- [Space-Based](../space-based-architecture/) — Processing units share an in-memory data grid, taking the database off the hot path.
 
 ## References
 

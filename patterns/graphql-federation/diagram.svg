@@ -1,0 +1,930 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">GraphQL Federation</title>
+<desc id="dg-desc">GraphQL Federation. Subgraphs from many services compose into one graph; a router plans each query across them. Step 1, One graph, many teams: Each team publishes its subgraph; composition merges them into one supergraph or fails the build. Step 2, Router plans each query: One query, one endpoint: Products first, then Reviews and Inventory in parallel by key, then merge. Step 3, Checked before they ship: Removing rating would break the mobile app's query, so the check blocks it; adding stars ships. Step 4, Know the costs: Mind hops, N+1, costly queries, authorisation and the router; a failed subgraph gives partial data.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">API &amp; EDGE</text>
+  <text class="title" x="40" y="64">GraphQL Federation</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · One graph, many teams</text>
+  <text class="step on p1" x="40" y="518">1 · One graph, many teams</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Router plans each query</text>
+  <text class="step on p2" x="262" y="518">2 · Router plans each query</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Checked before they ship</text>
+  <text class="step on p3" x="484" y="518">3 · Checked before they ship</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Know the costs</text>
+  <text class="step on p4" x="706" y="518">4 · Know the costs</text>
+  <text class="caption p1" x="40" y="552">Each team publishes its subgraph; composition merges them into one supergraph or fails the build.</text>
+  <text class="caption p2" x="40" y="552">One query, one endpoint: Products first, then Reviews and Inventory in parallel by key, then merge.</text>
+  <text class="caption p3" x="40" y="552">Removing rating would break the mobile app's query, so the check blocks it; adding stars ships.</text>
+  <text class="caption p4" x="40" y="552">Mind hops, N+1, costly queries, authorisation and the router; a failed subgraph gives partial data.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* GraphQL Federation. Timeline (20s loop, 1s = 5%):
+   0-25%   Products, Reviews and Inventory publish their schemas from CI (0.3-1.2s); composition passes (1.75s) and the
+           supergraph reaches the router (1.95-2.25s). Inventory then adds price: String (2.85s); its check fails (3.75s).
+   25-50%  the mobile app's query reaches the router (5.15-5.49s); the plan appears (5.55-6.2s); Products answers
+           (6.15-7.12s); Reviews and Inventory are asked in parallel through _entities (7.25-8.22s); merge (8.3s);
+           the response arrives in the query's shape (8.35-9.0s).
+   50-75%  Reviews removes rating (10.15s): it composes, but the operation check finds the mobile query and blocks it
+           (11.25-11.7s). Reviews adds stars instead (12.45s): it passes (13.5s), ships v13 (13.75s) and the new
+           supergraph reaches the router (13.7-14.2s).
+   75-100% the query again with Inventory down (15.1-17.85s): a partial response with an error; five cautions appear
+           at 17.4/17.7/18.0/18.3/18.6s. Everything that changed resets in the last half-second.
+   Generated with scripts/lib/motion.mjs (track, windows, keys). */
+.diagram .gf-pin { font-size: 10px; font-weight: 700; fill: var(--bg); text-anchor: middle; }
+.diagram .gf-d1 { opacity: 0; animation: gf-d1 var(--T) linear infinite; }
+.diagram .gf-d2 { opacity: 0; animation: gf-d2 var(--T) linear infinite; }
+.diagram .gf-d3 { opacity: 0; animation: gf-d3 var(--T) linear infinite; }
+.diagram .gf-sg { opacity: 0; animation: gf-sg var(--T) linear infinite; }
+.diagram .gf-q { opacity: 0; animation: gf-q var(--T) linear infinite; }
+.diagram .gf-f1 { opacity: 0; animation: gf-f1 var(--T) linear infinite; }
+.diagram .gf-r1 { opacity: 0; animation: gf-r1 var(--T) linear infinite; }
+.diagram .gf-f2 { opacity: 0; animation: gf-f2 var(--T) linear infinite; }
+.diagram .gf-f3 { opacity: 0; animation: gf-f3 var(--T) linear infinite; }
+.diagram .gf-r2 { opacity: 0; animation: gf-r2 var(--T) linear infinite; }
+.diagram .gf-r3 { opacity: 0; animation: gf-r3 var(--T) linear infinite; }
+.diagram .gf-a { opacity: 0; animation: gf-a var(--T) linear infinite; }
+.diagram .gf-ap { opacity: 0; animation: gf-ap var(--T) linear infinite; }
+.diagram .gf-spinA { opacity: 0; animation: gf-spinA var(--T) linear infinite; }
+.diagram .gf-spinB { opacity: 0; animation: gf-spinB var(--T) linear infinite; }
+.diagram .gf-spinC { opacity: 0; animation: gf-spinC var(--T) linear infinite; }
+.diagram .gf-sgfl { opacity: 0; animation: gf-sgfl var(--T) linear infinite; }
+.diagram .gf-qhl { opacity: 0; animation: gf-qhl var(--T) linear infinite; }
+.diagram .gf-pl1 { opacity: 0; animation: gf-pl1 var(--T) linear infinite; }
+.diagram .gf-pl2 { opacity: 0; animation: gf-pl2 var(--T) linear infinite; }
+.diagram .gf-pl3 { opacity: 0; animation: gf-pl3 var(--T) linear infinite; }
+.diagram .gf-pl4 { opacity: 0; animation: gf-pl4 var(--T) linear infinite; }
+.diagram .gf-wP { opacity: 0; animation: gf-wP var(--T) linear infinite; }
+.diagram .gf-wR { opacity: 0; animation: gf-wR var(--T) linear infinite; }
+.diagram .gf-wI { opacity: 0; animation: gf-wI var(--T) linear infinite; }
+.diagram .gf-k1 { opacity: 0; animation: gf-k1 var(--T) linear infinite; }
+.diagram .gf-k2 { opacity: 0; animation: gf-k2 var(--T) linear infinite; }
+.diagram .gf-k3 { opacity: 0; animation: gf-k3 var(--T) linear infinite; }
+.diagram .gf-k4 { opacity: 0; animation: gf-k4 var(--T) linear infinite; }
+.diagram .gf-resp { opacity: 0; animation: gf-resp var(--T) linear infinite; }
+.diagram .gf-strike { opacity: 0; animation: gf-strike var(--T) linear infinite; }
+.diagram .gf-blk { opacity: 0; animation: gf-blk var(--T) linear infinite; }
+.diagram .gf-rq { opacity: 0; animation: gf-rq var(--T) linear infinite; }
+.diagram .gf-l31 { opacity: 0; animation: gf-l31 var(--T) linear infinite; }
+.diagram .gf-l32 { opacity: 0; animation: gf-l32 var(--T) linear infinite; }
+.diagram .gf-l33 { opacity: 0; animation: gf-l33 var(--T) linear infinite; }
+.diagram .gf-add { opacity: 0; animation: gf-add var(--T) linear infinite; }
+.diagram .gf-dep { opacity: 0; animation: gf-dep var(--T) linear infinite; }
+.diagram .gf-stars { opacity: 0; animation: gf-stars var(--T) linear infinite; }
+.diagram .gf-sgst { opacity: 0; animation: gf-sgst var(--T) linear infinite; }
+.diagram .gf-v13 { opacity: 0; animation: gf-v13 var(--T) linear infinite; }
+.diagram .gf-iF { opacity: 0; animation: gf-iF var(--T) linear infinite; }
+.diagram .gf-xw { opacity: 0; animation: gf-xw var(--T) linear infinite; }
+.diagram .gf-x3 { opacity: 0; animation: gf-x3 var(--T) linear infinite; }
+.diagram .gf-pm { opacity: 0; animation: gf-pm var(--T) linear infinite; }
+.diagram .gf-rpart { opacity: 0; animation: gf-rpart var(--T) linear infinite; }
+.diagram .gf-n1 { opacity: 0; animation: gf-n1 var(--T) linear infinite; }
+.diagram .gf-n2 { opacity: 0; animation: gf-n2 var(--T) linear infinite; }
+.diagram .gf-n3 { opacity: 0; animation: gf-n3 var(--T) linear infinite; }
+.diagram .gf-n4 { opacity: 0; animation: gf-n4 var(--T) linear infinite; }
+.diagram .gf-n5 { opacity: 0; animation: gf-n5 var(--T) linear infinite; }
+.diagram .gf-ok1 { animation: gf-ok1 var(--T) linear infinite; }
+.diagram .gf-x1 { animation: gf-x1 var(--T) linear infinite; }
+.diagram .gf-pr { animation: gf-pr var(--T) linear infinite; }
+.diagram .gf-sgc { animation: gf-sgc var(--T) linear infinite; }
+.diagram .gf-v12 { animation: gf-v12 var(--T) linear infinite; }
+@keyframes gf-d1 {
+  0% { transform: translate(895px, 134px); opacity: 0; }
+  1.5% { transform: translate(895px, 134px); opacity: 0; }
+  1.689% { transform: translate(912px, 134px); }
+  1.75% { opacity: 1; }
+  4.578% { transform: translate(912px, 394px); opacity: 1; }
+  4.828% { transform: translate(912px, 394px); opacity: 0; }
+  100% { transform: translate(912px, 394px); opacity: 0; }
+}
+@keyframes gf-d2 {
+  0% { transform: translate(895px, 226px); opacity: 0; }
+  3.25% { transform: translate(895px, 226px); opacity: 0; }
+  3.439% { transform: translate(912px, 226px); }
+  3.5% { opacity: 1; }
+  5.306% { transform: translate(912px, 394px); opacity: 1; }
+  5.556% { transform: translate(912px, 394px); opacity: 0; }
+  52% { transform: translate(895px, 226px); opacity: 0; }
+  52.189% { transform: translate(912px, 226px); }
+  52.25% { opacity: 1; }
+  54.056% { transform: translate(912px, 394px); opacity: 1; }
+  54.306% { transform: translate(912px, 394px); opacity: 0; }
+  63.5% { transform: translate(895px, 226px); opacity: 0; }
+  63.689% { transform: translate(912px, 226px); }
+  63.75% { opacity: 1; }
+  65.556% { transform: translate(912px, 394px); opacity: 1; }
+  65.806% { transform: translate(912px, 394px); opacity: 0; }
+  100% { transform: translate(912px, 394px); opacity: 0; }
+}
+@keyframes gf-d3 {
+  0% { transform: translate(895px, 315px); opacity: 0; }
+  4.75% { transform: translate(895px, 315px); opacity: 0; }
+  4.939% { transform: translate(912px, 315px); }
+  5% { opacity: 1; }
+  5.817% { transform: translate(912px, 394px); opacity: 1; }
+  6.067% { transform: translate(912px, 394px); opacity: 0; }
+  15.25% { transform: translate(895px, 315px); opacity: 0; }
+  15.439% { transform: translate(912px, 315px); }
+  15.5% { opacity: 1; }
+  16.317% { transform: translate(912px, 394px); opacity: 1; }
+  16.567% { transform: translate(912px, 394px); opacity: 0; }
+  100% { transform: translate(912px, 394px); opacity: 0; }
+}
+@keyframes gf-sg {
+  0% { transform: translate(396px, 394px); opacity: 0; }
+  9.75% { transform: translate(396px, 394px); opacity: 0; }
+  10% { opacity: 1; }
+  11.283% { transform: translate(396px, 348px); opacity: 1; }
+  11.533% { transform: translate(396px, 348px); opacity: 0; }
+  68.5% { transform: translate(396px, 394px); opacity: 0; }
+  68.75% { opacity: 1; }
+  70.033% { transform: translate(396px, 348px); opacity: 1; }
+  70.283% { transform: translate(396px, 348px); opacity: 0; }
+  100% { transform: translate(396px, 348px); opacity: 0; }
+}
+@keyframes gf-q {
+  0% { transform: translate(172px, 123px); opacity: 0; }
+  25.75% { transform: translate(172px, 123px); opacity: 0; }
+  26% { opacity: 1; }
+  27.25% { transform: translate(262px, 123px); opacity: 1; }
+  27.5% { transform: translate(262px, 123px); opacity: 0; }
+  75.5% { transform: translate(172px, 123px); opacity: 0; }
+  75.75% { opacity: 1; }
+  77% { transform: translate(262px, 123px); opacity: 1; }
+  77.25% { transform: translate(262px, 123px); opacity: 0; }
+  100% { transform: translate(262px, 123px); opacity: 0; }
+}
+@keyframes gf-f1 {
+  0% { transform: translate(530px, 134px); opacity: 0; }
+  30.75% { transform: translate(530px, 134px); opacity: 0; }
+  31% { opacity: 1; }
+  32.35% { transform: translate(610px, 134px); opacity: 1; }
+  32.6% { transform: translate(610px, 134px); opacity: 0; }
+  77.5% { transform: translate(530px, 134px); opacity: 0; }
+  77.75% { opacity: 1; }
+  79.1% { transform: translate(610px, 134px); opacity: 1; }
+  79.35% { transform: translate(610px, 134px); opacity: 0; }
+  100% { transform: translate(610px, 134px); opacity: 0; }
+}
+@keyframes gf-r1 {
+  0% { transform: translate(610px, 134px); opacity: 0; }
+  34% { transform: translate(610px, 134px); opacity: 0; }
+  34.25% { opacity: 1; }
+  35.6% { transform: translate(530px, 134px); opacity: 1; }
+  35.85% { transform: translate(530px, 134px); opacity: 0; }
+  79.25% { transform: translate(610px, 134px); opacity: 0; }
+  79.5% { opacity: 1; }
+  80.85% { transform: translate(530px, 134px); opacity: 1; }
+  81.1% { transform: translate(530px, 134px); opacity: 0; }
+  100% { transform: translate(530px, 134px); opacity: 0; }
+}
+@keyframes gf-f2 {
+  0% { transform: translate(530px, 226px); opacity: 0; }
+  36.25% { transform: translate(530px, 226px); opacity: 0; }
+  36.5% { opacity: 1; }
+  37.85% { transform: translate(610px, 226px); opacity: 1; }
+  38.1% { transform: translate(610px, 226px); opacity: 0; }
+  81% { transform: translate(530px, 226px); opacity: 0; }
+  81.25% { opacity: 1; }
+  82.6% { transform: translate(610px, 226px); opacity: 1; }
+  82.85% { transform: translate(610px, 226px); opacity: 0; }
+  100% { transform: translate(610px, 226px); opacity: 0; }
+}
+@keyframes gf-f3 {
+  0% { transform: translate(530px, 315px); opacity: 0; }
+  36.25% { transform: translate(530px, 315px); opacity: 0; }
+  36.5% { opacity: 1; }
+  37.85% { transform: translate(610px, 315px); opacity: 1; }
+  38.1% { transform: translate(610px, 315px); opacity: 0; }
+  81% { transform: translate(530px, 315px); opacity: 0; }
+  81.25% { opacity: 1; }
+  82.6% { transform: translate(610px, 315px); opacity: 1; }
+  82.85% { transform: translate(610px, 315px); opacity: 0; }
+  100% { transform: translate(610px, 315px); opacity: 0; }
+}
+@keyframes gf-r2 {
+  0% { transform: translate(610px, 226px); opacity: 0; }
+  39.5% { transform: translate(610px, 226px); opacity: 0; }
+  39.75% { opacity: 1; }
+  41.1% { transform: translate(530px, 226px); opacity: 1; }
+  41.35% { transform: translate(530px, 226px); opacity: 0; }
+  83.75% { transform: translate(610px, 226px); opacity: 0; }
+  84% { opacity: 1; }
+  85.35% { transform: translate(530px, 226px); opacity: 1; }
+  85.6% { transform: translate(530px, 226px); opacity: 0; }
+  100% { transform: translate(530px, 226px); opacity: 0; }
+}
+@keyframes gf-r3 {
+  0% { transform: translate(610px, 315px); opacity: 0; }
+  39.5% { transform: translate(610px, 315px); opacity: 0; }
+  39.75% { opacity: 1; }
+  41.1% { transform: translate(530px, 315px); opacity: 1; }
+  41.35% { transform: translate(530px, 315px); opacity: 0; }
+  100% { transform: translate(530px, 315px); opacity: 0; }
+}
+@keyframes gf-a {
+  0% { transform: translate(262px, 123px); opacity: 0; }
+  41.75% { transform: translate(262px, 123px); opacity: 0; }
+  42% { opacity: 1; }
+  43.25% { transform: translate(172px, 123px); opacity: 1; }
+  43.5% { transform: translate(172px, 123px); opacity: 0; }
+  100% { transform: translate(172px, 123px); opacity: 0; }
+}
+@keyframes gf-ap {
+  0% { transform: translate(262px, 123px); opacity: 0; }
+  86% { transform: translate(262px, 123px); opacity: 0; }
+  86.25% { opacity: 1; }
+  87.5% { transform: translate(172px, 123px); opacity: 1; }
+  87.75% { transform: translate(172px, 123px); opacity: 0; }
+  100% { transform: translate(172px, 123px); opacity: 0; }
+}
+@keyframes gf-spinA {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  6.5% { opacity: 1; }
+  8.75% { opacity: 1; }
+  9.25% { opacity: 0; }
+  54.25% { opacity: 0; }
+  54.75% { opacity: 1; }
+  56.25% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-spinB {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-spinC {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  66.25% { opacity: 1; }
+  67.5% { opacity: 1; }
+  68% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-ok1 {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  9.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-x1 {
+  0% { opacity: 0; }
+  18.75% { opacity: 0; }
+  19.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-pr {
+  0% { opacity: 0; }
+  14.25% { opacity: 0; }
+  15.25% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-sgc {
+  0% { opacity: 0; }
+  11.25% { opacity: 0; }
+  12.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-sgfl {
+  0% { opacity: 0; }
+  11.25% { opacity: 0; }
+  12% { opacity: 1; }
+  13.75% { opacity: 1; }
+  14.5% { opacity: 0; }
+  70% { opacity: 0; }
+  70.75% { opacity: 1; }
+  71.75% { opacity: 1; }
+  72.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-qhl {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  27.5% { opacity: 1; }
+  28.25% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  77% { opacity: 1; }
+  77.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-pl1 {
+  0% { opacity: 0; }
+  27.75% { opacity: 0; }
+  28.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-pl2 {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-pl3 {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-pl4 {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  31% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-wP {
+  0% { opacity: 0; }
+  32.35% { opacity: 0; }
+  33.1% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35.25% { opacity: 0; }
+  79.1% { opacity: 0; }
+  79.85% { opacity: 1; }
+  80.5% { opacity: 1; }
+  81.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-wR {
+  0% { opacity: 0; }
+  37.85% { opacity: 0; }
+  38.6% { opacity: 1; }
+  40% { opacity: 1; }
+  40.75% { opacity: 0; }
+  82.6% { opacity: 0; }
+  83.35% { opacity: 1; }
+  84.5% { opacity: 1; }
+  85.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-wI {
+  0% { opacity: 0; }
+  37.85% { opacity: 0; }
+  38.6% { opacity: 1; }
+  40% { opacity: 1; }
+  40.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-k1 {
+  0% { opacity: 0; }
+  35.6% { opacity: 0; }
+  36.6% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  80.85% { opacity: 0; }
+  81.85% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-k2 {
+  0% { opacity: 0; }
+  41.1% { opacity: 0; }
+  42.1% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  85.35% { opacity: 0; }
+  86.35% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-k3 {
+  0% { opacity: 0; }
+  41.1% { opacity: 0; }
+  42.1% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-k4 {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-resp {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  45% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-strike {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.75% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-blk {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-rq {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  57% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-l31 {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  57.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-l32 {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-l33 {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-add {
+  0% { opacity: 0; }
+  62.25% { opacity: 0; }
+  63.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-dep {
+  0% { opacity: 0; }
+  68.75% { opacity: 0; }
+  69.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-stars {
+  0% { opacity: 0; }
+  62.25% { opacity: 0; }
+  63.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-sgst {
+  0% { opacity: 0; }
+  70% { opacity: 0; }
+  71% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes gf-v12 {
+  0% { opacity: 1; }
+  68.75% { opacity: 1; }
+  69.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes gf-v13 {
+  0% { opacity: 0; }
+  69.25% { opacity: 0; }
+  70.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-iF {
+  0% { opacity: 0; }
+  82.6% { opacity: 0; }
+  83.6% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-xw {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-x3 {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-pm {
+  0% { opacity: 0; }
+  85.75% { opacity: 0; }
+  86.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-rpart {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  89.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-n1 {
+  0% { opacity: 0; }
+  87% { opacity: 0; }
+  88.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-n2 {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  90% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-n3 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-n4 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  93% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes gf-n5 {
+  0% { opacity: 0; }
+  93% { opacity: 0; }
+  94.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+  <!-- wires: one endpoint for every client; the router calls each subgraph -->
+  <path class="wire" d="M196 123H258" marker-end="url(#ah)"/>
+  <text class="tiny mono mid f-ink" x="229" y="116">/graphql</text>
+  <path class="wire" d="M530 134H606" marker-end="url(#ah)"/>
+  <path class="wire" d="M530 226H606" marker-end="url(#ah)"/>
+  <path class="wire" d="M530 315H606" marker-end="url(#ah)"/>
+  <g class="p24">
+    <text class="tiny mono mid f-ink" x="568" y="127">product</text>
+    <text class="tiny mono mid f-ink" x="568" y="219">_entities</text>
+    <text class="tiny mono mid f-ink" x="568" y="308">_entities</text>
+  </g>
+
+  <!-- schema registry and the CI path from every subgraph (steps 1-3) -->
+  <g class="p123">
+    <path class="wire dash" d="M895 134H912V390" marker-end="url(#ah)"/>
+    <path class="wire dash" d="M895 226H912"/>
+    <path class="wire dash" d="M895 315H912"/>
+    <text class="tiny end" x="904" y="378">each build: check, then publish</text>
+    <path class="wire" d="M396 394V354" marker-end="url(#ah)"/>
+    <text class="tiny sb f-teal" x="404" y="378">supergraph</text>
+    <rect class="box" x="30" y="394" width="895" height="74" rx="12"/>
+    <text class="label" x="46" y="417">Schema registry</text>
+    <text class="tiny" x="46" y="436">checks run in each subgraph's build;</text>
+    <text class="tiny" x="46" y="452">only changes that pass are published</text>
+    <path class="none s-line" d="M292 404V458" stroke-width="1.2"/>
+  </g>
+  <g class="p1">
+    <g class="gf-ok1"><circle class="f-green" cx="314" cy="412" r="7"/><path class="none s-bg" d="M310.6 412l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="328" y="416">Products, Reviews and Inventory compose into one supergraph, and the router loads it</text></g>
+    <g class="gf-x1"><circle class="f-red" cx="314" cy="432" r="7"/><path class="s-bg" d="M311.2 429.2l5.6 5.6M316.8 429.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/><text class="tiny f-ink" x="328" y="436">Inventory's change adds <tspan class="mono">Product.price</tspan> as <tspan class="mono">String</tspan>; Products defines it as <tspan class="mono">Float!</tspan></text>
+      <text class="tiny sb f-red" x="328" y="456">composition fails in Inventory's build: nothing is deployed, the router keeps its supergraph</text></g>
+  </g>
+  <g class="p2">
+    <circle class="f-green" cx="314" cy="412" r="7"/><path class="none s-bg" d="M310.6 412l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="328" y="416">supergraph in use: Products v41 + Reviews v12 + Inventory v8</text>
+    <text class="tiny" x="328" y="436">the router answers every query from this one composed schema</text>
+  </g>
+  <g class="p3">
+    <g class="gf-l31"><circle class="f-red" cx="314" cy="412" r="7"/><path class="s-bg" d="M311.2 409.2l5.6 5.6M316.8 409.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/><text class="tiny f-ink" x="328" y="416">removing <tspan class="mono">Review.rating</tspan> still composes, but the mobile app's query reads it</text></g>
+    <g class="gf-l32"><text class="tiny sb f-red" x="328" y="436">operation check against the last 7 days of traffic: breaking, so the build is blocked</text></g>
+    <g class="gf-l33"><circle class="f-green" cx="314" cy="452" r="7"/><path class="none s-bg" d="M310.6 452l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny f-ink" x="328" y="456">adding <tspan class="mono">Review.stars</tspan> composes and breaks no operation: Reviews ships v13 on its own</text></g>
+  </g>
+  <g class="gf-spinA"><circle class="none s-line" cx="314" cy="412" r="6" stroke-width="2.2"/><circle class="none s-teal spin" cx="314" cy="412" r="6" stroke-width="2.2" stroke-dasharray="9 29" stroke-linecap="round"/></g>
+  <g class="gf-spinB"><circle class="none s-line" cx="314" cy="432" r="6" stroke-width="2.2"/><circle class="none s-teal spin" cx="314" cy="432" r="6" stroke-width="2.2" stroke-dasharray="9 29" stroke-linecap="round"/></g>
+  <g class="gf-spinC"><circle class="none s-line" cx="314" cy="452" r="6" stroke-width="2.2"/><circle class="none s-teal spin" cx="314" cy="452" r="6" stroke-width="2.2" stroke-dasharray="9 29" stroke-linecap="round"/></g>
+
+  <!-- clients -->
+  <rect class="box" x="30" y="96" width="166" height="54" rx="12"/>
+  <rect class="f-bg s-muted" x="57" y="102" width="28" height="20" rx="3" stroke-width="1.5"/>
+  <path class="none s-muted" d="M57 107.5H85" stroke-width="1.3"/>
+  <rect class="f-bg s-muted" x="147" y="101" width="14" height="22" rx="3" stroke-width="1.5"/>
+  <path class="none s-muted" d="M152 119.5H156" stroke-width="1.3" stroke-linecap="round"/>
+  <text class="sub mid" x="71" y="141">Web app</text>
+  <text class="sub mid" x="154" y="141">Mobile app</text>
+
+  <!-- the one example query -->
+  <rect class="f-bg s-line" x="30" y="158" width="212" height="84" rx="10" stroke-width="1.2"/>
+  <rect class="none s-blue gf-qhl" x="30" y="158" width="212" height="84" rx="10" stroke-width="2"/>
+  <text class="tiny sb" x="42" y="173">mobile app's query</text>
+  <text class="tiny mono f-ink" x="42" y="190">query { product(id: 42) {</text>
+  <text class="tiny mono f-ink" x="68.5" y="203">name price</text>
+  <text class="tiny mono f-ink" x="68.5" y="216">reviews { rating }</text>
+  <text class="tiny mono f-ink" x="68.5" y="229">inStock } }</text>
+  <text class="tiny mono gf-rq" x="68.5" y="216"><tspan class="none">reviews { </tspan><tspan class="f-red">rating</tspan></text>
+
+  <!-- the response: same shape as the query (step 2), partial (step 4) -->
+  <rect class="none s-line" x="30" y="250" width="212" height="136" rx="10" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <g class="gf-resp">
+    <rect class="f-bg s-green" x="30" y="250" width="212" height="136" rx="10" stroke-width="1.5"/>
+    <text class="tiny sb f-green" x="100" y="265">same shape as the query</text>
+    <text class="tiny mono f-ink" x="42" y="282">{"data": {"product": {</text>
+    <text class="tiny mono f-ink" x="55.2" y="295">"name": "Lamp",</text>
+    <text class="tiny mono f-ink" x="55.2" y="308">"price": 49.0,</text>
+    <text class="tiny mono f-ink" x="55.2" y="321">"reviews": [{"rating": 5}],</text>
+    <text class="tiny mono f-ink" x="55.2" y="334">"inStock": true}}}</text>
+  </g>
+  <g class="p4"><g class="gf-rpart">
+    <rect class="f-bg s-amber" x="30" y="250" width="212" height="136" rx="10" stroke-width="1.5"/>
+    <text class="tiny sb f-amber-ink" x="100" y="265">partial, with an error</text>
+    <text class="tiny mono f-ink" x="42" y="282">{"data": {"product": {</text>
+    <text class="tiny mono f-ink" x="55.2" y="295">"name": "Lamp",</text>
+    <text class="tiny mono f-ink" x="55.2" y="308">"price": 49.0,</text>
+    <text class="tiny mono f-ink" x="55.2" y="321">"reviews": [{"rating": 5}],</text>
+    <text class="tiny mono f-ink" x="55.2" y="334">"inStock": <tspan class="f-red b">null</tspan>}},</text>
+    <text class="tiny mono f-red" x="48.6" y="347">"errors": [{"message":</text>
+    <text class="tiny mono f-red" x="61.9" y="360">"inventory: timeout",</text>
+    <text class="tiny mono f-red" x="61.9" y="373">"path": ["product"]}]}</text>
+  </g></g>
+  <text class="tiny sb" x="42" y="265">response</text>
+
+  <!-- router: query planner + supergraph schema -->
+  <rect class="box" x="262" y="96" width="268" height="254" rx="14"/>
+  <text class="label" x="276" y="119">Router</text>
+  <text class="tiny end" x="518" y="119">plans each query across subgraphs</text>
+  <rect class="f-bg s-line" x="274" y="128" width="244" height="100" rx="8" stroke-width="1.2"/>
+  <text class="tiny sb" x="284" y="144">query planner</text>
+  <g class="p13"><text class="tiny" x="284" y="172">splits each query by which subgraph</text><text class="tiny" x="284" y="187">owns each field, then fetches</text></g>
+  <g class="gf-pl1"><rect class="f-blue-soft s-blue" x="282" y="153" width="14" height="13" rx="3" stroke-width="1"/><text class="tiny b mid f-blue" x="289" y="162.5">1</text><text class="tiny sb f-ink" x="302" y="163">Products</text><text class="tiny mono f-ink" x="362" y="163">id name price</text></g>
+  <g class="gf-pl2"><rect class="f-blue-soft s-blue" x="282" y="171" width="14" height="13" rx="3" stroke-width="1"/><text class="tiny b mid f-blue" x="289" y="180.5">2</text><text class="tiny sb f-ink" x="302" y="181">Reviews</text><text class="tiny mono f-ink" x="362" y="181">reviews { rating }</text></g>
+  <g class="gf-pl3"><rect class="f-blue-soft s-blue" x="282" y="189" width="14" height="13" rx="3" stroke-width="1"/><text class="tiny b mid f-blue" x="289" y="198.5">2</text><text class="tiny sb f-ink" x="302" y="199">Inventory</text><text class="tiny mono f-ink" x="362" y="199">inStock</text><text class="tiny" x="416.3" y="199">(in parallel)</text></g>
+  <g class="gf-pl4"><rect class="f-blue-soft s-blue" x="282" y="207" width="14" height="13" rx="3" stroke-width="1"/><text class="tiny b mid f-blue" x="289" y="216.5">3</text><text class="tiny f-ink" x="302" y="217">merge into one response</text></g>
+  <g class="gf-k1"><circle class="f-green" cx="506" cy="159" r="6"/><path class="none s-bg" d="M502.6 159l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="gf-k2"><circle class="f-green" cx="506" cy="177" r="6"/><path class="none s-bg" d="M502.6 177l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="gf-k3"><circle class="f-green" cx="506" cy="195" r="6"/><path class="none s-bg" d="M502.6 195l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="gf-k4"><circle class="f-green" cx="506" cy="213" r="6"/><path class="none s-bg" d="M502.6 213l2.4 2.4 4.4-4.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <rect class="f-bg s-line" x="274" y="236" width="244" height="104" rx="8" stroke-width="1.2"/>
+  <rect class="none s-teal gf-sgfl" x="274" y="236" width="244" height="104" rx="8" stroke-width="2.5"/>
+  <text class="tiny sb" x="284" y="252">supergraph schema</text>
+  <text class="tiny end" x="510" y="252">field → owner</text>
+  <g class="gf-sgc">
+    <text class="tiny mono f-ink" x="284" y="270">Product</text><text class="tiny mono f-ink" x="342" y="270">id name price</text><text class="tiny end" x="510" y="270">Products</text>
+    <text class="tiny mono f-ink" x="342" y="285">reviews</text><text class="tiny end" x="510" y="285">Reviews</text>
+    <text class="tiny mono f-ink" x="342" y="300">inStock</text><text class="tiny end" x="510" y="300">Inventory</text>
+    <text class="tiny mono f-ink" x="284" y="315">Review</text><text class="tiny mono f-ink" x="342" y="315">rating text</text><text class="tiny end" x="510" y="315">Reviews</text>
+    <text class="tiny mono f-ink" x="284" y="330">Query</text><text class="tiny mono f-ink" x="342" y="330">product(id)</text><text class="tiny end" x="510" y="330">Products</text>
+  </g>
+  <text class="tiny mono sb f-green gf-sgst" x="421.4" y="315">stars</text>
+
+  <!-- subgraphs: each team's service and schema -->
+  <rect class="box" x="610" y="96" width="285" height="76" rx="12"/>
+  <rect class="box" x="610" y="180" width="285" height="92" rx="12"/>
+  <rect class="box" x="610" y="280" width="285" height="70" rx="12"/>
+  <g class="p4"><g class="gf-iF">
+    <rect class="f-red-soft s-red" x="610" y="280" width="285" height="70" rx="12" stroke-width="1.5"/>
+    <text class="tiny sb end f-red" x="881" y="300">not responding</text>
+    <circle class="none s-line" cx="872" cy="335" r="6" stroke-width="2.2"/><circle class="none s-red spin" cx="872" cy="335" r="6" stroke-width="2.2" stroke-dasharray="9 29" stroke-linecap="round"/>
+  </g></g>
+  <rect class="none s-blue gf-wP" x="610" y="96" width="285" height="76" rx="12" stroke-width="2.5"/>
+  <rect class="none s-blue gf-wR" x="610" y="180" width="285" height="92" rx="12" stroke-width="2.5"/>
+  <rect class="none s-blue gf-wI" x="610" y="280" width="285" height="70" rx="12" stroke-width="2.5"/>
+
+  <text class="label" x="624" y="116">Products</text>
+  <text class="tiny mono f-ink" x="624" y="135">type Product @key(fields: "id")</text>
+  <rect class="f-bg s-line" x="624" y="144" width="23.2" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="629" y="156">id</text><rect class="f-bg s-line" x="652.2" y="144" width="36.5" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="657.2" y="156">name</text><rect class="f-bg s-line" x="693.7" y="144" width="43.1" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="698.7" y="156">price</text><rect class="f-bg s-line" x="747.8" y="144" width="96.1" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="752.8" y="156">Query.product</text>
+
+  <text class="label" x="624" y="200">Reviews</text>
+  <text class="tiny mono f-ink" x="624" y="219">type Product @key(fields: "id")</text>
+  <rect class="f-bg s-line" x="624" y="227" width="56.3" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="629" y="239">reviews</text>
+  <text class="tiny mono f-ink" x="624" y="261">type Review</text>
+  <rect class="f-bg s-line" x="704.8" y="249" width="49.7" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="709.8" y="261">rating</text><rect class="f-bg s-line" x="759.5" y="249" width="36.5" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="764.5" y="261">text</text>
+  <g class="gf-stars"><rect class="f-green-soft s-green" x="801" y="249" width="43.1" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-green" x="806" y="261">stars</text></g>
+
+  <text class="label" x="624" y="300">Inventory</text>
+  <text class="tiny mono f-ink" x="624" y="319">type Product @key(fields: "id")</text>
+  <rect class="f-bg s-line" x="624" y="327" width="56.3" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="629" y="339">inStock</text>
+
+  <!-- versions: each subgraph ships on its own schedule (steps 1-3) -->
+  <g class="p123">
+    <text class="tiny end" x="881" y="116">v41</text>
+    <text class="tiny end gf-v12" x="881" y="200">v12</text>
+    <text class="tiny sb end f-green gf-v13" x="881" y="200">v13</text>
+    <text class="tiny end" x="881" y="300">v8</text>
+  </g>
+
+  <!-- step 1: Inventory redefines price; composition fails in its build -->
+  <g class="p1"><g class="gf-pr">
+    <rect class="f-red-soft s-red" x="686.3" y="327" width="43.1" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono f-red" x="691.3" y="339">price</text>
+    <text class="tiny sb f-red" x="736.4" y="339">+ price: String</text>
+  </g></g>
+
+  <!-- step 3: Reviews tries to remove rating (blocked), then adds stars (ships) -->
+  <g class="p3">
+    <g class="gf-strike">
+      <rect class="f-red-soft s-red" x="704.8" y="249" width="49.7" height="16" rx="8" stroke-width="1.5"/>
+      <text class="tiny mono f-red" x="709.8" y="261">rating</text>
+      <path class="none s-red" d="M707.8 257H751.5" stroke-width="1.6"/>
+      <text class="tiny sb f-red" x="690" y="200">− Review.rating</text>
+    </g>
+    <text class="tiny sb f-red gf-blk" x="792" y="200">→ blocked</text>
+    <g class="gf-add"><text class="tiny sb f-green" x="690" y="200">+ Review.stars</text></g>
+    <text class="tiny sb f-green gf-dep" x="786" y="200">→ deployed</text>
+  </g>
+
+  <!-- step 4: what to watch -->
+  <g class="p4">
+    <g class="gf-xw"><circle class="f-red" cx="568" cy="328" r="7"/><path class="s-bg" d="M565.2 325.2l5.6 5.6M570.8 325.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/></g>
+    <g class="gf-x3"><circle class="f-bg" cx="506" cy="195" r="7"/><circle class="f-red" cx="506" cy="195" r="6"/><path class="s-bg" d="M503.2 192.2l5.6 5.6M508.8 192.2l-5.6 5.6" stroke-width="1.8" stroke-linecap="round"/></g>
+    <g class="gf-pm"><circle class="f-bg" cx="506" cy="213" r="7"/><circle class="f-amber" cx="506" cy="213" r="6"/><path class="none s-bg" d="M506 209.5v4M506 215.8v0.2" stroke-width="1.8" stroke-linecap="round"/></g>
+    <g class="gf-n1"><rect class="f-bg s-line" x="30" y="394" width="171" height="74" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="48" cy="413" r="8"/><text class="gf-pin" x="48" y="416.5">1</text><text class="sub sb f-ink" x="62" y="417">Fetches in sequence</text><text class="tiny f-ink" x="42" y="434">Reviews and Inventory</text><text class="tiny f-ink" x="42" y="448">wait for Products' key:</text><text class="tiny f-ink" x="42" y="462">each round adds latency.</text><circle class="f-ink" cx="268" cy="172" r="8"/><text class="gf-pin" x="268" y="175.5">1</text></g>
+    <g class="gf-n2"><rect class="f-bg s-line" x="211" y="394" width="171" height="74" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="229" cy="413" r="8"/><text class="gf-pin" x="229" y="416.5">2</text><text class="sub sb f-ink" x="243" y="417">N+1 in a subgraph</text><text class="tiny f-ink" x="223" y="434">Loading keys one by one</text><text class="tiny f-ink" x="223" y="448">costs a database call per</text><text class="tiny f-ink" x="223" y="462">key: batch (DataLoader).</text><circle class="f-ink" cx="610" cy="180" r="8"/><text class="gf-pin" x="610" y="183.5">2</text></g>
+    <g class="gf-n3"><rect class="f-bg s-line" x="392" y="394" width="171" height="74" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="410" cy="413" r="8"/><text class="gf-pin" x="410" y="416.5">3</text><text class="sub sb f-ink" x="424" y="417">Costly queries</text><text class="tiny f-ink" x="404" y="434">Limit depth and cost, or</text><text class="tiny f-ink" x="404" y="448">allow only persisted,</text><text class="tiny f-ink" x="404" y="462">trusted operations.</text><circle class="f-ink" cx="229" cy="137" r="8"/><text class="gf-pin" x="229" y="140.5">3</text></g>
+    <g class="gf-n4"><rect class="f-bg s-line" x="573" y="394" width="171" height="74" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="591" cy="413" r="8"/><text class="gf-pin" x="591" y="416.5">4</text><text class="sub sb f-ink" x="605" y="417">Authorisation</text><text class="tiny f-ink" x="585" y="434">The router may check</text><text class="tiny f-ink" x="585" y="448">scopes; each subgraph</text><text class="tiny f-ink" x="585" y="462">still enforces access.</text><circle class="f-ink" cx="610" cy="112" r="8"/><text class="gf-pin" x="610" y="115.5">4</text></g>
+    <g class="gf-n5"><rect class="f-bg s-line" x="754" y="394" width="171" height="74" rx="10" stroke-width="1.2"/><circle class="f-ink" cx="772" cy="413" r="8"/><text class="gf-pin" x="772" y="416.5">5</text><text class="sub sb f-ink" x="786" y="417">On every request</text><text class="tiny f-ink" x="766" y="434">Scale the router, monitor</text><text class="tiny f-ink" x="766" y="448">it, and trace each query</text><text class="tiny f-ink" x="766" y="462">across the subgraphs.</text><circle class="f-ink" cx="530" cy="104" r="8"/><text class="gf-pin" x="530" y="107.5">5</text></g>
+  </g>
+
+  <!-- traffic: requests blue, answers green, the partial answer amber; schemas travel as teal documents -->
+  <g class="gf-d1"><rect class="f-teal s-bg" x="-7" y="-9" width="14" height="18" rx="2.5" stroke-width="1.5"/><path class="none s-bg" d="M-3.5 -4h7M-3.5 -0.5h7M-3.5 3h4.5" stroke-width="1.3" stroke-linecap="round"/></g>
+  <g class="gf-d2"><rect class="f-teal s-bg" x="-7" y="-9" width="14" height="18" rx="2.5" stroke-width="1.5"/><path class="none s-bg" d="M-3.5 -4h7M-3.5 -0.5h7M-3.5 3h4.5" stroke-width="1.3" stroke-linecap="round"/></g>
+  <g class="gf-d3"><rect class="f-teal s-bg" x="-7" y="-9" width="14" height="18" rx="2.5" stroke-width="1.5"/><path class="none s-bg" d="M-3.5 -4h7M-3.5 -0.5h7M-3.5 3h4.5" stroke-width="1.3" stroke-linecap="round"/></g>
+  <g class="gf-sg"><rect class="f-teal s-bg" x="-7" y="-9" width="14" height="18" rx="2.5" stroke-width="1.5"/><path class="none s-bg" d="M-3.5 -4h7M-3.5 -0.5h7M-3.5 3h4.5" stroke-width="1.3" stroke-linecap="round"/></g>
+  <circle class="pkt f-blue gf-q" r="7"/>
+  <circle class="pkt f-blue gf-f1" r="7"/>
+  <circle class="pkt f-blue gf-f2" r="7"/>
+  <circle class="pkt f-blue gf-f3" r="7"/>
+  <circle class="pkt f-green gf-r1" r="7"/>
+  <circle class="pkt f-green gf-r2" r="7"/>
+  <circle class="pkt f-green gf-r3" r="7"/>
+  <circle class="pkt f-green gf-a" r="7"/>
+  <circle class="pkt f-amber gf-ap" r="7"/>
+</g>
+</svg>

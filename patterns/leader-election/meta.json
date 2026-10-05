@@ -1,0 +1,50 @@
+{
+  "aka": ["Leader lease", "Master election"],
+  "steps": [
+    {
+      "title": "All three run it, or none",
+      "caption": "Uncoordinated, all three start the billing run; pin it to one and nothing runs when that one dies.",
+      "body": "Three identical instances of a scheduler service can each start the nightly billing run. With no coordination all three do, and every customer is charged three times. Switching the job off on two of them is no better: when the one chosen instance dies, the run doesn't happen at all. Exactly one instance should do the job at any time, and it must not be a fixed one."
+    },
+    {
+      "title": "Win the lease",
+      "caption": "Each tries a compare-and-set on the lease. A wins it with token 33 and renews it every 5 s.",
+      "body": "Each instance tries to take the lease in the coordination store with an atomic **compare-and-set**: write my name only if the lease is free or has expired. A's write lands first, so A becomes the **leader** with a 15-second lease and **token 33**, a number that goes up with every new leader. B and C find the lease held and stay **followers**, watching it. A renews every 5 seconds while it is healthy and starts the billing run, sending its token with every write. All the numbers are examples."
+    },
+    {
+      "title": "Leader fails, B takes over",
+      "caption": "A stops renewing. 15 s after its last renewal the lease expires, and B takes it with token 34.",
+      "body": "A stops renewing: it crashed, lost its network or stalled, and from the outside these look the same. Nothing happens until the lease **expires**, 15 seconds after the last renewal; then B's compare-and-set succeeds, and B leads with **token 34** and resumes the run. The work paused for up to one lease duration, and that is the trade-off: a short lease means a fast takeover, but also false takeovers when a busy leader renews late."
+    },
+    {
+      "title": "Old leader returns: fenced",
+      "caption": "A was only paused. It wakes and writes with token 33, but the database has seen 34 and rejects it.",
+      "body": "A wasn't dead, only stalled by a long garbage-collection pause. It wakes up still believing it leads and writes with token 33, but the billing database has already seen 34 and rejects the stale token: this check is called **fencing**. A lease alone can't prevent the overlap, because pauses and clock drift break its timing assumptions, so the protected resource has to check the token. A then sees B in the lease and rejoins as a follower. Often the best leader election is none at all: idempotent or partitioned work can be done by any instance."
+    }
+  ],
+  "related": [
+    "active-passive-failover",
+    "health-endpoint-monitoring",
+    "sharding",
+    "chaos-engineering",
+    "idempotent-consumer",
+    "competing-consumers",
+    "transactional-outbox",
+    "cell-based-architecture"
+  ],
+  "references": [
+    { "title": "Azure Architecture Center — Leader Election pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election" },
+    { "title": "AWS Builder Center — Leader election in distributed systems (first published in the Amazon Builders' Library)", "url": "https://builder.aws.com/content/3Ev0vH0hfkcUizISUWYTvHibtcp/leader-election-in-distributed-systems" },
+    { "title": "Kubernetes documentation — Leases", "url": "https://kubernetes.io/docs/concepts/architecture/leases/" },
+    { "title": "client-go — package leaderelection", "url": "https://pkg.go.dev/k8s.io/client-go/tools/leaderelection" },
+    { "title": "etcd — API reference: concurrency (election and lock services)", "url": "https://etcd.io/docs/v3.6/dev-guide/api_concurrency_reference_v3/" },
+    { "title": "etcd — Notes on the usage of lock and lease", "url": "https://etcd.io/docs/v3.6/learning/why/#notes-on-the-usage-of-lock-and-lease" },
+    { "title": "Apache ZooKeeper — Recipes and Solutions: Leader Election", "url": "https://zookeeper.apache.org/doc/current/recipes.html#sc_leaderElection" },
+    { "title": "HashiCorp Consul — Sessions and distributed locks overview", "url": "https://developer.hashicorp.com/consul/docs/automate/session" },
+    { "title": "Martin Kleppmann — How to do distributed locking (2016)", "url": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" },
+    { "title": "Diego Ongaro and John Ousterhout — In Search of an Understandable Consensus Algorithm (USENIX ATC 2014)", "url": "https://www.usenix.org/conference/atc14/technical-sessions/presentation/ongaro" },
+    { "title": "Unmesh Joshi — Patterns of Distributed Systems: Leader and Followers", "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/leader-follower.html" },
+    { "title": "Unmesh Joshi — Patterns of Distributed Systems: Lease", "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/lease.html" },
+    { "title": "Unmesh Joshi — Patterns of Distributed Systems: Generation Clock", "url": "https://martinfowler.com/articles/patterns-of-distributed-systems/generation-clock.html" }
+  ]
+}
