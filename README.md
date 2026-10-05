@@ -1,6 +1,6 @@
 # Animated Architecture Patterns
 
-Self-explaining, looping diagrams of **architecture styles, cloud design patterns and auth flows**, built for solutions architects who need to show *how* something works, not just *what* it is.
+Self-explaining, looping diagrams of **architecture styles, cloud design patterns, auth flows and the algorithms underneath them**, built for solutions architects and developers who need to show *how* something works, not just *what* it is.
 
 <p align="center"><img src="patterns/circuit-breaker/diagram.svg" alt="Animated diagram: Circuit Breaker" width="100%"></p>
 
@@ -11,7 +11,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**91 animated** · 0 planned · 10 categories
+**91 animated** · 18 planned · 11 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -25,6 +25,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
+| 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 0 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 
 ## Application Architecture
 
@@ -204,6 +205,33 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Centralized Logging**](patterns/centralized-logging/) | Ship structured logs from every service to one searchable store, correlated by request ID. | ✅ animated |
 | [**SLOs & Error Budgets**](patterns/slo-error-budgets/) | Measure SLIs against an objective and alert on error-budget burn rate, not on every blip. | ✅ animated |
 | [**Telemetry Pipeline (OpenTelemetry)**](patterns/telemetry-pipeline/) | Receive, process and export traces, metrics and logs through one vendor-neutral collector. | ✅ animated |
+
+<sub>[↑ Back to contents](#contents)</sub>
+
+## Algorithms & Data Structures
+
+🧮 The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows.
+
+| Pattern | In one line | Status |
+|---|---|:-:|
+| Big-O Notation | How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows. | ⏳ planned |
+| Recursion & the Call Stack | A function calls itself on a smaller input; each call waits on the stack until a base case returns and the answers unwind. | ⏳ planned |
+| Binary Search | Halve a sorted range with every check: about 20 steps find one item among a million, where a scan may need a million. | ⏳ planned |
+| Bubble, Selection & Insertion Sort | The three simple O(n²) sorts compared, and why insertion sort still runs inside fast library sorts on short runs. | ⏳ planned |
+| Merge Sort | Split the list until single items remain, then merge sorted halves back together: O(n log n) every time, and stable. | ⏳ planned |
+| Quicksort | Partition around a pivot, smaller values left and larger right, then sort each side: fast in place, O(n²) when pivots are bad. | ⏳ planned |
+| Binary Heap & Heapsort | A complete binary tree packed into an array keeps the smallest item on top: O(log n) push and pop, the classic priority queue. | ⏳ planned |
+| Hash Table | Hash each key straight to a bucket for O(1) average lookups; colliding keys share a bucket, and the table grows as it fills. | ⏳ planned |
+| Binary Search Tree | Smaller keys left, larger right: O(log n) search and insert while the tree stays balanced, O(n) once it degrades into a list. | ⏳ planned |
+| Two Pointers | Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass. | ⏳ planned |
+| Sliding Window | Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window. | ⏳ planned |
+| Breadth-First Search | Explore a graph level by level from a queue; the first time BFS reaches a node, it has found a path with the fewest edges. | ⏳ planned |
+| Depth-First Search | Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too. | ⏳ planned |
+| Topological Sort | Order tasks so every dependency comes before what needs it, as build tools and package managers do; a cycle makes it impossible. | ⏳ planned |
+| Dijkstra's Shortest Path | Settle the closest unsettled node, relax its edges, repeat: shortest paths from one source when no edge weight is negative. | ⏳ planned |
+| Greedy Algorithms | Take the choice that looks best right now and never revisit it: optimal for some problems, quietly wrong for others. | ⏳ planned |
+| Dynamic Programming | Solve each overlapping subproblem once and reuse its answer, top-down with memoization or bottom-up with a table. | ⏳ planned |
+| Backtracking | Build a solution one choice at a time and undo any choice that hits a dead end: N-Queens, sudoku, permutations. | ⏳ planned |
 
 <sub>[↑ Back to contents](#contents)</sub>
 <!-- END GENERATED: catalog -->

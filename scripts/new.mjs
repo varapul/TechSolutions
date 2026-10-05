@@ -18,7 +18,9 @@ if (existsSync(abs('patterns', slug))) {
   process.exit(1);
 }
 mkdirSync(abs('patterns', slug), { recursive: true });
-for (const f of ['diagram.svg', 'meta.json', 'README.md']) copyFileSync(abs('templates', f), abs('patterns', slug, f));
+// Algorithm patterns get a README with two more sections (Code, Complexity).
+const readme = bySlug.get(slug).category.id === 'algorithms' ? 'README.algorithm.md' : 'README.md';
+for (const f of ['diagram.svg', 'meta.json', 'README.md']) copyFileSync(abs('templates', f === 'README.md' ? readme : f), abs('patterns', slug, f));
 console.log(`created patterns/${slug}/ — fill in meta.json, draw the stage in diagram.svg, write README.md, then:
   npm run sync          # injects chrome + README blocks, updates the catalog
   npm run snap -- ${slug}   # renders a contact sheet of every step to .snapshots/`);

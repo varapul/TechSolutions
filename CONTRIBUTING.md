@@ -73,6 +73,29 @@ Use the colour tokens (`f-*` fill, `s-*` stroke), never raw hex, so both themes 
 - Captions are at most 100 characters and step titles at most 26 (`npm run check`).
 - To highlight a box, draw an overlay (`f-*-soft` fill plus an `s-*` stroke) on top of it rather than animating colours.
 
+## Algorithm diagrams
+
+The *Algorithms & Data Structures* category draws data instead of components. The canvas, timeline and tokens are the same; these conventions keep the set looking like one family:
+
+- **One small, concrete input** for all four steps, unless a step is about a different input (the worst case, say): 6 to 16 values in an array, 6 to 10 nodes in a tree or graph. Run the algorithm on it and generate the keyframes from the trace, so every comparison, swap, index and count on screen is real.
+- **Arrays** are a row of square cells (40–56 px, `rx` 8, class `box`), the value centred in `label mono` and the index above in `tiny`, 6–12 px apart. Draw **bars** instead (height proportional to the value, on a shared baseline) when the story is about order, as in sorting.
+- **Data moves.** A swap or a shift translates the cell's group (rect and value together) to its new slot; never retype a value in place. Pointers (`lo`, `mid`, `hi`, `i`, `j`) are small labelled carets under the cells that slide with `translate`.
+- **Bookkeeping goes in a side panel** next to the data, usually on the right: the call stack (newest frame on top), the queue or stack, the memo table, counters such as comparisons and swaps.
+- **Colour means state:**
+
+| State | Token |
+|---|---|
+| Being compared, visited or called right now | `blue` |
+| Settled: in its final place, found, finished, the answer | `green` |
+| Ruled out: a discarded half, a rejected choice, the worst case | `red` |
+| Held or tentative: a pivot, the key being inserted, a tentative distance | `amber` |
+| Waiting in line: queue or stack entries, paused call frames | `purple` |
+| Stored results: a memo table, hash buckets, the output array | `teal` |
+| Keys and hash values | `orange` |
+
+  Untouched data keeps the plain `box` look, and state is shown with an overlay, as above.
+- **Show the cost.** Name the complexity on screen (a chip reading `O(log n)`, say) in the step that explains it, and keep any running count visible while it changes.
+
 ## Example: keyframes from a timeline
 
 ```js
@@ -90,4 +113,5 @@ console.log(track('xx-call', go.segs));                              // go.end i
 
 - **meta.json:** four steps, each with a `title`, a one-sentence `caption` (shown in the SVG) and a two-to-three-sentence `body` (README table and site, with inline Markdown allowed). `related` holds catalog slugs and `references` holds `{title, url}` pairs with primary sources where possible (standards, vendor architecture centres, the original article or book).
 - **README.md:** keep the sections from the template (*The problem*, *How it works*, *When to use it*, *Trade-offs*, *Implementation notes*). Be concrete and vendor-neutral; name managed services as examples, not requirements.
+- **Algorithm READMEs** add two sections, and `npm run new` scaffolds them for that category: *Code*, a short Python 3 implementation of your own that uses only the standard library, with an example call and its output (run it, with edge cases, before you commit), and *Complexity*, a table of the time in the best, average and worst case, the extra space, and whether it is stable or in place where that applies.
 - Link to another pattern as `../<slug>/`. It works on GitHub, the site rewrites it to that pattern's page, and `npm run check` rejects links to patterns that aren't animated yet.
