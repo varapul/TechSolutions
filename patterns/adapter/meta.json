@@ -1,0 +1,35 @@
+{
+  "aka": ["Wrapper"],
+  "steps": [
+    {
+      "title": "Interfaces that don't fit",
+      "caption": "Checkout expects a PaymentGateway; the LegacyPay SDK has another shape, so it doesn't fit.",
+      "body": "Checkout charges cards through its own `PaymentGateway` interface: `charge(1250, 'EUR')` takes the amount as an integer in minor units (cents here) and returns a `Receipt`. The newly contracted provider's SDK, `LegacyPay`, wants `makePayment({amount: '12.50', curr: 'EUR'})`, a decimal string in major units under other field names, and answers `{status: 'OK', ref: 'PX-77'}` instead of a `Receipt`. `LegacyPay` is not a `PaymentGateway`, so Checkout can't use it as it is."
+    },
+    {
+      "title": "Wrap it in an adapter",
+      "caption": "LegacyPayAdapter implements PaymentGateway, holds the SDK and translates the call both ways.",
+      "body": "`LegacyPayAdapter` implements `PaymentGateway` and holds a `LegacyPay`. Its `charge(1250, 'EUR')` calls `makePayment({amount: '12.50', curr: 'EUR'})` and turns `{status: 'OK', ref: 'PX-77'}` into `Receipt {id: 'PX-77', amountMinor: 1250, currency: 'EUR'}`. Neither Checkout nor the SDK changes: the adapter is the only new code."
+    },
+    {
+      "title": "Translate units and errors",
+      "caption": "Decimals depend on the currency (JPY 0, EUR 2, BHD 3), and a DECLINED reply becomes PaymentDeclined.",
+      "body": "Currencies differ in how many decimal places they have (their ISO 4217 *minor units*): 1250 is `'1250'` in yen, `'12.50'` in euros and `'1.250'` in Bahraini dinars, so the adapter keeps a table of exponents. Failures are translated too: here `charge(1250, 'BHD')` is declined, and `{status: 'DECLINED', code: '51'}` reaches Checkout as the domain's own `PaymentDeclined` error, so provider codes never leak into checkout code."
+    },
+    {
+      "title": "Swap providers freely",
+      "caption": "AcmePayAdapter plugs a second provider in behind the same interface. Checkout's code never changes.",
+      "body": "A new provider means one more adapter, here `AcmePayAdapter`, and the wiring at start-up decides which one Checkout gets; Checkout's code never changes. This adapter *holds* its SDK (an object adapter); a class adapter would *inherit* from it instead. Facade, Decorator and Proxy also wrap objects, but a Facade puts a simpler interface on a subsystem, and a Decorator or Proxy keeps the same interface to add behaviour or control access; at the scale of whole systems the same idea is an anti-corruption layer."
+    }
+  ],
+  "related": ["anti-corruption-layer", "facade", "decorator", "proxy", "bridge", "strangler-fig", "hexagonal-architecture"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "SIX (ISO 4217 Maintenance Agency) — currency codes and their minor units", "url": "https://www.six-group.com/en/products-services/financial-information/market-reference-data/data-standards.html" },
+    { "title": "Java SE 27 API — java.io.InputStreamReader", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/InputStreamReader.html" },
+    { "title": "Java SE 27 API — java.util.Arrays.asList", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Arrays.html#asList(T...)" },
+    { "title": "Node.js — util.promisify", "url": "https://nodejs.org/api/util.html#utilpromisifyoriginal" },
+    { "title": "Azure Architecture Center — Anti-Corruption Layer pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer" },
+    { "title": "Refactoring.Guru — Adapter", "url": "https://refactoring.guru/design-patterns/adapter" }
+  ]
+}

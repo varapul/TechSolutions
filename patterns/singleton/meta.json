@@ -1,0 +1,38 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Three pools by accident",
+      "caption": "Each call site runs new ConnectionPool(): three pools, 30 connections where 10 were planned.",
+      "body": "OrdersRepo, UsersRepo and ReportsJob each call `new ConnectionPool()`, so one process ends up with three pools of 10 connections: 30 where a single pool of 10 was planned. Each pool also keeps its own state (which connections are idle, what it has cached), so the three drift apart instead of sharing one view."
+    },
+    {
+      "title": "One instance, one way in",
+      "caption": "Private constructor; getInstance() creates the pool on the first call and returns it ever after.",
+      "body": "The **Singleton** makes its constructor private, so no caller can build a pool, and offers a static `getInstance()` as the one way in. The first call creates the pool and keeps it in a static field; every later call returns that same object, so `a === b && b === c` and the database sees one pool of 10."
+    },
+    {
+      "title": "The async trap",
+      "caption": "Async creation: two calls both see no pool and open two. Store the promise before awaiting it.",
+      "body": "Opening a pool is asynchronous in JavaScript. If `getInstance()` awaits the connection before it stores anything, two requests that arrive together both find the field empty and open two pools (20 connections); storing the creation **promise** first makes the second caller await the same one. Multithreaded runtimes have the classic version of this race, which Java code avoids with eager initialisation, a holder class or an enum."
+    },
+    {
+      "title": "Costs, and the alternative",
+      "caption": "One per process, not per system: 4 replicas open 40 connections. Usually better: inject one pool.",
+      "body": "A singleton is global state: it hides a dependency, carries state from one test into the next, and is unique only within a process, so 4 replicas still open 4 pools and 40 connections. Usually it is better to create one pool at startup and pass it in (a DI container's *singleton lifetime* does this) or to export it from a module. One active instance across a whole cluster is a different problem: [leader election](../leader-election/)."
+    }
+  ],
+  "related": ["factory-method", "abstract-factory", "facade", "flyweight", "leader-election", "external-configuration-store"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Joshua Bloch — Effective Java, 3rd edition (Item 3: the singleton property)", "url": "https://www.informit.com/store/effective-java-9780134685991" },
+    { "title": "Bill Pugh et al. — The \"Double-Checked Locking is Broken\" Declaration", "url": "https://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html" },
+    { "title": "Java Language Specification, Java SE 27 — 12.4.2 Detailed Initialization Procedure", "url": "https://docs.oracle.com/javase/specs/jls/se27/html/jls-12.html#jls-12.4.2" },
+    { "title": "Java Object Serialization Specification — The readResolve Method", "url": "https://docs.oracle.com/en/java/javase/27/docs/specs/serialization/input.html#the-readresolve-method" },
+    { "title": "Spring Framework reference — Bean Scopes", "url": "https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html" },
+    { "title": "Microsoft Learn — Service lifetimes (dependency injection in .NET)", "url": "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/service-lifetimes" },
+    { "title": "Node.js documentation — CommonJS modules: Caching", "url": "https://nodejs.org/api/modules.html#caching" },
+    { "title": "Python documentation — The import system: The module cache", "url": "https://docs.python.org/3/reference/import.html#the-module-cache" },
+    { "title": "Miško Hevery — Singletons are Pathological Liars (Google Testing Blog, 2008)", "url": "https://testing.googleblog.com/2008/08/by-miko-hevery-so-you-join-new-project.html" }
+  ]
+}

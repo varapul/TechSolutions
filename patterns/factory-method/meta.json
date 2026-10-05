@@ -1,0 +1,34 @@
+{
+  "aka": ["Virtual Constructor"],
+  "steps": [
+    {
+      "title": "new inside send()",
+      "caption": "send() picks the channel with if/else, so Notifier knows every channel and push means another edit.",
+      "body": "`Notifier.send(msg, kind)` decides which channel to build with an if/else on `kind`, and calls `new` on each concrete class itself. Notifier now depends on `EmailChannel` and `SmsChannel` directly, so adding push means opening `send()` again, adding a branch and retesting a method that every caller uses."
+    },
+    {
+      "title": "Defer to createChannel()",
+      "caption": "send() calls createChannel() and talks only to Channel; each subclass returns its own channel.",
+      "body": "`send()` asks `this.createChannel()` for a channel and uses it only through the `Channel` interface. `createChannel()` is the **factory method**: `Notifier` (the *Creator*) declares it, and each *ConcreteCreator* overrides it to return its own *ConcreteProduct*. That gives two parallel hierarchies, and `send()` is written once."
+    },
+    {
+      "title": "One call at runtime",
+      "caption": "send() runs in the base class; createChannel() runs in SmsNotifier and returns a new SmsChannel.",
+      "body": "The client calls `send('Your code is 4721')` on an `SmsNotifier`. The inherited `send()` runs, `this.createChannel()` is dispatched to `SmsNotifier`, which returns a new `SmsChannel`, and `send()` then calls `deliver(msg)` on it through the `Channel` interface. The result, `SMS sent: Your code is 4721`, travels back to the client."
+    },
+    {
+      "title": "New channel, no edits",
+      "caption": "Push adds two classes and edits none: send() is untouched. The cost: a creator subclass per product.",
+      "body": "Push needs a `PushChannel` and a `PushNotifier` that creates it, and no existing class changes: `send()` is untouched. Java's `Collection.iterator()` works the same way, with each collection class creating its own iterator. The price is a creator subclass for every product, which is why many languages pass a factory function instead."
+    }
+  ],
+  "related": ["abstract-factory", "template-method", "prototype", "builder", "strategy", "singleton", "hexagonal-architecture"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Factory Method", "url": "https://refactoring.guru/design-patterns/factory-method" },
+    { "title": "Refactoring.Guru — Factory Comparison", "url": "https://refactoring.guru/design-patterns/factory-comparison" },
+    { "title": "Joshua Bloch — Effective Java, 3rd edition (Item 1, static factory methods)", "url": "https://www.informit.com/store/effective-java-9780134685991" },
+    { "title": "Java SE 27 API — Collection.iterator()", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Collection.html#iterator()" },
+    { "title": "Martin Fowler — Replace Constructor with Factory Function", "url": "https://refactoring.com/catalog/replaceConstructorWithFactoryFunction.html" }
+  ]
+}

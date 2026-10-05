@@ -97,7 +97,9 @@ for (const p of patterns.filter((x) => x.animated && inScope(x.slug))) {
     if (!root.includes(`${k}="${v}"`)) err(svgPath, `root <svg> needs ${k}="${v}"`);
   }
   if (/<script|\son[a-z]+\s*=|<foreignObject|<image\b/i.test(svg)) err(svgPath, 'no scripts, event handlers, foreignObject or images (must render as a plain <img>)');
-  if (/(?:href|src)\s*=\s*"(?:https?:)?\/\//i.test(svg) || /url\(\s*['"]?(?:https?:)?\/\//i.test(svg)) err(svgPath, 'no external references');
+  // Text content may show code such as url('https://…'); only markup can load anything.
+  const markup = svg.replace(/<text\b[\s\S]*?<\/text>/g, '');
+  if (/(?:href|src)\s*=\s*"(?:https?:)?\/\//i.test(markup) || /url\(\s*['"]?(?:https?:)?\/\//i.test(markup)) err(svgPath, 'no external references');
   if (!/<g class="stage"/.test(svg)) err(svgPath, 'hand-authored content goes in <g class="stage">');
   const kb = Buffer.byteLength(svg) / 1024;
   if (kb > 90) warn(svgPath, `${kb.toFixed(0)} KB — consider simplifying`);

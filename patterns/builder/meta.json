@@ -1,0 +1,35 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Telescoping constructor",
+      "caption": "Seven positional arguments: null holds an unused slot, and swapping the two timeouts still compiles.",
+      "body": "Without a builder, every option is a constructor parameter in a fixed order. To set `timeoutMs` the call must also fill `connectTimeoutMs` before it, so it passes `null`; the two timeouts share a type, so swapping `null` and `5000` still compiles, and nothing at the call site says what `true` means. Each new option makes the list longer."
+    },
+    {
+      "title": "Build it step by step",
+      "caption": "Each call fills one part (json() also sets Content-Type), and build() returns a frozen Request.",
+      "body": "A `RequestBuilder` takes one named call per part and keeps the parts it has collected so far. `json()` serialises the body with `JSON.stringify` and sets `Content-Type: application/json` as well, and options you never call keep their defaults. `build()` creates the `Request` from the parts and freezes it."
+    },
+    {
+      "title": "Check once, at build()",
+      "caption": "build() checks the combination once: a GET with a body or no URL fails; the valid POST is frozen.",
+      "body": "Some rules span several parts: a body is fine on a POST but not on a GET. So `build()` checks the whole combination once, before anything is sent: a GET with a body, or a request with no URL, fails with a clear error, and the valid POST comes back frozen. Writing to it afterwards fails, with a `TypeError` in strict-mode code."
+    },
+    {
+      "title": "Same steps, two products",
+      "caption": "A Director runs one recipe on any Builder: RequestBuilder yields a Request, CurlBuilder a command.",
+      "body": "In the GoF form a **Director**, `describeCreateOrder(b)`, holds the recipe and calls the steps through the `Builder` interface, and each concrete builder decides what the result is: `RequestBuilder` a frozen `Request`, the new `CurlBuilder` a `curl` command line, with no change to the Director. Java's `HttpRequest.newBuilder()`, `StringBuilder` and Lombok's `@Builder` apply the same idea, while named arguments or an options object often make a builder unnecessary."
+    }
+  ],
+  "related": ["factory-method", "abstract-factory", "prototype", "composite", "immutable-infrastructure"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Joshua Bloch — Effective Java, 3rd edition (Item 2: builders for classes with many constructor parameters)", "url": "https://www.informit.com/store/effective-java-9780134685991" },
+    { "title": "Java SE 25 API — HttpRequest.Builder", "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.net.http/java/net/http/HttpRequest.Builder.html" },
+    { "title": "Project Lombok — @Builder", "url": "https://projectlombok.org/features/Builder" },
+    { "title": "MDN — Object.freeze()", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze" },
+    { "title": "Steve Freeman and Nat Pryce — Growing Object-Oriented Software, Guided by Tests (chapter 22: test data builders)", "url": "https://www.informit.com/store/growing-object-oriented-software-guided-by-tests-9780321503626" },
+    { "title": "refactoring.guru — Builder", "url": "https://refactoring.guru/design-patterns/builder" }
+  ]
+}

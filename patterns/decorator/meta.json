@@ -1,0 +1,35 @@
+{
+  "aka": ["Wrapper"],
+  "steps": [
+    {
+      "title": "A subclass per combination",
+      "caption": "Features as subclasses: 3 features already need 7 classes, and each mix is fixed at compile time.",
+      "body": "Adding retries, logging and caching by subclassing `FetchClient` needs a class for every combination: 2³ − 1 = 7 for three features, 15 for four. The caller picks one with `new`, so the mix, and the order the features run in, are baked into the class hierarchy."
+    },
+    {
+      "title": "Wrap instead",
+      "caption": "Each decorator implements HttpClient and wraps another one; nest them at runtime like an onion.",
+      "body": "`LoggingClient` and `RetryingClient` each implement `HttpClient` and hold the `HttpClient` they wrap, so they nest: `new LoggingClient(new RetryingClient(new FetchClient()))`. Three features need three small classes that combine in any mix and order at runtime, and the caller still holds one `HttpClient`."
+    },
+    {
+      "title": "One call, layer by layer",
+      "caption": "send(GET /orders) passes each layer; the 503 is retried after 200 ms, and the log gets 2 lines.",
+      "body": "`LoggingClient` logs `→ GET /orders` and passes the call in; `RetryingClient` passes it to `FetchClient`, which gets a 503. `RetryingClient` waits 200 ms and calls again: 200. The response travels back out through each layer and `LoggingClient` logs `← 200`: two lines, because it sits outside the retry and never sees the 503."
+    },
+    {
+      "title": "Order matters",
+      "caption": "Swap the order: logging now sits inside the retry and sees every attempt, so the log gets 4 lines.",
+      "body": "`new RetryingClient(new LoggingClient(new FetchClient()))` puts logging inside the retry, so it records every attempt: `→`, `← 503`, `→`, `← 200`. Java's `java.io` streams wrap the same way (a `BufferedInputStream` around a `FileInputStream`), and so does .NET's `DelegatingHandler` pipeline; Python's `@decorator` syntax applies a related idea to functions, and a [sidecar](../sidecar/) proxy is the out-of-process cousin."
+    }
+  ],
+  "related": ["proxy", "adapter", "composite", "chain-of-responsibility", "strategy", "sidecar", "retry-with-backoff", "cache-aside"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Java SE 27 API — java.io.FilterInputStream", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/FilterInputStream.html" },
+    { "title": "Microsoft Learn — Make HTTP requests with IHttpClientFactory in ASP.NET Core (outgoing request middleware)", "url": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-requests" },
+    { "title": "Microsoft Learn — DelegatingHandler class", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.net.http.delegatinghandler" },
+    { "title": "Python documentation — Glossary: decorator", "url": "https://docs.python.org/3/glossary.html#term-decorator" },
+    { "title": "PEP 318 — Decorators for Functions and Methods", "url": "https://peps.python.org/pep-0318/" },
+    { "title": "Refactoring.Guru — Decorator", "url": "https://refactoring.guru/design-patterns/decorator" }
+  ]
+}

@@ -76,7 +76,7 @@ Don't use it when everything lives in one database: a local transaction gives yo
 - [Chris Richardson — Pattern: Saga (microservices.io)](https://microservices.io/patterns/data/saga.html)
 - [Chris Richardson — How modular can your monolith go? Part 6: transaction management for commands](https://microservices.io/post/architecture/2023/11/13/how-modular-can-your-monolith-go-part-6-transactional-commands.html)
 - [Azure Architecture Center — Saga design pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/saga)
-- [Guy Pardon & Cesare Pautasso — Atomic Distributed Transactions: a RESTful Design (WS-REST 2014)](https://design.inf.usi.ch/publications/2014/wsrest/tcc)
+- [Guy Pardon & Cesare Pautasso — Atomic Distributed Transactions: a RESTful Design (WS-REST 2014)](https://dl.acm.org/doi/10.1145/2567948.2579221)
 - [Temporal — Saga Pattern](https://docs.temporal.io/design-patterns/saga-pattern)
 - [AWS Step Functions — Handling errors in Step Functions workflows](https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html)
 - [AWS Step Functions — Choosing workflow type (Standard vs Express)](https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html)

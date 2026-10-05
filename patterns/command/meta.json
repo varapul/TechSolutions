@@ -1,0 +1,37 @@
+{
+  "aka": ["Action", "Transaction"],
+  "steps": [
+    {
+      "title": "Buttons call methods",
+      "caption": "The toolbar calls the Document directly. Nothing records the edits, so Ctrl+Z has nothing to undo.",
+      "body": "The toolbar calls `doc.insert(5, ' world')` and then `doc.delete(0, 6)` itself, and the text goes from *Hello* to *Hello world* to *world*. Once a call returns, nothing remembers what it did or which text it deleted, so Ctrl+Z has nothing to undo. There is also no object to put in a macro, a queue or a log."
+    },
+    {
+      "title": "Requests as objects",
+      "caption": "Each edit becomes a command object. History runs it and pushes it: Hello → Hello world → world.",
+      "body": "The toolbar (the *Client*) now wraps each edit in a command object that holds everything it needs: its receiver `doc`, its arguments, and room for what `undo()` will need. `History.execute(cmd)` (the *Invoker*) calls `cmd.execute()` through the `Command` interface, and the concrete command calls the `Document` (the *Receiver*). History then pushes the command on its undo stack. `DeleteText` keeps the text it removed, `'Hello '`, so that it can put it back."
+    },
+    {
+      "title": "Undo and redo",
+      "caption": "Undo pops a command and calls its undo(): world → Hello world → Hello. Redo runs it again.",
+      "body": "Ctrl+Z pops `DeleteText` and calls its `undo()`, which inserts `'Hello '` again (*world* → *Hello world*), then moves it to the redo stack. A second Ctrl+Z does the same for `InsertText` (→ *Hello*). Ctrl+Y pops `InsertText` from the redo stack and calls `execute()` again (→ *Hello world*). Executing a new command would clear the redo stack."
+    },
+    {
+      "title": "Queue, log, replay",
+      "caption": "A command is an object, so it can wait in a queue, go into a log to be replayed, or join a macro.",
+      "body": "Because a request is now an object, it can wait in a queue for a worker, be written to a log and replayed from a known state, or be grouped with others into a macro whose `undo()` runs its parts in reverse (a Composite). Swing's `Action` and `UndoManager` and VS Code's command registry use the idea in user interfaces. At system scale it becomes the command messages of [CQRS](../cqrs/) and the jobs on a [work queue](../queue-based-load-leveling/). A command asks for something to happen and can be refused; an event, as stored by [Event Sourcing](../event-sourcing/), reports something that already happened."
+    }
+  ],
+  "related": ["memento", "composite", "strategy", "chain-of-responsibility", "cqrs", "event-sourcing", "queue-based-load-leveling"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "Refactoring.Guru — Command", "url": "https://refactoring.guru/design-patterns/command" },
+    { "title": "Java SE 27 API — javax.swing.undo.UndoManager", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.desktop/javax/swing/undo/UndoManager.html" },
+    { "title": "Java SE 27 API — javax.swing.Action", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.desktop/javax/swing/Action.html" },
+    { "title": "Qt 6 — QUndoStack Class", "url": "https://doc.qt.io/qt-6/qundostack.html" },
+    { "title": "Visual Studio Code Extension API — Commands", "url": "https://code.visualstudio.com/api/extension-guides/command" },
+    { "title": "Azure Architecture Center — CQRS pattern", "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs" },
+    { "title": "Martin Fowler — Event Sourcing", "url": "https://martinfowler.com/eaaDev/EventSourcing.html" },
+    { "title": "Martin Fowler — What do you mean by “Event-Driven”?", "url": "https://martinfowler.com/articles/201701-event-driven.html" }
+  ]
+}

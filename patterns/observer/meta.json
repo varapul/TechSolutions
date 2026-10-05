@@ -1,0 +1,37 @@
+{
+  "aka": ["Listener", "Event-Subscriber"],
+  "steps": [
+    {
+      "title": "The cart calls every view",
+      "caption": "Cart.add() calls each view itself: Cart depends on every view, and a fourth view means editing Cart.",
+      "body": "Without the pattern the model updates the screen itself. `Cart` keeps a `CartBadge`, a `TotalLabel` and a `FreeShippingBanner`, and `add()` calls `render()` on the first two and `update()` on the third. `Cart` now depends on every view class and on each one's own method, so adding a mini-cart drawer means editing and retesting `Cart` again."
+    },
+    {
+      "title": "Subscribe and notify",
+      "caption": "The views subscribe; Cart keeps a list of Observers and calls update(cart) on each after a change.",
+      "body": "`Cart` extends `Subject`, which keeps a list of `Observer`s, and each view implements the one-method `Observer` interface and subscribes itself. After every change `Cart` calls `update(cart)` on whatever is on the list, without naming a single view class. A fourth view would just subscribe, and `Cart` would not change."
+    },
+    {
+      "title": "One change, many updates",
+      "caption": "add(Mug, 12), then add(Lamp, 45): each change notifies all three views; each reads what it needs.",
+      "body": "After `add(Mug, 12)`, `notify()` calls `update(cart)` on each observer in turn: the badge shows 1, the label EUR 12.00 and the banner EUR 38.00 to free shipping. After `add(Lamp, 45)` they show 2, EUR 57.00 and free shipping. This is the **pull** model: the cart passes itself and each view reads `count` or `total`; in the **push** model the cart would send the data, as in `update({ count, total })`."
+    },
+    {
+      "title": "Pitfalls, and at scale",
+      "caption": "Unsubscribe when a view goes away, or the list keeps it alive; mind order, loops and slow observers.",
+      "body": "The shopper closes the banner, but the cart's list still holds it: a **lapsed listener** stays in memory and keeps being updated until it calls the `unsubscribe` function that `subscribe()` returned. Don't rely on the order of notifications, don't change the subject from inside `update()` (that notifies again and can loop), and remember that with synchronous notification a slow or failing observer holds up the rest. The same idea is behind DOM events (`addEventListener`), RxJS observables and Java's `java.util.Observable` (deprecated since Java 9), and at system scale behind [publish-subscribe](../publish-subscribe/) through a broker, [event-driven architecture](../event-driven-architecture/) and [webhooks](../webhooks/)."
+    }
+  ],
+  "related": ["publish-subscribe", "event-driven-architecture", "webhooks", "mediator", "command", "state"],
+  "references": [
+    { "title": "Gamma, Helm, Johnson and Vlissides — Design Patterns: Elements of Reusable Object-Oriented Software (Addison-Wesley, 1994)", "url": "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780201633610" },
+    { "title": "MDN — EventTarget: addEventListener() method", "url": "https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" },
+    { "title": "Java SE 27 API — java.util.Observable (deprecated since Java 9)", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Observable.html" },
+    { "title": "Microsoft Learn — Observer design pattern (.NET)", "url": "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern" },
+    { "title": "Microsoft Learn — Weak event patterns (WPF)", "url": "https://learn.microsoft.com/en-us/dotnet/desktop/wpf/events/weak-event-patterns" },
+    { "title": "ReactiveX — Observable", "url": "https://reactivex.io/documentation/observable.html" },
+    { "title": "RxJS — Subscription", "url": "https://rxjs.dev/guide/subscription" },
+    { "title": "Node.js documentation — Events", "url": "https://nodejs.org/api/events.html" },
+    { "title": "Refactoring.Guru — Observer", "url": "https://refactoring.guru/design-patterns/observer" }
+  ]
+}
