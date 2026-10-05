@@ -1,0 +1,1594 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Recursion &amp; the Call Stack</title>
+<desc id="dg-desc">Recursion &amp; the Call Stack. A function calls itself on a smaller input; each call waits on the stack until a base case returns and the answers unwind. Step 1, Calls go down: fact(4), fact(3) and fact(2) each reach the recursive case and wait (purple) under a smaller call. Step 2, Base case, then unwind: fact(1) hits the base case and returns 1; frames pop one by one: 2 × 1, 3 × 2, then 4 × 6 = 24. Step 3, Branching repeats work: Naive fib(5) makes 15 calls and 9 of them redo earlier work; a memo cuts it to 6 computations. Step 4, Too deep: RecursionError: fact(5000) needs 5000 frames, but CPython stops at 1000 with RecursionError. A loop needs one.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">ALGORITHMS &amp; DATA STRUCTURES</text>
+  <text class="title" x="40" y="64">Recursion &amp; the Call Stack</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Calls go down</text>
+  <text class="step on p1" x="40" y="518">1 · Calls go down</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Base case, then unwind</text>
+  <text class="step on p2" x="262" y="518">2 · Base case, then unwind</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Branching repeats work</text>
+  <text class="step on p3" x="484" y="518">3 · Branching repeats work</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Too deep: RecursionError</text>
+  <text class="step on p4" x="706" y="518">4 · Too deep: RecursionError</text>
+  <text class="caption p1" x="40" y="552">fact(4), fact(3) and fact(2) each reach the recursive case and wait (purple) under a smaller call.</text>
+  <text class="caption p2" x="40" y="552">fact(1) hits the base case and returns 1; frames pop one by one: 2 × 1, 3 × 2, then 4 × 6 = 24.</text>
+  <text class="caption p3" x="40" y="552">Naive fib(5) makes 15 calls and 9 of them redo earlier work; a memo cuts it to 6 computations.</text>
+  <text class="caption p4" x="40" y="552">fact(5000) needs 5000 frames, but CPython stops at 1000 with RecursionError. A loop needs one.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Recursion and the call stack. Generated from a real Python 3.11.6 run (trace.py -> gen.mjs).
+   Timeline (20s loop, 1s = 5%):
+   0-25%   fact(4) pushes fact(3), fact(2), fact(1): each frame waits (purple) on n × ?; depth 1..4
+   25-50%  fact(1) hits the base case and returns 1; frames pop: 2 × 1 = 2, 3 × 2 = 6, 4 × 6 = 24 at the caller
+   50-75%  naive fib(5): 15 calls in call order; 9 repeats (red), 6 distinct computations with a memo (teal)
+   75-100% fact(5000): 999 frames + the caller hit the limit of 1000, RecursionError; fixes; all fades 97.5-100% */
+.diagram .rc-code { font-size: 12.5px; }
+.diagram .rc-h { font-size: 13px; font-weight: 600; }
+.diagram .rc-pend { font-size: 14px; font-weight: 600; }
+.diagram .rc-num { font-size: 24px; font-weight: 700; }
+.diagram .rc-node { font-size: 12.5px; font-weight: 600; }
+.diagram .rc-hl { animation: rc-hl var(--T) linear infinite; }
+.diagram .rc-f4 { animation: rc-f4 var(--T) linear infinite; }
+.diagram .rc-fb4 { opacity: 0; animation: rc-fb4 var(--T) linear infinite; }
+.diagram .rc-fp4 { animation: rc-fp4 var(--T) linear infinite; }
+.diagram .rc-fg4 { opacity: 0; animation: rc-fg4 var(--T) linear infinite; }
+.diagram .rc-fq4 { animation: rc-fq4 var(--T) linear infinite; }
+.diagram .rc-fa4 { opacity: 0; animation: rc-fa4 var(--T) linear infinite; }
+.diagram .rc-f3 { animation: rc-f3 var(--T) linear infinite; }
+.diagram .rc-fb3 { opacity: 0; animation: rc-fb3 var(--T) linear infinite; }
+.diagram .rc-fp3 { animation: rc-fp3 var(--T) linear infinite; }
+.diagram .rc-fg3 { opacity: 0; animation: rc-fg3 var(--T) linear infinite; }
+.diagram .rc-fq3 { animation: rc-fq3 var(--T) linear infinite; }
+.diagram .rc-fa3 { opacity: 0; animation: rc-fa3 var(--T) linear infinite; }
+.diagram .rc-f2 { animation: rc-f2 var(--T) linear infinite; }
+.diagram .rc-fb2 { opacity: 0; animation: rc-fb2 var(--T) linear infinite; }
+.diagram .rc-fp2 { animation: rc-fp2 var(--T) linear infinite; }
+.diagram .rc-fg2 { opacity: 0; animation: rc-fg2 var(--T) linear infinite; }
+.diagram .rc-fq2 { animation: rc-fq2 var(--T) linear infinite; }
+.diagram .rc-fa2 { opacity: 0; animation: rc-fa2 var(--T) linear infinite; }
+.diagram .rc-f1 { animation: rc-f1 var(--T) linear infinite; }
+.diagram .rc-fb1 { animation: rc-fb1 var(--T) linear infinite; }
+.diagram .rc-fg1 { opacity: 0; animation: rc-fg1 var(--T) linear infinite; }
+.diagram .rc-fa1 { opacity: 0; animation: rc-fa1 var(--T) linear infinite; }
+.diagram .rc-call { opacity: 0; animation: rc-call var(--T) linear infinite; }
+.diagram .rc-r1 { opacity: 0; animation: rc-r1 var(--T) linear infinite; }
+.diagram .rc-r2 { opacity: 0; animation: rc-r2 var(--T) linear infinite; }
+.diagram .rc-r6 { opacity: 0; animation: rc-r6 var(--T) linear infinite; }
+.diagram .rc-r24 { opacity: 0; animation: rc-r24 var(--T) linear infinite; }
+.diagram .rc-d0 { opacity: 0; animation: rc-d0 var(--T) linear infinite; }
+.diagram .rc-d1 { opacity: 0; animation: rc-d1 var(--T) linear infinite; }
+.diagram .rc-d2 { opacity: 0; animation: rc-d2 var(--T) linear infinite; }
+.diagram .rc-d3 { opacity: 0; animation: rc-d3 var(--T) linear infinite; }
+.diagram .rc-d4 { animation: rc-d4 var(--T) linear infinite; }
+.diagram .rc-d100 { opacity: 0; animation: rc-d100 var(--T) linear infinite; }
+.diagram .rc-d300 { opacity: 0; animation: rc-d300 var(--T) linear infinite; }
+.diagram .rc-d500 { opacity: 0; animation: rc-d500 var(--T) linear infinite; }
+.diagram .rc-d700 { opacity: 0; animation: rc-d700 var(--T) linear infinite; }
+.diagram .rc-d900 { opacity: 0; animation: rc-d900 var(--T) linear infinite; }
+.diagram .rc-d997 { opacity: 0; animation: rc-d997 var(--T) linear infinite; }
+.diagram .rc-d998 { opacity: 0; animation: rc-d998 var(--T) linear infinite; }
+.diagram .rc-d999 { opacity: 0; animation: rc-d999 var(--T) linear infinite; }
+.diagram .rc-d999r { opacity: 0; animation: rc-d999r var(--T) linear infinite; }
+.diagram .rc-c4 { animation: rc-c4 var(--T) linear infinite; }
+.diagram .rc-c5000 { opacity: 0; animation: rc-c5000 var(--T) linear infinite; }
+.diagram .rc-res24 { opacity: 0; animation: rc-res24 var(--T) linear infinite; }
+.diagram .rc-cerr { opacity: 0; animation: rc-cerr var(--T) linear infinite; }
+.diagram .rc-n0 { opacity: 0; animation: rc-n0 var(--T) linear infinite; }
+.diagram .rc-n1 { opacity: 0; animation: rc-n1 var(--T) linear infinite; }
+.diagram .rc-n2 { opacity: 0; animation: rc-n2 var(--T) linear infinite; }
+.diagram .rc-n3 { opacity: 0; animation: rc-n3 var(--T) linear infinite; }
+.diagram .rc-n4 { opacity: 0; animation: rc-n4 var(--T) linear infinite; }
+.diagram .rc-n5 { opacity: 0; animation: rc-n5 var(--T) linear infinite; }
+.diagram .rc-n6 { opacity: 0; animation: rc-n6 var(--T) linear infinite; }
+.diagram .rc-n7 { opacity: 0; animation: rc-n7 var(--T) linear infinite; }
+.diagram .rc-n8 { opacity: 0; animation: rc-n8 var(--T) linear infinite; }
+.diagram .rc-n9 { opacity: 0; animation: rc-n9 var(--T) linear infinite; }
+.diagram .rc-n10 { opacity: 0; animation: rc-n10 var(--T) linear infinite; }
+.diagram .rc-n11 { opacity: 0; animation: rc-n11 var(--T) linear infinite; }
+.diagram .rc-n12 { opacity: 0; animation: rc-n12 var(--T) linear infinite; }
+.diagram .rc-n13 { opacity: 0; animation: rc-n13 var(--T) linear infinite; }
+.diagram .rc-n14 { opacity: 0; animation: rc-n14 var(--T) linear infinite; }
+.diagram .rc-rep { opacity: 0; animation: rc-rep var(--T) linear infinite; }
+.diagram .rc-memo { opacity: 0; animation: rc-memo var(--T) linear infinite; }
+.diagram .rc-grow { opacity: 0; animation: rc-grow var(--T) linear infinite; }
+.diagram .rc-cur { opacity: 0; animation: rc-cur var(--T) linear infinite; }
+.diagram .rc-k1 { opacity: 0; animation: rc-k1 var(--T) linear infinite; }
+.diagram .rc-k2 { opacity: 0; animation: rc-k2 var(--T) linear infinite; }
+.diagram .rc-k3 { opacity: 0; animation: rc-k3 var(--T) linear infinite; }
+.diagram .rc-k4 { opacity: 0; animation: rc-k4 var(--T) linear infinite; }
+.diagram .rc-k5 { opacity: 0; animation: rc-k5 var(--T) linear infinite; }
+.diagram .rc-k6 { opacity: 0; animation: rc-k6 var(--T) linear infinite; }
+.diagram .rc-k7 { opacity: 0; animation: rc-k7 var(--T) linear infinite; }
+.diagram .rc-k8 { opacity: 0; animation: rc-k8 var(--T) linear infinite; }
+.diagram .rc-k9 { opacity: 0; animation: rc-k9 var(--T) linear infinite; }
+.diagram .rc-k10 { opacity: 0; animation: rc-k10 var(--T) linear infinite; }
+.diagram .rc-k11 { opacity: 0; animation: rc-k11 var(--T) linear infinite; }
+.diagram .rc-k12 { opacity: 0; animation: rc-k12 var(--T) linear infinite; }
+.diagram .rc-k13 { opacity: 0; animation: rc-k13 var(--T) linear infinite; }
+.diagram .rc-k14 { opacity: 0; animation: rc-k14 var(--T) linear infinite; }
+.diagram .rc-k15 { opacity: 0; animation: rc-k15 var(--T) linear infinite; }
+.diagram .rc-t5x1 { opacity: 0; animation: rc-t5x1 var(--T) linear infinite; }
+.diagram .rc-t4x1 { opacity: 0; animation: rc-t4x1 var(--T) linear infinite; }
+.diagram .rc-t3x1 { opacity: 0; animation: rc-t3x1 var(--T) linear infinite; }
+.diagram .rc-t2x1 { opacity: 0; animation: rc-t2x1 var(--T) linear infinite; }
+.diagram .rc-t1x1 { opacity: 0; animation: rc-t1x1 var(--T) linear infinite; }
+.diagram .rc-t0x1 { opacity: 0; animation: rc-t0x1 var(--T) linear infinite; }
+.diagram .rc-t1x2 { opacity: 0; animation: rc-t1x2 var(--T) linear infinite; }
+.diagram .rc-t2x2 { opacity: 0; animation: rc-t2x2 var(--T) linear infinite; }
+.diagram .rc-t1x3 { opacity: 0; animation: rc-t1x3 var(--T) linear infinite; }
+.diagram .rc-t0x2 { opacity: 0; animation: rc-t0x2 var(--T) linear infinite; }
+.diagram .rc-t3x2 { opacity: 0; animation: rc-t3x2 var(--T) linear infinite; }
+.diagram .rc-t2x3 { opacity: 0; animation: rc-t2x3 var(--T) linear infinite; }
+.diagram .rc-t1x4 { opacity: 0; animation: rc-t1x4 var(--T) linear infinite; }
+.diagram .rc-t0x3 { opacity: 0; animation: rc-t0x3 var(--T) linear infinite; }
+.diagram .rc-t1x5 { opacity: 0; animation: rc-t1x5 var(--T) linear infinite; }
+.diagram .rc-g0 { opacity: 0; animation: rc-g0 var(--T) linear infinite; }
+.diagram .rc-gb0 { opacity: 0; animation: rc-gb0 var(--T) linear infinite; }
+.diagram .rc-gp0 { opacity: 0; animation: rc-gp0 var(--T) linear infinite; }
+.diagram .rc-g1 { opacity: 0; animation: rc-g1 var(--T) linear infinite; }
+.diagram .rc-gb1 { opacity: 0; animation: rc-gb1 var(--T) linear infinite; }
+.diagram .rc-gp1 { opacity: 0; animation: rc-gp1 var(--T) linear infinite; }
+.diagram .rc-g2 { opacity: 0; animation: rc-g2 var(--T) linear infinite; }
+.diagram .rc-gb2 { opacity: 0; animation: rc-gb2 var(--T) linear infinite; }
+.diagram .rc-gp2 { opacity: 0; animation: rc-gp2 var(--T) linear infinite; }
+.diagram .rc-g3 { opacity: 0; animation: rc-g3 var(--T) linear infinite; }
+.diagram .rc-g4 { opacity: 0; animation: rc-g4 var(--T) linear infinite; }
+.diagram .rc-gb4 { opacity: 0; animation: rc-gb4 var(--T) linear infinite; }
+.diagram .rc-gp4 { opacity: 0; animation: rc-gp4 var(--T) linear infinite; }
+.diagram .rc-g5 { opacity: 0; animation: rc-g5 var(--T) linear infinite; }
+.diagram .rc-gb5 { opacity: 0; animation: rc-gb5 var(--T) linear infinite; }
+.diagram .rc-gr5 { opacity: 0; animation: rc-gr5 var(--T) linear infinite; }
+.diagram .rc-m1 { opacity: 0; animation: rc-m1 var(--T) linear infinite; }
+.diagram .rc-err { opacity: 0; animation: rc-err var(--T) linear infinite; }
+.diagram .rc-lim { opacity: 0; animation: rc-lim var(--T) linear infinite; }
+.diagram .rc-m3 { opacity: 0; animation: rc-m3 var(--T) linear infinite; }
+.diagram .rc-x1 { opacity: 0; animation: rc-x1 var(--T) linear infinite; }
+.diagram .rc-x2 { opacity: 0; animation: rc-x2 var(--T) linear infinite; }
+.diagram .rc-x3 { opacity: 0; animation: rc-x3 var(--T) linear infinite; }
+@keyframes rc-hl {
+  0% { transform: translate(0px, 0px); opacity: 0; }
+  2% { transform: translate(0px, 0px); opacity: 0; }
+  2.5% { transform: translate(0px, 0px); opacity: 1; }
+  4% { transform: translate(0px, 0px); opacity: 1; }
+  4.6% { transform: translate(0px, 52px); opacity: 1; }
+  7% { transform: translate(0px, 52px); opacity: 1; }
+  7.6% { transform: translate(0px, 0px); opacity: 1; }
+  9% { transform: translate(0px, 0px); opacity: 1; }
+  9.6% { transform: translate(0px, 52px); opacity: 1; }
+  12% { transform: translate(0px, 52px); opacity: 1; }
+  12.6% { transform: translate(0px, 0px); opacity: 1; }
+  14% { transform: translate(0px, 0px); opacity: 1; }
+  14.6% { transform: translate(0px, 52px); opacity: 1; }
+  17% { transform: translate(0px, 52px); opacity: 1; }
+  17.6% { transform: translate(0px, 0px); opacity: 1; }
+  26.5% { transform: translate(0px, 0px); opacity: 1; }
+  27.1% { transform: translate(0px, 26px); opacity: 1; }
+  30.25% { transform: translate(0px, 26px); opacity: 1; }
+  30.85% { transform: translate(0px, 52px); opacity: 1; }
+  43% { transform: translate(0px, 52px); opacity: 1; }
+  44.25% { transform: translate(0px, 52px); opacity: 0; }
+  51.5% { transform: translate(0px, 52px); opacity: 0; }
+  52.5% { transform: translate(0px, 52px); opacity: 1; }
+  73.5% { transform: translate(0px, 52px); opacity: 1; }
+  74.75% { transform: translate(0px, 52px); opacity: 0; }
+  76.5% { transform: translate(0px, 52px); opacity: 0; }
+  77.5% { transform: translate(0px, 52px); opacity: 1; }
+  97.5% { transform: translate(0px, 52px); opacity: 1; }
+  100% { transform: translate(0px, 52px); opacity: 0; }
+}
+@keyframes rc-f4 {
+  0% { opacity: 0; transform: translate(0px, -14px); }
+  1.75% { opacity: 0; transform: translate(0px, -14px); }
+  3% { opacity: 1; transform: translate(0px, 0px); }
+  41.75% { opacity: 1; transform: translate(0px, 0px); }
+  43% { opacity: 0; transform: translate(0px, -14px); }
+  100% { opacity: 0; transform: translate(0px, -14px); }
+}
+@keyframes rc-fb4 {
+  0% { opacity: 0; }
+  1.75% { opacity: 0; }
+  2.25% { opacity: 1; }
+  5% { opacity: 1; }
+  5.5% { opacity: 0; }
+  38.75% { opacity: 0; }
+  39.25% { opacity: 1; }
+  40.75% { opacity: 1; }
+  41.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fp4 {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  5.5% { opacity: 1; }
+  38.75% { opacity: 1; }
+  39.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fg4 {
+  0% { opacity: 0; }
+  40.75% { opacity: 0; }
+  41.25% { opacity: 1; }
+  43% { opacity: 1; }
+  43.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fq4 {
+  0% { opacity: 0; }
+  4.25% { opacity: 0; }
+  4.75% { opacity: 1; }
+  38.75% { opacity: 1; }
+  39.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fa4 {
+  0% { opacity: 0; }
+  38.75% { opacity: 0; }
+  39.25% { opacity: 1; }
+  43% { opacity: 1; }
+  43.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-f3 {
+  0% { opacity: 0; transform: translate(0px, -14px); }
+  6.75% { opacity: 0; transform: translate(0px, -14px); }
+  8% { opacity: 1; transform: translate(0px, 0px); }
+  37.5% { opacity: 1; transform: translate(0px, 0px); }
+  38.75% { opacity: 0; transform: translate(0px, -14px); }
+  100% { opacity: 0; transform: translate(0px, -14px); }
+}
+@keyframes rc-fb3 {
+  0% { opacity: 0; }
+  6.75% { opacity: 0; }
+  7.25% { opacity: 1; }
+  10% { opacity: 1; }
+  10.5% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35% { opacity: 1; }
+  36.5% { opacity: 1; }
+  37% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fp3 {
+  0% { opacity: 0; }
+  10% { opacity: 0; }
+  10.5% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fg3 {
+  0% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37% { opacity: 1; }
+  38.75% { opacity: 1; }
+  39.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fq3 {
+  0% { opacity: 0; }
+  9.25% { opacity: 0; }
+  9.75% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fa3 {
+  0% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35% { opacity: 1; }
+  38.75% { opacity: 1; }
+  39.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-f2 {
+  0% { opacity: 0; transform: translate(0px, -14px); }
+  11.75% { opacity: 0; transform: translate(0px, -14px); }
+  13% { opacity: 1; transform: translate(0px, 0px); }
+  33.25% { opacity: 1; transform: translate(0px, 0px); }
+  34.5% { opacity: 0; transform: translate(0px, -14px); }
+  100% { opacity: 0; transform: translate(0px, -14px); }
+}
+@keyframes rc-fb2 {
+  0% { opacity: 0; }
+  11.75% { opacity: 0; }
+  12.25% { opacity: 1; }
+  15% { opacity: 1; }
+  15.5% { opacity: 0; }
+  30.25% { opacity: 0; }
+  30.75% { opacity: 1; }
+  32.25% { opacity: 1; }
+  32.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fp2 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  15.5% { opacity: 1; }
+  30.25% { opacity: 1; }
+  30.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fg2 {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fq2 {
+  0% { opacity: 0; }
+  14.25% { opacity: 0; }
+  14.75% { opacity: 1; }
+  30.25% { opacity: 1; }
+  30.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fa2 {
+  0% { opacity: 0; }
+  30.25% { opacity: 0; }
+  30.75% { opacity: 1; }
+  34.5% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-f1 {
+  0% { opacity: 0; transform: translate(0px, -14px); }
+  16.75% { opacity: 0; transform: translate(0px, -14px); }
+  18% { opacity: 1; transform: translate(0px, 0px); }
+  29% { opacity: 1; transform: translate(0px, 0px); }
+  30.25% { opacity: 0; transform: translate(0px, -14px); }
+  100% { opacity: 0; transform: translate(0px, -14px); }
+}
+@keyframes rc-fb1 {
+  0% { opacity: 0; }
+  16.75% { opacity: 0; }
+  17.25% { opacity: 1; }
+  26.75% { opacity: 1; }
+  27.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fg1 {
+  0% { opacity: 0; }
+  26.75% { opacity: 0; }
+  27.25% { opacity: 1; }
+  30.25% { opacity: 1; }
+  30.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-fa1 {
+  0% { opacity: 0; }
+  26.75% { opacity: 0; }
+  27.25% { opacity: 1; }
+  30.25% { opacity: 1; }
+  30.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-call {
+  0% { transform: translate(668px, 419px); opacity: 0; }
+  0.5% { transform: translate(668px, 419px); opacity: 0; }
+  0.75% { opacity: 1; }
+  1.75% { transform: translate(618px, 419px); opacity: 1; }
+  2% { transform: translate(618px, 419px); opacity: 0; }
+  5.25% { transform: translate(626px, 419px); opacity: 0; }
+  5.5% { opacity: 1; }
+  6.75% { transform: translate(626px, 359px); opacity: 1; }
+  7% { transform: translate(626px, 359px); opacity: 0; }
+  10.25% { transform: translate(626px, 359px); opacity: 0; }
+  10.5% { opacity: 1; }
+  11.75% { transform: translate(626px, 299px); opacity: 1; }
+  12% { transform: translate(626px, 299px); opacity: 0; }
+  15.25% { transform: translate(626px, 299px); opacity: 0; }
+  15.5% { opacity: 1; }
+  16.75% { transform: translate(626px, 239px); opacity: 1; }
+  17% { transform: translate(626px, 239px); opacity: 0; }
+  76.25% { transform: translate(668px, 419px); opacity: 0; }
+  76.5% { opacity: 1; }
+  77.25% { transform: translate(618px, 419px); opacity: 1; }
+  77.5% { transform: translate(618px, 419px); opacity: 0; }
+  100% { transform: translate(618px, 419px); opacity: 0; }
+}
+@keyframes rc-r1 {
+  0% { transform: translate(626px, 239px); opacity: 0; }
+  28.75% { transform: translate(626px, 239px); opacity: 0; }
+  29% { opacity: 1; }
+  30.25% { transform: translate(626px, 299px); opacity: 1; }
+  30.5% { transform: translate(626px, 299px); opacity: 0; }
+  100% { transform: translate(626px, 299px); opacity: 0; }
+}
+@keyframes rc-r2 {
+  0% { transform: translate(626px, 299px); opacity: 0; }
+  33% { transform: translate(626px, 299px); opacity: 0; }
+  33.25% { opacity: 1; }
+  34.5% { transform: translate(626px, 359px); opacity: 1; }
+  34.75% { transform: translate(626px, 359px); opacity: 0; }
+  100% { transform: translate(626px, 359px); opacity: 0; }
+}
+@keyframes rc-r6 {
+  0% { transform: translate(626px, 359px); opacity: 0; }
+  37.25% { transform: translate(626px, 359px); opacity: 0; }
+  37.5% { opacity: 1; }
+  38.75% { transform: translate(626px, 419px); opacity: 1; }
+  39% { transform: translate(626px, 419px); opacity: 0; }
+  100% { transform: translate(626px, 419px); opacity: 0; }
+}
+@keyframes rc-r24 {
+  0% { transform: translate(618px, 419px); opacity: 0; }
+  41.5% { transform: translate(618px, 419px); opacity: 0; }
+  41.75% { opacity: 1; }
+  43% { transform: translate(668px, 419px); opacity: 1; }
+  43.25% { transform: translate(668px, 419px); opacity: 0; }
+  100% { transform: translate(668px, 419px); opacity: 0; }
+}
+@keyframes rc-d0 {
+  0% { opacity: 1; }
+  1.75% { opacity: 1; }
+  2.15% { opacity: 0; }
+  42.25% { opacity: 0; }
+  42.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  77.25% { opacity: 1; }
+  77.65% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+@keyframes rc-d1 {
+  0% { opacity: 0; }
+  1.75% { opacity: 0; }
+  2.15% { opacity: 1; }
+  6.75% { opacity: 1; }
+  7.15% { opacity: 0; }
+  38% { opacity: 0; }
+  38.4% { opacity: 1; }
+  42.25% { opacity: 1; }
+  42.65% { opacity: 0; }
+  77.25% { opacity: 0; }
+  77.65% { opacity: 1; }
+  78.75% { opacity: 1; }
+  79.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d2 {
+  0% { opacity: 0; }
+  6.75% { opacity: 0; }
+  7.15% { opacity: 1; }
+  11.75% { opacity: 1; }
+  12.15% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.15% { opacity: 1; }
+  38% { opacity: 1; }
+  38.4% { opacity: 0; }
+  78.75% { opacity: 0; }
+  79.15% { opacity: 1; }
+  80.25% { opacity: 1; }
+  80.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d3 {
+  0% { opacity: 0; }
+  11.75% { opacity: 0; }
+  12.15% { opacity: 1; }
+  16.75% { opacity: 1; }
+  17.15% { opacity: 0; }
+  29.5% { opacity: 0; }
+  29.9% { opacity: 1; }
+  33.75% { opacity: 1; }
+  34.15% { opacity: 0; }
+  80.25% { opacity: 0; }
+  80.65% { opacity: 1; }
+  82.25% { opacity: 1; }
+  82.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d4 {
+  0% { opacity: 0; }
+  16.75% { opacity: 0; }
+  17.15% { opacity: 1; }
+  29.5% { opacity: 1; }
+  29.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d100 {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  82.5% { opacity: 1; }
+  83% { opacity: 1; }
+  83.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d300 {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  83.25% { opacity: 1; }
+  83.75% { opacity: 1; }
+  84% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d500 {
+  0% { opacity: 0; }
+  83.75% { opacity: 0; }
+  84% { opacity: 1; }
+  84.5% { opacity: 1; }
+  84.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d700 {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  84.75% { opacity: 1; }
+  85.25% { opacity: 1; }
+  85.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d900 {
+  0% { opacity: 0; }
+  85.25% { opacity: 0; }
+  85.5% { opacity: 1; }
+  85.75% { opacity: 1; }
+  86% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d997 {
+  0% { opacity: 0; }
+  85.75% { opacity: 0; }
+  86% { opacity: 1; }
+  86.5% { opacity: 1; }
+  86.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d998 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  86.75% { opacity: 1; }
+  88% { opacity: 1; }
+  88.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d999 {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  88.25% { opacity: 1; }
+  89.75% { opacity: 1; }
+  90% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-d999r {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  90% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-c4 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  75.1% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+@keyframes rc-c5000 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-res24 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-cerr {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  92% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-n0 {
+  0% { opacity: 0; }
+  52.25% { opacity: 0; }
+  53% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n1 {
+  0% { opacity: 0; }
+  53.1% { opacity: 0; }
+  53.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n2 {
+  0% { opacity: 0; }
+  53.95% { opacity: 0; }
+  54.7% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n3 {
+  0% { opacity: 0; }
+  54.8% { opacity: 0; }
+  55.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n4 {
+  0% { opacity: 0; }
+  55.65% { opacity: 0; }
+  56.4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n5 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  57.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n6 {
+  0% { opacity: 0; }
+  57.35% { opacity: 0; }
+  58.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n7 {
+  0% { opacity: 0; }
+  58.2% { opacity: 0; }
+  58.95% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n8 {
+  0% { opacity: 0; }
+  59.05% { opacity: 0; }
+  59.8% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n9 {
+  0% { opacity: 0; }
+  59.9% { opacity: 0; }
+  60.65% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n10 {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n11 {
+  0% { opacity: 0; }
+  61.6% { opacity: 0; }
+  62.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n12 {
+  0% { opacity: 0; }
+  62.45% { opacity: 0; }
+  63.2% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n13 {
+  0% { opacity: 0; }
+  63.3% { opacity: 0; }
+  64.05% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-n14 {
+  0% { opacity: 0; }
+  64.15% { opacity: 0; }
+  64.9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-rep {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  68.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-memo {
+  0% { opacity: 0; }
+  69.25% { opacity: 0; }
+  70.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-grow {
+  0% { opacity: 0; }
+  65.25% { opacity: 0; }
+  66.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-cur {
+  0% { transform: translate(699.79px, 118px); opacity: 0; }
+  52.25% { transform: translate(699.79px, 118px); opacity: 0; }
+  52.5% { opacity: 1; }
+  52.8% { transform: translate(699.79px, 118px); }
+  53.1% { transform: translate(559.71px, 172px); }
+  53.65% { transform: translate(559.71px, 172px); }
+  53.95% { transform: translate(478.38px, 226px); }
+  54.5% { transform: translate(478.38px, 226px); }
+  54.8% { transform: translate(424.15px, 280px); }
+  55.35% { transform: translate(424.15px, 280px); }
+  55.65% { transform: translate(388px, 334px); }
+  56.2% { transform: translate(388px, 334px); }
+  56.5% { transform: translate(460.3px, 334px); }
+  57.05% { transform: translate(460.3px, 334px); }
+  57.35% { transform: translate(532.6px, 280px); }
+  57.9% { transform: translate(532.6px, 280px); }
+  58.2% { transform: translate(641.05px, 226px); }
+  58.75% { transform: translate(641.05px, 226px); }
+  59.05% { transform: translate(604.9px, 280px); }
+  59.6% { transform: translate(604.9px, 280px); }
+  59.9% { transform: translate(677.2px, 280px); }
+  60.45% { transform: translate(677.2px, 280px); }
+  60.75% { transform: translate(839.88px, 172px); }
+  61.3% { transform: translate(839.88px, 172px); }
+  61.6% { transform: translate(785.65px, 226px); }
+  62.15% { transform: translate(785.65px, 226px); }
+  62.45% { transform: translate(749.5px, 280px); }
+  63% { transform: translate(749.5px, 280px); }
+  63.3% { transform: translate(821.8px, 280px); }
+  63.85% { transform: translate(821.8px, 280px); }
+  64.15% { transform: translate(894.1px, 226px); }
+  65.5% { transform: translate(894.1px, 226px); opacity: 1; }
+  65.75% { transform: translate(894.1px, 226px); opacity: 0; }
+  100% { transform: translate(894.1px, 226px); opacity: 0; }
+}
+@keyframes rc-k1 {
+  0% { opacity: 0; }
+  52.25% { opacity: 0; }
+  52.5% { opacity: 1; }
+  53.1% { opacity: 1; }
+  53.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k2 {
+  0% { opacity: 0; }
+  53.1% { opacity: 0; }
+  53.35% { opacity: 1; }
+  53.95% { opacity: 1; }
+  54.2% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k3 {
+  0% { opacity: 0; }
+  53.95% { opacity: 0; }
+  54.2% { opacity: 1; }
+  54.8% { opacity: 1; }
+  55.05% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k4 {
+  0% { opacity: 0; }
+  54.8% { opacity: 0; }
+  55.05% { opacity: 1; }
+  55.65% { opacity: 1; }
+  55.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k5 {
+  0% { opacity: 0; }
+  55.65% { opacity: 0; }
+  55.9% { opacity: 1; }
+  56.5% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k6 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  56.75% { opacity: 1; }
+  57.35% { opacity: 1; }
+  57.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k7 {
+  0% { opacity: 0; }
+  57.35% { opacity: 0; }
+  57.6% { opacity: 1; }
+  58.2% { opacity: 1; }
+  58.45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k8 {
+  0% { opacity: 0; }
+  58.2% { opacity: 0; }
+  58.45% { opacity: 1; }
+  59.05% { opacity: 1; }
+  59.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k9 {
+  0% { opacity: 0; }
+  59.05% { opacity: 0; }
+  59.3% { opacity: 1; }
+  59.9% { opacity: 1; }
+  60.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k10 {
+  0% { opacity: 0; }
+  59.9% { opacity: 0; }
+  60.15% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k11 {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61% { opacity: 1; }
+  61.6% { opacity: 1; }
+  61.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k12 {
+  0% { opacity: 0; }
+  61.6% { opacity: 0; }
+  61.85% { opacity: 1; }
+  62.45% { opacity: 1; }
+  62.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k13 {
+  0% { opacity: 0; }
+  62.45% { opacity: 0; }
+  62.7% { opacity: 1; }
+  63.3% { opacity: 1; }
+  63.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k14 {
+  0% { opacity: 0; }
+  63.3% { opacity: 0; }
+  63.55% { opacity: 1; }
+  64.15% { opacity: 1; }
+  64.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-k15 {
+  0% { opacity: 0; }
+  64.15% { opacity: 0; }
+  64.4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-t5x1 {
+  0% { opacity: 0; }
+  52.25% { opacity: 0; }
+  52.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-t4x1 {
+  0% { opacity: 0; }
+  53.1% { opacity: 0; }
+  53.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-t3x1 {
+  0% { opacity: 0; }
+  53.95% { opacity: 0; }
+  54.2% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t2x1 {
+  0% { opacity: 0; }
+  54.8% { opacity: 0; }
+  55.05% { opacity: 1; }
+  58.2% { opacity: 1; }
+  58.45% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t1x1 {
+  0% { opacity: 0; }
+  55.65% { opacity: 0; }
+  55.9% { opacity: 1; }
+  57.35% { opacity: 1; }
+  57.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t0x1 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  56.75% { opacity: 1; }
+  59.9% { opacity: 1; }
+  60.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t1x2 {
+  0% { opacity: 0; }
+  57.35% { opacity: 0; }
+  57.6% { opacity: 1; }
+  59.05% { opacity: 1; }
+  59.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t2x2 {
+  0% { opacity: 0; }
+  58.2% { opacity: 0; }
+  58.45% { opacity: 1; }
+  61.6% { opacity: 1; }
+  61.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t1x3 {
+  0% { opacity: 0; }
+  59.05% { opacity: 0; }
+  59.3% { opacity: 1; }
+  62.45% { opacity: 1; }
+  62.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t0x2 {
+  0% { opacity: 0; }
+  59.9% { opacity: 0; }
+  60.15% { opacity: 1; }
+  63.3% { opacity: 1; }
+  63.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t3x2 {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-t2x3 {
+  0% { opacity: 0; }
+  61.6% { opacity: 0; }
+  61.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-t1x4 {
+  0% { opacity: 0; }
+  62.45% { opacity: 0; }
+  62.7% { opacity: 1; }
+  64.15% { opacity: 1; }
+  64.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-t0x3 {
+  0% { opacity: 0; }
+  63.3% { opacity: 0; }
+  63.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-t1x5 {
+  0% { opacity: 0; }
+  64.15% { opacity: 0; }
+  64.4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rc-g0 {
+  0% { opacity: 0; transform: translate(0px, -10px); }
+  77.25% { opacity: 0; transform: translate(0px, -10px); }
+  78.25% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  100% { opacity: 0; transform: translate(0px, 0px); }
+}
+@keyframes rc-gb0 {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  77.75% { opacity: 1; }
+  78.75% { opacity: 1; }
+  79.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-gp0 {
+  0% { opacity: 0; }
+  78.75% { opacity: 0; }
+  79.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-g1 {
+  0% { opacity: 0; transform: translate(0px, -10px); }
+  78.75% { opacity: 0; transform: translate(0px, -10px); }
+  79.75% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  100% { opacity: 0; transform: translate(0px, 0px); }
+}
+@keyframes rc-gb1 {
+  0% { opacity: 0; }
+  78.75% { opacity: 0; }
+  79.25% { opacity: 1; }
+  80.25% { opacity: 1; }
+  80.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-gp1 {
+  0% { opacity: 0; }
+  80.25% { opacity: 0; }
+  80.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-g2 {
+  0% { opacity: 0; transform: translate(0px, -10px); }
+  80.25% { opacity: 0; transform: translate(0px, -10px); }
+  81.25% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  100% { opacity: 0; transform: translate(0px, 0px); }
+}
+@keyframes rc-gb2 {
+  0% { opacity: 0; }
+  80.25% { opacity: 0; }
+  80.75% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-gp2 {
+  0% { opacity: 0; }
+  81.75% { opacity: 0; }
+  82.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-g3 {
+  0% { opacity: 0; transform: translate(0px, -10px); }
+  81.75% { opacity: 0; transform: translate(0px, -10px); }
+  82.75% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  100% { opacity: 0; transform: translate(0px, 0px); }
+}
+@keyframes rc-g4 {
+  0% { opacity: 0; transform: translate(0px, -10px); }
+  86.5% { opacity: 0; transform: translate(0px, -10px); }
+  87.5% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  100% { opacity: 0; transform: translate(0px, 0px); }
+}
+@keyframes rc-gb4 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87% { opacity: 1; }
+  88% { opacity: 1; }
+  88.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-gp4 {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  88.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-g5 {
+  0% { opacity: 0; transform: translate(0px, -10px); }
+  88% { opacity: 0; transform: translate(0px, -10px); }
+  89% { opacity: 1; transform: translate(0px, 0px); }
+  97.5% { opacity: 1; transform: translate(0px, 0px); }
+  100% { opacity: 0; transform: translate(0px, 0px); }
+}
+@keyframes rc-gb5 {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  88.5% { opacity: 1; }
+  89.75% { opacity: 1; }
+  90% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-gr5 {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  90% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-m1 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-err {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  90.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-lim {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  90.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-m3 {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  92.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-x1 {
+  0% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-x2 {
+  0% { opacity: 0; }
+  93.75% { opacity: 0; }
+  94.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-x3 {
+  0% { opacity: 0; }
+  94.75% { opacity: 0; }
+  95.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- code panel: fact in steps 1, 2 and 4, fib in step 3 -->
+  <rect class="box" x="40" y="104" width="300" height="150" rx="12"/>
+  <line class="s-line" x1="40" y1="134" x2="340" y2="134" stroke-width="1.5"/>
+  <rect class="f-blue-soft s-blue rc-hl" x="48" y="166" width="284" height="22" rx="5" stroke-width="1.5"/>
+  <g>
+    <text class="tiny end f-faint mono" x="62" y="156">1</text><text class="tiny end f-faint mono" x="62" y="182">2</text><text class="tiny end f-faint mono" x="62" y="208">3</text><text class="tiny end f-faint mono" x="62" y="234">4</text>
+  </g>
+  <g class="p124">
+    <text class="tiny mono sb" x="54" y="124">fact.py</text>
+    <text class="rc-code mono" x="72" y="156"><tspan class="b">def</tspan> fact(n):</text>
+    <text class="rc-code mono" x="102" y="182"><tspan class="b">if</tspan> n &lt;= 1:</text>
+    <text class="rc-code mono" x="132" y="208"><tspan class="b">return</tspan> 1</text>
+    <text class="rc-code mono" x="102" y="234"><tspan class="b">return</tspan> n * fact(n - 1)</text>
+  </g>
+  <g class="p3">
+    <text class="tiny mono sb" x="54" y="124">fib.py</text>
+    <text class="rc-code mono" x="72" y="156"><tspan class="b">def</tspan> fib(n):</text>
+    <text class="rc-code mono" x="102" y="182"><tspan class="b">if</tspan> n &lt;= 1:</text>
+    <text class="rc-code mono" x="132" y="208"><tspan class="b">return</tspan> n</text>
+    <text class="rc-code mono" x="102" y="234"><tspan class="b">return</tspan> fib(n - 1) + fib(n - 2)</text>
+  </g>
+
+  <!-- left column: the two parts of a recursive function (steps 1-2) -->
+  <g class="p12">
+    <rect class="f-green-soft s-green" x="40" y="270" width="300" height="50" rx="10" stroke-width="1.5"/>
+    <text class="rc-h f-green" x="54" y="290">base case</text>
+    <text class="sub" x="54" y="309"><tspan class="mono">n &lt;= 1</tspan>: answer directly, no more calls</text>
+    <rect class="f-blue-soft s-blue" x="40" y="330" width="300" height="50" rx="10" stroke-width="1.5"/>
+    <text class="rc-h f-blue" x="54" y="350">recursive case</text>
+    <text class="sub" x="54" y="369">call itself on a smaller input: <tspan class="mono">n - 1</tspan></text>
+    <text class="tiny sb" x="40" y="406">frame colours</text>
+    <rect class="f-blue-soft s-blue" x="40" y="418" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text class="tiny" x="60" y="429">running</text>
+    <rect class="f-purple-soft s-purple" x="122" y="418" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text class="tiny" x="142" y="429">waiting on a call</text>
+    <rect class="f-green-soft s-green" x="40" y="440" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text class="tiny" x="60" y="451">returning a value</text>
+  </g>
+
+  <!-- left column, step 3: how often each fib(n) runs -->
+  <g class="p3">
+    <text class="tiny sb" x="40" y="290">calls per n, naive fib(5)</text>
+    <rect class="box" x="40" y="300" width="300" height="104" rx="10"/>
+    <text class="tiny" x="54" y="320">n</text>
+    <text class="tiny mono mid" x="136" y="320">5</text>
+    <text class="tiny mono mid" x="172" y="320">4</text>
+    <text class="tiny mono mid" x="208" y="320">3</text>
+    <text class="tiny mono mid" x="244" y="320">2</text>
+    <text class="tiny mono mid" x="280" y="320">1</text>
+    <text class="tiny mono mid" x="316" y="320">0</text>
+    <line class="s-line" x1="48" y1="328" x2="332" y2="328" stroke-width="1"/>
+    <text class="tiny" x="54" y="348">calls</text>
+    <text class="rc-pend mono mid rc-t5x1" x="136" y="348">1</text>
+    <text class="rc-pend mono mid rc-t4x1" x="172" y="348">1</text>
+    <text class="rc-pend mono mid rc-t3x1" x="208" y="348">1</text>
+    <text class="rc-pend mono mid rc-t2x1" x="244" y="348">1</text>
+    <text class="rc-pend mono mid rc-t1x1" x="280" y="348">1</text>
+    <text class="rc-pend mono mid rc-t0x1" x="316" y="348">1</text>
+    <text class="rc-pend mono mid rc-t1x2" x="280" y="348">2</text>
+    <text class="rc-pend mono mid rc-t2x2" x="244" y="348">2</text>
+    <text class="rc-pend mono mid rc-t1x3" x="280" y="348">3</text>
+    <text class="rc-pend mono mid rc-t0x2" x="316" y="348">2</text>
+    <text class="rc-pend mono mid rc-t3x2" x="208" y="348">2</text>
+    <text class="rc-pend mono mid rc-t2x3" x="244" y="348">3</text>
+    <text class="rc-pend mono mid rc-t1x4" x="280" y="348">4</text>
+    <text class="rc-pend mono mid rc-t0x3" x="316" y="348">3</text>
+    <text class="rc-pend mono mid rc-t1x5" x="280" y="348">5</text>
+    <g class="rc-memo">
+      <text class="tiny f-teal" x="54" y="386">memo</text>
+      <text class="rc-pend mono mid f-teal" x="136" y="386">5</text>
+      <text class="rc-pend mono mid f-teal" x="172" y="386">3</text>
+      <text class="rc-pend mono mid f-teal" x="208" y="386">2</text>
+      <text class="rc-pend mono mid f-teal" x="244" y="386">1</text>
+      <text class="rc-pend mono mid f-teal" x="280" y="386">1</text>
+      <text class="rc-pend mono mid f-teal" x="316" y="386">0</text>
+    </g>
+    <text class="tiny rc-memo" x="40" y="428">memo: each <tspan class="mono">fib(n)</tspan> stored the first time it returns</text>
+  </g>
+
+  <!-- left column, step 4: why deep recursion fails -->
+  <g class="p4">
+    <g class="rc-m1">
+      <rect class="f-purple-soft s-purple" x="40" y="270" width="300" height="50" rx="10" stroke-width="1.5"/>
+      <text class="rc-h f-purple" x="54" y="290">every pending call keeps a frame</text>
+      <text class="sub" x="54" y="309"><tspan class="mono">fact(n)</tspan> needs n frames: O(n) stack</text>
+    </g>
+    <g class="rc-err">
+      <rect class="f-red-soft s-red" x="40" y="330" width="300" height="50" rx="10" stroke-width="1.5"/>
+      <text class="rc-h f-red" x="54" y="350">CPython limit: 1000 frames</text>
+      <text class="sub" x="54" y="369"><tspan class="mono">sys.getrecursionlimit()</tspan> → 1000</text>
+    </g>
+    <g class="rc-m3">
+      <rect class="f-red-soft s-red" x="40" y="390" width="300" height="50" rx="10" stroke-width="1.5"/>
+      <text class="rc-h f-red" x="54" y="410">base case never reached?</text>
+      <text class="sub" x="54" y="429">endless calls: the same error at any limit</text>
+    </g>
+  </g>
+
+  <!-- the call stack (steps 1, 2 and 4) -->
+  <g class="p124">
+    <text class="tiny sb" x="370" y="104">call stack</text>
+    <text class="tiny end" x="620" y="104">newest frame on top</text>
+    <line class="s-ink" x1="370" y1="450" x2="620" y2="450" stroke-width="2.5" stroke-linecap="round"/>
+    <text class="tiny mid" x="495" y="466">bottom of the stack</text>
+    <line class="wire" x1="612" y1="419" x2="660" y2="419"/>
+  </g>
+  <g class="rc-f4">
+    <rect class="box" x="380" y="394" width="230" height="50" rx="10"/>
+    <rect class="f-blue-soft s-blue rc-fb4" x="380" y="394" width="230" height="50" rx="10" stroke-width="2"/>
+    <rect class="f-purple-soft s-purple rc-fp4" x="380" y="394" width="230" height="50" rx="10" stroke-width="2"/>
+    <rect class="f-green-soft s-green rc-fg4" x="380" y="394" width="230" height="50" rx="10" stroke-width="2"/>
+    <text class="label mono" x="394" y="416">fact(4)</text>
+    <text class="tiny mono" x="394" y="434">n = 4</text>
+    <text class="rc-pend mono end f-purple rc-fq4" x="596" y="425">4 × ?</text>
+    <text class="rc-pend mono end f-green rc-fa4" x="596" y="425">4 × 6 = 24</text>
+  </g>
+  <g class="rc-f3">
+    <rect class="box" x="380" y="334" width="230" height="50" rx="10"/>
+    <rect class="f-blue-soft s-blue rc-fb3" x="380" y="334" width="230" height="50" rx="10" stroke-width="2"/>
+    <rect class="f-purple-soft s-purple rc-fp3" x="380" y="334" width="230" height="50" rx="10" stroke-width="2"/>
+    <rect class="f-green-soft s-green rc-fg3" x="380" y="334" width="230" height="50" rx="10" stroke-width="2"/>
+    <text class="label mono" x="394" y="356">fact(3)</text>
+    <text class="tiny mono" x="394" y="374">n = 3</text>
+    <text class="rc-pend mono end f-purple rc-fq3" x="596" y="365">3 × ?</text>
+    <text class="rc-pend mono end f-green rc-fa3" x="596" y="365">3 × 2 = 6</text>
+  </g>
+  <g class="rc-f2">
+    <rect class="box" x="380" y="274" width="230" height="50" rx="10"/>
+    <rect class="f-blue-soft s-blue rc-fb2" x="380" y="274" width="230" height="50" rx="10" stroke-width="2"/>
+    <rect class="f-purple-soft s-purple rc-fp2" x="380" y="274" width="230" height="50" rx="10" stroke-width="2"/>
+    <rect class="f-green-soft s-green rc-fg2" x="380" y="274" width="230" height="50" rx="10" stroke-width="2"/>
+    <text class="label mono" x="394" y="296">fact(2)</text>
+    <text class="tiny mono" x="394" y="314">n = 2</text>
+    <text class="rc-pend mono end f-purple rc-fq2" x="596" y="305">2 × ?</text>
+    <text class="rc-pend mono end f-green rc-fa2" x="596" y="305">2 × 1 = 2</text>
+  </g>
+  <g class="rc-f1">
+    <rect class="box" x="380" y="214" width="230" height="50" rx="10"/>
+    <rect class="f-blue-soft s-blue rc-fb1" x="380" y="214" width="230" height="50" rx="10" stroke-width="2"/>
+    <rect class="f-green-soft s-green rc-fg1" x="380" y="214" width="230" height="50" rx="10" stroke-width="2"/>
+    <text class="label mono" x="394" y="236">fact(1)</text>
+    <text class="tiny mono" x="394" y="254">n = 1</text>
+    <text class="rc-pend mono end f-green rc-fa1" x="596" y="245">returns 1</text>
+  </g>
+  <g class="p4">
+    <line class="s-red rc-m1" x1="370" y1="172" x2="620" y2="172" stroke-width="2" stroke-dasharray="6 5"/>
+  <g class="rc-g0">
+    <rect class="box" x="380" y="400" width="230" height="38" rx="8"/>
+    <rect class="f-blue-soft s-blue rc-gb0" x="380" y="400" width="230" height="38" rx="8" stroke-width="2"/>
+    <rect class="f-purple-soft s-purple rc-gp0" x="380" y="400" width="230" height="38" rx="8" stroke-width="2"/>
+    <text class="rc-h mono" x="394" y="424">fact(5000)</text>
+    <text class="rc-h mono end f-purple" x="596" y="424">5000 × ?</text>
+  </g>
+  <g class="rc-g1">
+    <rect class="box" x="380" y="356" width="230" height="38" rx="8"/>
+    <rect class="f-blue-soft s-blue rc-gb1" x="380" y="356" width="230" height="38" rx="8" stroke-width="2"/>
+    <rect class="f-purple-soft s-purple rc-gp1" x="380" y="356" width="230" height="38" rx="8" stroke-width="2"/>
+    <text class="rc-h mono" x="394" y="380">fact(4999)</text>
+    <text class="rc-h mono end f-purple" x="596" y="380">4999 × ?</text>
+  </g>
+  <g class="rc-g2">
+    <rect class="box" x="380" y="312" width="230" height="38" rx="8"/>
+    <rect class="f-blue-soft s-blue rc-gb2" x="380" y="312" width="230" height="38" rx="8" stroke-width="2"/>
+    <rect class="f-purple-soft s-purple rc-gp2" x="380" y="312" width="230" height="38" rx="8" stroke-width="2"/>
+    <text class="rc-h mono" x="394" y="336">fact(4998)</text>
+    <text class="rc-h mono end f-purple" x="596" y="336">4998 × ?</text>
+  </g>
+  <g class="rc-g3">
+    <rect class="f-purple-soft s-purple" x="380" y="268" width="230" height="38" rx="8" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text class="rc-h mid f-purple" x="495" y="292">⋮  994 more frames  ⋮</text>
+  </g>
+  <g class="rc-g4">
+    <rect class="box" x="380" y="224" width="230" height="38" rx="8"/>
+    <rect class="f-blue-soft s-blue rc-gb4" x="380" y="224" width="230" height="38" rx="8" stroke-width="2"/>
+    <rect class="f-purple-soft s-purple rc-gp4" x="380" y="224" width="230" height="38" rx="8" stroke-width="2"/>
+    <text class="rc-h mono" x="394" y="248">fact(4003)</text>
+    <text class="rc-h mono end f-purple" x="596" y="248">4003 × ?</text>
+  </g>
+  <g class="rc-g5">
+    <rect class="box" x="380" y="180" width="230" height="38" rx="8"/>
+    <rect class="f-blue-soft s-blue rc-gb5" x="380" y="180" width="230" height="38" rx="8" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-gr5" x="380" y="180" width="230" height="38" rx="8" stroke-width="2"/>
+    <text class="rc-h mono" x="394" y="204">fact(4002)</text>
+    <text class="rc-h mono end f-purple" x="596" y="204">4002 × ?</text>
+  </g>
+    <g class="rc-err">
+      <rect class="f-red-soft s-red" x="380" y="116" width="230" height="44" rx="8" stroke-width="2"/>
+      <text class="rc-h mid f-red" x="495" y="134">RecursionError</text>
+      <text class="tiny mid f-red" x="495" y="151">maximum recursion depth exceeded</text>
+    </g>
+  </g>
+
+  <!-- right column: depth counter, caller and result -->
+  <g class="p124">
+    <rect class="box" x="660" y="104" width="270" height="72" rx="12"/>
+    <text class="tiny" x="676" y="124">stack depth (fact frames)</text>
+    <text class="rc-num mono rc-d0" x="676" y="160">0</text>
+    <text class="rc-num mono rc-d1" x="676" y="160">1</text>
+    <text class="rc-num mono rc-d2" x="676" y="160">2</text>
+    <text class="rc-num mono rc-d3" x="676" y="160">3</text>
+    <text class="rc-num mono rc-d4" x="676" y="160">4</text>
+    <text class="rc-num mono rc-d100" x="676" y="160">100</text>
+    <text class="rc-num mono rc-d300" x="676" y="160">300</text>
+    <text class="rc-num mono rc-d500" x="676" y="160">500</text>
+    <text class="rc-num mono rc-d700" x="676" y="160">700</text>
+    <text class="rc-num mono rc-d900" x="676" y="160">900</text>
+    <text class="rc-num mono rc-d997" x="676" y="160">997</text>
+    <text class="rc-num mono rc-d998" x="676" y="160">998</text>
+    <text class="rc-num mono rc-d999" x="676" y="160">999</text>
+    <text class="rc-num mono f-red rc-d999r" x="676" y="160">999</text>
+    <g class="p4"><text class="tiny end" x="914" y="124">limit 1000</text></g>
+    <text class="tiny sb end f-red rc-lim" x="914" y="160">+ 1 caller frame = 1000</text>
+
+    <rect class="box" x="660" y="388" width="270" height="62" rx="12"/>
+    <text class="tiny" x="676" y="407">caller</text>
+    <text class="tiny end" x="914" y="407">result</text>
+    <text class="rc-pend mono rc-c4" x="676" y="435">x = fact(4)</text>
+    <text class="rc-pend mono rc-c5000" x="676" y="435">x = fact(5000)</text>
+    <text class="rc-num mono end f-green rc-res24" x="914" y="438">24</text>
+    <text class="rc-h end f-red rc-cerr" x="914" y="435">RecursionError</text>
+  </g>
+
+  <!-- right column, steps 1-2: what a frame holds -->
+  <g class="p12">
+    <rect class="box" x="660" y="200" width="270" height="104" rx="12"/>
+    <text class="rc-h" x="676" y="224">each frame holds</text>
+    <text class="sub" x="676" y="248">its arguments and locals: <tspan class="mono">n = 4</tspan></text>
+    <text class="sub" x="676" y="269">the work still to do: <tspan class="mono">4 × ?</tspan></text>
+    <text class="sub" x="676" y="290">where to return: its caller</text>
+  </g>
+
+  <!-- right column, step 4: the fixes -->
+  <g class="p4">
+  <g class="rc-x1">
+    <rect class="f-green-soft s-green" x="660" y="194" width="270" height="52" rx="10" stroke-width="1.5"/>
+    <text class="rc-h f-green" x="674" y="215">loop with an accumulator</text>
+    <text class="sub" x="674" y="233">one frame, O(1) extra space</text>
+  </g>
+  <g class="rc-x2">
+    <rect class="f-green-soft s-green" x="660" y="256" width="270" height="52" rx="10" stroke-width="1.5"/>
+    <text class="rc-h f-green" x="674" y="277">explicit stack</text>
+    <text class="sub" x="674" y="295">for tree-shaped work: push, pop, loop</text>
+  </g>
+  <g class="rc-x3">
+    <rect class="f-amber-soft s-amber" x="660" y="318" width="270" height="52" rx="10" stroke-width="1.5"/>
+    <text class="rc-h f-amber-ink" x="674" y="339">tail call? no help in Python</text>
+    <text class="sub" x="674" y="357">CPython does not eliminate tail calls</text>
+  </g>
+  </g>
+
+  <!-- step 3: the call tree of naive fib(5) -->
+  <g class="p3">
+    <text class="tiny sb" x="372" y="116">calls so far</text>
+    <text class="rc-num mono rc-k1" x="372" y="146">1</text>
+    <text class="rc-num mono rc-k2" x="372" y="146">2</text>
+    <text class="rc-num mono rc-k3" x="372" y="146">3</text>
+    <text class="rc-num mono rc-k4" x="372" y="146">4</text>
+    <text class="rc-num mono rc-k5" x="372" y="146">5</text>
+    <text class="rc-num mono rc-k6" x="372" y="146">6</text>
+    <text class="rc-num mono rc-k7" x="372" y="146">7</text>
+    <text class="rc-num mono rc-k8" x="372" y="146">8</text>
+    <text class="rc-num mono rc-k9" x="372" y="146">9</text>
+    <text class="rc-num mono rc-k10" x="372" y="146">10</text>
+    <text class="rc-num mono rc-k11" x="372" y="146">11</text>
+    <text class="rc-num mono rc-k12" x="372" y="146">12</text>
+    <text class="rc-num mono rc-k13" x="372" y="146">13</text>
+    <text class="rc-num mono rc-k14" x="372" y="146">14</text>
+    <text class="rc-num mono rc-k15" x="372" y="146">15</text>
+    <g class="rc-n0"><rect class="box" x="669.79" y="105" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="699.79" y="122.5">fib(5)</text></g>
+    <g class="rc-n1"><line class="wire" x1="699.79" y1="131" x2="559.71" y2="159" stroke-width="1.5"/><rect class="box" x="529.71" y="159" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="559.71" y="176.5">fib(4)</text></g>
+    <g class="rc-n2"><line class="wire" x1="559.71" y1="185" x2="478.38" y2="213" stroke-width="1.5"/><rect class="box" x="448.38" y="213" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="478.38" y="230.5">fib(3)</text></g>
+    <g class="rc-n3"><line class="wire" x1="478.38" y1="239" x2="424.15" y2="267" stroke-width="1.5"/><rect class="box" x="394.15" y="267" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="424.15" y="284.5">fib(2)</text></g>
+    <g class="rc-n4"><line class="wire" x1="424.15" y1="293" x2="388" y2="321" stroke-width="1.5"/><rect class="box" x="358" y="321" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="388" y="338.5">fib(1)</text></g>
+    <g class="rc-n5"><line class="wire" x1="424.15" y1="293" x2="460.3" y2="321" stroke-width="1.5"/><rect class="box" x="430.3" y="321" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="460.3" y="338.5">fib(0)</text></g>
+    <g class="rc-n6"><line class="wire" x1="478.38" y1="239" x2="532.6" y2="267" stroke-width="1.5"/><rect class="box" x="502.6" y="267" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="532.6" y="284.5">fib(1)</text></g>
+    <g class="rc-n7"><line class="wire" x1="559.71" y1="185" x2="641.05" y2="213" stroke-width="1.5"/><rect class="box" x="611.05" y="213" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="641.05" y="230.5">fib(2)</text></g>
+    <g class="rc-n8"><line class="wire" x1="641.05" y1="239" x2="604.9" y2="267" stroke-width="1.5"/><rect class="box" x="574.9" y="267" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="604.9" y="284.5">fib(1)</text></g>
+    <g class="rc-n9"><line class="wire" x1="641.05" y1="239" x2="677.2" y2="267" stroke-width="1.5"/><rect class="box" x="647.2" y="267" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="677.2" y="284.5">fib(0)</text></g>
+    <g class="rc-n10"><line class="wire" x1="699.79" y1="131" x2="839.88" y2="159" stroke-width="1.5"/><rect class="box" x="809.88" y="159" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="839.88" y="176.5">fib(3)</text></g>
+    <g class="rc-n11"><line class="wire" x1="839.88" y1="185" x2="785.65" y2="213" stroke-width="1.5"/><rect class="box" x="755.65" y="213" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="785.65" y="230.5">fib(2)</text></g>
+    <g class="rc-n12"><line class="wire" x1="785.65" y1="239" x2="749.5" y2="267" stroke-width="1.5"/><rect class="box" x="719.5" y="267" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="749.5" y="284.5">fib(1)</text></g>
+    <g class="rc-n13"><line class="wire" x1="785.65" y1="239" x2="821.8" y2="267" stroke-width="1.5"/><rect class="box" x="791.8" y="267" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="821.8" y="284.5">fib(0)</text></g>
+    <g class="rc-n14"><line class="wire" x1="839.88" y1="185" x2="894.1" y2="213" stroke-width="1.5"/><rect class="box" x="864.1" y="213" width="60" height="26" rx="13"/><text class="rc-node mono mid" x="894.1" y="230.5">fib(1)</text></g>
+    <rect class="f-teal-soft s-teal rc-memo" x="669.79" y="105" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-teal-soft s-teal rc-memo" x="529.71" y="159" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-teal-soft s-teal rc-memo" x="448.38" y="213" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-teal-soft s-teal rc-memo" x="394.15" y="267" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-teal-soft s-teal rc-memo" x="358" y="321" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-teal-soft s-teal rc-memo" x="430.3" y="321" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="502.6" y="267" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="611.05" y="213" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="574.9" y="267" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="647.2" y="267" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="809.88" y="159" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="755.65" y="213" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="719.5" y="267" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="791.8" y="267" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="f-red-soft s-red rc-rep" x="864.1" y="213" width="60" height="26" rx="13" stroke-width="2"/>
+    <rect class="none s-blue rc-cur" x="-35" y="-17" width="70" height="34" rx="17" stroke-width="2.5"/>
+    <g class="rc-rep">
+      <rect class="f-red-soft s-red" x="360" y="370" width="276" height="30" rx="15" stroke-width="1.5"/>
+      <text class="rc-h mid f-red" x="498" y="390">9 of 15 calls redo earlier work</text>
+    </g>
+    <g class="rc-memo">
+      <rect class="f-teal-soft s-teal" x="648" y="370" width="276" height="30" rx="15" stroke-width="1.5"/>
+      <text class="rc-h mid f-teal" x="786" y="390">memoized: 6 computations, O(n)</text>
+    </g>
+    <g class="rc-grow">
+      <rect class="box" x="360" y="410" width="564" height="48" rx="12"/>
+      <text class="rc-h" x="376" y="430">naive calls grow about 1.6× per extra n: Θ(φⁿ), φ ≈ 1.618</text>
+      <text class="sub mono" x="376" y="449">fib(10): 177 · fib(20): 21,891 · fib(25): 242,785 calls</text>
+    </g>
+  </g>
+
+  <!-- tokens -->
+  <circle class="pkt f-blue rc-call" r="7"/>
+  <g class="rc-r1"><circle class="pkt f-green" r="7"/><text class="tiny b f-green" x="12" y="4">1</text></g>
+  <g class="rc-r2"><circle class="pkt f-green" r="7"/><text class="tiny b f-green" x="12" y="4">2</text></g>
+  <g class="rc-r6"><circle class="pkt f-green" r="7"/><text class="tiny b f-green" x="12" y="4">6</text></g>
+  <g class="rc-r24"><circle class="pkt f-green" r="7"/><text class="tiny b f-green" x="-4" y="-12">24</text></g>
+</g>
+</svg>

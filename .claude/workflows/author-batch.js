@@ -72,6 +72,7 @@ ${p.brief}
 PROCESS
 - cd ${REPO} && npm run new -- ${p.slug}   (the slug is already in catalog.json)
 - Every tool call re-reads your whole context, so work in few, larger steps: send independent tool calls together in one turn, read only the parts of files you need, pull facts out of web pages with grep or a narrow fetch prompt instead of loading whole pages, and don't re-view a snapshot that hasn't changed.
+- Never run code that is meant to crash or exhaust the machine (recursion past the C stack, fork bombs, memory exhaustion): on this Mac a crashing process opens a crash-report dialog in front of the user. Support such claims with documentation instead.
 - Write your keyframe generator in ${SCRATCH}/${p.slug}/ (import ${REPO}/scripts/lib/motion.mjs by absolute path) and paste its output into the diagram's <style>. Keep scratch files out of the repo.
 - Only create or modify files inside patterns/${p.slug}/. Other agents work in the same repo in parallel: do not edit anything else, and do not run npm run build or a full npm run sync / npm run check. If a shared file needs a change, say so in compromises.
 - After edits: node scripts/sync.mjs ${p.slug} && node scripts/check.mjs ${p.slug} (0 errors required).
@@ -101,6 +102,7 @@ For each pattern, read patterns/<slug>/meta.json, README.md and diagram.svg (han
 3. Consistency between the catalog summary (catalog.json), captions, step bodies, README and the diagram's labels and visuals. List labels with: grep -o '<text[^>]*>[^<]*' patterns/<slug>/diagram.svg | sed 's/<text[^>]*>//' | sort -u
 4. Each step's story finishes 0.4 s before the step ends (0.6 s before the loop ends), where the site player holds. Spot-check with npm run snap -- <slug> --times=4.6,9.6,14.6,19.4.${algorithmCheck}
 Work in your own words: never transcribe passages from books, papers or articles, in fixes, notes or reasoning (the API's output filter ends the response when you do), and don't ask a fetch tool to quote.
+Never run code that is meant to crash or exhaust the machine (a crashing process opens a crash-report dialog in front of the user); check such claims against documentation.
 Only report and fix substantive problems: wrong, outdated, misleading, inconsistent, broken. No style rewrites. Keep fixes minimal and in house style (captions at most 100 characters, step titles at most 26, no "|" in step titles or bodies).
 Only edit files inside those patterns' folders. Another reviewer works on other folders in parallel, so touch nothing else, do not run git, and do not run npm run build or a full sync/check. After edits: node scripts/sync.mjs <slug> && node scripts/check.mjs <slug> (0 errors). Re-snapshot and view any diagram you changed.
 Return, per pattern, the fixes you applied (with the source you checked), suspicions you rejected, whether the SVG changed and whether the check passed.`

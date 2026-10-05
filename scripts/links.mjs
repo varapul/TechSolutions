@@ -66,7 +66,7 @@ async function worker() {
 }
 await Promise.all(Array.from({ length: 8 }, worker));
 // Some publishers answer automated requests with 403 (e.g. dl.acm.org); check those by hand.
-const BOT_BLOCKERS = /^https:\/\/(dl\.acm\.org|www\.oreilly\.com)\//;
+const BOT_BLOCKERS = /^https:\/\/(dl\.acm\.org|www\.oreilly\.com|academic\.oup\.com)\//;
 let failed = 0;
 for (const r of results) {
   if (r.code >= 200 && r.code < 300) continue;

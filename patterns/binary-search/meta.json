@@ -1,0 +1,37 @@
+{
+  "aka": ["half-interval search", "binary chop"],
+  "steps": [
+    {
+      "title": "Scan one by one",
+      "caption": "A linear scan checks cells from the left: 58 takes 13 checks, and a missing value takes all 16.",
+      "body": "A **linear search** compares the target with each cell in turn. Finding 58 takes 13 checks (indexes 0 to 12), and a value that isn't there costs all 16, because the scan can only give up at the end. The cost grows in step with the input: O(n)."
+    },
+    {
+      "title": "Halve the range",
+      "caption": "Binary search checks the middle and drops the half that can't hold 58: found after 4 checks.",
+      "body": "Binary search keeps a range `[lo, hi]` that must contain 58 if it is there at all, and checks its middle, `mid = (lo + hi) // 2`. Index 7 holds 31, less than 58, so indexes 0 to 7 are ruled out and `lo = 8`; then 53 < 58 gives `lo = 12`, 64 > 58 gives `hi = 12`, and index 12 holds 58: **4 checks instead of 13**."
+    },
+    {
+      "title": "A miss lands somewhere",
+      "caption": "Find 50: after 4 checks lo has passed hi, so 50 is absent, and lo = 11 is where it would go.",
+      "body": "Searching for 50: 31 < 50 gives `lo = 8`, 53 > 50 gives `hi = 10`, 42 < 50 gives `lo = 10`, and 47 < 50 gives `lo = 11`. Now `lo` has passed `hi`, so the range is empty and 50 is not in the array, after 4 checks. `lo` stops at 11, the index where 50 would be inserted to keep the array sorted, which is exactly what Python's `bisect.bisect_left` returns."
+    },
+    {
+      "title": "Why it scales",
+      "caption": "Each check halves the range: 20 checks cover a million items, but only on sorted, indexable data.",
+      "body": "Every check halves the range, so the worst case is ⌊log₂ n⌋ + 1 checks: 5 for 16 items, 10 for a thousand, 20 for a million and 30 for a billion, where a scan may need all n. It needs **sorted** data and **fast access by index** (an array, not a linked list). Compute the middle as `lo + (hi - lo) / 2`, because `(lo + hi) / 2` overflows fixed-width integers on huge arrays, a bug that sat in the JDK for about nine years."
+    }
+  ],
+  "related": ["big-o-notation", "binary-search-tree", "two-pointers", "elementary-sorts", "merge-sort", "quicksort", "hash-table", "sliding-window"],
+  "references": [
+    { "title": "Python documentation — bisect: Array bisection algorithm", "url": "https://docs.python.org/3/library/bisect.html" },
+    { "title": "Joshua Bloch — Extra, Extra - Read All About It: Nearly All Binary Searches and Mergesorts are Broken (Google Research blog, 2006)", "url": "https://research.google/blog/extra-extra-read-all-about-it-nearly-all-binary-searches-and-mergesorts-are-broken/" },
+    { "title": "Java SE 27 API — java.util.Arrays (binarySearch)", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Arrays.html" },
+    { "title": "cppreference — std::lower_bound", "url": "https://en.cppreference.com/cpp/algorithm/lower_bound" },
+    { "title": "Go standard library — sort.Search", "url": "https://pkg.go.dev/sort#Search" },
+    { "title": "Go standard library — slices.BinarySearch", "url": "https://pkg.go.dev/slices#BinarySearch" },
+    { "title": "Git documentation — git-bisect", "url": "https://git-scm.com/docs/git-bisect" },
+    { "title": "Sedgewick and Wayne — Algorithms, 4th edition, 3.1 Elementary Symbol Tables", "url": "https://algs4.cs.princeton.edu/31elementary/" },
+    { "title": "CPython — Objects/listsort.txt (galloping in list.sort)", "url": "https://github.com/python/cpython/blob/main/Objects/listsort.txt" }
+  ]
+}

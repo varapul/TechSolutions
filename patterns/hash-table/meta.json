@@ -1,0 +1,47 @@
+{
+  "aka": ["hash map", "dictionary", "associative array"],
+  "steps": [
+    {
+      "title": "Key to bucket",
+      "caption": "Each key's hash mod 8 picks its bucket; get(bob) repeats the same math and goes straight there.",
+      "body": "Each `put` runs the key through a hash function (32-bit FNV-1a here) and reduces the hash to a bucket index with `hash mod 8`: alice hashes to `0x872213E7` and lands in bucket 7, bob in 4 and carol in 2. A `get` repeats the same calculation and goes straight to that bucket, so on average it costs the same however many entries the table holds: **O(1)**."
+    },
+    {
+      "title": "Collisions share a bucket",
+      "caption": "dave also lands in bucket 7, so that bucket keeps a chain; get(dave) compares keys along it.",
+      "body": "dave hashes to `0xD06CC5DF`, which also gives bucket 7, so the bucket keeps a short **chain** (separate chaining): alice, then dave. `get(dave)` goes to bucket 7 and compares keys along the chain: alice is not equal, dave is, and it returns 38. A shared bucket, or even an identical hash, does not mean the keys are equal, so the key comparison is always needed."
+    },
+    {
+      "title": "Grow before it clogs",
+      "caption": "grace makes 7 entries in 8 buckets, over 0.75, so the table doubles to 16 and rehashes every entry.",
+      "body": "erin and frank bring the table to 6 entries in 8 buckets, a **load factor** of 0.75. grace collides with frank in bucket 3 and makes 7, more than 0.75 × 8 = 6, so the table doubles to 16 buckets and rehashes every entry with `mod 16`: alice, bob, carol and frank stay where they are, while erin moves to 9, grace to 11 and dave to 15. The load factor drops to 7/16 ≈ 0.44. A resize copies everything (O(n)), but doubling makes it rare enough that inserts stay **O(1) amortized**."
+    },
+    {
+      "title": "When hashing goes wrong",
+      "caption": "Five keys built to share one hash all chain in bucket 5, so a lookup there scans them all: O(n).",
+      "body": "FNV-1a has no secret, so colliding keys can be computed offline: these five 5-character keys all hash to `0x91AB64A5` and pile into bucket 5 while the load factor stays within its 0.75 limit. A lookup there scans the chain (5 compares for the last key, n in general), and inserting n such keys costs O(n²) compares: **hash flooding**, demonstrated against many web platforms in December 2011. The defences are keyed hashes with a random seed (SipHash), Java's tree bins and limits on request size."
+    }
+  ],
+  "related": ["sharding", "cache-aside", "binary-search-tree", "big-o-notation", "binary-search", "two-pointers", "sliding-window"],
+  "references": [
+    { "title": "RFC 9923 — The FNV Non-Cryptographic Hash Algorithm (Noll, Vo, Eastlake and Hansen, 2026)", "url": "https://www.rfc-editor.org/rfc/rfc9923.html" },
+    { "title": "Java SE 27 API — java.util.HashMap", "url": "https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/HashMap.html" },
+    { "title": "JEP 180 — Handle Frequent HashMap Collisions with Balanced Trees", "url": "https://openjdk.org/jeps/180" },
+    { "title": "OpenJDK — HashMap.java (implementation notes, treeify thresholds, hash spreading)", "url": "https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/HashMap.java" },
+    { "title": "Python documentation — Mapping types: dict", "url": "https://docs.python.org/3/builtins/stdtypes.html#mapping-types-dict" },
+    { "title": "Python documentation — Glossary: hashable", "url": "https://docs.python.org/3/glossary.html#term-hashable" },
+    { "title": "Python documentation — object.__hash__ (hash randomization)", "url": "https://docs.python.org/3/reference/datamodel.html#object.__hash__" },
+    { "title": "PEP 456 — Secure and interchangeable hash algorithm", "url": "https://peps.python.org/pep-0456/" },
+    { "title": "What's New In Python 3.11 — siphash13 as the default str and bytes hash", "url": "https://docs.python.org/3/whatsnew/3.11.html" },
+    { "title": "CPython — Objects/dictobject.c (open addressing, dummy entries, usable fraction)", "url": "https://github.com/python/cpython/blob/main/Objects/dictobject.c" },
+    { "title": "Go 1.24 Release Notes — a new built-in map implementation based on Swiss Tables", "url": "https://go.dev/doc/go1.24" },
+    { "title": "The Go Blog — Faster Go maps with Swiss Tables (2025)", "url": "https://go.dev/blog/swisstable" },
+    { "title": "Rust standard library — std::collections::HashMap", "url": "https://doc.rust-lang.org/std/collections/struct.HashMap.html" },
+    { "title": "Abseil — Swiss Tables Design Notes", "url": "https://abseil.io/about/design/swisstables" },
+    { "title": "oCERT-2011-003 — multiple implementations denial-of-service via hash algorithm collision", "url": "https://ocert.org/advisories/ocert-2011-003.html" },
+    { "title": "Klink and Wälde — Effective Denial of Service attacks against web application platforms (28C3, 2011)", "url": "https://fahrplan.events.ccc.de/congress/2011/Fahrplan/events/4680.en.html" },
+    { "title": "Crosby and Wallach — Denial of Service via Algorithmic Complexity Attacks (USENIX Security 2003)", "url": "https://www.usenix.org/conference/12th-usenix-security-symposium/denial-service-algorithmic-complexity-attacks" },
+    { "title": "Aumasson and Bernstein — SipHash: a fast short-input PRF (2012)", "url": "https://www.aumasson.jp/siphash/siphash.pdf" },
+    { "title": "Sedgewick and Wayne — Algorithms, 4th edition, 3.4 Hash Tables", "url": "https://algs4.cs.princeton.edu/34hash/" }
+  ]
+}
