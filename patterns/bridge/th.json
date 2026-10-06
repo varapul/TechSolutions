@@ -1,0 +1,21 @@
+{
+  "summary": "แยก abstraction ออกจาก implementation เพื่อให้ทั้งสองฝั่งเปลี่ยนแปลงได้อย่างอิสระต่อกัน: shape m แบบกับ renderer n แบบใช้ class แค่ m + n ตัว ไม่ใช่ m × n",
+  "steps": [
+    {
+      "title": "หนึ่ง class ต่อหนึ่งคู่",
+      "body": "ถ้าไม่มีแพตเทิร์นนี้ ทุก class ต้องตอบสองคำถามพร้อมกัน คือ shape อะไรและ output แบบไหน: `SvgCircle`, `CanvasCircle`, `PdfCircle`, `SvgRectangle` … 3 shape × 3 renderer = **9 class** renderer ตัวที่สี่อย่าง `Ascii` เพิ่มมาทั้งคอลัมน์ (3 × 4 = 12) และ shape ตัวที่สี่อย่าง `Hexagon` เพิ่มมาทั้งแถว (4 × 4 = 16) ขณะเดียวกันโค้ด SVG ก็ถูกคัดลอกไปไว้ในทุก class `Svg…` และ geometry ของวงกลมก็ถูกคัดลอกไปไว้ในทุก class `…Circle`"
+    },
+    {
+      "title": "สอง hierarchy กับหนึ่ง bridge",
+      "body": "สองคำถามนั้นแยกออกเป็น hierarchy สองชุด โดย `Shape` (ตัว *Abstraction*) ถือ `Renderer` (ตัว *Implementor*) ไว้ และ `Circle`, `Rectangle` และ `Triangle` (*RefinedAbstractions*) วาดตัวเองผ่าน primitive ของ renderer เท่านั้น คือ `circle(x, y, r)` และ `polygon(points)` ส่วน `SvgRenderer`, `CanvasRenderer` และ `PdfRenderer` (*ConcreteImplementors*) implement primitive เหล่านั้นโดยไม่รู้อะไรเกี่ยวกับ shape เลย reference จาก `Shape` ไปยัง `Renderer` คือ bridge และ class 3 + 3 = **6 ตัว** มาแทนที่ 9 ตัวเดิม"
+    },
+    {
+      "title": "การเรียกข้าม bridge",
+      "body": "`new Circle(svg, 50, 50, 40).draw()` รันโค้ดบรรทัดเดียวของ Circle คือ `renderer.circle(50, 50, 40)` การเรียกนี้ข้าม bridge ไปที่ `SvgRenderer` แล้วได้ `<circle cx=\"50\" cy=\"50\" r=\"40\"/>` กลับมา ถ้าสร้าง class `Circle` ตัวเดียวกันนี้ด้วย `canvas` จะได้ `ctx.beginPath()`, `ctx.arc(50, 50, 40, 0, 2 * Math.PI)` และ `ctx.stroke()` แทน: โค้ดของ shape เหมือนเดิมทุกอย่าง ต่างกันแค่ object ที่อยู่หลัง bridge"
+    },
+    {
+      "title": "ขยายฝั่งไหนก็ได้",
+      "body": "`AsciiRenderer` เป็น class ใหม่ตัวเดียวที่ทุก shape ใช้ได้ทันที และ `Hexagon` เป็น class ใหม่ตัวเดียวที่ทุก renderer วาดได้: shape 4 แบบกับ renderer 4 แบบใช้ 4 + 4 = **8 class** แทนที่จะเป็น 16 และไม่ต้องแก้ฝั่งไหนเลย bridge ต่างจาก *Adapter* ที่ทำให้ class ที่มีอยู่แล้วเข้ากันได้ในภายหลัง เพราะ bridge ถูกวางไว้ตั้งแต่แรกเพื่อให้ทั้งสองฝั่งโตได้ ส่วน *Strategy* มีโครงสร้างเดียวกันแต่สลับแค่อัลกอริทึมเดียว และ *Abstract Factory* เลือก renderer ที่เหมาะกับแพลตฟอร์มให้ได้ JDBC driver และ paint engine ของ Qt ทำงานแบบนี้ และ ports and adapters ก็ใช้การแยกแบบเดียวกันนี้กับทั้งแอปพลิเคชัน"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "ส่งการโต้ตอบระหว่าง object ทั้งหมดผ่าน mediator ตัวเดียว เพื่อให้ dependency แบบ many-to-many กลายเป็น one-to-many",
+  "steps": [
+    {
+      "title": "ทุกตัวคุยกับทุกตัว",
+      "body": "ถ้าไม่มี mediator เหล่า widget จะเรียกกันเองโดยตรง: เมื่อประเทศเปลี่ยน `CountrySelect` เรียก `postcode.setFormat()`, `shipping.reload()` และ `pay.disable()` ส่วน `PostcodeField` เรียก `pay.enable()` เมื่อรหัสไปรษณีย์ถูกต้อง และ `ShippingOptions` ปิดปุ่ม Pay ระหว่างที่ reload เมื่อต่อถึงกันหมด widget สี่ตัวจะถือรวมกัน 4 × 3 = **12 reference** และกฎของ Pay ก็กระจายอยู่ถึงสาม class ส่วน widget ตัวที่ห้าอย่าง checkbox ห่อของขวัญ (gift wrap) ทำให้กลายเป็น 5 × 4 = 20 และต้องเพิ่ม field ให้ทั้งสี่ class"
+    },
+    {
+      "title": "คุยผ่าน mediator",
+      "body": "ตอนนี้ widget แต่ละตัว (ตัว *Colleague*) ถือ reference เดียวคือไปยัง interface `Mediator` และแค่รายงานว่าเกิดอะไรขึ้น: `mediator.notify(this, 'changed')` ส่วน `CheckoutMediator` (ตัว *ConcreteMediator*) ถือ widget ทั้งสี่ตัวและกฎทั้งหมด แล้วเรียก widget ตัวที่เกี่ยวข้อง mesh ยุบลงเหลือเป็นรูปดาว: 12 reference เหลือ 4 (ถ้ามี 10 widget จาก 90 เหลือ 10) และ checkbox ห่อของขวัญตอนนี้ใช้แค่ reference เดียวกับกฎใหม่หนึ่งข้อใน `CheckoutMediator` โดยไม่ต้องแก้ widget ตัวอื่นเลย"
+    },
+    {
+      "title": "เปลี่ยนครั้งเดียว ประสานให้ครบ",
+      "body": "ผู้ใช้เลือก **Thailand**: `CountrySelect` แจ้ง mediator แล้วกฎเรื่องประเทศของ mediator ก็เรียก `postcode.setFormat('5 digits')`, `shipping.reload('TH')` และ `pay.disable()` ตามลำดับนี้ ผู้ใช้พิมพ์ **10110**: `PostcodeField` แจ้งเข้ามา แล้ว mediator ก็ตรวจค่ากับรูปแบบ 5 หลักก่อนเรียก `pay.enable()` notification วิ่งเข้า (สีม่วง) และการเรียกวิ่งออก (สีน้ำเงิน) โดยไม่มี widget ไหนเรียก widget อื่นเลย"
+    },
+    {
+      "title": "ต้นทุน และแพตเทิร์นใกล้เคียง",
+      "body": "mediator รวม logic ของการโต้ตอบไว้ที่เดียว กฎใหม่ทุกข้อจึงไปลงที่ `CheckoutMediator` และมันอาจโตจนกลายเป็น god object: ควรแยกตามเรื่อง (ที่อยู่ การชำระเงิน) และให้ widget ไม่ต้องมี logic ต่างจาก [Observer](../observer/) ที่ listener แต่ละตัวตัดสินใจเอง ตรงที่ mediator เป็นเจ้าของกฎ แม้จะมักสร้างอยู่บน notification ก็ตาม และต่างจาก [Facade](../facade/) ที่ subsystem ไม่รู้ด้วยซ้ำว่ามี facade อยู่ ตรงที่ colleague รู้จักและเรียก mediator ของตัวเอง ในระดับทั้งระบบ [saga orchestrator](../saga-orchestration/) ประสานงาน service แบบเดียวกับที่ mediator ประสาน widget, [choreography](../saga-choreography/) คือแบบ mesh และ [hub-and-spoke network](../hub-spoke-network/) ก็แทน full mesh ของ peering ด้วย hub เดียว"
+    }
+  ]
+}

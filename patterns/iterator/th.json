@@ -1,0 +1,21 @@
+{
+  "summary": "ไล่ดู collection ทีละ element โดยไม่เปิดเผยว่ามันเก็บข้อมูลไว้อย่างไร: จะเป็น array, tree หรือ stream ที่ไม่มีวันจบก็ตาม",
+  "steps": [
+    {
+      "title": "loop รู้ว่าข้อมูลเก็บอย่างไร",
+      "body": "`exportCsv()`, `sendReceipts()` และ `syncCrm()` ต่างมี paging loop แบบเดียวกัน: เริ่มที่หน้า 1 เรียก `orders.getPage(page)` ไล่ไปตาม `res.orders` หยุดเมื่อ `hasMore` เป็น false ไม่อย่างนั้นก็ `page++` caller ทุกตัวรู้ว่า API แบ่งข้อมูลอย่างไร ดังนั้นเมื่อ API เปลี่ยนไปใช้ cursor token ทั้งสาม loop ต้องแก้ และ caller ตัวถัดไปก็จะคัดลอก loop นี้ไปอีก"
+    },
+    {
+      "title": "iterator ซ่อนรายละเอียดไว้",
+      "body": "`OrdersApi.all()` เป็น factory method: ทุกครั้งที่เรียกจะคืน iterator ตัวใหม่ ซึ่งก็คือ generator object ที่ async generator function `allOrders()` สร้างขึ้น และ caller เขียนแค่ `for await (const order of orders.all())` ตอนนี้ paging loop อยู่ที่เดียว และตัวแปร local ของ generator ก็คือ state ของ iterator: cursor (`page`) และ buffer (สิ่งที่เหลืออยู่ในหน้าปัจจุบัน) ถึงตอนนี้ยังไม่มีโค้ดส่วนไหนทำงาน: body ของ generator เริ่มทำงานเมื่อมีการเรียก `next()` ครั้งแรก"
+    },
+    {
+      "title": "lazy ทีละหน้า",
+      "body": "`next()` ครั้งแรกจะเริ่ม generator ซึ่ง fetch หน้า 1 จากนั้น 1002 และ 1003 ก็ออกมาจาก buffer โดยไม่ต้องส่ง request ใหม่ และการขอ order ตัวที่ 4 จะ fetch หน้า 2 หลัง 1004 ตัว preview สั่ง break แล้ว `for await` ก็เรียก `return()` ของ iterator ทำให้ generator หยุด หน้า 3 จึงไม่เคยถูกขอเลย: ใช้ 2 request แทนที่จะเป็น 3"
+    },
+    {
+      "title": "loop เดียว ใช้ได้กับทุกโครงสร้าง",
+      "body": "`for…of` ขอ iterator จากแต่ละแหล่งข้อมูลแล้วเรียก `next()` ไปจนกว่าจะ `done`: ไม่ว่าจะเป็น iterator ที่ติดมากับ array, generator แบบ in-order บน binary search tree (1001 ถึง 1007 เรียงลำดับแล้ว) หรือ generator ที่ไม่มีวันจบซึ่ง `take(5)` หยุดไว้หลังได้ห้าค่า JavaScript, Python, Java และ C# ต่างฝังแพตเทิร์นนี้ไว้ในตัวภาษา ต้นทุนคือ object เพิ่มอีกหนึ่งตัวต่อการไล่หนึ่งรอบ และ collection ที่เปลี่ยนระหว่างไล่ต้องมีคำตอบที่กำหนดไว้ชัดเจน: iterator ของ `ArrayList` ใน Java จะ throw `ConcurrentModificationException`"
+    }
+  ]
+}

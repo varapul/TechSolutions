@@ -1,0 +1,21 @@
+{
+  "summary": "service ขนาดเล็กที่ deploy ได้อย่างอิสระ แต่ละตัวเป็นเจ้าของ business capability หนึ่งอย่างพร้อมข้อมูลของมัน",
+  "steps": [
+    {
+      "title": "แบ่งตาม capability",
+      "body": "monolith คือหน่วย deploy เดียวบนฐานข้อมูลก้อนเดียวที่ใช้ร่วมกัน ทุกการเปลี่ยนแปลงจึงต้องออกไปพร้อมกัน และ module ไหนก็ล้วงเข้าไปใน table ไหนก็ได้ ให้แบ่งมันตาม **business capability** (Catalog, Orders, Payments, Inventory): แต่ละ service มี codebase ของตัวเอง deployment ของตัวเอง และ **ฐานข้อมูลของตัวเอง** ซึ่ง service อื่นเข้าถึงได้ผ่าน API หรือ event ของมันเท่านั้น"
+    },
+    {
+      "title": "deploy และ scale ได้อิสระ",
+      "body": "แต่ละ service มี version และจังหวะการ release ของตัวเอง ทีม Payments ปล่อย **v2** ตามกำหนดของตัวเอง โดยไม่ต้องนัด release พร้อมกัน ขณะที่ Catalog และ Orders ยังรับ request ด้วย version ปัจจุบันต่อไป เมื่อ Catalog รับโหลดหนัก ก็ **scale out** แค่ Catalog (ในภาพนี้เป็น 3 instance) ส่วนอื่นไม่ต้อง redeploy หรือปรับขนาดเลย"
+    },
+    {
+      "title": "query แบบ sync, event แบบ async",
+      "body": "ใช้การเรียกแบบ **synchronous** เมื่อผู้เรียกต้องการคำตอบทันที: `GET /products` รอ response จาก Catalog ส่วนระหว่าง service ด้วยกัน ให้ประกาศ **การเปลี่ยน state** เป็น event แทนการไล่เรียกทุกตัวที่สนใจ: Orders บันทึก order ตอบกลับ แล้ว publish `OrderPlaced` จากนั้น broker ส่งสำเนาให้ทั้ง Payments และ Inventory และแต่ละตัวอัปเดตข้อมูลของตัวเองตามจังหวะของตัวเอง"
+    },
+    {
+      "title": "กักความล้มเหลวไว้ในวงจำกัด",
+      "body": "Payments ล่ม แต่ Orders ไม่เคยเรียกมันโดยตรง ระบบจึงยังรับ order ได้ Inventory ยัง consume ต่อไป และ event `OrderPlaced` ที่ส่งถึง Payments ก็ **รออยู่ใน queue** ของมันบน broker ส่วน Catalog ไม่รู้ตัวด้วยซ้ำ เมื่อ Payments กลับมา ก็ไล่ทำ backlog จนตามทัน: ความล้มเหลวอยู่แค่ใน service เดียว และ order ที่เข้ามาช่วงระบบล่มก็แค่ถูกชำระเงินช้าลงเล็กน้อย"
+    }
+  ]
+}

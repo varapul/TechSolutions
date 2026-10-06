@@ -1,0 +1,21 @@
+{
+  "summary": "สร้าง object ใหม่ด้วยการคัดลอก prototype ที่ตั้งค่าไว้แล้วแทนการสร้างจากศูนย์ และรู้ว่าเมื่อไรต้องคัดลอกแบบ deep copy",
+  "steps": [
+    {
+      "title": "ตั้งค่าใหม่ตั้งแต่ศูนย์",
+      "body": "ถ้าไม่มีแพตเทิร์นนี้ ทุกจุดที่ต้องใช้รายงานรายไตรมาสจะสร้างมันขึ้นมาจากศูนย์: `new Report()` ตามด้วย setter สี่ตัวสำหรับชื่อรายงาน, theme (font Inter, accent teal), section ทั้งสาม และค่า default ของ chart `ReportService` เรียกห้าครั้งนี้ซ้ำใน `pdf()`, `email()` และ `export()` ทุกครั้งที่แก้การตั้งค่ามาตรฐานจึงต้องตามแก้ให้ครบทั้งสามที่ ในตัวอย่างนี้มีการแก้สองครั้งที่ตกหล่นไปหนึ่งที่: `export()` ยังใช้ accent blue แบบเก่า และไม่มี section Costs"
+    },
+    {
+      "title": "clone จาก prototype ที่พร้อมใช้",
+      "body": "ตอนนี้การตั้งค่าเกิดขึ้นแค่ครั้งเดียว: ตอนเริ่มทำงาน แอปพลิเคชันจะลงทะเบียนรายงานที่ตั้งค่าไว้แล้ว คือ `quarterly` และ `monthly` ไว้ใน `PrototypeRegistry` (หนังสือ GoF เรียกว่า *prototype manager*) `ReportService` เรียก `registry.get('quarterly').clone()` ได้ `Report` ตัวใหม่ที่มี theme และ section เหมือนเดิมกลับมา แล้วแก้เฉพาะส่วนที่ต่าง: ชื่อรายงานเปลี่ยนเป็น `Q4 report` ส่วน interface *Prototype* ประกาศ `clone()` และ `Report` ซึ่ง implement interface นี้คือ *ConcretePrototype*"
+    },
+    {
+      "title": "กับดักของ shallow copy",
+      "body": "shallow copy ที่ทำด้วย `{ ...quarterly }` หรือ `Object.assign({}, quarterly)` คัดลอกแค่ชั้นบนสุด: ตัวที่คัดลอกมามี field ของตัวเอง แต่ field `sections` ยังชี้ไปที่ array ของ prototype ดังนั้น `q4.sections.push('Forecast')` จะเปลี่ยน prototype ไปด้วย ตอนนี้ทั้งคู่จึงแสดง 4 section และสำเนาที่สร้างหลังจากนี้ทุกตัวก็จะเป็นแบบเดียวกัน ส่วน `clone()` คัดลอก array ด้วย หลัง push แบบเดียวกัน prototype จึงยังมี 3 section และสำเนามี 4"
+    },
+    {
+      "title": "deep copy และข้อจำกัด",
+      "body": "`structuredClone()` คัดลอกข้อมูลที่ซ้อนกันแบบ deep รวมถึง cycle ด้วย แต่ไม่คัดลอก prototype chain: ผลลัพธ์เป็น plain object, `instanceof Report` ได้ false และการเรียก `clone()` บนมันจะ throw `TypeError` ด้วยเหตุนี้ class จึงเขียน `clone()` เอง โดยเรียก constructor เพื่อให้ได้ class เดิม และแชร์ส่วนที่ไม่มีวันเปลี่ยน เช่น theme ที่ freeze ไว้ แทนการคัดลอก แนวคิดเดียวกันนี้มีให้เห็นใน `Object.clone()` ของ Java (ต้องใช้อย่างระวัง ดู *Effective Java* Item 13), module `copy` ของ Python และในระดับทั้งระบบคือ pod template ของ Kubernetes, [deployment stamps](../deployment-stamps/) และ [machine images](../immutable-infrastructure/) ส่วน prototype chain ของ JavaScript เป็นคนละเรื่องกัน เพราะมัน delegate การค้นหา property ต่อไปและไม่ได้คัดลอกอะไรเลย"
+    }
+  ]
+}

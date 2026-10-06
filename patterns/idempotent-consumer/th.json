@@ -1,0 +1,21 @@
+{
+  "summary": "จำ ID ของ message ที่ประมวลผลแล้ว เพื่อให้ message ที่ถูกส่งซ้ำไม่มีผลเพิ่ม",
+  "steps": [
+    {
+      "title": "ทำไม message ซ้ำถึงมาได้",
+      "body": "broker จะลบ message ก็ต่อเมื่อ consumer acknowledge แล้วเท่านั้น Payments handle `m-7f3` (charge $40) และ commit แต่ acknowledgement หายไป (crash หรือ timeout ก่อนจะถึง broker) broker จึงส่ง `m-7f3` มาอีกครั้ง: การส่งเป็นแบบ **at-least-once** ไม่มีอะไรบอก handler ว่าเคยเห็น message นี้มาก่อน ลูกค้าจึงถูกตัดเงินสองครั้ง: $80 แทนที่จะเป็น $40"
+    },
+    {
+      "title": "บันทึก ID ไปพร้อมกับงาน",
+      "body": "handler เปิด transaction แล้ว insert `m-7f3` ลงใน `processed_messages` (ตารางที่มี column unique เพียง column เดียวคือ `message_id`) ตัดเงิน แล้ว commit หลังจากนั้นจึงค่อย acknowledge ตัว marker กับการตัดเงินถูกบันทึกพร้อมกันหรือไม่ถูกบันทึกเลยทั้งคู่: ถ้าบันทึกแยกกัน crash ที่เกิดระหว่างการเขียนสองครั้งจะทำให้การตัดเงินถูกข้ามไปตลอดกาล หรือไม่ก็ถูกทำซ้ำ ส่วน acknowledgement ไม่ได้เป็นส่วนหนึ่งของ transaction จึงยังหายได้ อย่างที่เกิดในตัวอย่างนี้"
+    },
+    {
+      "title": "ส่งซ้ำก็ไม่เปลี่ยนอะไร",
+      "body": "เมื่อ acknowledgement หายไป broker ก็ส่ง `m-7f3` มาอีกครั้ง คราวนี้การ insert ชน unique key ซึ่งบอก handler ว่างานนี้ commit ไปแล้ว: มันข้ามการตัดเงินและแค่ acknowledge ยอดรวมจึงยังอยู่ที่ $40 กรณีที่ consumer สองตัวแย่งกันทำ message เดียวกันก็จบแบบเดียวกัน: database ยอมให้ insert เพียงตัวเดียวชนะ อีกตัวจะได้ error duplicate key แล้วข้ามไป"
+    },
+    {
+      "title": "นอกเหนือจาก database ของเราเอง",
+      "body": "handler ยังเรียก payment provider ด้วย และไม่มี local transaction ไหนครอบ call นั้นได้: ถ้า response หาย หรือ handler crash ก่อน commit ก็จะเกิด call ซ้ำ handler จึงส่ง message ID ไปเป็น **idempotency key** แล้ว provider ก็รู้ว่าเป็นการเรียกซ้ำและคืนผลของ call แรกแทนที่จะตัดเงินอีกครั้ง ถ้าทำได้ ให้เลือก operation ที่ idempotent อยู่แล้วโดยธรรมชาติ (set ค่า, upsert) มากกว่าแบบที่ไม่ใช่ (บวก $40) และให้ ID ที่เก็บไว้หมดอายุเมื่อ broker ไม่มีทางส่ง message นั้นซ้ำได้อีกแล้ว"
+    }
+  ]
+}

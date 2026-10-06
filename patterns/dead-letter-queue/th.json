@@ -1,0 +1,21 @@
+{
+  "summary": "พัก message ที่ล้มเหลวซ้ำ ๆ ไว้ต่างหาก เพื่อไม่ให้ขวาง queue และเปิดตรวจสอบได้",
+  "steps": [
+    {
+      "title": "เมื่อเจอ poison message",
+      "body": "`m-13` มี field ที่ handler ไม่ได้คาดไว้ handler จึง throw และไม่เคย acknowledge message นั้น broker ทำให้มันพร้อมรับอีกครั้งแล้วส่งซ้ำ **receive count** ของมันจึงไต่ขึ้นเป็น 1, 2, 3 โดยเจอ error เดิมทุกครั้ง: retry แก้ความล้มเหลวที่อยู่ใน message หรือในโค้ดไม่ได้ queue นี้ส่งตามลำดับ `m-14`, `m-15` และ `m-16` จึงต้องรออยู่ข้างหลัง ถ้าเป็น queue ที่ไม่เรียงลำดับ message เหล่านั้นจะผ่านไปได้ แต่การส่ง `m-13` ซ้ำแต่ละครั้งก็ยังกินกำลังของ consumer อยู่ดี"
+    },
+    {
+      "title": "พักไว้หลังรับครบ 3 ครั้ง",
+      "body": "source queue มี dead-letter policy ที่ตั้ง **maximum receive count** ไว้ที่ 3 แทนที่จะส่ง `m-13` เป็นครั้งที่สี่ broker ย้ายมันไปที่ **dead-letter queue** พร้อมข้อมูลที่ตัวเองรู้: เหตุผล (receive limit reached), receive count และ queue ต้นทาง source queue ไหลได้อีกครั้ง และ `m-14`, `m-15` และ `m-16` ก็ถูก handle และบันทึกเรียบร้อย"
+    },
+    {
+      "title": "ตั้ง alarm แล้วตรวจสอบ",
+      "body": "ตอนนี้ dead-letter queue มี message อยู่หนึ่งตัว และ alarm ที่ตั้งไว้บน *depth > 0* ก็ page หา on-call engineer ถ้าไม่มี alarm นี้ dead-letter queue ก็คือการสูญเสียข้อมูลแบบเงียบ ๆ: ไม่มีอะไร consume มัน และ broker หลายตัวลบ message ที่พักไว้ทิ้งเมื่อหมด retention engineer อ่าน `m-13` โดยไม่เอาออกจาก queue จับคู่กับ error log ของ handler แล้วพบสาเหตุ: handler ปฏิเสธทุก field ที่มันไม่รู้จัก message นั้นถูกต้อง bug อยู่ที่ consumer ทางแก้จึงเป็น handler เวอร์ชันใหม่"
+    },
+    {
+      "title": "Redrive",
+      "body": "ต้องรอให้ deploy ตัวแก้เสร็จก่อน engineer จึง **redrive** `m-13`: มันกลับเข้า source queue เป็นการส่งครั้งใหม่ที่ receive count เริ่มนับใหม่ handler v2 บันทึกมันได้ และ dead-letter queue ก็ว่างอีกครั้ง มันถูกบันทึกหลัง `m-14` ถึง `m-16` เพราะการพัก message ไว้ทำให้มันเสียตำแหน่งในลำดับไป message ที่ถูก redrive ยังอาจทำงานซ้ำกับส่วนที่ทำไปแล้วบางส่วนก่อนจะล้มเหลวด้วย consumer จึงต้อง **idempotent** ส่วน message ที่ไม่ถูกต้องอย่างถาวรให้ archive หรือทิ้งอย่างตั้งใจแทน ไม่ใช่ปล่อยให้หมดอายุไปเอง"
+    }
+  ]
+}

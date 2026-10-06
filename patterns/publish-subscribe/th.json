@@ -1,0 +1,21 @@
+{
+  "summary": "กระจายแต่ละ message ผ่าน topic ไปถึง subscriber ทุกรายที่สนใจ",
+  "steps": [
+    {
+      "title": "Publish ครั้งเดียว กระจายถึงทุกราย",
+      "body": "Orders publish `OrderPlaced` ไปที่ topic `orders` แล้วก็จบงานของมัน: ไม่รู้ว่าใครฟังอยู่ และไม่รอใครทั้งนั้น broker จะใส่สำเนาลงในทุก **subscription** แต่ละ subscription คือ queue เล็ก ๆ ของตัวเองที่มีตำแหน่งของตัวเอง ซึ่งเป็นบันทึกว่า subscriber ของมัน acknowledge อะไรไปแล้วบ้าง แล้ว Billing, Shipping และ Analytics ก็ต่างได้รับสำเนาของตัวเองและ acknowledge กลับ กรอบเล็กในภาพแสดงให้เห็นความต่าง: ใน queue ธรรมดา message หนึ่งจะถูกรับไปโดยผู้รับเพียงรายเดียว Billing จะรับไป และ Shipping จะไม่ได้เห็นมันเลย"
+    },
+    {
+      "title": "เป็นอิสระต่อกันและ durable",
+      "body": "Analytics หลุด offline ไป แต่ subscription ของมันเป็นแบบ **durable**: message สองรายการที่ publish ระหว่างนั้นจะรออยู่ในนั้น Billing กับ Shipping ทำงานต่อไปโดยไม่ได้รับผลกระทบ และเมื่อ Analytics กลับมาก็อ่านต่อจากจุดที่ค้างไว้ ส่วน Live dashboard ใช้ subscription แบบ **non-durable** ซึ่งมีอยู่เฉพาะตอนที่ dashboard เชื่อมต่ออยู่เท่านั้น ระบบไม่เก็บอะไรไว้ให้มัน ดังนั้น message สองรายการที่ publish ไปตอนที่มันหลุดอยู่จึงพลาดไปเฉย ๆ"
+    },
+    {
+      "title": "กรองที่ broker",
+      "body": "subscription ของ Shipping มี filter บน attribute ของ message: `region = 'EU'` มี message ถูก publish สามรายการ (EU, US, EU) subscription ของ Billing และ Analytics ไม่มี filter จึงได้รับครบทั้งสาม ส่วนของ Shipping ได้เฉพาะสองรายการที่ตรงเงื่อนไข broker เป็นผู้ประเมิน filter ดังนั้น message US จะไม่เข้าไปใน subscription ของ Shipping และไม่ถึง subscriber เลย filter ดูอะไรได้บ้างขึ้นอยู่กับ broker: ดูชื่อ topic (ใช้ wildcard ได้), ดู attribute อย่างในตัวอย่างนี้ หรือดูเนื้อหาของ message"
+    },
+    {
+      "title": "เพิ่ม subscriber",
+      "body": "service ใหม่ชื่อ Fraud สร้าง subscription ของตัวเองบน topic นี้ ทั้งโค้ด, configuration และการ deploy ของ publisher ไม่ต้องเปลี่ยนเลย และ subscriber ตัวอื่นก็ไม่ได้รับผลกระทบ subscription ใหม่จะได้รับสิ่งที่ publish ตั้งแต่นี้เป็นต้นไป: หก message ก่อนหน้าไม่อยู่ในนั้น ถ้าเป็น broker แบบ log-based หรือ broker ที่มี retention และ replay subscriber ใหม่จะเริ่มจากตำแหน่งที่เก่ากว่าเพื่ออ่านประวัติย้อนหลังแทนก็ได้"
+    }
+  ]
+}

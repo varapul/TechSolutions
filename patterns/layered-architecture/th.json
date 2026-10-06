@@ -1,0 +1,21 @@
+{
+  "summary": "แบ่งเป็น layer ของ presentation, business และ data โดยแต่ละ layer เรียกได้เฉพาะ layer ที่อยู่ใต้ตัวเองโดยตรงเท่านั้น",
+  "steps": [
+    {
+      "title": "หนึ่งงาน ผ่าน layer แบบ closed",
+      "body": "request **Place order** เข้ามาที่ **Presentation** ซึ่งอ่านข้อมูลจากฟอร์ม และเป็นผู้ render คำตอบในตอนท้าย Presentation เรียก **Business** ซึ่งตรวจสต็อกและคิดส่วนลดตามกฎ จากนั้น Business เรียก **Data access** เพื่อบันทึก order และมีเพียง Data access เท่านั้นที่คุยกับฐานข้อมูล แต่ละ layer พึ่งพาเฉพาะ layer ที่อยู่ใต้ตัวเองโดยตรง: layer เป็นแบบ **closed** การเรียกจึงไม่มีทางข้าม layer หรือย้อนกลับขึ้นไป"
+    },
+    {
+      "title": "เปลี่ยนแค่ layer เดียว",
+      "body": "เพราะแต่ละ layer เห็นแค่ interface ของ layer ข้างล่าง การเปลี่ยนแปลงจึงจำกัดอยู่ใน layer เดียวได้ เมื่อเปลี่ยนไปใช้ฐานข้อมูลตัวอื่น ก็เขียนใหม่แค่โค้ด data access เพราะ Business ยังเรียก interface `OrderRepository` ตัวเดิม และเมื่อเพิ่ม JSON API ควบคู่กับหน้า HTML ก็เปลี่ยนแค่ Presentation รอยต่อเดียวกันนี้ยังทำให้ **ทดสอบ Business แยกได้** กับ fake แบบ in-memory โดยไม่ต้องมีฐานข้อมูล"
+    },
+    {
+      "title": "layer ไม่ใช่ tier",
+      "body": "**layer** ใช้จัดระเบียบโค้ด ส่วน **tier** คือที่ที่โค้ดรัน layer สามชั้นชุดเดียวกันนี้จะรันเป็น process เดียวบน server เดียวก็ได้ หรือแยกเป็น **tier** ของ web, application และ database โดยมี network hop คั่นระหว่างแต่ละ tier ก็ได้ tier แต่ละตัว scale และดูแลความปลอดภัยแยกกันได้ (web tier อยู่ใน public subnet ส่วน tier อื่นอยู่ใน private subnet ที่รับเฉพาะ tier ที่อยู่เหนือขึ้นไป) แต่ทุก hop จะเพิ่ม latency และเพิ่มการเรียกอีกหนึ่งครั้งที่อาจล้มเหลวได้"
+    },
+    {
+      "title": "กับดักสามข้อ",
+      "body": "**Sinkhole:** การอ่านข้อมูลง่าย ๆ ต้องผ่านทุก layer โดยไม่มี layer ไหนเพิ่มอะไรเลย **Open layer:** Business ถูกกำหนดให้เป็น open เพื่อให้การอ่านข้ามไปได้ และ Presentation เรียก Data access โดยตรง วิธีนี้เร็วกว่า แต่ตอนนี้ Presentation ก็ต้องพึ่งพา Data access ด้วย **Changes cut across:** field ใหม่เพียงตัวเดียวกระทบทุก layer เพราะ layer แบ่งโค้ดตามบทบาททางเทคนิค ไม่ได้แบ่งตาม feature ทางออกที่ใช้กันบ่อยคือ module แนวตั้ง ([modular monolith](../modular-monolith/)) และ core ที่ไม่พึ่งพาฐานข้อมูล ([hexagonal](../hexagonal-architecture/))"
+    }
+  ]
+}

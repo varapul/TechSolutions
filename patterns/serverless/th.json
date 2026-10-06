@@ -1,0 +1,21 @@
+{
+  "summary": "function เริ่มทำงานเมื่อมี event เข้ามา scale out เองโดยอัตโนมัติ และ scale to zero เมื่อไม่มีงาน",
+  "steps": [
+    {
+      "title": "event ปลุก function ให้ทำงาน",
+      "body": "เมื่อไม่มี traffic จะมี **0 instances** และไม่มีการคิดค่า compute เมื่อมี event เข้ามา platform จะสร้าง execution environment ขึ้นมา นี่คือ **cold start**: ดึงโค้ด เริ่ม runtime และรันโค้ด initialisation ของคุณ จากนั้นจึงรัน handler และส่งผลลัพธ์กลับ โดยคุณจ่ายค่า request และค่าเวลาที่โค้ดรัน"
+    },
+    {
+      "title": "ใช้ตัวที่ warm ซ้ำ แล้ว scale out",
+      "body": "event ถัดไปเจอ instance นั้นที่ยัง **warm** อยู่ จึงเข้า handler ได้ทันที เมื่อมี 6 event เข้ามาพร้อมกัน platform จะเริ่ม instance เพิ่มแบบขนาน: ในโมเดลดั้งเดิม หนึ่ง instance รับได้ทีละหนึ่ง request ดังนั้น 6 event ที่มาพร้อมกันจึงต้องใช้ 6 instance การ scale จะหยุดที่ **concurrency limit** และ invocation ที่เกินจากนั้นจะถูก throttle"
+    },
+    {
+      "title": "state อยู่ข้างนอก",
+      "body": "instance เป็นของชั่วคราว: memory และ local disk อาจหายไประหว่าง invocation สิ่งที่ควรเก็บไว้จึงต้องไปอยู่ในฐานข้อมูล, object storage หรือ queue สำหรับ source แบบ asynchronous platform จะ **retry** invocation ที่ล้มเหลว แล้วส่ง event ต่อไปที่ **dead-letter queue** หรือ failure destination และเพราะ retry เหล่านี้ event เดียวกันจึงอาจถูกส่งมามากกว่าหนึ่งครั้ง handler จึงต้องเป็น **idempotent**"
+    },
+    {
+      "title": "scale ลงจนเหลือศูนย์",
+      "body": "เมื่อ traffic หยุด instance ที่ว่างจะยัง warm อยู่สักพัก แล้วจึงถูกเรียกคืน: กลับไปเป็น **0 instances** และไม่มีค่า compute สิ่งที่ต้องแลกคือ event ถัดไปต้องเจอ cold start อีกครั้ง การจอง instance ไว้ล่วงหน้า (minimum instances, provisioned concurrency) ช่วยตัดความหน่วงนี้ได้ แต่ต้องเสียค่าใช้จ่าย"
+    }
+  ]
+}

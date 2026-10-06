@@ -1,0 +1,21 @@
+{
+  "summary": "เปลี่ยน request ให้เป็น object ที่เข้า queue, บันทึก log, undo และ redo ได้ โดยแยกผู้ขอออกจากผู้ลงมือทำ",
+  "steps": [
+    {
+      "title": "ปุ่มเรียก method ตรง ๆ",
+      "body": "toolbar เรียก `doc.insert(5, ' world')` แล้วตามด้วย `doc.delete(0, 6)` เอง ข้อความเปลี่ยนจาก *Hello* เป็น *Hello world* แล้วเป็น *world* เมื่อการเรียกจบลง ก็ไม่มีอะไรจำได้ว่ามันทำอะไรไปหรือลบข้อความไหนไป Ctrl+Z จึงไม่มีอะไรให้ undo และยังไม่มี object ให้ใส่ใน macro, queue หรือ log ด้วย"
+    },
+    {
+      "title": "request ในรูป object",
+      "body": "ตอนนี้ toolbar (ตัว *Client*) ห่อการแก้ไขแต่ละครั้งไว้ใน command object ที่ถือทุกอย่างที่ต้องใช้: receiver คือ `doc`, argument ของมัน และที่ว่างสำหรับสิ่งที่ `undo()` จะต้องใช้ `History.execute(cmd)` (ตัว *Invoker*) เรียก `cmd.execute()` ผ่าน interface `Command` แล้ว concrete command ก็เรียก `Document` (ตัว *Receiver*) จากนั้น History จึง push command ลง undo stack ส่วน `DeleteText` จะเก็บข้อความที่มันลบไปคือ `'Hello '` ไว้ เพื่อจะใส่กลับคืนได้"
+    },
+    {
+      "title": "undo และ redo",
+      "body": "Ctrl+Z จะ pop `DeleteText` ออกมาแล้วเรียก `undo()` ของมัน ซึ่งแทรก `'Hello '` กลับเข้าไป (*world* → *Hello world*) แล้วย้าย command ไปไว้ใน redo stack พอกด Ctrl+Z ครั้งที่สองก็ทำแบบเดียวกันกับ `InsertText` (→ *Hello*) ส่วน Ctrl+Y จะ pop `InsertText` ออกจาก redo stack แล้วเรียก `execute()` อีกครั้ง (→ *Hello world*) ถ้า execute command ใหม่ redo stack จะถูกล้างทิ้ง"
+    },
+    {
+      "title": "เข้า queue, เก็บ log, replay",
+      "body": "เมื่อ request กลายเป็น object แล้ว มันจึงรอใน queue ให้ worker มาหยิบไปทำได้ เขียนลง log แล้ว replay จาก state ที่รู้แน่ชัดได้ หรือรวมกับ command อื่นเป็น macro ที่ `undo()` จะรันส่วนย่อยย้อนลำดับ (เป็น Composite) ก็ได้ `Action` และ `UndoManager` ของ Swing และ command registry ของ VS Code ใช้แนวคิดนี้ใน user interface ในระดับทั้งระบบ มันกลายเป็น command message ของ [CQRS](../cqrs/) และ job ใน [work queue](../queue-based-load-leveling/) command ขอให้บางอย่างเกิดขึ้นและอาจถูกปฏิเสธได้ ส่วน event อย่างที่ [Event Sourcing](../event-sourcing/) เก็บไว้ คือการรายงานสิ่งที่เกิดขึ้นไปแล้ว"
+    }
+  ]
+}

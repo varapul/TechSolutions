@@ -1,0 +1,21 @@
+{
+  "summary": "ทำหน้าที่แทน object อื่นด้วย interface เดียวกันเพื่อควบคุมการเข้าถึง object นั้น: lazy loading, caching, ตรวจสิทธิ์การเข้าถึง และ remoting",
+  "steps": [
+    {
+      "title": "โหลดทุกอย่างไว้ล่วงหน้า",
+      "body": "`GalleryPage` เติม `photos: Photo[]` ด้วย `new FullPhoto(name)` ครบทั้ง 20 thumbnail และ constructor ของ `FullPhoto` แต่ละตัวก็อ่านไฟล์ขนาดเต็ม 12 MB ของตัวเอง หน้าเว็บจึงถือ **20 × 12 MB = 240 MB** และแสดงผลได้หลังโหลดตัวสุดท้ายเสร็จเท่านั้น ทั้งที่ผู้ใช้เปิดภาพแค่ภาพเดียวคือ #7: 228 MB ในนั้นไม่เคยถูกแสดงเลย"
+    },
+    {
+      "title": "ตัวแทนที่ใช้ interface เดียวกัน",
+      "body": "`PhotoProxy` (ตัว *Proxy*) implement interface `Photo` (ตัว *Subject*) ตัวเดียวกับ `FullPhoto` (ตัว *RealSubject*) แต่เก็บไว้แค่ชื่อไฟล์และ reference `real` ที่ยังว่างอยู่ การสร้าง proxy 20 ตัวอ่านข้อมูล **0 MB** หน้าเว็บจึงแสดงผลได้ทันที `GalleryPage` (ตัว *Client*) ยังถือ `Photo[]` และเรียก `display()` เหมือนเดิม: เปลี่ยนแค่บรรทัดที่สร้างภาพเท่านั้น"
+    },
+    {
+      "title": "โหลดเมื่อใช้ครั้งแรก",
+      "body": "ผู้ใช้เปิด #7 `PhotoProxy.display()` พบว่า `real` ยังว่าง จึงสร้าง `FullPhoto('IMG_0007.jpg')` ซึ่งอ่านไฟล์ 12 MB ของมัน แล้วส่งต่อ `display()` ไปให้ ผลลัพธ์เดินทางกลับไปที่หน้าเว็บ การเปิดครั้งที่สองพบว่า `real` มีค่าแล้วก็ส่งต่อได้ทันที หน้าเว็บจึงอ่านข้อมูลแค่ **12 MB ครั้งเดียว** แทนที่จะอ่าน 240 MB ไว้ล่วงหน้า"
+    },
+    {
+      "title": "proxy แบบอื่น โครงสร้างเดียวกัน",
+      "body": "โครงสร้างเดียวกันนี้ยังใช้ควบคุมการเข้าถึงด้วยเหตุผลอื่นได้อีก เช่น `ProtectedPhoto` ซึ่งเป็น *protection proxy* จะตรวจว่าผู้ใช้ที่ sign in อยู่เป็นเจ้าของภาพส่วนตัวนั้นหรือไม่ และปฏิเสธ bob ก่อนที่จะส่งต่ออะไร ส่วน *remote proxy* เช่น gRPC client stub ส่งการเรียกแต่ละครั้งผ่าน network และ *caching proxy* ตอบการเรียกซ้ำได้เอง `Proxy` ของ JavaScript, `java.lang.reflect.Proxy` ของ Java (ที่อยู่เบื้องหลัง proxy แบบอิง interface ของ Spring AOP) และ lazy-loading proxy ของ Hibernate สร้าง proxy ให้อัตโนมัติ และในระดับ network แนวคิดนี้กลายเป็น [ambassador](../ambassador/), [API gateway](../api-gateway/), [CDN](../cdn-edge-caching/) หรือ sidecar ของ [service mesh](../service-mesh/)"
+    }
+  ]
+}

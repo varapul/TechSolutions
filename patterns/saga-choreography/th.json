@@ -1,0 +1,21 @@
+{
+  "summary": "service ต่าง ๆ ตอบสนองต่อ event ของกันและกันจนทั้ง workflow เสร็จ โดยไม่มี coordinator กลาง",
+  "steps": [
+    {
+      "title": "event เป็นตัวเริ่ม",
+      "body": "Orders commit order ใหม่ในสถานะ **PENDING** ลง database ของตัวเอง แล้ว publish *OrderPlaced* ไปที่ topic มันทำแค่นั้นเอง: ไม่ส่ง command ใด ๆ และไม่รู้ว่าใครจะตอบสนอง service อื่น ๆ ต่าง subscribe event ที่ตัวเองสนใจไว้แล้ว และ Payments คือตัวที่รอฟัง event นี้"
+    },
+    {
+      "title": "ตอบสนองแล้ว publish ต่อ",
+      "body": "Payments consume *OrderPlaced* ตัดเงินจากบัตรใน local transaction แล้ว publish *PaymentCompleted* Inventory ตอบสนองด้วยการจอง stock แล้ว publish *StockReserved* Shipping ตอบสนองด้วยการจอง courier แล้ว publish *ShipmentBooked* และ Orders ตอบสนองด้วยการ mark order เป็น **CONFIRMED** ไม่มี component ไหนเป็นผู้สั่งลำดับนี้: workflow มีอยู่แค่ในรูปของสาย subscription ที่ต่อกันเท่านั้น"
+    },
+    {
+      "title": "ความล้มเหลวก็เป็น event",
+      "body": "ใน order #1043 บัตรถูกตัดเงินไปแล้ว แต่ Inventory ไม่มี stock เหลือให้จอง จึง publish *StockReservationFailed* Payments ก็รอฟัง event นี้อยู่เช่นกัน: มันคืนเงินใน local transaction ใหม่แล้ว publish *PaymentRefunded* และ Orders ตอบสนองด้วยการ mark order เป็น **CANCELLED** แต่ละ service ย้อนขั้นของตัวเองเอง ไม่มี global rollback"
+    },
+    {
+      "title": "ไม่มีใครเห็น flow ทั้งหมด",
+      "body": "flow นี้ไม่ได้เขียนไว้ที่ไหนเลย เมื่อ consumer ของ Inventory ล่ม order #1044 จึงหยุดค้างอยู่หลังการตัดเงินเฉย ๆ และไม่มี service ไหนรายงาน ทีมต่าง ๆ จึงเติมสิ่งที่แพตเทิร์นนี้ไม่ได้ให้มา: ทุก event พก order ID ไว้เป็น **correlation ID**, tracking view จะ subscribe topic และประกอบสถานะของแต่ละ saga ขึ้นมาจาก event ของมัน และ **timeout** จะ flag saga ที่เงียบหายไปกลางทาง เมื่อขั้นตอนและทางแยกเพิ่มขึ้น subscription ต่าง ๆ จะไล่ตามได้ยาก และการใช้ orchestrator ก็จะคุ้มค่ากว่า"
+    }
+  ]
+}

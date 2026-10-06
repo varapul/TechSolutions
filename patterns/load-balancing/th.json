@@ -1,0 +1,21 @@
+{
+  "summary": "กระจาย request ไปยัง instance ที่ healthy และหยุดส่งไปยังตัวที่ unhealthy",
+  "steps": [
+    {
+      "title": "กระจาย request",
+      "body": "client ส่งทุก request ไปที่ **address เดียว** และ load balancer เลือก instance ให้แต่ละ request **Round robin** แจก request ให้ A, B และ C ตามลำดับวนไป instance ทั้งสามตัวที่เหมือนกันและเป็น stateless จึงได้ไปคนละหนึ่งในสาม เราเพิ่ม เปลี่ยน หรือถอด instance ที่อยู่หลัง address นั้นได้โดยที่ client ไม่รู้ตัว"
+    },
+    {
+      "title": "เลือกตัวที่ว่างที่สุด",
+      "body": "request แต่ละตัวไม่ได้หนักเท่ากัน request ช้า ๆ ไม่กี่ตัวไปตกที่ B แต่ round robin ก็ยังส่งให้ B ทุก ๆ request ที่สาม จำนวน in-flight ของ B จึงพุ่งขึ้น **Least connections** (สำหรับ HTTP เรียกว่า *least outstanding requests*) ส่ง request ใหม่แต่ละตัวไปยัง instance ที่มี request in flight น้อยที่สุด และตัวเลขก็จะเกลี่ยเท่า ๆ กัน **The power of two choices** ได้ประโยชน์ส่วนใหญ่แบบเดียวกันด้วยการเปรียบเทียบแค่สอง instance ที่สุ่มเลือกมา"
+    },
+    {
+      "title": "ข้าม instance ที่ unhealthy",
+      "body": "load balancer probe `/healthz` ของทุก instance อยู่ตลอดเวลา C หยุดตอบ หลังจาก **probe ล้มเหลวติดกัน 3 ครั้ง** C ถูกทำเครื่องหมายว่า **unhealthy** และไม่ได้รับ request ใหม่ ขณะที่ A และ B รับส่วนของ C ไปแทน request ที่ C ถืออยู่จะ time out และการตรวจจับใช้เวลาราว *interval × threshold* ตัวเลขในที่นี้เป็นเพียงตัวอย่าง แต่ละ product มีค่า default ของตัวเอง"
+    },
+    {
+      "title": "ฟื้นตัวแล้วกลับเข้ากลุ่ม",
+      "body": "C ถูกแก้หรือถูกแทนที่ แล้วผ่าน **probe ติดกัน 2 ครั้ง** จึงกลับเข้ามารับงาน **slow start** ค่อย ๆ เพิ่มส่วนแบ่งของ C ขึ้น instance ที่ยัง cold จึงไม่ถูก request ถล่มทันทีที่กลับมา การถอด instance ออกอย่างตั้งใจ (ตอน deploy หรือ scale in) ทำงานกลับกัน: instance จะถูก **drain** ก่อน คือไม่รับ request ใหม่ ขณะที่ request ที่ in flight อยู่ทำจนเสร็จ"
+    }
+  ]
+}

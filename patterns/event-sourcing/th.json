@@ -1,0 +1,21 @@
+{
+  "summary": "เก็บทุกการเปลี่ยนแปลงเป็น event ที่แก้ไขไม่ได้ แล้วสร้าง state ขึ้นใหม่ด้วยการ replay event เหล่านั้น",
+  "steps": [
+    {
+      "title": "Append อย่าเขียนทับ",
+      "body": "**command** `Withdraw 30` เข้ามาที่ aggregate ตัวหนึ่ง คือบัญชีธนาคาร 42 handler โหลด stream ของบัญชีนั้น ตรวจกฎกับ state ปัจจุบัน (balance 70 พอให้ถอน 30) แล้ว **append** event ใหม่ `#4 Withdrew 30` พร้อมระบุ version ที่คาดว่า stream อยู่ (3): ถ้ามี writer อื่น append ไปก่อน store จะปฏิเสธการ append นี้ และ command จะถูก retry ไม่มีอะไรถูก update หรือ delete ต่างจากวิธีแบบ CRUD อย่าง `UPDATE accounts SET balance = 40` ที่เก็บแค่ค่าล่าสุด แล้วเรื่องราวว่าเกิดอะไรขึ้นก็หายไป"
+    },
+    {
+      "title": "Replay เพื่อสร้าง state ใหม่",
+      "body": "state ปัจจุบัน **คำนวณมาจาก event** คือเป็นการ fold ไล่ไปบน event ทีละตัว: replay #1 ถึง #4 ทำให้ balance ไล่เป็น 0, 100, 70 และ 40 **snapshot** (balance 40 ที่ version 4) ช่วยให้การโหลดครั้งต่อไปเหลือแค่ snapshot ล่าสุดบวกกับ event ที่ตามมาหลังจากนั้น snapshot เป็นแค่การ optimise: ทิ้งไปสักอันก็ได้ replay ก็ยังให้คำตอบเดิม"
+    },
+    {
+      "title": "Project และ subscribe",
+      "body": "event ชุดเดียวกันนี้ป้อนให้ **read model** (Account summary, Monthly statement) และ subscriber อื่น ๆ เช่น fraud check และ notification read model ใหม่เอี่ยมที่เพิ่มเข้ามาทีหลังจะ replay ตั้งแต่ event #1 และได้ประวัติทั้งหมด projection ทิ้งแล้วสร้างใหม่ได้ ส่วน log คือ source of truth แต่ projection จะตามหลัง stream อยู่เล็กน้อย (eventual consistency): นี่คือฝั่ง read ของ [CQRS](../cqrs/)"
+    },
+    {
+      "title": "แก้ไขด้วยการ append",
+      "body": "การฝากเงินที่ผิดพลาด `#5 Deposited 500` จะไม่ถูกแก้ไขหรือลบ แต่จะ append **compensating event** `#6 DepositReversed 500` แทน audit trail จึงแสดงทั้งความผิดพลาดและการแก้ไข และ balance กลับมาเป็น 40 อีกครั้ง เพราะประวัติถูกเก็บไว้ทั้งหมด เราจึงถามถึงอดีตได้ด้วย: replay แค่ #1 ถึง #3 ก็ได้ balance ณ event #3 ซึ่งคือ 70"
+    }
+  ]
+}

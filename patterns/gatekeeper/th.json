@@ -1,0 +1,21 @@
+{
+  "summary": "broker ที่ผ่านการ harden ตรวจสอบและ sanitise request ก่อนจะไปถึง trusted host",
+  "steps": [
+    {
+      "title": "host เดียวที่เปิดสู่ internet",
+      "body": "ถ้าไม่มี gatekeeper, claims service ที่เปิดรับ internet ต้องทั้ง parse ไฟล์ upload ที่เชื่อถือไม่ได้ และถือ credential ของ claims database กับ document store ไว้เอง bug ในการ parse แค่ตัวเดียวก็พอ: ในที่นี้ไฟล์ upload ที่จงใจตั้งชื่อว่า `../../config` ไปตกอยู่นอกโฟลเดอร์ upload, attacker ได้รันโค้ดบน host และ key ที่เปิดเข้าถึงกรมธรรม์ เคลม และเอกสารทุกชิ้นก็อยู่ตรงนั้นเลย"
+    },
+    {
+      "title": "แยกหน้าที่ออกจากกัน",
+      "body": "ตอนนี้ **gatekeeper** ที่อยู่ใน perimeter zone ของตัวเองเป็นผู้รับทุก request ตัว gatekeeper ยืนยันตัวตนผู้เรียก ตรวจขนาดก่อนอ่าน body, decode request ครั้งเดียวแล้ว validate รูปที่ decode แล้วนั้นเทียบกับ contract (เฉพาะ field ที่รู้จัก, content type ที่อนุญาตและตรงกับ byte จริง, ชื่อไฟล์ที่มีแต่อักขระปลอดภัย) จากนั้นส่งต่อ request ที่สร้างขึ้นใหม่และสะอาดผ่าน internal endpoint เพียงช่องทางเดียว (port 8443, mutual TLS) gatekeeper ไม่ถือ credential ของ data store เลย: **trusted host** ที่อยู่ข้างหลังเป็นผู้ถือ และ network rule ไม่ยอมให้อะไรเข้าถึง host นั้นได้นอกจาก gatekeeper"
+    },
+    {
+      "title": "ถูกหยุดไว้ที่ประตู",
+      "body": "ไฟล์ upload ชื่อ `../../config` ไม่ผ่านกฎเรื่องชื่อไฟล์และได้ `400 Bad Request` ส่วน body ขนาด 48 MB ไม่ผ่านการตรวจขนาดและได้ `413 Content Too Large` ตั้งแต่ก่อนอ่าน body ทั้งสองกรณีถูกบันทึก log ไว้ และ trusted host ไม่เคยเห็นทั้งคู่ ต่อให้ gatekeeper ถูกเจาะเอง attacker ก็ไม่เจอ key หรือ connection string ใด ๆ ที่นั่น network rule อนุญาตแค่ internal endpoint และ trusted host ก็ validate request ที่ปลอมขึ้นมาแล้วปฏิเสธไป: นี่คือ defence in depth"
+    },
+    {
+      "title": "ต้นทุนที่ต้องจ่าย",
+      "body": "การป้องกันนี้มีราคา: hop ที่เพิ่มขึ้นและการประมวลผลที่มากขึ้นในทุก request, tier อีกชั้นที่ต้อง scale และดูแลให้พร้อมใช้งาน (instance เดียวคือ single point of failure), กฎ validation ที่ต้องแก้ทุกครั้งที่ contract ของ service เปลี่ยน และแรงล่อใจให้ใส่ business logic ไว้ใน gatekeeper ส่วน [valet key](../valet-key/) เลือกแลกในทางตรงข้าม คือเอาแอปพลิเคชันออกจาก data path ขณะที่ gatekeeper ตั้งใจอยู่ใน path นั้น เพื่อให้ทุก request ถูกตรวจ"
+    }
+  ]
+}

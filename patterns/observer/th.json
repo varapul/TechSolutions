@@ -1,0 +1,21 @@
+{
+  "summary": "subject แจ้ง observer ทุกตัวที่ subscribe ไว้ทุกครั้งที่มีการเปลี่ยนแปลง เพื่อให้การเปลี่ยนครั้งเดียว update ตัวที่พึ่งพามันได้หลายตัว โดยที่ subject ไม่ต้องรู้จักชื่อตัวไหนเลย",
+  "steps": [
+    {
+      "title": "cart เรียก view ทุกตัวเอง",
+      "body": "ถ้าไม่มีแพตเทิร์นนี้ model จะ update หน้าจอเอง `Cart` ถือ `CartBadge`, `TotalLabel` และ `FreeShippingBanner` ไว้ และ `add()` เรียก `render()` ของสองตัวแรกกับ `update()` ของตัวที่สาม ผลคือ `Cart` ขึ้นกับ view class ทุกตัวและ method เฉพาะของแต่ละตัว การเพิ่ม mini-cart drawer จึงหมายถึงต้องแก้และ test `Cart` ใหม่อีกรอบ"
+    },
+    {
+      "title": "subscribe แล้ว notify",
+      "body": "`Cart` extend `Subject` ซึ่งเก็บรายการของ `Observer` ไว้ และ view แต่ละตัว implement interface `Observer` ที่มีแค่ method เดียว แล้ว subscribe ตัวเองเข้าไป หลังการเปลี่ยนแปลงทุกครั้ง `Cart` จะเรียก `update(cart)` กับทุกตัวที่อยู่ในรายการ โดยไม่ต้องระบุชื่อ view class เลยสักตัว ถ้ามี view ตัวที่สี่ก็แค่ subscribe เข้ามา และ `Cart` ไม่ต้องเปลี่ยนเลย"
+    },
+    {
+      "title": "เปลี่ยนครั้งเดียว update หลายที่",
+      "body": "หลัง `add(Mug, 12)` ตัว `notify()` จะเรียก `update(cart)` กับ observer ทีละตัว: badge แสดง 1, label แสดง EUR 12.00 และ banner แสดงว่าขาดอีก EUR 38.00 จะได้ free shipping หลัง `add(Lamp, 45)` ทั้งสามแสดง 2, EUR 57.00 และ Free shipping นี่คือ model แบบ **pull**: cart ส่งตัวเองไปให้ และ view แต่ละตัวอ่าน `count` หรือ `total` เอง ส่วนใน model แบบ **push** cart จะส่งข้อมูลไปให้เลย เช่น `update({ count, total })`"
+    },
+    {
+      "title": "หลุมพราง และในระดับระบบ",
+      "body": "ผู้ซื้อปิด banner ไปแล้ว แต่รายการใน cart ยังถือมันไว้อยู่: **lapsed listener** จะค้างอยู่ใน memory และยังถูก update ต่อไปเรื่อย ๆ จนกว่าจะเรียก function `unsubscribe` ที่ `subscribe()` คืนมา อย่าพึ่งพาลำดับของการ notify อย่าแก้ subject จากข้างใน `update()` (เพราะจะ notify ซ้ำและอาจวน loop ได้) และพึงระวังว่าเมื่อ notify แบบ synchronous ถ้ามี observer ตัวไหนช้าหรือล้มเหลว ตัวที่เหลือก็ต้องรอ แนวคิดเดียวกันนี้อยู่เบื้องหลัง event ของ DOM (`addEventListener`), observable ของ RxJS และ `java.util.Observable` ของ Java (deprecated ตั้งแต่ Java 9) และในระดับทั้งระบบก็อยู่เบื้องหลัง [publish-subscribe](../publish-subscribe/) ผ่าน broker, [event-driven architecture](../event-driven-architecture/) และ [webhooks](../webhooks/)"
+    }
+  ]
+}

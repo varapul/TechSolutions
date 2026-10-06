@@ -99,6 +99,9 @@
 (() => {
   const toggle = document.querySelector('.motion-toggle');
   const imgs = [...document.querySelectorAll('img[data-still]')];
+  // Button text in the page's language (the build writes it into #i18n).
+  const S = { playAnimations: '▶ Play animations', pauseAnimations: '⏸ Pause animations' };
+  try { Object.assign(S, JSON.parse(document.getElementById('i18n').textContent)); } catch { /* keep English */ }
   if (!toggle || !imgs.length) return;
   imgs.forEach((img) => { img.dataset.anim = img.getAttribute('src'); });
   let saved = null;
@@ -108,7 +111,7 @@
   function apply() {
     imgs.forEach((img) => { img.src = still ? img.dataset.still : img.dataset.anim; });
     toggle.setAttribute('aria-pressed', String(still));
-    toggle.textContent = still ? '▶ Play animations' : '⏸ Pause animations';
+    toggle.textContent = still ? S.playAnimations : S.pauseAnimations;
   }
   toggle.addEventListener('click', () => {
     still = !still;

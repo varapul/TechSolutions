@@ -1,0 +1,21 @@
+{
+  "summary": "service ที่ใช้ร่วมกันและ egress อยู่ใน hub network ตรงกลาง ส่วน workload อยู่ใน spoke ที่ peer เข้ากับ hub",
+  "steps": [
+    {
+      "title": "ทุก network มี edge ของตัวเอง",
+      "body": "ถ้าไม่มี hub ที่ใช้ร่วมกัน workload network ทุกตัวต้องสร้าง edge ของตัวเอง: **firewall** ของตัวเอง, **VPN** ไป on-premises ของตัวเอง, ทางออก internet ของตัวเอง และ DNS ของตัวเอง ทั้งต้นทุนและ configuration จึงเป็นสามเท่า และชุด rule ของ firewall แต่ละตัวก็ค่อย ๆ เพี้ยนไปคนละทาง Prod และ Data ได้ `10.1.0.0/16` เหมือนกันทั้งคู่ และ network ที่ช่วง address ทับกันจะ peer หรือ route หากันไม่ได้ จนกว่าจะเปลี่ยนเลข address ของฝั่งใดฝั่งหนึ่ง (หรือแปลง address)"
+    },
+    {
+      "title": "hub สำหรับ service ที่ใช้ร่วมกัน",
+      "body": "network ที่เป็น **hub** เก็บ service ที่ใช้ร่วมกัน: firewall หนึ่งตัว, gateway ไป on-premises หนึ่งตัว (VPN หรือ dedicated circuit), DNS resolver และ bastion host แต่ละ workload อยู่ใน **spoke** ที่ peer กับ hub เท่านั้น platform team ส่วนกลางเป็นเจ้าของ hub และแต่ละ workload team เป็นเจ้าของ spoke ของตัวเอง address plan เดียวทำให้ทุกช่วง address ไม่ซ้ำกัน Data จึงถูกเปลี่ยนเลขเป็น `10.3.0.0/16`"
+    },
+    {
+      "title": "traffic วิ่งผ่าน hub",
+      "body": "peering **ไม่เป็น transitive**: Prod และ Data ต่าง peer กับ hub แต่ไม่ได้ peer กันเอง Prod จึงไม่มี route ไปหา Data route table ในทุก spoke ส่ง traffic ที่มุ่งไป internet (`0.0.0.0/0`), spoke อื่น (`10.0.0.0/8`) และ on-premises (`192.168.0.0/16`) ไปยัง private address ของ firewall คือ `10.0.1.4` ซึ่ง allow Prod → Data, deny Dev → Data และ log ทุกการตัดสินใจ traffic จาก on-premises เข้ามาทาง gateway ของ hub (**gateway transit**) และ route บน gateway subnet ก็ส่ง traffic นั้นผ่าน firewall ตัวเดียวกัน ส่วน spoke ก็ resolve ชื่อด้วย DNS resolver ของ hub"
+    },
+    {
+      "title": "ขยายได้ แต่ต้องรู้ข้อจำกัด",
+      "body": "การเพิ่ม spoke Analytics ใช้แค่ template กับ peering อีกหนึ่งตัว ข้อจำกัดไปโผล่ที่ hub: ตอนนี้ firewall เป็น dependency ที่ทุกคนใช้ร่วมกันและเป็นคอขวดด้าน throughput (ต้อง scale และทำให้เป็น zone-redundant) ทุก network มี quota ของจำนวน peering และ route และ traffic ที่วิ่งผ่าน hub ก็มีค่าใช้จ่ายต่อ GB ทั้งค่า peering หรือ transit และค่า firewall managed hub อย่าง **Azure Virtual WAN**, **AWS Transit Gateway** และ **Google Network Connectivity Center** ทำ transit routing ให้คุณ และระบบที่ครอบคลุมหลาย region มักมี hub หนึ่งตัวต่อ region"
+    }
+  ]
+}

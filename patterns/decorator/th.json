@@ -1,0 +1,21 @@
+{
+  "summary": "ห่อ object เพื่อเพิ่มพฤติกรรมตอน runtime โดยซ้อน wrapper ทีละชั้น แทนที่จะสร้าง subclass เพิ่มขึ้นเรื่อย ๆ สำหรับทุกชุดผสม",
+  "steps": [
+    {
+      "title": "หนึ่ง subclass ต่อหนึ่งชุดผสม",
+      "body": "การเพิ่ม retry, logging และ caching ด้วยการ subclass `FetchClient` ต้องมี class สำหรับทุกชุดผสม: 2³ − 1 = 7 ตัวสำหรับ 3 feature และ 15 ตัวสำหรับ 4 feature caller เลือกหนึ่งตัวด้วย `new` ชุดผสมและลำดับที่ feature เหล่านั้นทำงานจึงถูกฝังตายไว้ใน class hierarchy"
+    },
+    {
+      "title": "ใช้การห่อแทน",
+      "body": "`LoggingClient` และ `RetryingClient` ต่าง implement `HttpClient` และถือ `HttpClient` ที่ตัวเองห่อไว้ จึงซ้อนกันได้: `new LoggingClient(new RetryingClient(new FetchClient()))` 3 feature ใช้ class เล็ก ๆ แค่ 3 ตัวที่ผสมกันแบบไหนและเรียงลำดับอย่างไรก็ได้ตอน runtime และ caller ก็ยังถือ `HttpClient` แค่ตัวเดียว"
+    },
+    {
+      "title": "เรียกครั้งเดียว ผ่านทีละชั้น",
+      "body": "`LoggingClient` log `→ GET /orders` แล้วส่งการเรียกเข้าไปข้างใน `RetryingClient` ส่งต่อให้ `FetchClient` ซึ่งได้ 503 กลับมา `RetryingClient` รอ 200 ms แล้วเรียกใหม่: คราวนี้ได้ 200 จากนั้น response ก็เดินทางกลับออกมาทีละชั้น และ `LoggingClient` log `← 200`: รวมสองบรรทัด เพราะมันอยู่นอก retry และไม่เคยเห็น 503 เลย"
+    },
+    {
+      "title": "ลำดับมีผล",
+      "body": "`new RetryingClient(new LoggingClient(new FetchClient()))` วาง logging ไว้ข้างใน retry จึงบันทึกทุกครั้งที่ลอง: `→`, `← 503`, `→`, `← 200` stream ใน `java.io` ของ Java ก็ห่อกันแบบเดียวกัน (`BufferedInputStream` ห่อ `FileInputStream`) และ pipeline `DelegatingHandler` ของ .NET ก็เช่นกัน ส่วน syntax `@decorator` ของ Python ใช้แนวคิดที่ใกล้เคียงกันกับ function และ [sidecar](../sidecar/) proxy คือญาติของแพตเทิร์นนี้ที่ทำงานนอก process"
+    }
+  ]
+}

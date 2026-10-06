@@ -1,0 +1,21 @@
+{
+  "summary": "flow เข้าสู่ระบบมาตรฐานของเว็บแอป แอปมือถือ และ single-page app: code มาทาง browser ส่วน token มาทาง back channel",
+  "steps": [
+    {
+      "title": "ส่ง authorization request",
+      "body": "App สร้าง **code_verifier** แบบสุ่มที่ใช้ครั้งเดียว (ยาว 43–128 ตัวอักษร) และเก็บไว้กับตัวเองเท่านั้น จากนั้น redirect browser ไปที่ authorization endpoint พร้อม `response_type=code`, `client_id`, `redirect_uri`, `scope`, `state` ที่เดาไม่ได้ และ `code_challenge` = BASE64URL(SHA-256(code_verifier)) คู่กับ `code_challenge_method=S256` แล้ว authorization server ก็เก็บ challenge นี้ไว้คู่กับ request"
+    },
+    {
+      "title": "เข้าสู่ระบบและให้ consent",
+      "body": "authorization server ยืนยันตัวตนผู้ใช้ (password, passkey, MFA, federated login) และขอ consent สำหรับ scope ที่ขอมา โดยที่ App ไม่เคยเห็น credential ของผู้ใช้เลย จากนั้นจึง redirect browser ไปที่ `redirect_uri?code=…&state=…` และ App ตรวจว่า `state` ตรงกับค่าที่ตัวเองส่งไป ช่วงนี้คือ **front channel**: code เดินทางอยู่ใน URL ซึ่ง browser history, log หรือแอปประสงค์ร้ายที่อ้างใช้ redirect URI เดียวกันมองเห็นได้ ดังนั้นการถือ code อย่างเดียวต้องไม่พอที่จะได้ token"
+    },
+    {
+      "title": "แลก code เป็น token",
+      "body": "ผ่าน **back channel** (HTTPS request ตรง ไม่ใช่การ redirect ผ่าน browser) App ส่ง POST พร้อม code และ `code_verifier` ของตัวเองไปที่ token endpoint server ตรวจว่า hash SHA-256 ของ verifier ตรงกับ `code_challenge` ที่เก็บไว้ (และ code ยังไม่เคยถูกใช้ ยังไม่หมดอายุ และออกให้ `client_id` กับ `redirect_uri` นี้จริง) แล้วจึงคืน **access token** ซึ่งส่วนใหญ่มี refresh token มาด้วย และมี ID token ถ้าใช้ OpenID Connect code ที่ถูกขโมยไปจึงไร้ประโยชน์ถ้าไม่มี verifier: server จะตอบ `invalid_grant`"
+    },
+    {
+      "title": "เรียก API",
+      "body": "App ส่ง `Authorization: Bearer <access_token>` ไปกับ request แล้ว API ตรวจสอบ JWT เองในเครื่อง: ตรวจ signature กับ public key ของ authorization server (JWKS ที่ cache ไว้ และดึงใหม่เมื่อเจอ `kid` ที่ไม่รู้จัก) จากนั้นตรวจ `iss`, `aud`, `exp` และ scope ที่ต้องใช้ แล้วตอบ 200 OK เมื่อ access token หมดอายุ App ใช้ refresh token ขอตัวใหม่ แทนที่จะพาผู้ใช้ไปผ่าน flow ทั้งหมดอีกรอบ"
+    }
+  ]
+}

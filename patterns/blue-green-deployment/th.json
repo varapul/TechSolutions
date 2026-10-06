@@ -1,0 +1,21 @@
+{
+  "summary": "รันเวอร์ชันใหม่ไว้ข้างเวอร์ชันเก่า แล้วสลับ traffic ทั้งหมดไปในขั้นเดียว",
+  "steps": [
+    {
+      "title": "Blue ให้บริการอยู่",
+      "body": "**Blue** รันเวอร์ชันปัจจุบัน (v1) และ router ส่ง traffic ของ production ไปให้ 100% ส่วน **Green** เป็น production environment ชุดที่สองที่สร้างให้เหมือนกับ Blue และตอนนี้ยังไม่ได้ให้บริการอะไรเลย ทั้งสอง environment ใช้ database เดียวกัน"
+    },
+    {
+      "title": "Deploy และทดสอบ Green",
+      "body": "Pipeline deploy **v2** ลง Green ขณะที่ผู้ใช้ทุกคนยังอยู่บน Blue ส่วน smoke test เข้าถึง Green ผ่าน test endpoint ที่เป็น private (preview service, test listener หรือ URL ที่ติด tag) และต้องผ่านก่อนที่จะมีใครสลับ"
+    },
+    {
+      "title": "สลับ traffic",
+      "body": "Router ชี้ traffic ทั้งหมดไปที่ Green ในคราวเดียว ด้วยการสลับ target ของ load balancer, เปลี่ยน selector ของ Kubernetes Service หรือแก้ DNS record ส่วน request ที่ค้างอยู่ระหว่างทางจะทำงานจนจบบน Blue (connection draining) และ Blue ยังรันต่อไป การ rollback จึงเป็นแค่การสลับอีกครั้ง"
+    },
+    {
+      "title": "Rollback หรือปลดระวาง",
+      "body": "เฝ้าดู error rate และ latency ของ Green สักพัก ถ้าพุ่งขึ้น ให้ **สลับ router กลับไปที่ Blue ทันที** ถ้ายังปกติ Blue จะถูกปลดไปอยู่ในสถานะ idle และกลายเป็นเป้าหมายของ release ถัดไป ทั้งสอง environment จึงสลับบทบาทกันทุกครั้งที่ deploy"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "แบ่งการประมวลผลออกเป็น stage อิสระที่เชื่อมกันด้วย channel",
+  "steps": [
+    {
+      "title": "ประมวลผลรวดเดียวในก้อนเดียว",
+      "body": "**photo service** ตัวเดียว validate, resize, ใส่ watermark, tag และ publish ทุกไฟล์ที่ upload เข้ามาในฟังก์ชันเดียว การ resize เป็น stage ที่ช้าที่สุด (5 รูปต่อวินาทีต่อหนึ่ง copy) การรับ 20 รูปต่อวินาทีจึงต้องรัน service *ทั้งตัว* 4 copy เพียงเพื่อให้ได้ตัว resize 4 ตัว ทั้งที่ stage อื่นใช้แค่ copy เดียวก็พอ จะเปลี่ยน watermark ก็ต้อง redeploy ทั้งหมด และเมื่อ tag ล้มเหลว retry จะเริ่มใหม่ตั้งแต่ต้นและ resize รูปซ้ำอีกรอบ"
+    },
+    {
+      "title": "แยกออกเป็น filter",
+      "body": "แต่ละ stage กลายเป็น **filter**: service เล็ก ๆ ที่ deploy แยกกัน มีหน้าที่เดียว อ่านจาก **pipe** ขาเข้าของตัวเอง (ในที่นี้คือ queue) และเขียนผลลัพธ์ลง pipe ขาออก filter ไม่ใช้อะไรร่วมกันอีก ไม่มี memory ร่วม ไม่มี database ร่วม และไม่เรียกกันเอง รูปจึงไหลไปตาม Validate → Resize → Watermark → Tag → Publish โดยมี pipe หนึ่งเส้นคั่นระหว่างแต่ละคู่ จาก Uploads (*source*) ไปถึง Catalogue และ CDN (*sinks*)"
+    },
+    {
+      "title": "scale และเปลี่ยนทีละ stage",
+      "body": "รูปเข้ามา 20 รูปต่อวินาที แต่ Resize ตัวเดียวทำได้ 5 pipe ขาเข้าของ Resize จึงยาวขึ้น 15 ต่อวินาที เลย scale out **เฉพาะ Resize** เป็น 4 instance (4 × 5 = 20 ต่อวินาที) แล้ว pipe ก็หยุดโต ส่วน filter อื่นยังคงมี instance เดียว filter ตรวจความปลอดภัยของเนื้อหา (content safety) ถูก **แทรก** ระหว่าง Validate กับ Resize: ตอนนี้ Validate เขียนลง pipe ใหม่ และ Safety เขียนลง pipe เดิมของ Resize โดยไม่ต้องเปลี่ยน filter อื่นเลย และ Tag filter ตัวเดียวกันยังถูก **นำไปใช้ซ้ำ** ใน pipeline ที่สองสำหรับวิดีโอ"
+    },
+    {
+      "title": "ความล้มเหลวและราคาที่ต้องจ่าย",
+      "body": "Watermark crash ขณะถือรูป 7f3 อยู่ message นั้นยังไม่เคยถูก acknowledge จึงกลับมาปรากฏใน pipe ของมันอีกครั้ง และ instance ที่ restart ขึ้นมาใหม่ก็ใส่ watermark ให้ซ้ำ โดยไม่ต้อง resize ใหม่ (การส่งเป็นแบบ **at-least-once** filter จึงต้อง [idempotent](../idempotent-consumer/)) รูป 9c1 ล้มเหลวที่ Publish ทุกครั้งที่ลอง และถูกย้ายไปที่ [dead-letter queue](../dead-letter-queue/) หลังลองครบ 3 ครั้ง ขณะที่ correlation ID ในทุก message ช่วยร้อย hop ต่าง ๆ ของรูปแต่ละรูปเข้าด้วยกัน ([distributed tracing](../distributed-tracing/)) ราคาที่ต้องจ่ายคือ: ข้อมูลถูก serialise ทุก hop มีชิ้นส่วนให้รันและเฝ้าดูมากขึ้น latency สะสมขึ้นตามจำนวน hop และไม่มี transaction ไหนครอบทุก stage ได้ 9c1 จึงถูก resize ใส่ watermark และ tag แล้ว แต่ไม่เคยถูก publish"
+    }
+  ]
+}

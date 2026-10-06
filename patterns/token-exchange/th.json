@@ -1,0 +1,21 @@
+{
+  "summary": "แลก token ของผู้ใช้ที่รับเข้ามาเป็น token ที่ขอบเขตแคบลง ก่อนเรียก downstream API",
+  "steps": [
+    {
+      "title": "อย่าส่ง token ต่อ",
+      "body": "Shop app ของ Ana เรียก Orders API ด้วย access token ที่ออกมาเพื่อ API นี้: `aud: orders-api`, `sub: ana`, `scope: orders:write` เพื่อตรวจสต็อก Orders API ส่ง token ตัวเดิมนั้นต่อไปที่ Inventory API ซึ่งอ่าน `aud` แล้วเจอชื่อของ API อื่น จึงตอบ **401** การปฏิเสธนี้คือกลไกป้องกันที่ทำงานตามที่ควร: API ที่ยอมรับ token ที่ออกให้ API อื่นจะเปิดช่องให้ token พวกนั้น ไม่ว่าจะหลุดมาจาก log หรือจาก service ที่ถูกเจาะ ถูกนำมา replay ใส่ตัวเองได้"
+    },
+    {
+      "title": "แลก token ใหม่",
+      "body": "Orders API จึงไปที่ token endpoint ของ authorization server แทน ในนามของตัวเอง โดยยืนยันตัวตนแบบ client แล้วส่ง `grant_type=urn:ietf:params:oauth:grant-type:token-exchange` พร้อม token ของ Ana เป็น `subject_token` (การเรียกนี้ทำเพื่อใคร) และ access token ของตัวเองเป็น `actor_token` (ใครจะเป็นผู้ลงมือ) แต่ละตัวมี `…_token_type` กำกับ และระบุเป้าหมายที่ต้องการ: `audience=inventory-api` (หรือใช้ URI ใน `resource`) และ `scope=inventory:read` server ตรวจสอบ token ทั้งสองตัวแล้วดู policy ของตัวเองว่า Orders API ทำการแทนผู้ใช้ที่ Inventory API ด้วย scope นั้นได้หรือไม่"
+    },
+    {
+      "title": "token ขอบเขตแคบสำหรับ hop เดียว",
+      "body": "server ตอบกลับด้วย access token ตัวใหม่: `aud: inventory-api`, `sub` ยังเป็น `ana`, `scope` จำกัดแค่ `inventory:read`, อายุ 5 นาที และ `act: {\"sub\": \"orders-api\"}` ซึ่งบันทึกว่าใครกำลังทำการแทนเธอ Orders API ใช้ token นี้เรียก Inventory API แล้ว Inventory API ก็ตรวจสอบ token เองในเครื่องเหมือน access token ทั่วไป และเห็นทั้งสองฝ่าย: ผู้ใช้ใน `sub` และ service ที่ทำการแทนใน `act`"
+    },
+    {
+      "title": "แต่ละ hop มี token ของตัวเอง",
+      "body": "Inventory API ต้องใช้ข้อมูลราคา จึงนำ token ที่ใช้เรียกตัวเองมาแลกต่อ: ผลที่ได้มี `aud: pricing-api` มีเฉพาะ scope ที่ hop นั้นต้องใช้ และมี chain ของ `act` ซ้อนกัน โดย `inventory-api` เป็นผู้ลงมือปัจจุบัน และ `orders-api` ที่ซ้อนอยู่ข้างในเป็นผู้ลงมือก่อนหน้า ไม่มี token ตัวไหนใช้ได้กับ API มากกว่าหนึ่งตัว แบบนี้คือ **delegation**: `act` ทำให้ยังมองเห็น service ที่ทำการแทน ส่วนแบบ **impersonation** server จะออก token ที่ไม่มี `act` และฝั่ง downstream จะเห็นการเรียกนั้นเหมือน Ana เป็นคนเรียกเอง ถ้าไม่มีผู้ใช้เกี่ยวข้องเลยก็ไม่มีอะไรให้แลก: ให้ใช้ client credentials grant"
+    }
+  ]
+}

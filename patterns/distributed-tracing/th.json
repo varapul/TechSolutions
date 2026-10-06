@@ -1,0 +1,21 @@
+{
+  "summary": "ส่งต่อ trace context ข้าม service แล้วประกอบ span ทั้งหมดเป็น timeline เดียว",
+  "steps": [
+    {
+      "title": "เริ่ม trace",
+      "body": "request มาถึง **API Gateway** โดยไม่มี trace context ติดมา gateway จึงเริ่ม trace ใหม่: สร้าง **trace ID** แบบสุ่มขนาด 16 byte (`4bf92f…`) และเปิด **root span** การเรียกไปยัง Orders จะแนบ header `traceparent` ของ W3C ที่มี trace ID, span ID ของ gateway เองในฐานะ parent และ flag *sampled* ถ้า request มาพร้อม `traceparent` อยู่แล้ว gateway ก็จะต่อ trace นั้นแทน"
+    },
+    {
+      "title": "ส่งต่อ context",
+      "body": "Orders อ่าน `traceparent` แล้วเปิด **child span**: trace ID เดิม span ID ใหม่ และมี span ของ gateway เป็น parent ส่วน query ไปยังฐานข้อมูลเป็น client span ที่ Orders บันทึกเอง (และเข้า queue รอ export ทันทีที่จบ) และการเรียกไปยัง Payments ก็แนบ `traceparent` ที่ตอนนี้มี parent-id เป็น span ของ Orders ใน waterfall span ลูกจะซ้อนอยู่ใต้ parent ของตัวเอง"
+    },
+    {
+      "title": "export span",
+      "body": "span ที่ยังเปิดอยู่จะอยู่ใน memory และ **เข้า queue เมื่อจบ** tracing SDK ของแต่ละ service จะ export span แบบ asynchronous เป็น batch โดยทั่วไปผ่าน OTLP ไปยัง **collector** ซึ่งส่งต่อไปยัง tracing backend และ span จะไปถึงโดยไม่เรียงลำดับ การ export ไม่เคยอยู่บน request path จึงไม่ทำให้ response ช้าลง"
+    },
+    {
+      "title": "หาคอขวด",
+      "body": "backend จัดกลุ่ม span ตาม trace ID แล้วเชื่อมกันผ่าน parent ID เป็น **waterfall** เดียว แม้ว่า span จะมาจากสาม service ในเวลาต่างกัน waterfall ทำให้เห็นได้ทันทีว่า Payments ใช้เวลา 180 ms จาก request ทั้งหมด 240 ms ดังนั้น attribute และ event ของ span นั้นคือจุดที่ควรดูต่อ"
+    }
+  ]
+}

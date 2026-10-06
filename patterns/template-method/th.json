@@ -1,0 +1,21 @@
+{
+  "summary": "กำหนดโครงของอัลกอริทึมไว้ใน base class แล้วให้ subclass เติมรายละเอียดของแต่ละขั้น โดยไม่เปลี่ยนลำดับของขั้นตอน",
+  "steps": [
+    {
+      "title": "importer ที่ copy-paste กันมา",
+      "body": "`CsvImporter` และ `JsonImporter` ต่าง implement การ import ทั้งหมดไว้ใน `run(file)` ของตัวเอง: เปิดไฟล์, อ่าน row, parse ทีละ row, validate ทีละ record, บันทึกตัวที่ถูกต้อง แล้วปิดไฟล์ มีแค่บรรทัดที่ parse เท่านั้นที่ต่างกัน ห้าในหกขั้นจึงเป็นของที่คัดลอกมา เมื่อมีสินค้าที่ไม่มีชื่อหลุดเข้ามา การตรวจชื่อถูกเพิ่มเข้าไปในฉบับของ `CsvImporter` แต่ตกหล่นในฉบับของ `JsonImporter` ซึ่งยังบันทึกสินค้าที่ไม่มีชื่ออยู่"
+    },
+    {
+      "title": "โครงอยู่ใน base class",
+      "body": "ขั้นตอนทั้งหมดย้ายไปอยู่ใน abstract class **DataImporter** (ตัว *AbstractClass*) ซึ่ง `run(file)` ของมันคือ **template method**: มีอยู่ที่เดียว และเรียก open, read rows, parse, validate, save และ close ตามลำดับนั้น `parse(row)` เป็น **abstract step** ที่ *ConcreteClass* แต่ละตัวต้องเขียนเอง ส่วน `validate(rec)` เป็น **hook** ที่มีค่า default (ชื่อต้องไม่ว่าง) ซึ่ง subclass จะ override หรือไม่ก็ได้ ทิศทางการเรียกคือ base class เรียก subclass ไม่ใช่กลับกัน: นี่คือ *Hollywood principle* หรือ don't call us, we'll call you"
+    },
+    {
+      "title": "รันหนึ่งรอบ ทีละขั้น",
+      "body": "`run('products.csv')` ถูกเรียกบน `CsvImporter` ดังนั้น `run()` ที่สืบทอดมาจึงทำงาน: เปิดไฟล์และอ่าน 5 row และ `this.parse(row)` แต่ละครั้งถูก dispatch ไปที่ **CsvImporter** ซึ่งแยก row ตามเครื่องหมายจุลภาค ส่วน CsvImporter ไม่ได้ override `validate` จึงใช้ default ซึ่งปฏิเสธ **1003** เพราะชื่อว่าง record ที่ถูกต้อง 4 ตัวถูกบันทึก แล้วไฟล์ก็ถูกปิด: **บันทึก 4 ปฏิเสธ 1**"
+    },
+    {
+      "title": "hook และทางเลือกอื่น",
+      "body": "**JsonImporter** override hook นี้ด้วยการเรียก `super.validate(rec)` แล้วกำหนดเพิ่มว่าราคาต้องเป็นค่าบวก โดยไม่ต้องแก้ `DataImporter` หรือ `CsvImporter` เลย `AbstractList` ของ Java (implement `get` และ `size` แล้วสืบทอดที่เหลือ) และ `unittest.TestCase` ของ Python (`setUp`, test method แล้ว `tearDown`) ทำงานแบบนี้ ส่วน `JdbcTemplate` ของ Spring ได้ผลแบบเดียวกันด้วย callback แทน subclass ต้นทุนคือ inheritance: ทุก variant เป็น subclass ที่ผูกติดกับ base class ของมัน นี่จึงเป็นเหตุผลที่ [Strategy](../strategy/) เป็นทางเลือกที่ใช้กันทั่วไป ส่วนขั้นตอนหนึ่งในนั้นมักเป็น [factory method](../factory-method/) และในระดับทั้งระบบ ลำดับขั้นตอนที่ตายตัวจะกลายเป็น [Pipes and Filters](../pipes-and-filters/)"
+    }
+  ]
+}

@@ -10,6 +10,14 @@
 (() => {
   const player = document.querySelector('.player');
   if (!player) return;
+  // UI text for the page's language (the build writes it into #i18n); English is the fallback.
+  const S = {
+    play: 'Play', pause: 'Pause', nextStep: 'Next step', stepOf: 'Step <b>{k}</b> of {n}', playAll: 'play all',
+    replay: '↻ replay', startOver: 'start over', next: 'next step', playingAll: 'playing all steps',
+    playingStep: 'playing this step', paused: 'paused', slowDown: 'Slow down', normalSpeed: 'Normal speed',
+  };
+  try { Object.assign(S, JSON.parse(document.getElementById('i18n').textContent)); } catch { /* keep English */ }
+  const fill = (s, v) => s.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m));
   const svg = player.querySelector('.stage svg');
   const items = [...player.querySelectorAll('.steps li')];
   const details = [...player.querySelectorAll('.detail')];
@@ -100,17 +108,17 @@
     player.classList.toggle('paused', !playing);
     player.classList.toggle('held', held);
 
-    const label = held ? 'Next step' : playing ? 'Pause' : 'Play';
+    const label = held ? S.nextStep : playing ? S.pause : S.play;
     playBtn.setAttribute('aria-label', label);
     playBtn.title = `${label} (Space)`;
 
-    const n = `Step <b>${k + 1}</b> of ${N}`;
-    const all = '<a href="#" data-action="all">play all</a>';
-    const replay = '<a href="#" data-action="replay">↻ replay</a>';
-    const next = `<a href="#" data-action="next">${k === N - 1 ? 'start over' : 'next step'} →</a>`;
+    const n = fill(S.stepOf, { k: k + 1, n: N });
+    const all = `<a href="#" data-action="all">${S.playAll}</a>`;
+    const replay = `<a href="#" data-action="replay">${S.replay}</a>`;
+    const next = `<a href="#" data-action="next">${k === N - 1 ? S.startOver : S.next} →</a>`;
     status.innerHTML = step == null
-      ? `${n} · ${playing ? 'playing all steps' : 'paused'}`
-      : held ? `${n} · ${next} · ${replay} · ${all}` : `${n} · ${playing ? 'playing this step' : 'paused'} · ${all}`;
+      ? `${n} · ${playing ? S.playingAll : S.paused}`
+      : held ? `${n} · ${next} · ${replay} · ${all}` : `${n} · ${playing ? S.playingStep : S.paused} · ${all}`;
   }
 
   function tick() {
@@ -139,7 +147,7 @@
     rate = rate === 1 ? 0.5 : 1;
     anims().forEach((a) => { a.playbackRate = rate; });
     rateBtn.textContent = rate === 1 ? '1×' : '½×';
-    rateBtn.setAttribute('aria-label', rate === 1 ? 'Slow down' : 'Normal speed');
+    rateBtn.setAttribute('aria-label', rate === 1 ? S.slowDown : S.normalSpeed);
   });
   status.addEventListener('click', (e) => {
     const a = e.target.closest('[data-action]');

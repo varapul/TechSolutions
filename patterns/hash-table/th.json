@@ -1,0 +1,21 @@
+{
+  "summary": "hash แต่ละ key ตรงไปยัง bucket ทำให้ lookup เฉลี่ยเป็น O(1) key ที่ชนกันจะใช้ bucket ร่วมกัน และ table จะขยายตัวเมื่อเริ่มเต็ม",
+  "steps": [
+    {
+      "title": "จาก key ไปยัง bucket",
+      "body": "`put` แต่ละครั้งจะส่ง key ผ่าน hash function (ในที่นี้คือ FNV-1a แบบ 32-bit) แล้วย่อ hash ให้เหลือเป็น index ของ bucket ด้วย `hash mod 8`: alice ได้ hash เป็น `0x872213E7` และลงที่ bucket 7 ส่วน bob ลง 4 และ carol ลง 2 `get` ก็คำนวณแบบเดียวกันซ้ำแล้วตรงไปที่ bucket นั้นทันที โดยเฉลี่ยจึงมีต้นทุนเท่าเดิมไม่ว่า table จะมี entry มากแค่ไหน: **O(1)**"
+    },
+    {
+      "title": "key ที่ชนกันใช้ bucket ร่วมกัน",
+      "body": "dave ได้ hash เป็น `0xD06CC5DF` ซึ่งก็ได้ bucket 7 เหมือนกัน bucket นั้นจึงเก็บ **chain** สั้น ๆ (separate chaining): alice แล้วตามด้วย dave `get(dave)` ไปที่ bucket 7 แล้วเทียบ key ไล่ไปตาม chain: alice ไม่ตรง dave ตรง จึงคืนค่า 38 การอยู่ bucket เดียวกัน หรือแม้แต่มี hash ที่เหมือนกันทุกประการ ก็ไม่ได้แปลว่า key เท่ากัน จึงต้องเปรียบเทียบ key เสมอ"
+    },
+    {
+      "title": "ขยายก่อนจะแออัด",
+      "body": "erin และ frank ทำให้ table มี 6 entry ใน 8 bucket คิดเป็น **load factor** 0.75 grace ชนกับ frank ที่ bucket 3 และทำให้มี 7 entry ซึ่งเกิน 0.75 × 8 = 6 table จึงขยายเป็นสองเท่าเป็น 16 bucket และ rehash ทุก entry ด้วย `mod 16`: alice, bob, carol และ frank อยู่ที่เดิม ส่วน erin ย้ายไป 9, grace ไป 11 และ dave ไป 15 load factor ลดลงเหลือ 7/16 ≈ 0.44 การ resize ต้องคัดลอกทุกอย่าง (O(n)) แต่การขยายทีละสองเท่าทำให้เกิดไม่บ่อย การ insert จึงยังเป็น **O(1) amortized**"
+    },
+    {
+      "title": "เมื่อ hashing กลายเป็นจุดอ่อน",
+      "body": "FNV-1a ไม่มีค่าลับ (secret) จึงคำนวณ key ที่ชนกันไว้ล่วงหน้าแบบ offline ได้: key ยาว 5 ตัวอักษรทั้งห้าตัวนี้ได้ hash เป็น `0x91AB64A5` หมด และไปกองรวมกันใน bucket 5 ขณะที่ load factor ยังไม่เกินขีดจำกัด 0.75 การ lookup ใน bucket นั้นต้องไล่ทั้ง chain (เทียบ 5 ครั้งสำหรับ key ตัวสุดท้าย หรือ n ครั้งในกรณีทั่วไป) และการ insert key แบบนี้ n ตัวต้องเทียบ O(n²) ครั้ง: นี่คือ **hash flooding** ซึ่งมีการสาธิตโจมตี web platform จำนวนมากในเดือนธันวาคม 2011 วิธีป้องกันคือ keyed hash ที่ใช้ random seed (SipHash), tree bin ของ Java และการจำกัดขนาดของ request"
+    }
+  ]
+}

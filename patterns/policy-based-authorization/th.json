@@ -1,0 +1,21 @@
+{
+  "summary": "service ถาม policy engine ส่วนกลางเพื่อขอคำตัดสิน allow/deny (RBAC, ABAC, ReBAC)",
+  "steps": [
+    {
+      "title": "กฎกระจัดกระจายอยู่ในโค้ด",
+      "body": "แต่ละ service ตรวจสิทธิ์ด้วย if-statement ของตัวเอง ในภาษาของตัวเอง และผลไม่ตรงกัน: Expenses API ให้ manager อนุมัติได้ถึง **$5,000** แต่ Reports ถือว่าเป็น **$2,000** ส่วน Payouts ให้ใครก็ได้ใน Finance หรือ manager คนไหนก็ได้ปล่อยการจ่ายเงินได้ทุกจำนวน การเปลี่ยนวงเงินหมายถึงต้องตามหาทุกสำเนาของกฎนี้ แล้วแก้ ทดสอบ และ redeploy ทีละ service และไม่มีใครตอบได้ว่า *ใครอนุมัติอะไรได้บ้าง* โดยไม่ต้องอ่าน codebase ทั้งสามชุด"
+    },
+    {
+      "title": "ถาม decision point",
+      "body": "**policy enforcement point** (PEP) ของ Expenses API ถามคำถามเดียว: subject `ana` ทำ `approve` กับ resource `e-42` ใน context นี้ได้หรือไม่ **policy decision point** (PDP) ประเมิน policy v12 เทียบกับ attribute ของ Ana (manager, Sales) และของ e-42 ($1,800, Sales) แล้วตอบ **allow** พร้อม rule ที่ match จากนั้น PEP บังคับใช้คำตอบนั้น และคำตัดสินถูกบันทึกลง log ตัว policy เองเก็บอยู่ใน Git และถูก review และทดสอบที่นั่นเหมือนโค้ดก่อนจะส่ง version ใหม่ไปที่ PDP"
+    },
+    {
+      "title": "RBAC, ABAC หรือ ReBAC",
+      "body": "**RBAC** ให้สิทธิ์ตาม role: Ana เป็น manager จึงอนุมัติได้ แต่ Cara จาก Marketing ก็อนุมัติได้เหมือนกัน และอนุมัติได้ทุกจำนวน **ABAC** พิจารณา attribute ของผู้ใช้และของรายการค่าใช้จ่ายด้วย (แผนกเดียวกัน ไม่เกิน $5,000) Ana จึงอนุมัติ e-42 ได้ แต่อนุมัติ e-43 ที่ $7,000 ไม่ได้ และ Cara อนุมัติ e-42 ไม่ได้ **ReBAC** ไล่ตาม relationship ที่เก็บไว้ แบบที่ Zanzibar ของ Google ทำ: Ana เป็นหัวหน้าของ Bo และ Bo เป็นเจ้าของ e-42 Ana จึงอนุมัติ e-42 ได้"
+    },
+    {
+      "title": "เร็ว ปลอดภัย และ audit ได้",
+      "body": "engine รันอยู่ข้าง service ในรูป sidecar หรือ library ที่ฝังอยู่ในตัว และ control plane ส่ง bundle ของ policy และข้อมูลที่มี version กำกับมาให้ การตรวจแต่ละครั้งจึงมักใช้เวลาน้อยกว่าหนึ่งมิลลิวินาทีอยู่มาก และไม่ต้องเรียกผ่าน network รายการค่าใช้จ่ายที่ Ana ต้องอนุมัติได้มาจาก filter query เดียว (`dept = Sales and amount ≤ 5000`) ไม่ใช่ตรวจทีละแถว เมื่อเรียก PDP ไม่ได้ PEP จะ **deny** (fail closed) และทุกคำตัดสินถูกบันทึก log พร้อม input ไว้สำหรับ audit"
+    }
+  ]
+}

@@ -143,6 +143,38 @@ for (const p of patterns.filter((x) => x.animated && inScope(x.slug))) {
   }
 }
 
+// ---- Thai translations ---------------------------------------------------------
+// patterns/<slug>/th.json is optional; when present it must match the English steps.
+const readJSONFile = (f) => JSON.parse(readText(f));
+for (const p of patterns.filter((x) => x.animated && !x.metaError && inScope(x.slug))) {
+  // README.th.md, when present, is the Thai article body (no generated blocks).
+  const md = `patterns/${p.slug}/README.th.md`;
+  if (existsSync(abs(md))) {
+    for (const l of readText(md).matchAll(/\]\(\.\.\/([a-z0-9-]+)\/?(?:#[^)]*)?\)/g)) {
+      if (!bySlug.get(l[1])?.animated) err(md, `links to ../${l[1]}/, which has no page yet`);
+    }
+  }
+  const f = `patterns/${p.slug}/th.json`;
+  if (!existsSync(abs(f))) continue;
+  let th;
+  try { th = readJSONFile(f); } catch (e) { err(f, `invalid JSON: ${e.message}`); continue; }
+  if (typeof th.summary !== 'string' || !th.summary.trim()) err(f, 'needs a summary');
+  const n = p.meta.steps.length;
+  if (!Array.isArray(th.steps) || th.steps.length !== n) { err(f, `needs ${n} steps, like meta.json`); continue; }
+  th.steps.forEach((s, i) => {
+    if (typeof s?.title !== 'string' || !s.title.trim() || typeof s?.body !== 'string' || !s.body.trim()) err(f, `step ${i + 1} needs a title and a body`);
+    for (const l of String(s?.body ?? '').matchAll(/\]\(\.\.\/([a-z0-9-]+)\/?(?:#[^)]*)?\)/g)) {
+      if (!bySlug.get(l[1])?.animated) err(f, `step ${i + 1} links to ../${l[1]}/, which has no page yet`);
+    }
+  });
+}
+if (!only.length && existsSync(abs('i18n/th.json'))) {
+  let ui;
+  try { ui = readJSONFile('i18n/th.json'); } catch (e) { err('i18n/th.json', `invalid JSON: ${e.message}`); }
+  for (const id of Object.keys(ui?.categories ?? {})) if (!catIds.has(id)) err('i18n/th.json', `unknown category "${id}"`);
+  for (const c of categories) if (!ui?.categories?.[c.id]?.title) warn('i18n/th.json', `no Thai title for category "${c.id}"`);
+}
+
 // ---- templates -------------------------------------------------------------
 if (!only.length) {
   for (const e of xmlErrors(readText('templates/diagram.svg'))) err('templates/diagram.svg', e);

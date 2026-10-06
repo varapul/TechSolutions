@@ -1,0 +1,21 @@
+{
+  "summary": "เพิ่มและลด instance โดยอัตโนมัติตามโหลดที่ขึ้นและลง",
+  "steps": [
+    {
+      "title": "ช่วงโหลดคงที่",
+      "body": "policy แบบ **target-tracking** รักษา CPU เฉลี่ยของ group ไว้ใกล้ **60%** โดยมี instance ได้ระหว่าง **2 ถึง 6** ตัว สอง instance ที่ 48% ยังต่ำกว่า target: 2 × 48% ÷ 60% = 1.6 ปัดขึ้นเป็น 2 autoscaler จึงไม่เปลี่ยนอะไร"
+    },
+    {
+      "title": "โหลดพุ่ง: scale out",
+      "body": "traffic เพิ่มเป็นสองเท่า instance ทั้งสองตัวทำงานที่ 96% และ request เริ่มรอใน queue latency จึงสูงขึ้น autoscaler คำนวณ 2 × 96% ÷ 60% = 3.2 ปัดขึ้นเป็น **4** แล้ว launch instance เพิ่มสองตัว instance ใหม่ต้องใช้เวลา boot และ warm up และ load balancer จะส่ง request ไปให้ก็ต่อเมื่อ **ผ่าน health check** แล้วเท่านั้น"
+    },
+    {
+      "title": "capacity ใหม่พร้อมแล้ว",
+      "body": "สี่ instance แบ่งโหลดกันที่ 48% และ latency กลับมาเป็นปกติ ผลคำนวณ 4 × 48% ÷ 60% = 3.2 ยังปัดขึ้นเป็น 4 group จึงคงจำนวนไว้ เมื่อโหลดลดลงชั่วครู่ ผลลัพธ์ดิบคือ 3 แต่ **scale-in window** (หรือ stabilisation window ในที่นี้คือ 5 นาที) จะใช้ค่าสูงสุดที่เห็นในช่วง window นั้น group จึงไม่ flap สลับไปมาระหว่าง 3 กับ 4"
+    },
+    {
+      "title": "scale in เมื่อโหลดลด",
+      "body": "traffic ลดลงครึ่งหนึ่งและ CPU ลดลงเหลือ 24%: 4 × 24% ÷ 60% = 1.6 ดังนั้น 2 instance ก็เพียงพอ autoscaler จะถอดออกสองตัวก็ต่อเมื่อโหลดต่ำต่อเนื่องตลอดทั้ง window แล้วเท่านั้น load balancer จะ **drain** instance เหล่านั้นก่อน (ไม่รับ request ใหม่ และปล่อยให้ request ที่ค้างอยู่ทำจนเสร็จ) จากนั้นจึง terminate และ group ก็กลับมาที่ค่าต่ำสุดคือ 2"
+    }
+  ]
+}

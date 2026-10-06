@@ -1,0 +1,21 @@
+{
+  "summary": "core system ที่เล็กที่สุดเท่าที่จำเป็น แล้วขยายความสามารถด้วย plug-in module ที่เป็นอิสระต่อกัน",
+  "steps": [
+    {
+      "title": "core เล็ก ๆ กับ plug-in",
+      "body": "**core** เก็บไว้เฉพาะสิ่งที่ผู้ใช้ทุกคนต้องใช้: หน้าต่าง, การเปิด แก้ไข และบันทึกไฟล์, settings, **plug-in registry**, lifecycle ของ plug-in และ **extension point** ซึ่งเป็น contract สำหรับ language support, command และ view plug-in แต่ละตัวมาพร้อม **manifest** ที่ประกาศว่าเพิ่มอะไรเข้ามา ควร activate เมื่อไร และต้องการ core API version ไหน ตอน start-up core อ่าน manifest โดยไม่รันโค้ดของ plug-in เลย ลงทะเบียน plug-in แต่ละตัว และต่อสิ่งที่ plug-in เพิ่มเข้ามาเข้ากับระบบ: Git activate ตอน start-up และ Python activate เพราะมีไฟล์ `.py` เปิดอยู่ สิ่งที่ผู้ใช้เห็นอยู่ตอนนี้ส่วนใหญ่มาจาก plug-in"
+    },
+    {
+      "title": "เพิ่มได้โดยไม่แตะ core",
+      "body": "มีการติดตั้ง plug-in **Markdown preview** เข้ามา core เจอ manifest และลงทะเบียน command กับ view ของมันให้ แต่ยังไม่รันโค้ดของมันเลย: plug-in นี้ **activate แบบ lazy** คือเริ่มทำงานครั้งแรกเมื่อมีการเปิดไฟล์ Markdown ไม่มีอะไรใน core หรือใน plug-in ตัวอื่นถูกแก้หรือ redeploy และ plug-in Python ก็อัปเกรดจาก 1.4 เป็น 1.5 ตามกำหนดของตัวเอง"
+    },
+    {
+      "title": "กัน plug-in ที่ค้างไม่ให้ลาม",
+      "body": "plug-in รันอยู่ใน **plug-in host process** ที่แยกออกมา และเข้าถึง core ได้ผ่าน API ของ core เท่านั้น เมื่อ plug-in Git ค้างอยู่ใน loop ไม่รู้จบ plug-in ที่อยู่ใน host เดียวกันก็ค้างไปด้วย แต่ editor ยังตอบสนองต่อการพิมพ์ตามปกติ core สังเกตเห็นว่า host หยุดตอบ จึงแจ้งผู้ใช้ ซึ่งเลือกได้ว่าจะ restart host หรือทำแบบในภาพนี้ คือ disable Git แล้ว restart host ใหม่โดยไม่มี Git และเนื่องจาก host ทำงานอยู่ใน **sandbox** plug-in จึงทำได้เฉพาะสิ่งที่ API อนุญาตเท่านั้น"
+    },
+    {
+      "title": "ส่วนที่ยากคือ API",
+      "body": "core API ขยับไปเป็น **version 2** ซึ่งเปลี่ยนชื่อ `addCommand()` เป็น `registerCommand()` plug-in ที่ประกาศว่าใช้ API 1.x ยังทำงานต่อได้ผ่าน **compatibility layer** ซึ่งตอนนี้ deprecated แล้วและจะถูกถอดออกใน v3 ส่วน plug-in เก่าที่ต้องการ API 0.x ซึ่งเลิกรองรับไปแล้ว จะ **ถูกปฏิเสธตั้งแต่ตอนโหลด** แทนที่จะไปพังทีหลัง contract นี้ยังมีต้นทุนอื่นอีก: plug-in ที่พึ่งพากันเอง, plug-in สองตัวที่แย่ง extension point เดียวกัน, เวลา start-up เมื่อหลายตัว activate ตั้งแต่เนิ่น ๆ และจำนวน combination ที่ต้องทดสอบ"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "เก็บ configuration ไว้นอก deployment package ใน store กลางที่ถูกอ่านตอน runtime",
+  "steps": [
+    {
+      "title": "การตั้งค่าฝังอยู่ใน image",
+      "body": "Connection string, timeout และรหัสผ่านอยู่ในไฟล์การตั้งค่าภายใน image ทำให้ staging และ production ต่างต้องมี build ของตัวเอง (57-staging และ 57-prod) จะเปลี่ยน timeout ค่าเดียวก็ต้องแก้ไฟล์ แล้ว rebuild image ทั้งสองตัว และ redeploy ทุก instance ส่วนรหัสผ่านก็ไปอยู่ทั้งใน repository และในทุกสำเนาของทุก image"
+    },
+    {
+      "title": "Image เดียวใช้ได้ทุกที่",
+      "body": "Image เดียวกันคือ build 57 รันทั้งใน staging และ production เมื่อ instance เริ่มทำงาน มันจะอ่านการตั้งค่าของ environment ตัวเองจาก configuration store โดยเลือกตาม **label** และดึง secret จาก secret store ที่แยกต่างหาก โดยยืนยันตัวตนกับทั้งสองที่ด้วย **workload identity** ของตัวเอง ทั้ง image และ repository ไม่มีการตั้งค่าของ environment และไม่มี secret เลย ส่วน configuration store ก็เก็บไว้แค่ reference ที่ชี้ไปยังรหัสผ่าน"
+    },
+    {
+      "title": "เปลี่ยนค่าขณะ runtime",
+      "body": "Operator ชื่อ ana เปลี่ยน `payment.timeout` ของ production จาก 2 s เป็น 3 s ตัว store จะบันทึกเป็นเวอร์ชัน 8 พร้อมข้อมูลว่าใครเปลี่ยนอะไรเมื่อไร และ sentinel key ก็ถูกเพิ่มค่า ฝั่ง instance ของ production ที่เฝ้าดู sentinel อยู่ (หรือได้รับ change notification) จะ reload ภายในไม่กี่วินาทีโดยยังเป็น build 57 ขณะที่ staging ยังใช้ค่าของตัวเอง การตั้งค่าที่อ่านแค่ตอน start เช่น `db.pool.size` จะถูกระบุว่าต้อง restart และการ rollback ก็คือการกู้เวอร์ชัน 7 กลับมา"
+    },
+    {
+      "title": "พึ่งพาได้อย่างปลอดภัย",
+      "body": "แต่ละ instance เก็บ configuration ชุดล่าสุดที่รู้ว่าใช้ได้ (last known good) ไว้บน local disk จึงยังทำงานต่อได้ขณะที่ติดต่อ store ไม่ได้ และ prod-2 ถึงกับ restart จากสำเนานั้นได้ด้วย การเปลี่ยนแปลงครั้งถัดไปจะถูก validate ก่อนใช้งานจริง แล้วค่อย roll out เป็นขั้น ๆ พร้อม rollback อัตโนมัติเมื่อมี alarm เพราะการเปลี่ยน configuration ที่ผิดก็ทำให้ระบบล่มได้ไม่ต่างจากโค้ดที่ผิด ส่วน secret ยังอยู่ใน secret store และถูก rotate และทุก key มีเจ้าของ"
+    }
+  ]
+}

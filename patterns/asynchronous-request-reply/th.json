@@ -1,0 +1,21 @@
+{
+  "summary": "ตอบรับทันทีด้วย 202 ทำงานต่อเบื้องหลัง และให้ client poll status URL",
+  "steps": [
+    {
+      "title": "synchronous call ที่ยาวเกินไป",
+      "body": "client ส่ง `POST /reports` แล้วรอ PDF การ render ใช้เวลาประมาณสองนาที แต่ gateway ที่อยู่หน้า API เลิกรอหลัง 30 วินาที และตอบ **504 Gateway Timeout** ไม่มีอะไรสั่งให้ API หยุด มันจึง render copy #1 ต่อไปทั้งที่ไม่มีใครรอรับแล้ว และการ retry ของ client ก็เริ่ม copy #2: งานเพิ่มเป็นสองเท่า และก็ยังไม่ได้ report"
+    },
+    {
+      "title": "รับไว้ก่อน แล้วค่อยทำ",
+      "body": "API ตรวจสอบ request (request ที่ผิดยังได้ `400` กลับไปทันทีเหมือนเดิม) บันทึก job record ในสถานะ `queued` และใส่ job ลงใน queue จากนั้นตอบกลับทันที: **202 Accepted** พร้อม header `Location` ที่ชี้ไปยัง status URL ของ job คือ `/jobs/42`, hint `Retry-After: 5` และตัว job ใน body worker หยิบ job จาก queue ไปเริ่ม render โดยไม่มี connection ไหนต้องเปิดค้างไว้ระหว่างที่มันทำงาน"
+    },
+    {
+      "title": "Poll ดูสถานะ",
+      "body": "client ทำตาม `Retry-After` โดยส่ง `GET /jobs/42` ทุก 5 วินาที และ API ตอบจาก job record: `200` พร้อมสถานะ (`running`) และความคืบหน้า worker เก็บ PDF ลง object storage ก่อน แล้วจึง mark job เป็น `succeeded` poll ครั้งถัดไปจะได้ **303 See Other** พร้อม `Location: /reports/42` และ client ก็ดาวน์โหลด report จากตรงนั้น"
+    },
+    {
+      "title": "ทำให้ทนทานต่อความผิดพลาด",
+      "body": "request ถัดไปแนบ `Idempotency-Key` มาด้วย 202 ของมันหายระหว่างทาง client จึง retry ด้วย key เดิม และได้ job 43 กลับมาแทนที่จะได้ job ที่สอง (แนวคิดเดียวกับ [idempotent consumer](../idempotent-consumer/)) จากนั้น `DELETE /jobs/43` ก็ยกเลิก job นั้น ทุก job จบลงที่ `succeeded`, `failed` พร้อมเหตุผล หรือ `cancelled` จึงไม่มี client ไหนต้อง poll ไปตลอดกาล job record และผลลัพธ์จะถูกลบ 24 ชั่วโมงหลัง job จบ และ client ที่รับ call เข้ามาได้ก็ใช้ [webhook](../webhooks/) แทนการ poll ได้"
+    }
+  ]
+}

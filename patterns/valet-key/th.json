@@ -1,0 +1,21 @@
+{
+  "summary": "ให้ client ได้ URL อายุสั้นที่ขอบเขตแคบ เพื่ออ่านหรือเขียน storage ได้โดยตรง",
+  "steps": [
+    {
+      "title": "API อยู่บน data path",
+      "body": "Ana upload วิดีโอขนาด 2 GB ของเธอ `video-981.mp4` ไปที่ API ซึ่ง stream ต่อไปยัง storage โดยใช้ credential ของตัวเอง ทุก byte ต้องผ่านแอปพลิเคชันทั้งขาเข้าและขาออก instance หนึ่งจึงไม่ว่างไปหลายนาที ต้องตั้ง timeout ยาวและใช้ buffer ใหญ่ และสุดท้าย API tier ก็ต้อง scale ตาม bandwidth แทนที่จะ scale ตาม logic ของตัวเอง"
+    },
+    {
+      "title": "ขอ key ไม่ใช่ส่งข้อมูล",
+      "body": "client ขอสิทธิ์จาก API เพื่อ upload `video-981.mp4` API ยืนยันตัวตน Ana ตรวจว่าเธอเพิ่มวิดีโอเข้าอัลบั้มนี้ได้ แล้ว sign **valet key** ให้: URL ที่อนุญาตให้เขียนได้เฉพาะ object นั้นตัวเดียว ภายใน 15 นาที ผ่าน HTTPS เท่านั้น และจะจำกัดขนาดกับ content type ด้วยก็ได้ signature สร้างจาก credential ที่ไม่เคยออกจาก server ส่วน client ได้รับแค่ signed URL"
+    },
+    {
+      "title": "ส่งตรงไปที่ storage",
+      "body": "client ส่งไฟล์ตรงไปที่ storage ด้วย signed URL แล้ว storage ตรวจ signature, เวลาหมดอายุ, ชื่อ object และ operation ก่อนรับข้อมูล โดยที่ API ไม่ต้องเกี่ยวเลย เมื่อ object มาถึง event ของ storage จะ trigger การประมวลผล: ไฟล์ถูก scan และตรวจสอบก่อนที่อะไรจะนำไปใช้ และถ้าไม่ผ่านจะถูกย้ายไป quarantine ไฟล์นี้สะอาด จึงส่งต่อให้ thumbnail worker"
+    },
+    {
+      "title": "key ที่หลุดไปทำอะไรได้น้อย",
+      "body": "มีคนคัดลอก URL นี้ไป แต่ URL เขียนได้แค่ `video-981.mp4` และใช้ได้จนหมดอายุเท่านั้น: ถ้าเอาไปอ่านหรือลบจะถูกปฏิเสธ และหลัง 15 นาทีทุกอย่างก็ถูกปฏิเสธ ส่วนที่ยากคือการเรียก key คืนก่อนหมดอายุ จึงควรให้อายุสั้น และ sign ด้วย credential หรือ policy ที่ revoke ได้ เช่น user delegation key หรือ stored access policy ของ Azure หรือ role session ของ AWS การ download ก็ทำแบบเดียวกัน: URL อายุสั้นที่อ่านได้อย่างเดียวสำหรับ object เดียว"
+    }
+  ]
+}

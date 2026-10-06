@@ -1,0 +1,21 @@
+{
+  "summary": "จุดเข้าใช้งานจุดเดียวที่ยืนยันตัวตน ทำ rate limit และ route การเรียกไปยัง backend service",
+  "steps": [
+    {
+      "title": "ประตูหน้าบ้านบานเดียว",
+      "body": "client ทั้ง web, mobile และ partner เรียกเข้ามาที่ **public endpoint เดียว** ทุก request วิ่งผ่าน policy pipeline ชุดเดียวกัน (authenticate, rate limit, route) แล้วถูกส่งต่อตาม path ไปยัง service ที่เป็นเจ้าของ: `/orders` ไป Orders, `/users` ไป Users, `/catalog` ไป Catalog response กลับมาทางเดียวกัน และ service ทั้งหมดอยู่ใน private network client จึงไม่มีทางรู้ว่า service อยู่ที่ไหนหรือถูกแบ่งออกอย่างไร"
+    },
+    {
+      "title": "ยืนยันตัวตนที่ edge",
+      "body": "gateway ตรวจ credential ก่อนจะ rate limit หรือ route request ที่ไม่มี token หรือ token ไม่ถูกต้องจะถูกปฏิเสธด้วย **401 Unauthorized** และไม่มีวันไปถึง backend ส่วน token ที่ถูกต้อง gateway จะตรวจ signature และ claim ครั้งเดียว แล้วส่ง identity ของผู้เรียกต่อไป (ในที่นี้ผ่าน header `X-User-Id`) service แต่ละตัวจึงไม่ต้องเขียนการตรวจ token ซ้ำเอง"
+    },
+    {
+      "title": "Rate limit แยกตาม client",
+      "body": "client แต่ละราย (API key หรือ client ID) มี **token bucket** ของตัวเอง: ทุกการเรียกใช้ token ไปหนึ่งตัว และ token จะเติมกลับในอัตราคงที่ (ในที่นี้สูงสุด 4 ตัว เติม 1 ตัวต่อวินาที) burst ของ partner ทำให้ bucket ของตัวเองหมด การเรียกที่เกินมาจึงได้ **429 Too Many Requests** ซึ่งควรมี header `Retry-After` มาด้วย ขณะที่การเรียกของ Web ผ่านไปได้ตามปกติ จากนั้น bucket ก็เติมกลับ และ partner เรียกได้อีกครั้ง"
+    },
+    {
+      "title": "ตอบจาก cache",
+      "body": "`GET /catalog` ครั้งแรกเป็น cache **miss**: request ไปถึง Catalog และ gateway เก็บ response ไว้ตามระยะ time-to-live ครั้งที่เรียกซ้ำเป็น **hit** ซึ่ง gateway ตอบเองได้ในเวลาเพียงเสี้ยวเดียวโดยไม่ต้องแตะ service การ cache เป็นหนึ่งใน cross-cutting concern หลายอย่างที่ gateway รับภาระแทน service ร่วมกับ TLS termination, การแปลง request และ response, logging และ metrics"
+    }
+  ]
+}

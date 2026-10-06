@@ -1,0 +1,21 @@
+{
+  "summary": "วางอัลกอริทึมที่สลับกันได้ไว้หลัง interface เดียว แล้วเลือกใช้ตัวหนึ่งตอน runtime แทนการแตก branch ภายใน caller",
+  "steps": [
+    {
+      "title": "method เดียว if เต็มไปหมด",
+      "body": "ตัวเลือกที่ผู้ใช้เลือกส่งมาถึง `Checkout.shippingCost(order, method)` ในรูป string และ method นี้ก็แตก branch ตามค่านั้น: `if standard … else if byWeight … else if express …` กฎถัดไปอย่าง **FreeOver50** หมายถึงต้องแก้ function นี้อีกครั้ง และเพราะกฎทุกข้ออยู่ใน function นี้ ทำให้ test suite ชุดเดียวของมันต้องตรวจทั้งสี่กฎใหม่หมด"
+    },
+    {
+      "title": "กฎกลายเป็น strategy",
+      "body": "แต่ละ branch ย้ายไปอยู่ใน class ของตัวเองที่ implement **ShippingStrategy** (ตัว *Strategy*) ซึ่งมี method เดียวคือ `cost(order)` ส่วน `Checkout` (ตัว *Context*) ถือ strategy หนึ่งตัวโดยมี type เป็น interface และ `shippingCost(order)` ก็แค่คืน `strategy.cost(order)`: มันไม่เคยถามว่าถือ class ไหนอยู่ ตอนนี้ UI ส่ง object อย่าง `setStrategy(new Standard())` แทน string"
+    },
+    {
+      "title": "สลับตอน runtime",
+      "body": "ลูกค้าเลือก **ByWeight** แล้วเปลี่ยนเป็น **Express** การคลิกแต่ละครั้งเรียก `setStrategy()` ทำให้ reference ของ Checkout ย้ายไปที่ object ใหม่ และ `strategy.cost(order)` ครั้งถัดไปก็รันอัลกอริทึมคนละตัวกับ order เดิม (3 kg, EUR 42): 4.90 เมื่อใช้ Standard, 4.50 เมื่อใช้ ByWeight (1.50 × 3) และ 15.00 เมื่อใช้ Express (12 + 1 × 3) โดย `Checkout` รันบรรทัดเดิมทุกครั้ง"
+    },
+    {
+      "title": "เพิ่มได้โดยไม่ต้องแก้",
+      "body": "**FreeOver50** (ส่งฟรีเมื่อ subtotal ถึง EUR 50 ไม่อย่างนั้นคิด 4.90) เป็น class ใหม่หนึ่งตัว และทั้ง `Checkout` และ strategy ตัวอื่นไม่ต้องเปลี่ยน: มันคืน 4.90 สำหรับ order นี้ และ 0.00 สำหรับ order ยอด EUR 57 ในภาษาที่ function เป็นค่าได้ strategy มักเป็นแค่ function ตัวหนึ่ง เช่น comparator ของการ sort หรือ `key` ของ Python ต่างจาก *State* ตรงที่ client เป็นผู้เลือก strategy และต่างจาก *Template Method* ตรงที่มันเปลี่ยนพฤติกรรมด้วย composition แทนการ subclass"
+    }
+  ]
+}

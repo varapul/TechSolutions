@@ -1,0 +1,21 @@
+{
+  "summary": "รันความสามารถเสริม (proxy, logging, config) เป็น process แยกที่อยู่ข้างแอป",
+  "steps": [
+    {
+      "title": "หน่วยเดียว สอง process",
+      "body": "**sidecar** คือตัวช่วยที่รันอยู่ข้างแอปพลิเคชันภายใน deployment unit เดียวกัน: pod ใน Kubernetes หรือ task หรือ host ใน platform อื่น ทั้งสองตัวถูก deploy, start, scale และ stop ไปพร้อมกัน และใช้ network ของ pod ร่วมกัน (จึงคุยกันผ่าน `localhost`) รวมถึง volume ที่ mount ไว้ให้ทั้งคู่ แต่แต่ละตัวก็เป็น container แยกที่มี image, ภาษา และ resource limit ของตัวเอง โค้ดของแอปพลิเคชันเองไม่มี logic ของตัวช่วยอยู่เลย"
+    },
+    {
+      "title": "สามงานคลาสสิก",
+      "body": "มีสามงานที่เจอซ้ำแล้วซ้ำอีก sidecar แบบ **proxy** รับส่งการเรียกขาออกและขาเข้าของแอปพลิเคชัน พร้อมเพิ่ม TLS และ retry **log shipper** คอย tail ไฟล์ที่แอปพลิเคชันเขียน แล้วส่งแต่ละบรรทัดไปที่ log store **config agent** ดึง secret และ setting มา และดูแลไฟล์บน shared volume ให้เป็นปัจจุบันอยู่เสมอ แอปพลิเคชันแค่อ่านไฟล์นั้น"
+    },
+    {
+      "title": "อัปเดตและนำกลับมาใช้ซ้ำ",
+      "body": "ทีม platform ปล่อย proxy image version ใหม่ แล้วทยอย roll out ทีละ pod แต่ละ pod restart พร้อม sidecar ตัวใหม่ แต่ไม่มี image ของแอปพลิเคชันตัวไหนต้อง build ใหม่ image เดียวกันนี้รันอยู่ข้าง service ที่เขียนด้วย Java, Go และ Python: implementation เดียวใช้ได้ทุกภาษา ขณะที่ถ้าทำเป็น library จะต้องมีหนึ่งชุดต่อหนึ่งภาษา และต้อง build ทุก service ใหม่ทุกครั้งที่มีการแก้ไข"
+    },
+    {
+      "title": "ราคาที่ต้องจ่าย",
+      "body": "ทุก pod ต้องรัน container เพิ่ม CPU และ memory ของ container เหล่านั้นจึงคูณด้วยจำนวน pod (ตัวเลขในแอนิเมชันเป็นตัวอย่าง) และทุกการเรียกที่ผ่าน proxy ก็เพิ่มขึ้นอีกหนึ่ง hop ลำดับก็สำคัญด้วย: sidecar ต้องรันอยู่ก่อนแอปพลิเคชันเริ่ม และต้องอยู่นานกว่าแอปพลิเคชันตอน shutdown native sidecar container ของ Kubernetes (stable ตั้งแต่ v1.33) ให้ลำดับแบบนั้นพอดี ทางเลือกอื่นแทน sidecar คือ library, agent หนึ่งตัวต่อ node หรือ feature ของ platform"
+    }
+  ]
+}

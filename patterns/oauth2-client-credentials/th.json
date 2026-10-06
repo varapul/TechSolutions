@@ -1,0 +1,21 @@
+{
+  "summary": "access token สำหรับงานแบบ machine-to-machine โดยไม่มีผู้ใช้เกี่ยวข้อง",
+  "steps": [
+    {
+      "title": "ขอ token ในนามตัวเอง",
+      "body": "backend service ต้องเรียก API ในนามของตัวเอง: ในที่นี้คือ Orders service ที่เรียก Inventory API แต่จะเป็น billing job ที่รันทุกคืนก็ได้เหมือนกัน service ส่ง `POST /token` พร้อม `grant_type=client_credentials` และ `scope=inventory:read` ตรงไปที่ authorization server และยืนยันตัวตนในนามตัวเอง ในตัวอย่างนี้ใช้ `client_id` และ `client_secret` ใน HTTP Basic header ไม่มีใครต้องเข้าสู่ระบบ จึงไม่มี redirect ไม่มีหน้าเข้าสู่ระบบ และไม่มีหน้า consent ส่วน grant แบบนี้ใช้ได้กับ **confidential client** เท่านั้น คือซอฟต์แวร์ที่เก็บ credential เป็นความลับไว้กับตัวเองได้"
+    },
+    {
+      "title": "server ออก token ให้",
+      "body": "authorization server ยืนยันตัวตน client เทียบกับข้อมูลที่ลงทะเบียนไว้ แล้วตรวจว่า client นี้ได้รับอนุญาตให้ขอ scope ที่ขอมาหรือไม่ จากนั้นคืน access token พร้อม `token_type` และ `expires_in` โดยไม่มี refresh token: เมื่อ token หมดอายุ client ก็แค่ยืนยันตัวตนใหม่อีกครั้ง subject ของ token คือตัว client เอง (`sub` และ `client_id` เป็น `orders-svc` ทั้งคู่) ไม่ใช่คน"
+    },
+    {
+      "title": "เรียก API และใช้ token ซ้ำ",
+      "body": "service เรียก Inventory API ด้วย `Authorization: Bearer …` และ API ตรวจสอบ token เองในเครื่อง: signature, issuer, audience, เวลาหมดอายุ และ scope service เก็บ token ไว้ใน memory และส่ง token ตัวเดิมไปกับทุกการเรียก แล้วค่อยขอตัวใหม่ก่อนหมดอายุไม่นาน service ไม่ขอ token ใหม่ทุกครั้งที่เรียก เพราะจะเพิ่ม round trip ให้ทุก request และไปชน rate limit ของ token endpoint"
+    },
+    {
+      "title": "เลิกใช้ shared secret",
+      "body": "shared secret ต้องเก็บไว้ที่ client วิ่งผ่านเครือข่ายทุกครั้งที่ขอ token และใครคัดลอกไปก็ใช้ได้ ควรเปลี่ยนไปใช้สิ่งที่ไม่รั่วไหลแบบเดียวกันนี้: JWT assertion ที่ sign ด้วย private key (`private_key_jwt` ตามภาพ), client certificate (mutual TLS) หรือ **workload identity** ของ platform ซึ่งเป็น token อายุสั้นที่ platform ออกให้ workload แล้วนำไปแลกเป็น access token จึงไม่ต้องเก็บอะไรที่มีอายุยาวไว้เลย"
+    }
+  ]
+}

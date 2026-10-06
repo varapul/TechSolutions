@@ -1,0 +1,21 @@
+{
+  "summary": "เข้าถึง managed cloud service ผ่าน private IP แทนที่จะผ่าน public internet",
+  "steps": [
+    {
+      "title": "public endpoint",
+      "body": "managed service หลายตัวเริ่มต้นด้วย **public endpoint** แอป resolve `orders.db.cloud.example` ได้เป็น public address `203.0.113.10` และต้องมี route ไป internet (หรือ NAT gateway) จึงจะไปถึง ใครก็ตามบน internet ก็มาถึงประตูบานเดียวกันนี้ได้: มีแค่ credential และ IP firewall rule ที่กันพวกเขาไว้ connection ของ attacker จึงไปได้ไกลถึงขั้น sign-in"
+    },
+    {
+      "title": "เพิ่ม private endpoint",
+      "body": "**private endpoint** คือ network interface ที่มี private address (`10.1.2.5`) อยู่ใน endpoint subnet และผูกกับฐานข้อมูลตัวนี้ตัวเดียว **private DNS zone** ที่ link กับ network จะตอบชื่อเดิมด้วย `10.1.2.5` connection string จึงไม่ต้องเปลี่ยน และ traffic ของแอปก็อยู่บน private address โดยไม่ต้องมี route ไป internet ฐานข้อมูลยังตรวจ credential อยู่ และ public endpoint ของมันก็ยังเปิดอยู่"
+    },
+    {
+      "title": "ปิดประตูฝั่ง public",
+      "body": "เมื่อตั้ง **public network access เป็น disabled** service จะปฏิเสธทุก connection ที่มาถึง public address ดังนั้น attacker จึงถูกไล่กลับตั้งแต่หน้าประตู client ที่อยู่ on premises เข้าถึง `10.1.2.5` ผ่าน VPN หรือ dedicated circuit ได้ แต่ต้องให้ DNS ของพวกเขาส่งชื่อนี้ไปที่ resolver ของ cloud: คือมี **conditional forwarder** สำหรับ `db.cloud.example` ที่ชี้ไปยัง inbound endpoint ของ resolver นั้น DNS ของ client B ไม่มี rule แบบนี้ จึงยังได้ public address และ connection ถูกปฏิเสธ"
+    },
+    {
+      "title": "ข้อควรระวัง",
+      "body": "ปัญหาส่วนใหญ่มาจาก **DNS**: resolver ตัวไหนตอบ ตอบด้วย address อะไร และตอบให้ client ตัวไหน network หนึ่งควรมี endpoint เพียงตัวเดียวต่อหนึ่ง resource ดังนั้น endpoint จึงมักไปอยู่ใน **hub** network ที่ใช้ร่วมกัน ซึ่ง spoke และ site ที่อยู่ on-premises เข้าถึงได้ endpoint แต่ละตัว **คิดเงินรายชั่วโมงและต่อ GB** ที่มันประมวลผล endpoint **ผูกกับ resource เดียว** จึงใช้เข้าถึง (หรือคัดลอกข้อมูลไปยัง) ฐานข้อมูลตัวอื่นบน service เดียวกันไม่ได้ ส่วน endpoint ที่ครอบทั้ง cloud API เช่น AWS interface endpoint สำหรับ S3 ต้องใช้ endpoint policy เพื่อให้ได้ข้อจำกัดแบบนั้น service endpoint และ gateway endpoint เป็นคนละเรื่องกัน: ยังใช้ public address ของ service อยู่ และแค่เปลี่ยน route เท่านั้น"
+    }
+  ]
+}

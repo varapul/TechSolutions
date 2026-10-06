@@ -1,0 +1,21 @@
+{
+  "summary": "เก็บ payload ขนาดใหญ่ไว้ใน storage แล้วส่งแค่ reference ผ่าน broker",
+  "steps": [
+    {
+      "title": "message ที่ใหญ่เกินไป",
+      "body": "Claims intake ส่ง claim `7f3a` ซึ่งเป็นฟอร์มขนาด 30 KB กับรูปถ่ายอีกสิบสองรูป (รวม 25 MB) เป็น message เดียว และ topic ซึ่งรับได้สูงสุด 256 KB ต่อ message ก็ปฏิเสธมัน การขยาย limit หรือแบ่งเป็น message เล็ก ๆ สักร้อยชิ้นก็แค่ย้ายปัญหาไปที่อื่น: message ใหญ่ ๆ ทำให้ broker ช้าลงสำหรับทุกคน เสียเงินมากขึ้นในที่ที่คิดค่าบริการทีละ chunk ขนาด 64 KB ค้างอยู่ใน memory และบนทุก replica และถูกคัดลอกอีกรอบไปให้ทุก consumer"
+    },
+    {
+      "title": "เก็บก่อน แล้วค่อยส่ง check",
+      "body": "Intake upload payload ขึ้น blob storage ก่อนในชื่อ `claims/7f3a.zip` ซึ่งเป็น key ที่สร้างจาก claim ID และรอจน upload สำเร็จ หลังจากนั้นเท่านั้นจึง publish **claim check** ขนาดราว 1 KB: บอกว่า payload อยู่ที่ไหน พร้อมข้อมูลที่ consumer ต้องใช้ route และตัดสินใจ (ประเภท claim, ขนาด และ checksum แบบ SHA-256) ถ้า publish กลับลำดับกัน consumer อาจขอ payload ที่ยังไม่มีอยู่"
+    },
+    {
+      "title": "นำ claim check ไปรับของ",
+      "body": "broker route โดยดูแค่ metadata: subscription ของ Damage assessment filter ด้วย `type = auto` โดยไม่ต้องดาวน์โหลดอะไรเลย จากนั้น consumer แต่ละตัวดึงข้อมูล 25 MB ตรงจาก storage ด้วยสิทธิ์ read-only ของตัวเอง (หรือ URL แบบ read-only อายุสั้นที่ขอแยกต่างหาก ซึ่งก็คือ [valet key](../valet-key/)) ตรวจ SHA-256 แล้วประมวลผล claim ส่วน Archive ก็นำ claim check ใบเดียวกันไปรับ payload ได้อย่างอิสระ"
+    },
+    {
+      "title": "วงจรชีวิตและความปลอดภัย",
+      "body": "ต้องมีใครสักคนลบ payload: consumer ตัวสุดท้ายที่ทำเสร็จ (ในที่นี้คือ 2 of 2) หรือ lifecycle rule ของ storage ที่ให้มันหมดอายุหลัง 30 วัน ซึ่งนานกว่า TTL ของ message รวมกับ retry การ publish ที่ล้มเหลวหลัง upload แล้วจะทิ้ง orphan ไว้ ซึ่งมีแค่ rule ตามอายุเท่านั้นที่ลบได้ ส่วน claim check ที่อยู่นานกว่า payload ของมันจะได้ not-found และถูกส่งไปที่ [dead-letter queue](../dead-letter-queue/) ตอนนี้ข้อมูลอยู่ใน store แล้ว store จึงต้องมี access control และ encryption ของตัวเอง"
+    }
+  ]
+}

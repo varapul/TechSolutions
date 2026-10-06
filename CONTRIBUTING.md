@@ -126,3 +126,21 @@ console.log(track('xx-call', go.segs));                              // go.end i
 - **Algorithm READMEs** add two sections, and `npm run new` scaffolds them for that category: *Code*, a short Python 3 implementation of your own that uses only the standard library, with an example call and its output (run it, with edge cases, before you commit), and *Complexity*, a table of the time in the best, average and worst case, the extra space, and whether it is stable or in place where that applies.
 - **Design pattern READMEs** add a *Code* section, which `npm run new` scaffolds for that category: a short TypeScript example of your own that mirrors the diagram's scenario and runs as is with `node` (Node 22 strips the types, so use only erasable syntax: no `enum`, `namespace`, parameter properties or decorators), with its output; run it, with assertions, before you commit. Paraphrase the pattern's intent instead of quoting the book.
 - Link to another pattern as `../<slug>/`. It works on GitHub, the site rewrites it to that pattern's page, and `npm run check` rejects links to patterns that aren't animated yet.
+
+## Thai translation
+
+The site has a Thai version under `/th/`, with a language switch in the top bar. The Thai text sits next to the English files, and anything not yet translated falls back to English:
+
+```
+patterns/<slug>/th.json   { "summary": "…", "steps": [ { "title": "…", "body": "…" } ×4 ] }
+i18n/th.json              site strings, category titles and blurbs
+```
+
+Labels inside the diagrams stay in English: they are mostly code, class names and numbers, which read the same in both languages.
+
+- **Translate the meaning, not the words.** Write the way a senior Thai engineer would explain the idea to a colleague, keeping every fact, number and name of the English, in the same order.
+- **Keep in English:** pattern names (Circuit Breaker, Saga), products and services, protocols and standards (OAuth 2.0, HTTP, TLS), code, identifiers, values shown in the diagram, HTTP status codes, units, and the technical terms Thai engineers use in English (service, API, client, server, request, response, cache, queue, message, event, token, deploy, rollback, latency, timeout, retry, replica, shard, node, cluster, endpoint, payload, schema, interface, class, object). Don't transliterate them into Thai script.
+- **Neutral register:** no ครับ or ค่ะ, no slang.
+- **Thai punctuation:** no full stop at the end of a sentence; separate sentences and clauses with a space. Keep colons, parentheses, arrows and signs such as × where they carry meaning.
+- **Keep the Markdown exactly:** **bold**, `code` (unchanged inside), and links, whose `../<slug>/` targets stay as they are.
+- Step titles are short headlines (about 30 Thai characters or fewer); the summary is one sentence.

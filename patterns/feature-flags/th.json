@@ -1,0 +1,21 @@
+{
+  "summary": "Deploy โค้ดไว้แบบ dark ก่อน แล้วค่อยเปิด feature ตามผู้ใช้หรือตามเปอร์เซ็นต์ขณะ runtime",
+  "steps": [
+    {
+      "title": "Deploy แบบ dark",
+      "body": "Build 41 มีเส้นทาง checkout ทั้งสองแบบและจุดตัดสินใจหนึ่งจุด คือ `if (flags.enabled(\"new-checkout\", user))` flag นี้ **off** อยู่ ผู้ใช้ทุกคนจึงยังได้เส้นทางเดิมในทุก instance การ deploy โค้ดกับการ release feature จึงกลายเป็นสองการตัดสินใจที่แยกจากกัน"
+    },
+    {
+      "title": "Target ก่อน แล้วค่อย roll out",
+      "body": "Targeting rule เปิด flag ให้ staff ก่อน จากนั้น percentage rollout ก็เพิ่มลูกค้าเข้าไป 10% และต่อมาเป็น 50% ส่วน flag service ก็ push ทุกการเปลี่ยนแปลงไปยัง SDK ในแต่ละ instance (แบบ streaming หรือให้ SDK poll เอา) และ SDK ประเมินค่า flag ใน memory: ไม่มี network call ต่อการตรวจแต่ละครั้ง และไม่ต้อง redeploy การแบ่ง bucket เป็นแบบ deterministic: hash ของ flag key กับ user ID ให้ bucket ตั้งแต่ 0 ถึง 99 และผู้ใช้จะอยู่ในกลุ่มเมื่อ bucket ต่ำกว่าเปอร์เซ็นต์ที่ตั้งไว้ ผู้ใช้คนเดิมจึงได้คำตอบเดิมเสมอ และการเพิ่มเปอร์เซ็นต์ก็มีแต่จะเพิ่มผู้ใช้เข้าไป"
+    },
+    {
+      "title": "Kill switch: ปิดทันที",
+      "body": "Error rate ของเส้นทางใหม่พุ่งเกิน alert threshold จึงสับ flag เป็น **off** แล้วภายในไม่กี่วินาที (อย่างช้าคือหนึ่งรอบ polling) ทุก instance ก็กลับไปใช้เส้นทางเดิม โดยไม่ต้อง deploy เพื่อ rollback: build ไม่ได้เปลี่ยนเลย ถ้าติดต่อ flag service ไม่ได้ SDK แต่ละตัวจะใช้ rule ชุดล่าสุดที่ได้รับไว้ต่อไป และถ้าไม่เคยได้รับเลยก็จะใช้ค่า default ที่เขียนไว้ในโค้ดของแอป (off)"
+    },
+    {
+      "title": "ปิดงานและเก็บกวาด",
+      "body": "Build 42 แก้ bug และ flag ขึ้นไปที่ **100%** จากนั้น release ถัดไปคือ build 43 ก็ลบการตรวจ flag และเส้นทางโค้ดเดิมออก แล้ว flag ก็ถูก archive ใน flag service ทั้งนี้ release flag เป็นของชั่วคราว: ถ้าทิ้งไว้ มันจะกลายเป็น dead code เป็น branch ที่ไม่มีใครทดสอบ และเป็น switch ที่ใครสักคนอาจสับผิดได้"
+    }
+  ]
+}

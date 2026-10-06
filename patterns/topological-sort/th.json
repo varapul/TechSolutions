@@ -1,0 +1,21 @@
+{
+  "summary": "เรียงลำดับงานให้ทุก dependency มาก่อนสิ่งที่ต้องใช้มัน แบบที่ build tool และ package manager ทำ ถ้ามี cycle จะเรียงไม่ได้เลย",
+  "steps": [
+    {
+      "title": "dependency ในรูปกราฟ",
+      "body": "แต่ละ module คือ node หนึ่งตัว และลูกศรจาก A ไป B หมายความว่า A ต้อง build ก่อน B ตัวเลข badge บน module คือ **in-degree** ของมัน: จำนวน module ที่ต้อง build ก่อนมันแต่ยังไม่ได้ build api รอ users, orders และ logging อยู่ badge ของมันจึงเป็น 3 ส่วน utils เป็นตัวเดียวที่มี 0 จึงเป็น module เดียวที่เริ่มได้ และถูกใส่เข้าไปใน ready queue"
+    },
+    {
+      "title": "build ตัวที่พร้อม",
+      "body": "อัลกอริทึมของ Kahn หยิบ module ที่อยู่หน้า queue มาต่อท้าย build order แล้วลบ 1 ออกจาก badge ของทุก module ที่ลูกศรของมันชี้ไป module ไหนที่ badge ลดลงถึง 0 ก็จะเข้าไปต่อท้าย queue การ build config ทำให้ db และ cache พร้อม ส่วนการ build db แค่ลด users และ orders ลงเหลือ 1 ทุก module ถูก output ครั้งเดียวและทุกลูกศรถูกไล่ตามครั้งเดียว ลำดับ utils, config, logging, db, cache, users, orders, api จึงใช้เวลา **O(V + E)**"
+    },
+    {
+      "title": "แต่ละระลอกรันขนานกันได้",
+      "body": "แต่ละ module จะพร้อมหนึ่งรอบหลังจาก prerequisite ตัวที่พร้อมช้าที่สุดของมัน: {utils}, {config, logging}, {db, cache}, {users}, {orders}, {api} ไม่มีลูกศรใดเชื่อมสอง module ในรอบเดียวกัน build tool จึง build พวกมันพร้อมกันได้: **6 รอบแทนการ build ต่อกัน 8 ครั้ง** เท่ากับจำนวน module บน chain ที่ยาวที่สุด ลำดับใดก็ตามที่ทุกลูกศรชี้ไปข้างหน้าถือว่าใช้ได้ (config กับ logging สลับกันได้) กราฟหนึ่งจึงมักมี topological order มากกว่าหนึ่งแบบ"
+    },
+    {
+      "title": "เจอ cycle ก็ไปต่อไม่ได้",
+      "body": "import ใหม่ทำให้ users ต้องใช้ orders แต่ orders ก็ต้องใช้ users อยู่แล้ว การรันใหม่ output ได้แค่ utils, config, logging, db และ cache จากนั้น queue ก็ว่าง ขณะที่ users (badge 1), orders (badge 1) และ api (badge 2) ไม่มีวันลดถึง 0 เพราะ users กับ orders รอกันเอง และ api ก็รอทั้งคู่ เมื่อ output ได้ไม่ถึง 8 module แปลว่ามี cycle การ build จึงรายงาน `cycle: users → orders → users` แทนที่จะให้ลำดับออกมา"
+    }
+  ]
+}

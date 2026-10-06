@@ -1,0 +1,21 @@
+{
+  "summary": "sidecar proxy ร่วมกับ control plane: ได้ mTLS, retry และการย้าย traffic โดยไม่ต้องแตะโค้ดของแอป",
+  "steps": [
+    {
+      "title": "การเรียกวิ่งผ่าน proxy",
+      "body": "ทุก pod รัน **sidecar proxy** อยู่ข้าง app container เมื่อ Orders เรียก Payments, request ออกจากแอปเป็น plain HTTP หรือ gRPC ถูก sidecar ของ Orders ดักไว้ เดินทางจาก proxy ไปยัง proxy แล้ว sidecar ของ Payments ส่งต่อให้แอป Payments ทั้งสองแอปไม่มีโค้ดของ mesh อยู่เลย"
+    },
+    {
+      "title": "control plane ตั้งค่าให้",
+      "body": "**control plane** ส่ง endpoint ของแต่ละ service, routing rule, policy และ certificate อายุสั้นที่ระบุ identity ของ service นั้นไปให้ proxy ทุกตัว control plane ไม่ได้อยู่บน request path: ถ้าล่มไป proxy ก็ยังทำงานต่อด้วย configuration ล่าสุดที่ได้รับ"
+    },
+    {
+      "title": "Mutual TLS และ policy",
+      "body": "proxy ทั้งสองตัวทำ handshake แบบ **mutual TLS** ด้วย certificate ของตัวเอง traffic ที่วิ่งบนสายจึงถูกเข้ารหัส และแต่ละฝั่งรู้ว่ากำลังคุยกับ service ไหน authorization policy ที่ proxy ของ Payments อนุญาตให้ Orders และปฏิเสธทุกตัวที่เหลือ: การเรียกตรงจาก Web ได้ `403` จาก proxy และไม่มีวันไปถึงแอป"
+    },
+    {
+      "title": "แบ่ง traffic และ retry",
+      "body": "routing rule ใน sidecar ของ Orders ส่งการเรียก 90% ไปที่ Payments v1 และ 10% ไปที่ v2 เมื่อการเรียกที่ทำซ้ำได้อย่างปลอดภัยล้มเหลว sidecar จะ retry ภายใน timeout แอปจึงเห็นแค่ผลที่สำเร็จ proxy ทุกตัวยังรายงาน metrics และ trace span ในรูปแบบเดียวกันด้วย ทั้งหมดนี้ไม่ต้องแก้โค้ดเลย แต่แอปต้องส่งต่อ trace header เพื่อให้ span ต่าง ๆ รวมกันเป็น trace เดียว"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "ส่งการเขียนไปที่ primary และกระจายการอ่านไปยัง replica ที่ถูก update แบบ asynchronous",
+  "steps": [
+    {
+      "title": "แยกการอ่านออกจากการเขียน",
+      "body": "router ของแอปพลิเคชัน (อาจเป็นค่าตั้งใน driver, feature ของ ORM หรือ proxy) ส่งการเขียนทุกครั้งไปที่ **primary** และกระจายการอ่านไปยัง **replica** ต่าง ๆ ผ่าน reader endpoint ทุก replica มีตารางเดียวกันและข้อมูลเดียวกัน: primary ส่ง log ไปให้แต่ละตัวแบบ **asynchronous** หลังจาก acknowledge การ commit ไปแล้ว และ replica ก็ replay log นั้น การเพิ่ม replica จะเพิ่มกำลังการอ่าน แต่กำลังการเขียนยังเท่ากับ primary ตัวเดียว"
+    },
+    {
+      "title": "Replication lag",
+      "body": "ผู้ใช้คนหนึ่งอัปเกรดเป็น Pro primary commit การเปลี่ยนแปลงที่ log position 43 และ acknowledge ก่อนที่ replica ตัวใดจะได้รับ หน้าเว็บ reload ทันที และการอ่านไปตกที่ replica ที่ตามหลังอยู่ 200 ms ซึ่ง replay ไปถึงแค่ position 42 มันจึงตอบว่า **Free**: เป็น stale read ที่เกิดจากแค่ **replication lag** ตามปกติเท่านั้น"
+    },
+    {
+      "title": "อ่านสิ่งที่ตัวเองเพิ่งเขียน",
+      "body": "การเขียนคืน log position ของมัน (43) กลับมา และ session เก็บค่านั้นไว้ การอ่านครั้งถัดไปของผู้ใช้คนนั้นจะแนบ position นี้ไปด้วย และ replica จะพักการอ่านไว้จนกว่าจะ replay ไปถึงตรงนั้น หรือ router จะส่งการอ่านแบบนี้ตรงไปที่ primary แทนก็ได้ ไม่ว่าทางไหนผู้ใช้ก็เห็น **Pro** ส่วนการอ่านของผู้ใช้อื่นไม่ได้แนบ position และยังไปที่ replica ตัวไหนก็ได้โดยไม่ต้องรอ"
+    },
+    {
+      "title": "replica ที่ตามไม่ทันหรือล่ม",
+      "body": "report query ที่ยาวตัวหนึ่งทำให้การ replay บน replica 3 ติดค้าง lag ของมันจึงโตจากระดับมิลลิวินาทีเป็นหลายวินาที และเมื่อเกิน lag limit (ในที่นี้ 5 s) reader endpoint ก็เอามันออกจาก rotation replica 1 หยุดตอบ health check และถูกถอดออกแบบเดียวกัน เหลือ replica ตัวเดียวที่ต้องรับการอ่านทั้งหมด ถ้า *primary* ล่ม replica ตัวหนึ่งจะถูก promote ขึ้นมาแทน และเมื่อ replicate แบบ asynchronous การ commit ชุดสุดท้ายที่ยังไปไม่ถึง replica นั้นจะหายไป"
+    }
+  ]
+}

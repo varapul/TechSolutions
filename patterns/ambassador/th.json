@@ -1,0 +1,21 @@
+{
+  "summary": "proxy ที่รันแยก process คอยจัดการการเชื่อมต่อขาออก (retry, TLS, routing) แทน client",
+  "steps": [
+    {
+      "title": "client ที่แก้ไม่ได้",
+      "body": "billing application เป็น binary จาก vendor: ไม่มีใครแก้โค้ดได้ billing เรียก tax API ตรง ๆ ที่ address ตายตัวจาก configuration ผ่าน plain HTTP โดยไม่มี timeout ไม่มี retry และไม่มี metrics เมื่อทีม tax ย้าย API ไปที่ address ใหม่ที่บังคับใช้ TLS พร้อม client certificate และ access token ทุกการเรียกก็ล้มเหลว และต่อให้ API แค่ช้าลง billing ก็จะค้าง"
+    },
+    {
+      "title": "proxy ข้าง ๆ client",
+      "body": "**ambassador** คือ proxy process ตัวเล็กบน host เดียวกัน (หรือ sidecar container ใน pod เดียวกัน) ที่ listen อยู่บน `localhost:9000` และการชี้ endpoint ใน configuration ของ billing มาที่ ambassador คือสิ่งเดียวที่เปลี่ยนใน billing ambassador หา instance ปัจจุบันของ API ผ่าน service discovery (และคอยอัปเดตรายการนั้นให้สดใหม่) เปิด connection TLS พร้อม client certificate เติม access token แล้วส่งการเรียกต่อไป สำหรับ billing แล้ว remote API ตอนนี้ดูเหมือน service ที่อยู่ในเครื่อง"
+    },
+    {
+      "title": "ทนทานขึ้นและมองเห็นได้",
+      "body": "tax API เริ่ม timeout ambassador ให้เวลาแต่ละครั้ง 2 s รอ backoff แบบมี jitter แล้ว retry การ lookup `GET /rates` ซึ่งเป็น idempotent ไปที่อีก instance ซึ่งตอบกลับมาได้ เมื่อสัดส่วน timeout เกิน 50 % **circuit breaker** ของ ambassador จะเปิด และการเรียกครั้งถัดไปจะล้มเหลวภายในราวหนึ่งมิลลิวินาที billing ได้คำตอบหนึ่งคำตอบหรือ error ที่ชัดเจนหนึ่งตัวแทนการค้าง และทุกการเรียกทิ้ง metrics กับ trace span ไว้"
+    },
+    {
+      "title": "ต้นทุนที่ควรรู้",
+      "body": "ทุกการเรียกต้องจ่ายเพิ่มอีกหนึ่ง hop (น้อยมากบน localhost) และทุก client ก็มี process เพิ่มอีกหนึ่งตัวที่ต้อง deploy, patch และเฝ้าดู retry ปลอดภัยเฉพาะกับการเรียกที่เป็น idempotent ซึ่ง proxy ไม่ได้แยกออกได้เสมอไป client จึงอาจต้องส่ง hint มาด้วย เช่น idempotency key และต้องเลือกว่าจะใช้ ambassador หนึ่งตัวต่อหนึ่ง client หรือใช้ตัวเดียวร่วมกันหลาย client ถ้าทุก client ใช้ภาษาเดียวกัน client library จะง่ายกว่า และถ้าทุก service ต้องการสิ่งเดียวกัน service mesh คือรูปแบบที่ครอบคลุมกว่า"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "coordinator กลางรัน local transaction ทีละขั้นตามลำดับ และสั่ง compensation เมื่อขั้นใดล้มเหลว",
+  "steps": [
+    {
+      "title": "เริ่ม saga",
+      "body": "Order Service บันทึก order ใหม่ในสถานะ **PENDING** และเริ่ม saga จากนั้น orchestrator บันทึกขั้นนี้ลงใน saga log ของตัวเอง แล้วส่ง command *Charge payment* ออกไป Payments ตัดเงินจากบัตรใน local transaction ของตัวเอง commit แล้วตอบกลับว่าสำเร็จ"
+    },
+    {
+      "title": "local transaction ถัดไป",
+      "body": "orchestrator บันทึกคำตอบ แล้วส่ง command ถัดไปคือ *Reserve stock* Inventory commit การจอง stock ลงใน database ของตัวเองแล้วตอบกลับ แต่ละขั้นจะมองเห็นได้จากส่วนอื่นของระบบทันทีที่ commit: ไม่มี database lock ใดถูกถือไว้ข้าม service ระหว่างที่ saga ทำงาน"
+    },
+    {
+      "title": "ขั้นหนึ่งล้มเหลว",
+      "body": "*Book shipment* ล้มเหลวเพราะไม่มี courier ว่าง local transaction ของ Shipping ถูก rollback จึงไม่มีอะไรถูกเขียนลงไป และมันตอบกลับว่าล้มเหลว ต่างจาก two-phase commit ตรงที่ไม่มี global rollback: การตัดเงินและการจอง stock commit ไปแล้ว และย้อนกลับได้ด้วย transaction ใหม่เท่านั้น"
+    },
+    {
+      "title": "Compensate ย้อนลำดับ",
+      "body": "orchestrator รัน compensation ของขั้นที่ทำเสร็จแล้วโดยย้อนลำดับ: *Release stock* แล้วจึง *Refund payment* แต่ละอันเป็น local transaction ใหม่ที่มีความหมายทางธุรกิจ (รายการคืนเงินอยู่ถัดจากรายการตัดเงิน ไม่มีอะไรถูกลบทิ้ง) สุดท้ายมันยกเลิก order ซึ่งจบลงที่สถานะ **CANCELLED**"
+    }
+  ]
+}

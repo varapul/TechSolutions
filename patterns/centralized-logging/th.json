@@ -1,0 +1,21 @@
+{
+  "summary": "ส่ง structured log จากทุก service ไปยัง store เดียวที่ค้นหาได้ โดยเชื่อมโยงกันด้วย request ID",
+  "steps": [
+    {
+      "title": "log กระจัดกระจาย",
+      "body": "การชำระเงินของ order 8123 ล้มเหลว และ request นี้ผ่านสาม service บนสอง node ทุก instance เขียน log เป็น free text แต่ละ service ใช้ format ของตัวเอง ลงไฟล์ของตัวเอง วิศวกร on-call จึงต้องเปิดเครื่องทีละเครื่องและค้นหาเลข order ด้วย `grep` ก่อนที่การค้นจะไปถึง Payments ก็มี deployment มาแทนที่ `payments-2` และบรรทัดเดียวที่บอกว่าทำไมการตัดเงินถึงล้มเหลวก็ถูกลบไปพร้อมกับ instance"
+    },
+    {
+      "title": "มีโครงสร้าง แล้วส่งออกไป",
+      "body": "ตอนนี้แต่ละ service เขียน event แบบ **structured** ออกทาง standard output เท่านั้น: timestamp, level, ชื่อ service, message, order ID และ trace ID ของ request ในรูป field ที่มีชื่อ แทนที่จะเป็นประโยค platform เก็บ stream นั้นเป็นไฟล์บน node และ **agent หนึ่งตัวต่อ node** อ่านไฟล์เหล่านั้น เติมข้อมูลที่ service รู้เกี่ยวกับตัวเองได้ไม่แน่นอน (instance, node, environment) แล้วส่งผลลัพธ์ไปยัง central store ไม่มี service ไหนถือ address หรือ credential ของ store จึงเปลี่ยน store ได้โดยไม่ต้องแก้โค้ดของแอปพลิเคชัน"
+    },
+    {
+      "title": "query เดียว เห็นทั้ง request",
+      "body": "gateway เริ่ม trace จากนั้นทุกการเรียกจะส่งต่อ ID ของ trace นั้นใน header `traceparent` ของ W3C (`4bf92f…` ซึ่งเป็น ID เดียวกับในไดอะแกรม distributed tracing) และแต่ละ service เขียน ID นั้นลงในทุกบรรทัดเป็น `trace_id` การค้นค่านั้นเพียงครั้งเดียวได้บรรทัดของ Gateway, Orders และ Payments เรียงตามเวลา ไม่ว่า instance ไหนจะเป็นคนเขียน และเห็นว่าการตัดเงินเกิด timeout ใน Payments สามวินาทีหลังจาก request มาถึง และเพราะ field มีชื่อ query ที่สองจึงนับ error ในชั่วโมงที่ผ่านมาแยกตาม service ได้โดยไม่ต้อง parse ข้อความเลย"
+    },
+    {
+      "title": "คุมค่าใช้จ่ายและปลอดภัย",
+      "body": "ค่าใช้จ่ายแปรตามปริมาณ จึงควรตัดสินใจตั้งแต่บน node ว่าอะไรคุ้มที่จะส่ง: agent ทิ้งบรรทัด `DEBUG` เก็บบรรทัด `INFO` ทั่วไปไว้หนึ่งในสิบ เก็บ warning และ error ทุกบรรทัด และ mask เลขบัตรก่อนที่บรรทัดนั้นจะออกจาก node store ให้ค้นหาบรรทัดได้ 14 วัน แล้ว archive ไปไว้ใน storage ราคาถูก 12 เดือน จากนั้นจึงลบทิ้ง เมื่อ store ใช้งานไม่ได้ agent แต่ละตัวจะเก็บบรรทัดไว้ใน **buffer** และ retry การส่งจึงล่าช้า แต่ service ซึ่งแค่เขียนออก standard output ก็ยังรันต่อไปได้ buffer มีขนาดจำกัด: ถ้า outage นานเกินกว่าที่ buffer รับไหว ก็ยังเสียบรรทัดไปอยู่ดี"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "session ฝั่ง server เทียบกับ token ที่มีข้อมูลครบในตัว: state อยู่ที่ไหน และ revoke อย่างไร",
+  "steps": [
+    {
+      "title": "เข้าสู่ระบบ",
+      "body": "**Session:** app server ตรวจ credential ของ Ana เขียน record ลง session store (session ID, user, roles, expiry) แล้วส่งให้ browser แค่ session ID แบบสุ่ม ใน cookie ที่ตั้ง `HttpOnly`, `Secure` และ `SameSite` **Token:** client เข้าสู่ระบบที่ issuer ซึ่ง sign token ที่บรรจุข้อมูลชุดเดียวกันไว้ในรูป claim (`sub`, `roles`, `exp`) แล้วส่งให้ client ส่วน API server ไม่เก็บอะไรเลย"
+    },
+    {
+      "title": "ทุก request",
+      "body": "**Session:** browser ส่ง cookie ไปกับทุก request และ app server อ่านแถว session ตาม ID ก่อนทำอย่างอื่น: ทุก request ต้องเสีย round trip ไปที่ store หนึ่งรอบ **Token:** client ส่ง token ไปกับทุก request และ API server ตรวจ signature ด้วย public key ของ issuer แล้วตรวจ claim โดยทำทั้งหมดในเครื่อง ไม่ต้องค้นหาข้อมูลจากที่ใด"
+    },
+    {
+      "title": "ขยายระบบแบบ scale out",
+      "body": "**Session:** request ไปตกที่ app server ตัวไหนก็ได้ ทุกตัวจึงต้องเข้าถึง store เดียวกัน (หรือ load balancer ต้องผูกผู้ใช้แต่ละคนไว้กับ server ตัวเดียว) และ store นั้นก็อยู่บน hot path ของทุก request **Token:** API server ตัวไหนก็ได้ หรือ service อื่นที่เป็นผู้รับของ token นั้น ตรวจ token ได้ด้วยตัวเอง สิ่งเดียวที่ต้องแชร์คือ public key ของ issuer"
+    },
+    {
+      "title": "Revoke สิทธิ์",
+      "body": "Ana ออกจากระบบ credential ของเธอถูกขโมย หรือ role ของเธอเปลี่ยน และสิทธิ์เข้าถึงต้องจบลงเดี๋ยวนี้ **Session:** ลบแถวนั้นทิ้ง แล้ว request ถัดไปก็ถูกปฏิเสธทันที **Token:** token ยังผ่านการตรวจทุกข้อไปจนถึง `exp` ทางแก้คือให้ token อายุสั้นแล้วต่ออายุด้วย refresh token หรือตรวจ denylist หรือเรียก introspection ทุก request ซึ่งก็พาการค้นหาทุก request กลับมาอีกครั้ง"
+    }
+  ]
+}

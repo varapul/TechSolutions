@@ -1,0 +1,21 @@
+{
+  "summary": "ให้ object เปลี่ยนพฤติกรรมเมื่อ state ของมันเปลี่ยน ด้วยการส่งต่อการทำงานให้ state object แทนการขยาย switch statement ให้ยาวขึ้นเรื่อย ๆ",
+  "steps": [
+    {
+      "title": "มี switch ในทุก method",
+      "body": "`Order` เก็บ field `status` ไว้ และ `pay()`, `ship()` และ `cancel()` ต่างก็ `switch` ตามค่านี้: method ละสี่ case รวม 12 branch และกฎของ status หนึ่ง เช่น *Shipped* ก็กระจายอยู่ในสาม method การตรวจ fraud อย่าง **OnHold** ต้องเพิ่ม case ใหม่ในทั้งสาม switch ถ้าพลาดไปหนึ่งที่ อย่างที่ `cancel()` พลาดในตัวอย่างนี้ การยกเลิก order ที่ถูก hold ไว้ก็จะเงียบไปเฉย ๆ โดยไม่ทำอะไรเลย"
+    },
+    {
+      "title": "หนึ่ง class ต่อหนึ่ง state",
+      "body": "status แต่ละค่ากลายเป็น class ที่ implement **OrderState** (ตัว *State*) พฤติกรรม 12 แบบเดิมจึงถูกจัดกลุ่มตาม state แทนที่จะจัดตาม method ส่วน `Order` (ตัว *Context*) ถือ state object ปัจจุบันไว้และส่งทุกการเรียกต่อให้มัน และ *ConcreteState* แต่ละตัวตัดสินว่าการเรียกนั้นหมายถึงอะไร: คืน state ถัดไปซึ่ง `Order` จะเปลี่ยนไปใช้ หรือปฏิเสธพร้อมเหตุผล ช่อง `→` แต่ละช่องคือลูกศรหนึ่งเส้นใน state diagram"
+    },
+    {
+      "title": "state เป็นผู้ตัดสิน",
+      "body": "client เรียก `order.pay()`: `Order` ส่งต่อให้ **Pending** ซึ่งคืน **Paid** กลับมา แล้ว reference ก็ย้ายไป จากนั้น `ship()` ก็พา order ไปที่ **Shipped** ส่วน `cancel()` ตัวเดียวกันที่ยกเลิก order ที่ pending หรือ paid ได้ กลับถูกปฏิเสธใน Shipped (too late, start a return) state จึงคงเดิม และ client ได้รับ error ส่วน log ก็บันทึกการเรียกทั้งสามครั้งไว้"
+    },
+    {
+      "title": "เพิ่ม state ด้วย class เดียว",
+      "body": "**OnHold** ซึ่งเป็นการตรวจ fraud ระหว่าง Pending กับ Paid คือ class ใหม่หนึ่งตัว (`pay()` ไปต่อที่ Paid เมื่อผ่านการตรวจแล้ว, `ship()` ถูกปฏิเสธ และ `cancel()` ยกเลิก order) และจุดเดียวที่ต้องแก้คือบรรทัดเดียวใน **Pending** ที่ตอนนี้ `pay()` คืน OnHold แทน ต่างจาก [Strategy](../strategy/) ซึ่ง client เป็นคนเลือก ตรงที่ state จะสลับไปเป็น state ถัดไปกันเอง และ state ที่ไม่มี field ก็ใช้ instance เดียวร่วมกันได้ state machine ขนาดใหญ่มักเขียนเป็นตารางหรือ statechart และในระดับทั้งระบบ [circuit breaker](../circuit-breaker/) และ [saga orchestrator](../saga-orchestration/) ก็เป็น state machine เช่นกัน"
+    }
+  ]
+}

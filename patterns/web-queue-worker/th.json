@@ -1,0 +1,21 @@
+{
+  "summary": "web front end ส่งงานที่ใช้เวลานานต่อให้ worker ที่ทำงานอยู่เบื้องหลังผ่าน queue",
+  "steps": [
+    {
+      "title": "สองบทบาทกับหนึ่ง queue",
+      "body": "ผู้ใช้สั่งทำ photo book หมายเลข 1042 **web front end** ตรวจความถูกต้อง บันทึกไว้ในสถานะ *rendering* ใส่ job ลงใน **queue** แล้วตอบกลับภายในราว 120 ms จึงไม่ต้องทำงานที่ช้าด้วยตัวเองเลย **worker** หยิบ job ไป render PDF (ราว 90 s) เก็บไฟล์ไว้ใน blob storage เปลี่ยนสถานะ order เป็น *ready* แล้วเรียก email service และ print partner ส่วนไฟล์ static มาจาก CDN และ hot read มาจาก cache"
+    },
+    {
+      "title": "scale แต่ละบทบาทแยกกัน",
+      "body": "ช่วง peak ตอน 19:00 web tier ขยายจาก 2 เป็น 4 instance ตาม **request rate** ขณะที่ order ที่ทะลักเข้ามาทำให้ queue ยาวขึ้น และ worker tier ขยายจาก 1 เป็น 3 ตาม **queue length** ตอนกลางคืน web tier หดกลับเหลือ 2 ขณะที่ worker ไล่เคลียร์ backlog ทั้งสองบทบาท deploy, scale และกำหนดขนาดแยกกัน: web ใช้ instance เล็ก ส่วน worker ใช้ instance ที่เน้น CPU"
+    },
+    {
+      "title": "state อยู่นอกทั้งสองบทบาท",
+      "body": "ระหว่างการ deploy มีการแทนที่ web 1 และ request ถัดไปของผู้ใช้ไปตกที่ instance ใหม่ แต่ผู้ใช้ยัง sign in อยู่ เพราะ session อยู่ใน cache ไม่ได้อยู่ใน instance worker 2 crash ขณะ render เล่ม 1043 ไปได้ครึ่งทาง: message แค่ถูกซ่อนไว้ เมื่อ visibility timeout หมด message จึงกลับมาให้เห็นอีกครั้ง และ worker 1 ก็ render เล่มนั้นใหม่ นี่คือเหตุผลที่ job handler ต้องเป็น **idempotent** และตอน 02:00 worker ยังรันงาน clean-up ตามกำหนดเวลา เพื่อลบไฟล์ upload เก่าที่ถูกทิ้งไว้ ซึ่งเป็นงานที่ไม่มี request ไหนเป็นตัวกระตุ้น"
+    },
+    {
+      "title": "รู้ว่าแนวทางนี้ไปได้แค่ไหน",
+      "body": "ทั้งสองบทบาทใช้ database schema เดียวกันและ code library ร่วมกัน การเปลี่ยน schema ที่ออกไปพร้อม worker จึงทำให้ web tier พัง เพราะ web tier ยังอ่าน column เก่าอยู่ เมื่อ feature พอกพูนขึ้น worker ก็กลายเป็น monolith ของงานที่ไม่เกี่ยวกัน (rendering, email, import, report) ที่มี release cycle เดียว ขั้นต่อไปที่มักทำคือแยก queue และ worker ตามประเภทของ job แล้วจึงแยกเป็น service ที่เป็นเจ้าของข้อมูลของตัวเอง เมื่อ domain โตเกินกว่าที่แนวทางนี้จะรับไหว"
+    }
+  ]
+}

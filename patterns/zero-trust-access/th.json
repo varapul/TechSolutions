@@ -1,0 +1,21 @@
+{
+  "summary": "ไม่เชื่อใครโดยปริยายเพียงเพราะอยู่ใน network ไหน: ตรวจ identity อุปกรณ์ และ context ในทุก request",
+  "steps": [
+    {
+      "title": "จุดอ่อนของ perimeter",
+      "body": "โมเดลแบบดั้งเดิมตรวจครั้งเดียวที่ขอบ network: firewall ล้อมรอบ internal network แบบ flat และ VPN สำหรับพนักงานที่ทำงานจากข้างนอก อะไรที่เข้ามาข้างในได้ถือว่าเชื่อถือได้ ดังนั้น password VPN ที่ถูกขโมยไปชุดเดียว (หรือ laptop ที่ถูกเจาะเครื่องเดียว) ก็เข้าถึง wiki ได้ แล้วลามไปด้านข้างถึง HR application และ production database โดยไม่ถูกถามอะไรอีกเลย"
+    },
+    {
+      "title": "ตรวจทุก request",
+      "body": "ความเชื่อถือโดยปริยายถูกตัดทิ้ง resource ทุกตัวอยู่หลัง **policy enforcement point** (PEP) ของตัวเอง ซึ่งจะถาม **policy decision point** ก่อนปล่อยอะไรผ่าน การตัดสินใช้สัญญาณเกี่ยวกับ request (ใครเป็นคนขอและเข้าสู่ระบบมาด้วยวิธีที่แข็งแรงแค่ไหน สภาพของอุปกรณ์ context และความอ่อนไหวของ resource) ไม่ได้ดูว่า request มาจาก network ไหน laptop แบบ managed ของ Ana เข้าถึง HR application จากบ้านได้โดยไม่ต้องใช้ VPN: ใช้ passkey อุปกรณ์อยู่ในสภาพดี context ปกติ policy engine จึงอนุญาต และ policy administrator สั่งให้ PEP เปิดเส้นทางนั้นเส้นทางเดียว"
+    },
+    {
+      "title": "ให้สิทธิ์เท่าที่จำเป็น",
+      "body": "สิทธิ์ให้กับ resource เดียวสำหรับ session เดียว ไม่เคยให้ทั้ง network คนเดียวกันบน tablet แบบ unmanaged อ่าน wiki ได้ แต่ถูกปฏิเสธเมื่อเข้า production database workload ก็เป็น subject เช่นกัน: `orders-svc` แสดง identity ของตัวเอง และมี rule อนุญาตให้ใช้ database ได้ ขณะที่ `report-job` ที่ถูกเจาะซึ่งอยู่ใน data centre เดียวกันถูกปฏิเสธ เพราะไม่มี rule ไหนระบุชื่อ job นี้ การลามไปด้านข้างจึงหยุดที่ PEP ของ resource ถัดไป"
+    },
+    {
+      "title": "ประเมินซ้ำอยู่เสมอ",
+      "body": "คำตัดสินไม่ได้ถาวร เมื่อ laptop ขาด security patch ไป policy engine จะ revoke session ของ HR และ PEP ตัด session นั้นทิ้ง เมื่อ session บน tablet จู่ ๆ ก็โผล่มาจากอีกประเทศ Ana จะถูก challenge ให้เข้าสู่ระบบใหม่ ทุกคำตัดสินถูกบันทึกลง log ซึ่งเป็นที่ที่ใช้ตรวจจับการใช้งานในทางที่ผิด และเป็นแหล่งหลักฐานสำหรับการปรับ policy ให้เข้มขึ้น"
+    }
+  ]
+}

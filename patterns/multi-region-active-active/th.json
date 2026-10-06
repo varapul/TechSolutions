@@ -1,0 +1,21 @@
+{
+  "summary": "ให้บริการผู้ใช้จากหลาย region พร้อมกัน และย้าย traffic ออกจาก region ที่ล่ม",
+  "steps": [
+    {
+      "title": "ทั้งสอง region ให้บริการ",
+      "body": "**global load balancer** (anycast หรือ DNS ที่ route ตาม latency) ส่งผู้ใช้ใน Europe ไปที่ Region A และผู้ใช้ใน Americas ไปที่ Region B ซึ่งเป็น region ที่ latency ต่ำที่สุดของแต่ละกลุ่ม ทั้งสอง region เป็น **active**: แต่ละ region รัน stack ครบชุดและรับ traffic จริง และ load balancer ก็ health check ทั้งสอง region อยู่ตลอดเวลา"
+    },
+    {
+      "title": "replicate ข้อมูล",
+      "body": "แต่ละ region มีสำเนาข้อมูลที่เขียนได้ การเขียนจะ **commit ใน region ของตัวเอง** และผู้ใช้ได้คำตอบทันที จากนั้นการเปลี่ยนแปลงจึงถูกส่งไปยังอีก region แบบ **asynchronous** ซึ่งปกติใช้เวลาไม่ถึงหนึ่งวินาที (เรียกว่า **replication lag**) การอ่านใช้สำเนาใน region ของตัวเอง จึงไม่มี request ไหนต้องรอ round trip ข้าม region"
+    },
+    {
+      "title": "Region B ล่ม",
+      "body": "Region B เกิด outage ผู้ใช้ใน Americas เจอ error จนกว่า load balancer จะรู้ตัว: หลังจาก probe ล้มเหลวติดกันไม่กี่ครั้ง load balancer จะทำเครื่องหมายว่า B **unhealthy** และหยุดส่ง traffic ไปที่นั่น การเขียนที่ B commit ไปแล้วแต่ยังไม่ได้ replicate จะหายไป หรือค้างอยู่จนกว่า B จะกลับมา ดังนั้น replication lag ก็คือ **RPO** ที่แท้จริงของคุณ"
+    },
+    {
+      "title": "failover ไปอีก region",
+      "body": "ตอนนี้ load balancer ส่งผู้ใช้ใน Americas ไปที่ Region A request ของพวกเขาต้องเดินทางไกลขึ้น (ราว 110 ms แทนที่จะเป็น 20 ms) แต่ก็ยังได้รับบริการ โหลดของ Region A เพิ่มเป็นสองเท่า จึงต้องมี **headroom** เผื่อไว้ หรือไม่ก็ต้อง **scale out** เมื่อ B กลับมา ก็ต้องไล่ replicate ให้ทันก่อน แล้ว traffic จึงค่อย fail back กลับไป"
+    }
+  ]
+}

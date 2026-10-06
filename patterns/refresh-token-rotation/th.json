@@ -1,0 +1,21 @@
+{
+  "summary": "access token อายุสั้น refresh token ที่ใช้ได้ครั้งเดียว และการตรวจจับการใช้ซ้ำที่ revoke ทั้ง family",
+  "steps": [
+    {
+      "title": "access token อายุสั้น",
+      "body": "หลังเข้าสู่ระบบ แอปถือ token สองตัว: **access token** ที่มีอายุเป็นนาที (ในที่นี้ 10 นาที) และ **refresh token** ชื่อ RT1 ซึ่งเป็นตัวแรกของ **token family** ใหม่บน authorization server การเรียก API แนบแค่ access token ส่วน refresh token ไม่เคยถูกส่งไปที่ API เมื่อ access token หมดอายุ API จะตอบ `401` พร้อม `error=\"invalid_token\"` ซึ่งเป็นสัญญาณให้แอป refresh"
+    },
+    {
+      "title": "Refresh และ rotate token",
+      "body": "แอปส่ง `grant_type=refresh_token` พร้อม RT1 ไปที่ token endpoint server พบว่า RT1 ยัง **active** อยู่ จึงทำเครื่องหมายว่า **used** แล้วคืน access token ใหม่พร้อม refresh token *ตัวใหม่* คือ RT2 ใน family เดียวกัน: refresh token แต่ละตัวใช้ได้ครั้งเดียวเท่านั้น แอปเปลี่ยน token ทั้งสองตัวเป็นชุดใหม่แล้วเรียก API อีกครั้ง"
+    },
+    {
+      "title": "ตรวจพบการใช้ซ้ำ",
+      "body": "attacker ที่คัดลอก RT1 ไปก่อนหน้านี้ ตอนนี้นำ RT1 มา replay server เห็น refresh token ที่ถูกใช้ไปแล้ว: เป็นสัญญาณว่ามีสองฝ่ายถือ token ของ family นี้อยู่ และ server แยกไม่ออกว่าฝ่ายไหนคือผู้ขโมย จึง revoke **ทั้ง family** รวมถึง RT2 ด้วย แล้วตอบ `invalid_grant`"
+    },
+    {
+      "title": "เข้าสู่ระบบใหม่",
+      "body": "เมื่อ access token หมดอายุ แอปส่ง RT2 ไปและได้ `invalid_grant` เช่นกัน แอปจึงทิ้ง token ทั้งหมดแล้วพาผู้ใช้ไปเข้าสู่ระบบใหม่ ซึ่งเริ่ม family ใหม่พร้อม RT1 ตัวใหม่ การถูกขโมยครั้งนี้ทำให้ผู้ใช้ต้องเข้าสู่ระบบเพิ่มแค่หนึ่งครั้ง ความเสียหายจึงมีขอบเขต: ผู้ขโมยไม่มี refresh token ที่ใช้ได้เหลืออยู่ และอย่างมากก็ถือ access token ที่จะหมดอายุภายในไม่กี่นาที"
+    }
+  ]
+}

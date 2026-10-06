@@ -1,0 +1,21 @@
+{
+  "summary": "stream ทุกการเปลี่ยนแปลงที่ commit แล้วจาก log ของ database ไปยังระบบอื่น",
+  "steps": [
+    {
+      "title": "ทุก commit ถูกบันทึกลง log",
+      "body": "แอปพลิเคชันเปลี่ยนอีเมลของ customer ด้วย `UPDATE` ธรรมดา ก่อนที่ database จะ acknowledge การ commit การเปลี่ยนแปลงนั้นอยู่ใน **transaction log** ของมันแล้ว ซึ่ง database ก็เก็บไว้อยู่แล้วสำหรับ crash recovery และ replication แอปพลิเคชันไม่ต้องแก้อะไร และไม่ได้เขียนลงที่อื่นเลย"
+    },
+    {
+      "title": "อ่าน log แล้วปล่อย event",
+      "body": "**CDC connector** tail log นั้นจาก position ที่บันทึกไว้ และแปลงทุกการเปลี่ยนแปลงระดับแถวที่ commit แล้วเป็น event บน topic ของตารางนั้น ตามลำดับการ commit: มีทั้ง operation (insert, update หรือ delete), แถวก่อนและหลังเปลี่ยน และตารางต้นทางกับ log position ถ้าไป poll ตารางด้วย column timestamp แทน จะพลาดการ delete และค่าระหว่างทาง และยังเพิ่มโหลดให้ database ด้วย query อีก"
+    },
+    {
+      "title": "เขียนครั้งเดียว ได้หลายสำเนา",
+      "body": "search index, cache และ data warehouse ต่าง consume topic ตามจังหวะของตัวเอง และ apply การเปลี่ยนแปลงลงสำเนาของตัวเอง consumer ใหม่จะเริ่มจาก **snapshot** ของแถวที่มีอยู่ แล้วจึงอ่านต่อจาก stream ไม่มี dual write: ทุกอย่างที่อยู่ปลายน้ำ derive มาจากสิ่งที่ commit แล้ว"
+    },
+    {
+      "title": "Restart และราคาที่ต้องจ่าย",
+      "body": "connector บันทึก position เป็นระยะ ๆ เท่านั้น มัน crash หลัง publish change 43 แต่ก่อนบันทึก position นั้น จึงกลับมาทำต่อจาก 42 และส่ง 43 ซ้ำ: การส่งเป็นแบบ **at-least-once** consumer จึงต้อง apply การเปลี่ยนแปลงแบบ idempotent โดย upsert ตาม key และข้าม position ที่ apply ไปแล้ว ระหว่างที่ connector ล่ม database ต้องเก็บ log ส่วนที่ยังไม่ถูกอ่านไว้ log จึงโตขึ้น: ให้ monitor lag"
+    }
+  ]
+}

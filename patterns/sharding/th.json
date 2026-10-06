@@ -1,0 +1,21 @@
+{
+  "summary": "แบ่งข้อมูลตามแนวนอนกระจายไปหลาย database โดยใช้ shard key",
+  "steps": [
+    {
+      "title": "database เดียวเต็มขีดจำกัด",
+      "body": "database เดียวเก็บ customer ทุกรายและ order ทุกรายการ ทั้งการเขียนและปริมาณข้อมูลเพิ่มขึ้นเรื่อย ๆ และ server ก็ชนเพดานแล้ว: CPU อยู่ที่ 95% และ disk เต็ม 90% [Read replicas](../read-replicas/) จะเพิ่มกำลังการอ่านได้ แต่ไม่เพิ่มกำลังการเขียน เพราะทุก replica ต้อง replay การเขียนทุกครั้ง"
+    },
+    {
+      "title": "แบ่งแถวด้วย shard key",
+      "body": "customer ถูกแบ่งตาม `customer_id` ไปยัง shard สามตัว: database ที่มี schema เดียวกัน แต่ละตัวเก็บแถวเฉพาะส่วนของตัวเอง router ใน driver ของแอปพลิเคชัน hash key ให้ตกอยู่ใน logical shard หนึ่งในทั้งหมด 12 ตัว แล้วเปิดดูว่า shard ไหนถือ logical shard นั้นอยู่ customer 42 (logical shard 5) จึงไปที่ B เท่านั้น จะแบ่งตามช่วงของ key หรือใช้ lookup table ต่อ key ก็ได้เช่นกัน order มี `customer_id` เดียวกันติดอยู่ order ของ customer แต่ละรายจึงอยู่บน shard เดียวกับ customer และ join ระหว่างสองตารางนี้ก็อยู่ภายใน database เดียว"
+    },
+    {
+      "title": "สิ่งที่ key ทำให้ยาก",
+      "body": "query ด้วย email ซึ่งไม่ใช่ shard key ต้องถามทุก shard แล้วรวมคำตอบ (**scatter-gather**): สาม query เพื่อแถวเดียว และช้าเท่ากับ shard ที่ช้าที่สุด customer รายใหญ่มากรายหนึ่งส่ง traffic ไปที่ B มากจน B ทำงานที่ 92% ขณะที่ A และ C อยู่ที่ 32% และ transaction ที่ครอบ customer บน A กับอีกรายบน C ต้องใช้ two-phase commit (ถ้า database มีให้ใช้) หรือใช้ [saga](../saga-orchestration/) การเลือก shard key เป็นตัวตัดสินทั้งสามเรื่องนี้"
+    },
+    {
+      "title": "เพิ่ม shard ย้ายแค่ 25%",
+      "body": "ข้อมูลโตขึ้นเรื่อย ๆ จน disk แตะ 80% จึงเพิ่ม server ตัวที่สี่ ถ้าใช้ `hash(key) % N` การเปลี่ยนจาก 3 เป็น 4 shard จะทำให้ shard ของทุก key เปลี่ยนไป ยกเว้นแค่ 3 ใน 12 ข้อมูล 75% จึงต้องย้าย แต่เพราะแบ่งข้อมูลเป็น 12 logical shard ไว้ตั้งแต่แรก shard D จึงรับ logical shard มาจากแต่ละ server ตัวละหนึ่ง รวมเป็น 3 ใน 12 หรือ 25% ของข้อมูล ขณะที่ A, B และ C ยังให้บริการต่อได้: copy ข้อมูล, ตามเก็บการเปลี่ยนแปลงที่เกิดขึ้นระหว่างนั้น แล้วจึงสลับ map ทุก shard จบที่ disk 60% ส่วน consistent hashing ก็ให้ผลใกล้เคียงกัน"
+    }
+  ]
+}

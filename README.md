@@ -8,6 +8,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 
 **▶ [Browse the catalog with the step-by-step player](https://varapul.github.io/TechSolutions/)**: press → to play one step at a time and hold on its last frame, ideal for presenting. You can also replay a step, slow it down, or link straight to one (`…/circuit-breaker.html#step-3`).
 
+**🇹🇭 [อ่านเป็นภาษาไทย](https://varapul.github.io/TechSolutions/th/)**: the site has a Thai version; the switch in the top bar of every page moves between the two languages.
+
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
