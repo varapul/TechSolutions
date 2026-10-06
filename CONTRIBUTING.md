@@ -106,6 +106,16 @@ The *Design Patterns (GoF)* category shows how objects are wired together and ho
 - **The four-step arc:** the problem without the pattern (the growing conditional, the duplicated code, the edit that ripples, in red); the pattern's structure applied to the scenario; one call flowing through it at runtime; and the payoff (a new variant added without editing existing classes, in green), together with the cost or the closest relative.
 - **Colour keeps its meaning:** blue for calls, green for returns and for code added without edits, red for the pain point, amber for the part that varies, purple for notifications and events, teal for state that is stored or shared (snapshots, shared intrinsic state, copies), and orange for identity and access (the one instance, a permission check).
 
+## Component diagrams
+
+The *System Components* and *AWS Services* categories explain real products: what one does inside, where it sits in a solution, and when to choose it. The canvas, timeline and tokens are the same; these conventions keep the pages consistent:
+
+- **One concrete solution** with real names (an online shop, a photo-sharing app), told in the product's own vocabulary (topic, partition, offset; exchange, binding, queue) with its real setting names and values (`acks=all`, `VisibilityTimeout`), so a reader can map the picture onto the documentation.
+- **The product is one large frame** labelled with its name, its internals drawn inside, and its neighbours (clients, services, other components) outside, so the product's boundary stays visible in every step.
+- **The four-step arc:** where it sits (the component inside a small solution, with its neighbours and the job it does there); how it works inside (its core mechanism, with one operation flowing through it); how it scales and survives failures (partitions, replicas, failover, concurrency, with the numbers); and its limit or the trade-off that decides when to choose something else.
+- **Facts that change:** versions, defaults, limits, quotas, prices and licences. Take them from the current official documentation, name the version or date they hold for, and cite the page.
+- **Colour keeps its meaning:** blue for requests and data flowing in, green for acknowledgements and healthy state, red for failures, amber for the limit or the setting to watch, purple for events and messages, teal for stored state (logs, snapshots, replicas), and orange for identity and access.
+
 ## Example: keyframes from a timeline
 
 ```js
@@ -125,6 +135,7 @@ console.log(track('xx-call', go.segs));                              // go.end i
 - **README.md:** keep the sections from the template (*The problem*, *How it works*, *When to use it*, *Trade-offs*, *Implementation notes*). Be concrete and vendor-neutral; name managed services as examples, not requirements.
 - **Algorithm READMEs** add two sections, and `npm run new` scaffolds them for that category: *Code*, a short Python 3 implementation of your own that uses only the standard library, with an example call and its output (run it, with edge cases, before you commit), and *Complexity*, a table of the time in the best, average and worst case, the extra space, and whether it is stable or in place where that applies.
 - **Design pattern READMEs** add a *Code* section, which `npm run new` scaffolds for that category: a short TypeScript example of your own that mirrors the diagram's scenario and runs as is with `node` (Node 22 strips the types, so use only erasable syntax: no `enum`, `namespace`, parameter properties or decorators), with its output; run it, with assertions, before you commit. Paraphrase the pattern's intent instead of quoting the book.
+- **Component READMEs** (*System Components* and *AWS Services*) add a *Where it fits* section, which `npm run new` scaffolds for those categories: the solutions the product appears in, the patterns of this catalog it implements or supports, its usual neighbours, and its managed offerings (for an open-source product, the AWS service that runs it, when there is one). In *When to use it*, compare it with its closest alternatives; a small table works well. These pages are about one product, so the vendor-neutral rule above gives way to accuracy: state versions, defaults and limits with the version or date they hold for, and keep marketing language out.
 - Link to another pattern as `../<slug>/`. It works on GitHub, the site rewrites it to that pattern's page, and `npm run check` rejects links to patterns that aren't animated yet.
 
 ## Thai translation
@@ -153,6 +164,7 @@ Labels inside the diagrams stay in English: they are mostly code, class names an
 |---|---|
 | The problem | ปัญหา |
 | How it works | ทำงานยังไง |
+| Where it fits | อยู่ตรงไหนใน solution |
 | When to use it | ใช้ตอนไหนดี |
 | When not to use it | ตอนไหนไม่ควรใช้ |
 | Trade-offs | ได้อะไร เสียอะไร |

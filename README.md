@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**132 animated** · 0 planned · 12 categories
+**132 animated** · 31 planned · 14 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -29,6 +29,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 | 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
+| 🧱 | [System Components](#system-components) | 0 / 16 | The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it. |
+| 🟧 | [AWS Services](#aws-services) | 0 / 15 | Amazon Web Services' managed building blocks: how each service works, what it takes off your hands and how services combine into solutions. |
 
 ## Application Architecture
 
@@ -267,6 +269,55 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Strategy**](patterns/strategy/) | Put interchangeable algorithms behind one interface and choose one at runtime, instead of branching inside the caller. | ✅ animated |
 | [**Template Method**](patterns/template-method/) | Fix an algorithm's skeleton in a base class and let subclasses fill in individual steps, without changing their order. | ✅ animated |
 | [**Visitor**](patterns/visitor/) | Add new operations to a stable set of classes without editing them: each operation is a visitor that every element accepts. | ✅ animated |
+
+<sub>[↑ Back to contents](#contents)</sub>
+
+## System Components
+
+🧱 The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it.
+
+| Pattern | In one line | Status |
+|---|---|:-:|
+| System Map | One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search. | ⏳ planned |
+| Apache Kafka | A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history. | ⏳ planned |
+| RabbitMQ | A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it. | ⏳ planned |
+| Redis & Valkey | An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process. | ⏳ planned |
+| PostgreSQL | A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes. | ⏳ planned |
+| MongoDB | A document database: JSON-like documents with flexible schemas, replica sets for failover and sharding to scale out. | ⏳ planned |
+| Apache Cassandra | A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage. | ⏳ planned |
+| Elasticsearch & OpenSearch | Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes. | ⏳ planned |
+| NGINX | A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications. | ⏳ planned |
+| Docker & Containers | Package an app and its dependencies as an image and run it as an isolated process: layers, registries, namespaces, cgroups. | ⏳ planned |
+| Kubernetes | A container orchestrator: you declare the desired state, and controllers keep pods scheduled, healthy and reachable. | ⏳ planned |
+| etcd | A strongly consistent key-value store on Raft that clusters use for configuration, service discovery, locks and leader election. | ⏳ planned |
+| Prometheus & Grafana | Pull-based monitoring: scrape metrics into a time-series database, query them with PromQL, alert, and chart them in Grafana. | ⏳ planned |
+| HashiCorp Vault | A secrets manager: authenticate workloads, hand out short-lived credentials, encrypt data and audit every access. | ⏳ planned |
+| Keycloak | An open-source identity provider: user sign-in, federation and single sign-on, issuing OpenID Connect and SAML tokens. | ⏳ planned |
+| Apache Flink | A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints. | ⏳ planned |
+
+<sub>[↑ Back to contents](#contents)</sub>
+
+## AWS Services
+
+🟧 Amazon Web Services' managed building blocks: how each service works, what it takes off your hands and how services combine into solutions.
+
+| Pattern | In one line | Status |
+|---|---|:-:|
+| Amazon VPC | Your private network in AWS: subnets in each Availability Zone, route tables, gateways, security groups and endpoints. | ⏳ planned |
+| Amazon S3 | Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events. | ⏳ planned |
+| Amazon SQS | A managed message queue: consumers poll, a visibility timeout hides messages in flight, and repeated failures go to a dead-letter queue. | ⏳ planned |
+| Amazon SNS | Managed publish-subscribe: a message published to a topic fans out to queues, functions, HTTP endpoints, email and SMS. | ⏳ planned |
+| Amazon EventBridge | An event bus: rules match events from AWS services, SaaS apps and your own code by content and route them to targets. | ⏳ planned |
+| Amazon Kinesis Data Streams | Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it. | ⏳ planned |
+| Amazon DynamoDB | A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads. | ⏳ planned |
+| Amazon RDS & Aurora | Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones. | ⏳ planned |
+| AWS Lambda | Functions as a service: code runs per event in managed execution environments that scale out with concurrency. | ⏳ planned |
+| AWS Step Functions | Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded. | ⏳ planned |
+| Amazon ECS & Fargate | Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate. | ⏳ planned |
+| Amazon Route 53 | Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks. | ⏳ planned |
+| AWS IAM | Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated. | ⏳ planned |
+| Amazon Cognito | Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials. | ⏳ planned |
+| Amazon CloudWatch | Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service. | ⏳ planned |
 
 <sub>[↑ Back to contents](#contents)</sub>
 <!-- END GENERATED: catalog -->

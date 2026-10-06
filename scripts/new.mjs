@@ -19,7 +19,7 @@ if (existsSync(abs('patterns', slug))) {
 }
 mkdirSync(abs('patterns', slug), { recursive: true });
 // Algorithm patterns get a README with Code and Complexity sections; design patterns get a Code section.
-const READMES = { algorithms: 'README.algorithm.md', 'design-patterns': 'README.design-pattern.md' };
+const READMES = { algorithms: 'README.algorithm.md', 'design-patterns': 'README.design-pattern.md', 'system-components': 'README.component.md', 'aws-services': 'README.component.md' };
 const readme = READMES[bySlug.get(slug).category.id] ?? 'README.md';
 for (const f of ['diagram.svg', 'meta.json', 'README.md']) copyFileSync(abs('templates', f === 'README.md' ? readme : f), abs('patterns', slug, f));
 console.log(`created patterns/${slug}/ — fill in meta.json, draw the stage in diagram.svg, write README.md, then:

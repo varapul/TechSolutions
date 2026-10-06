@@ -70,11 +70,21 @@ DESIGN PATTERN (GoF) (CONTRIBUTING.md's Design pattern diagrams section defines 
 - Check claims about real libraries and frameworks (which standard-library classes or framework APIs use the pattern, deprecations, defaults) against current official documentation or source.
 - The readers are developers and solutions architects: where the pattern has an architecture-scale cousin in this catalog (Observer and publish-subscribe, Proxy and ambassador, Command and CQRS, Adapter and anti-corruption layer), link it and say what changes at that scale.`
 
-const KIND_RULES = { algorithm: ALGORITHM_RULES, 'design-pattern': DESIGN_PATTERN_RULES }
+// Patterns with kind: 'component' (the System Components and AWS Services categories) explain one real product.
+const COMPONENT_RULES = `
+
+SYSTEM COMPONENT (CONTRIBUTING.md's Component diagrams section defines how these look. These categories are new and the other authors in this batch follow the same section, so keep to it: the set should read as one family.)
+- The page explains one real product. Use its own vocabulary and its real setting names, API calls and values. Versions, defaults, limits, quotas, pricing models and licences change often: check each against the current official documentation and release notes, say which version or date a number holds for, and cite the page.
+- The diagram: step 1 shows where the component sits in the brief's solution, with its neighbours and the job it does there; steps 2 and 3 show its internals working (one operation flowing through, then scaling and failure handling, with the numbers); step 4 shows its limit or the trade-off that decides when to choose something else. Draw the product as one large labelled frame with its internals inside and its neighbours outside.
+- The README template has an extra section, Where it fits: the solutions it appears in, the patterns of this catalog it implements or supports (link the animated ones), its usual neighbours, and its managed offerings (name the AWS service where one exists). In When to use it, compare it with its closest alternatives in a small table.
+- A short snippet (a CLI call, a client call, a config fragment) is welcome where it makes a mechanism concrete; check its syntax and every flag against the documentation. Do not call real cloud services: there are no credentials here and none are needed.
+- Keep it factual: no marketing language and no unsourced performance numbers; when you give a number, say what it depends on or where it comes from. Licences and forks matter to readers choosing a component (for example Redis and Valkey, Elasticsearch and OpenSearch): state them as they are today, with sources.`
+
+const KIND_RULES = { algorithm: ALGORITHM_RULES, 'design-pattern': DESIGN_PATTERN_RULES, component: COMPONENT_RULES }
 const kindOf = (p) => p.kind ?? (p.algorithm ? 'algorithm' : null)
 
 function authorPrompt(p, note = '') {
-  return `You are authoring ONE animated diagram in ${REPO} (today is ${TODAY}): a public catalog of self-explaining, looping SVG diagrams of architecture patterns, the classic GoF design patterns and the algorithms underneath them, for solutions architects and developers (https://github.com/varapul/TechSolutions). The finished diagrams in patterns/ set the quality bar; match them.${note}
+  return `You are authoring ONE animated diagram in ${REPO} (today is ${TODAY}): a public catalog of self-explaining, looping SVG diagrams of architecture patterns, the classic GoF design patterns, the algorithms underneath them, and the system components and AWS services that solutions are built from, for solutions architects and developers (https://github.com/varapul/TechSolutions). The finished diagrams in patterns/ set the quality bar; match them.${note}
 
 Read first: CONTRIBUTING.md (canvas, 20 s / 4-step timeline, phase classes, motion, hold frames, colour language, writing rules); patterns/circuit-breaker/ and patterns/event-driven-architecture/ (diagram.svg, meta.json, README.md) as reference implementations (in each SVG skip the generated block between "<!-- @generated:base" and "<!-- @end:chrome -->"); scripts/lib/motion.mjs (track, windows, keys, route, sec, rules); src/diagram/base.css (classes and colour tokens).
 
@@ -109,8 +119,10 @@ function reviewPrompt(group) {
     ? `\n5. For algorithm patterns: run the README's Code block with python3, adding edge cases of your own, and re-run the algorithm on the diagram's input to confirm every value, comparison, swap, pointer position, count and result that the diagram, captions and step bodies show. Check the Complexity table, and that the diagram follows CONTRIBUTING.md's Algorithm diagrams section.`
     : '') + (kinds.has('design-pattern')
     ? `\n5. For design patterns: run the README's TypeScript with node, adding a few assertions of your own, and confirm that the diagram's objects, call order and values match the code and the captions. Check that the GoF intent and participants are paraphrased correctly (no quoted book text), that the relatives named really differ as stated, that claims about real libraries hold today, and that the diagram follows CONTRIBUTING.md's Design pattern diagrams section.`
+    : '') + (kinds.has('component')
+    ? `\n5. For system components and AWS services: check every version, default, limit, quota, pricing model and licence statement against the current official documentation; check that the setting names, API calls and commands in the diagram, captions and snippets exist and are spelled as documented; check the comparison with alternatives for fairness and accuracy; and check that the diagram follows CONTRIBUTING.md's Component diagrams section.`
     : '')
-  return `You are the independent fact-checker for newly authored patterns in ${REPO} (today is ${TODAY}), a public catalog of animated SVG diagrams of architecture patterns, GoF design patterns and algorithms. Their authors have finished. Review exactly these patterns, and fix what you confirm:
+  return `You are the independent fact-checker for newly authored patterns in ${REPO} (today is ${TODAY}), a public catalog of animated SVG diagrams of architecture patterns, GoF design patterns, algorithms, system components and AWS services. Their authors have finished. Review exactly these patterns, and fix what you confirm:
 ${list}
 
 For each pattern, read patterns/<slug>/meta.json, README.md and diagram.svg (hand-authored part after "<!-- @end:chrome -->"), plus the contact sheets .snapshots/<slug>.png and -dark.png (re-render with npm run snap -- <slug> if they look stale). Check:
