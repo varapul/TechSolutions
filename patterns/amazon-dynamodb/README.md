@@ -172,7 +172,7 @@ Choose DynamoDB when:
 
 Look elsewhere when the queries are ad hoc or relational (joins, reports, flexible filters), when the application must run outside AWS, or when a single entity outgrows 400 KB and can't be split.
 
-| | Amazon DynamoDB | Apache Cassandra | MongoDB | PostgreSQL / Aurora |
+| | Amazon DynamoDB | Apache Cassandra | [MongoDB](../mongodb/) | PostgreSQL / Aurora |
 |---|---|---|---|---|
 | Data model | items under a partition key and an optional sort key | rows under a partition key and clustering columns (CQL) | JSON-like documents in collections | relational tables (SQL) |
 | Queries | by key and sort-key range, plus secondary indexes; no joins | by partition key and clustering range; secondary indexes for other lookups | ad hoc queries, secondary indexes, aggregation pipeline | ad hoc SQL with joins and many index types |

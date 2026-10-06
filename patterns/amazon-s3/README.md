@@ -97,7 +97,7 @@ A single PUT takes up to 5 GB. Larger files go up as a **multipart upload**: up 
 
 An **event notification** sends a message to an SNS topic or SQS queue in the bucket's Region, or to a Lambda function, when objects are created, deleted, restored, transitioned or replicated, filtered by event type and by key prefix and suffix. Messages carry the bucket, the key (URL-encoded), size, ETag, version ID and a `sequencer` for ordering events on the same key. Delivery is at least once, typically within seconds but sometimes a minute or more, and not in order. SQS FIFO queues and SNS FIFO topics are not supported as destinations. If the consumer writes back to the same bucket, scope the notification to the input prefix (here `u/`) or it triggers itself.
 
-Turning on **Amazon EventBridge** for a bucket instead sends every event type to EventBridge, where rules match on the event's fields and route it to many kinds of targets, including SQS FIFO queues.
+Turning on **[Amazon EventBridge](../amazon-eventbridge/)** for a bucket instead sends every event type to EventBridge, where rules match on the event's fields and route it to many kinds of targets, including SQS FIFO queues.
 
 ### Security
 
@@ -193,7 +193,7 @@ Recent features blur the line with file systems: S3 Express One Zone directory b
 - [CDN & Edge Caching](../cdn-edge-caching/) — Serve static content from edge locations close to users; only cache misses reach the origin.
 - [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
 - [Amazon SQS](../amazon-sqs/) — A managed message queue: consumers poll, a visibility timeout hides messages in flight, and repeated failures go to a dead-letter queue.
-- Amazon EventBridge *(planned)* — An event bus: rules match events from AWS services, SaaS apps and your own code by content and route them to targets.
+- [Amazon EventBridge](../amazon-eventbridge/) — An event bus: rules match events from AWS services, SaaS apps and your own code by content and route them to targets.
 - [Disaster Recovery Strategies](../disaster-recovery-strategies/) — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 
 ## References

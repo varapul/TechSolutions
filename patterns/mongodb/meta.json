@@ -1,0 +1,159 @@
+{
+  "aka": [
+    "Mongo"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Catalog writes products of any shape through the driver; change streams feed search and analytics.",
+      "body": "Acme Shop's Catalog service stores every product as one document in the collection **products**, through the MongoDB driver and a replica set of three members. A mug has a colour and a capacity, a T-shirt a size and an e-book a format, and nothing forces one shape on them. `insertOne` goes to the primary and is acknowledged once a majority of the members has it; a **change stream** then passes the new product to search-sync and analytics."
+    },
+    {
+      "title": "Documents and indexes",
+      "caption": "find walks the compound index and reads 2 of 4 documents; the pipeline counts gifts per brand.",
+      "body": "MUG-1 keeps its nested `attributes` and its array of `tags` inside one document. `find({ \"attributes.colour\": \"red\", price: { $lt: 20 } })` walks the compound index `{ \"attributes.colour\": 1, price: 1 }`, equality field first and range field second, and fetches only MUG-1 and TEE-7 instead of scanning all 4 documents. The pipeline `$match` → `$group` → `$sort` keeps the 3 gift products, counts them per brand and returns Acme Home 2, Acme Wear 1. A write to one document is atomic; a transaction across documents is possible but costs more."
+    },
+    {
+      "title": "Replica set and failover",
+      "caption": "w: majority acks at 2 of 3 members. m1 fails, m2 wins the election, the driver retries the update.",
+      "body": "The insert of **LAMP-4** goes to the primary **m1** and into its oplog; **m2** and **m3** copy the entry and apply it, and with `w: \"majority\"` the driver is acknowledged as soon as 2 of the 3 members have it. Then m1 fails with an update in flight. When the primary has been silent for `electionTimeoutMillis` (10 s by default), the secondaries elect **m2**; MongoDB puts the median time to a new primary at no more than 12 s with default settings. The driver retries the update once on m2 (retryable writes), and m3 copies it from there."
+    },
+    {
+      "title": "Sharding and the limits",
+      "caption": "Sharded on hashed sku: a query with sku hits 1 of 2 shards, any other hits both. Then the limits.",
+      "body": "Once the catalog outgrows one replica set, `sh.shardCollection(\"catalog.products\", { sku: \"hashed\" })` splits it into chunks by the hash of `sku`, and the balancer spreads the chunks over two shards, each a replica set of its own; the config servers keep the chunk ranges and the **mongos** routers cache them. `find({ sku: \"MUG-1\" })` goes to shard B alone, while `find({ \"attributes.colour\": \"red\" })` names no shard key, so mongos asks both shards and merges the answers. The limits: a document holds at most **16 MiB**, a poor shard key piles the load onto one shard, a flexible schema still needs validation rules, and `$lookup` joins only collections in the same database. Since 16 October 2018 the Community Server has been licensed under the **SSPL**."
+    }
+  ],
+  "related": [
+    "sharding",
+    "read-replicas",
+    "database-per-service",
+    "change-data-capture",
+    "materialized-view",
+    "postgresql",
+    "amazon-dynamodb",
+    "cassandra"
+  ],
+  "references": [
+    {
+      "title": "MongoDB Database Manual (9.0) — Release Notes for MongoDB 9.0",
+      "url": "https://www.mongodb.com/docs/manual/release-notes/9.0/"
+    },
+    {
+      "title": "MongoDB — Software Lifecycle Schedules",
+      "url": "https://www.mongodb.com/legal/support-policy/lifecycles"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — MongoDB Limits and Thresholds",
+      "url": "https://www.mongodb.com/docs/manual/reference/limits/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Data Modeling in MongoDB",
+      "url": "https://www.mongodb.com/docs/manual/data-modeling/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Group Data with the Attribute Pattern",
+      "url": "https://www.mongodb.com/docs/manual/data-modeling/design-patterns/group-data/attribute-pattern/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Index Types",
+      "url": "https://www.mongodb.com/docs/manual/core/indexes/index-types/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — The ESR (Equality, Sort, Range) Guideline",
+      "url": "https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Aggregation Operations",
+      "url": "https://www.mongodb.com/docs/manual/aggregation/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — $lookup (aggregation stage)",
+      "url": "https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Transactions",
+      "url": "https://www.mongodb.com/docs/manual/core/transactions/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Replica Set Oplog",
+      "url": "https://www.mongodb.com/docs/manual/core/replica-set-oplog/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Replica Set Elections",
+      "url": "https://www.mongodb.com/docs/manual/core/replica-set-elections/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Retryable Writes",
+      "url": "https://www.mongodb.com/docs/manual/core/retryable-writes/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Write Concern",
+      "url": "https://www.mongodb.com/docs/manual/reference/write-concern/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Read Preference",
+      "url": "https://www.mongodb.com/docs/manual/core/read-preference/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Causal Consistency and Read and Write Concerns",
+      "url": "https://www.mongodb.com/docs/manual/core/causal-consistency-read-write-concerns/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Sharding",
+      "url": "https://www.mongodb.com/docs/manual/sharding/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Choose a Shard Key",
+      "url": "https://www.mongodb.com/docs/manual/core/sharding-choose-a-shard-key/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Data Partitioning with Chunks",
+      "url": "https://www.mongodb.com/docs/manual/core/sharding-data-partitioning/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Routing with mongos",
+      "url": "https://www.mongodb.com/docs/manual/core/sharded-cluster-query-router/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Reshard a Collection",
+      "url": "https://www.mongodb.com/docs/manual/core/sharding-reshard-a-collection/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — MongoDB Change Streams",
+      "url": "https://www.mongodb.com/docs/manual/changestreams/"
+    },
+    {
+      "title": "MongoDB Database Manual (9.0) — Specify Validation Level for Existing Documents",
+      "url": "https://www.mongodb.com/docs/manual/core/schema-validation/specify-validation-level/"
+    },
+    {
+      "title": "MongoDB — Server Side Public License FAQ",
+      "url": "https://www.mongodb.com/legal/licensing/server-side-public-license/faq"
+    },
+    {
+      "title": "MongoDB Atlas documentation — MongoDB Atlas: Multi-Cloud Database Service",
+      "url": "https://www.mongodb.com/docs/atlas/"
+    },
+    {
+      "title": "MongoDB docs — MongoDB Search and MongoDB Vector Search on Self-Managed Deployments",
+      "url": "https://www.mongodb.com/docs/search/self-managed/current/"
+    },
+    {
+      "title": "Amazon DocumentDB Developer Guide — Functional differences: Amazon DocumentDB and MongoDB",
+      "url": "https://docs.aws.amazon.com/documentdb/latest/devguide/functional-differences.html"
+    },
+    {
+      "title": "Amazon DocumentDB Developer Guide — Amazon DocumentDB: how it works",
+      "url": "https://docs.aws.amazon.com/documentdb/latest/devguide/how-it-works.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — JSON Types",
+      "url": "https://www.postgresql.org/docs/current/datatype-json.html"
+    },
+    {
+      "title": "Apache Cassandra documentation — Dynamo (architecture)",
+      "url": "https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html"
+    }
+  ]
+}

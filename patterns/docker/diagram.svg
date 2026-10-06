@@ -1,0 +1,885 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Docker &amp; Containers</title>
+<desc id="dg-desc">Docker &amp; Containers. Package an app and its dependencies as an image and run it as an isolated process: layers, registries, namespaces, cgroups. Step 1, Where it sits: CI builds catalog:1.4.2 once; laptop, staging and production pull the same digest from Amazon ECR. Step 2, Layers and the cache: Only the app code changed: BuildKit builds one new layer, and push and pull move only that layer. Step 3, Running a container: docker run: runc starts node as PID 1 in its own namespaces, in a cgroup capped at 0.5 CPU, 512 MiB. Step 4, Limits and trade-offs: catalog-2 hits 512 MiB: OOM-killed (exit 137). Shared kernel; the writable layer is temporary.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">Docker &amp; Containers</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Layers and the cache</text>
+  <text class="step on p2" x="262" y="518">2 · Layers and the cache</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Running a container</text>
+  <text class="step on p3" x="484" y="518">3 · Running a container</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Limits and trade-offs</text>
+  <text class="step on p4" x="706" y="518">4 · Limits and trade-offs</text>
+  <text class="caption p1" x="40" y="552">CI builds catalog:1.4.2 once; laptop, staging and production pull the same digest from Amazon ECR.</text>
+  <text class="caption p2" x="40" y="552">Only the app code changed: BuildKit builds one new layer, and push and pull move only that layer.</text>
+  <text class="caption p3" x="40" y="552">docker run: runc starts node as PID 1 in its own namespaces, in a cgroup capped at 0.5 CPU, 512 MiB.</text>
+  <text class="caption p4" x="40" y="552">catalog-2 hits 512 MiB: OOM-killed (exit 137). Shared kernel; the writable layer is temporary.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Docker and containers. Acme Shop's Catalog service, catalog:1.4.2 (20 s loop, 1 s = 5%):
+   0-5 s    where it sits: a commit, CI builds (Dockerfile sweep) and pushes to ECR (tag 1.4.2 -> sha256:9f2c… at 2.6 s);
+            laptop, staging and production pull that digest (arrivals 3.3, 3.55, 3.8 s)
+   5-10 s   layers: src/price.ts changed; the build sweep marks cached / rebuilt / new layer (sweep 2 5.65-7.80 s);
+            push moves 1 layer, 6 already in ECR (7.9-8.45 s); host-1 pulls 1 layer, has 6 (8.6-9.15 s)
+   10-15 s  docker run x2: dockerd -> containerd -> runc; catalog-1 at 11.02 s, catalog-2 at 13.27 s;
+            namespaces + cgroup (0.5 CPU, 512 MiB), writable layers on shared image layers (shared at 13.85 s)
+   15-20 s  catalog-2's memory fills (15.4-16.35 s), the OOM killer ends it (exit 137, 16.85 s), its writable layer
+            is lost on rm, the shared kernel is the limit; everything fades out by 19.9 s
+   Generated by a scratch script with scripts/lib/motion.mjs. */
+.diagram .dk-frame { fill: none; stroke: var(--wire); stroke-width: 1.5; }
+.diagram .dk-panel { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .dk-bar { fill: var(--panel-2); stroke: var(--line); stroke-width: 1.2; }
+.diagram .dk-slot { fill: none; stroke: var(--wire); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.diagram .dk-cg { fill: none; stroke: var(--amber); stroke-width: 1.4; }
+.diagram .dk-ns { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.diagram .dk-rw { fill: var(--blue-soft); stroke: var(--blue); stroke-width: 1.2; }
+.diagram .dk-gone { fill: var(--bg); stroke: var(--red); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.diagram .dk-c10 { font-size: 10px; }
+.diagram .dk-c11 { font-size: 11px; }
+.diagram .dk-t10 { font-size: 10px; fill: var(--muted); }
+.diagram .dk-t95 { font-size: 9.5px; }
+.diagram .dk-l12 { font-size: 12px; font-weight: 600; }
+.diagram .dk-l13 { font-size: 13px; font-weight: 600; }
+.diagram .dk-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .dk-hd-amber { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--amber-ink); }
+.diagram .dk-cur { opacity: 0; animation: dk-cur var(--T) linear infinite; }
+.diagram .dk-ct0 { opacity: 0; animation: dk-ct0 var(--T) linear infinite; }
+.diagram .dk-ct1 { opacity: 0; animation: dk-ct1 var(--T) linear infinite; }
+.diagram .dk-ct2 { opacity: 0; animation: dk-ct2 var(--T) linear infinite; }
+.diagram .dk-ct3 { opacity: 0; animation: dk-ct3 var(--T) linear infinite; }
+.diagram .dk-ct4 { opacity: 0; animation: dk-ct4 var(--T) linear infinite; }
+.diagram .dk-ct5 { opacity: 0; animation: dk-ct5 var(--T) linear infinite; }
+.diagram .dk-ct6 { opacity: 0; animation: dk-ct6 var(--T) linear infinite; }
+.diagram .dk-ct7 { opacity: 0; animation: dk-ct7 var(--T) linear infinite; }
+.diagram .dk-ct8 { opacity: 0; animation: dk-ct8 var(--T) linear infinite; }
+.diagram .dk-ct9 { opacity: 0; animation: dk-ct9 var(--T) linear infinite; }
+.diagram .dk-ct10 { opacity: 0; animation: dk-ct10 var(--T) linear infinite; }
+.diagram .dk-ct11 { opacity: 0; animation: dk-ct11 var(--T) linear infinite; }
+.diagram .dk-tag { animation: dk-tag var(--T) linear infinite; }
+.diagram .dk-taghl { opacity: 0; animation: dk-taghl var(--T) linear infinite; }
+.diagram .dk-e3 { opacity: 0; animation: dk-e3 var(--T) linear infinite; }
+.diagram .dk-e1 { opacity: 0; animation: dk-e1 var(--T) linear infinite; }
+.diagram .dk-epulse { opacity: 0; animation: dk-epulse var(--T) linear infinite; }
+.diagram .dk-eex { opacity: 0; animation: dk-eex var(--T) linear infinite; }
+.diagram .dk-eup { opacity: 0; animation: dk-eup var(--T) linear infinite; }
+.diagram .dk-env0 { animation: dk-env0 var(--T) linear infinite; }
+.diagram .dk-envn0 { animation: dk-envn0 var(--T) linear infinite; }
+.diagram .dk-env1 { animation: dk-env1 var(--T) linear infinite; }
+.diagram .dk-envn1 { animation: dk-envn1 var(--T) linear infinite; }
+.diagram .dk-env2 { animation: dk-env2 var(--T) linear infinite; }
+.diagram .dk-envn2 { animation: dk-envn2 var(--T) linear infinite; }
+.diagram .dk-hslot { opacity: 0; animation: dk-hslot var(--T) linear infinite; }
+.diagram .dk-hsolid { opacity: 0; animation: dk-hsolid var(--T) linear infinite; }
+.diagram .dk-hex { opacity: 0; animation: dk-hex var(--T) linear infinite; }
+.diagram .dk-hup { opacity: 0; animation: dk-hup var(--T) linear infinite; }
+.diagram .dk-img2 { opacity: 0; animation: dk-img2 var(--T) linear infinite; }
+.diagram .dk-shared { opacity: 0; animation: dk-shared var(--T) linear infinite; }
+.diagram .dk-sharedhl { opacity: 0; animation: dk-sharedhl var(--T) linear infinite; }
+.diagram .dk-rt0 { opacity: 0; animation: dk-rt0 var(--T) linear infinite; }
+.diagram .dk-rt1 { opacity: 0; animation: dk-rt1 var(--T) linear infinite; }
+.diagram .dk-rt2 { opacity: 0; animation: dk-rt2 var(--T) linear infinite; }
+.diagram .dk-c1o { opacity: 0; animation: dk-c1o var(--T) linear infinite; }
+.diagram .dk-c1c { opacity: 0; animation: dk-c1c var(--T) linear infinite; }
+.diagram .dk-c1w { opacity: 0; animation: dk-c1w var(--T) linear infinite; }
+.diagram .dk-c2o { opacity: 0; animation: dk-c2o var(--T) linear infinite; }
+.diagram .dk-c2c { opacity: 0; animation: dk-c2c var(--T) linear infinite; }
+.diagram .dk-c2w { opacity: 0; animation: dk-c2w var(--T) linear infinite; }
+.diagram .dk-mem { opacity: 0; animation: dk-mem var(--T) linear infinite; }
+.diagram .dk-fill { transform-box: fill-box; transform-origin: 0 50%; animation: dk-fill var(--T) linear infinite; }
+.diagram .dk-full { opacity: 0; animation: dk-full var(--T) linear infinite; }
+.diagram .dk-lim { opacity: 0; animation: dk-lim var(--T) linear infinite; }
+.diagram .dk-oom { opacity: 0; animation: dk-oom var(--T) linear infinite; }
+.diagram .dk-red { opacity: 0; animation: dk-red var(--T) linear infinite; }
+.diagram .dk-lost { opacity: 0; animation: dk-lost var(--T) linear infinite; }
+.diagram .dk-ker { opacity: 0; animation: dk-ker var(--T) linear infinite; }
+.diagram .dk-l0 { opacity: 0; animation: dk-l0 var(--T) linear infinite; }
+.diagram .dk-l1 { opacity: 0; animation: dk-l1 var(--T) linear infinite; }
+.diagram .dk-l2 { opacity: 0; animation: dk-l2 var(--T) linear infinite; }
+.diagram .dk-commit { opacity: 0; animation: dk-commit var(--T) linear infinite; }
+.diagram .dk-push1 { opacity: 0; animation: dk-push1 var(--T) linear infinite; }
+.diagram .dk-pull0 { opacity: 0; animation: dk-pull0 var(--T) linear infinite; }
+.diagram .dk-pull1 { opacity: 0; animation: dk-pull1 var(--T) linear infinite; }
+.diagram .dk-pull2 { opacity: 0; animation: dk-pull2 var(--T) linear infinite; }
+.diagram .dk-push2 { opacity: 0; animation: dk-push2 var(--T) linear infinite; }
+.diagram .dk-pull3 { opacity: 0; animation: dk-pull3 var(--T) linear infinite; }
+.diagram .dk-run1 { opacity: 0; animation: dk-run1 var(--T) linear infinite; }
+.diagram .dk-run2 { opacity: 0; animation: dk-run2 var(--T) linear infinite; }
+.diagram .dk-kill { opacity: 0; animation: dk-kill var(--T) linear infinite; }
+@keyframes dk-cur {
+  0% { transform: translate(0px, 241px); opacity: 0; }
+  4.45% { transform: translate(0px, 241px); opacity: 0; }
+  4.75% { opacity: 1; }
+  4.85% { transform: translate(0px, 241px); }
+  5% { transform: translate(0px, 253px); }
+  5.35% { transform: translate(0px, 253px); }
+  5.5% { transform: translate(0px, 265px); }
+  5.85% { transform: translate(0px, 265px); }
+  6% { transform: translate(0px, 277px); }
+  6.35% { transform: translate(0px, 277px); }
+  6.5% { transform: translate(0px, 289px); }
+  6.85% { transform: translate(0px, 289px); }
+  7% { transform: translate(0px, 301px); }
+  7.35% { transform: translate(0px, 301px); }
+  7.5% { transform: translate(0px, 313px); }
+  7.85% { transform: translate(0px, 313px); }
+  8% { transform: translate(0px, 325px); }
+  8.35% { transform: translate(0px, 325px); }
+  8.5% { transform: translate(0px, 337px); }
+  8.85% { transform: translate(0px, 337px); }
+  9% { transform: translate(0px, 349px); }
+  9.35% { transform: translate(0px, 349px); }
+  9.5% { transform: translate(0px, 361px); }
+  9.85% { transform: translate(0px, 361px); }
+  10% { transform: translate(0px, 373px); }
+  10.5% { transform: translate(0px, 373px); opacity: 1; }
+  11.25% { transform: translate(0px, 373px); opacity: 0; }
+  28.2% { transform: translate(0px, 241px); opacity: 0; }
+  28.5% { opacity: 1; }
+  28.75% { transform: translate(0px, 241px); }
+  28.9% { transform: translate(0px, 253px); }
+  29.4% { transform: translate(0px, 253px); }
+  29.55% { transform: translate(0px, 265px); }
+  30.05% { transform: translate(0px, 265px); }
+  30.2% { transform: translate(0px, 277px); }
+  30.7% { transform: translate(0px, 277px); }
+  30.85% { transform: translate(0px, 289px); }
+  31.35% { transform: translate(0px, 289px); }
+  31.5% { transform: translate(0px, 301px); }
+  32.95% { transform: translate(0px, 301px); }
+  33.1% { transform: translate(0px, 313px); }
+  34.55% { transform: translate(0px, 313px); }
+  34.7% { transform: translate(0px, 325px); }
+  35.2% { transform: translate(0px, 325px); }
+  35.35% { transform: translate(0px, 337px); }
+  35.85% { transform: translate(0px, 337px); }
+  36% { transform: translate(0px, 349px); }
+  37.65% { transform: translate(0px, 349px); }
+  37.8% { transform: translate(0px, 361px); }
+  38.25% { transform: translate(0px, 361px); }
+  38.4% { transform: translate(0px, 373px); }
+  39% { transform: translate(0px, 373px); opacity: 1; }
+  39.75% { transform: translate(0px, 373px); opacity: 0; }
+  100% { transform: translate(0px, 373px); opacity: 0; }
+}
+@keyframes dk-ct0 {
+  0% { opacity: 0; }
+  28.9% { opacity: 0; }
+  29.4% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct1 {
+  0% { opacity: 0; }
+  29.55% { opacity: 0; }
+  30.05% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct2 {
+  0% { opacity: 0; }
+  30.2% { opacity: 0; }
+  30.7% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct3 {
+  0% { opacity: 0; }
+  30.85% { opacity: 0; }
+  31.35% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct4 {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct5 {
+  0% { opacity: 0; }
+  33.1% { opacity: 0; }
+  33.6% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct6 {
+  0% { opacity: 0; }
+  34.7% { opacity: 0; }
+  35.2% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct7 {
+  0% { opacity: 0; }
+  35.35% { opacity: 0; }
+  35.85% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct8 {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  36.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct9 {
+  0% { opacity: 0; }
+  37.8% { opacity: 0; }
+  38.3% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct10 {
+  0% { opacity: 0; }
+  38.4% { opacity: 0; }
+  38.9% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-ct11 {
+  0% { opacity: 0; }
+  39% { opacity: 0; }
+  39.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-tag {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  14.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-taghl {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  14.5% { opacity: 1; }
+  23% { opacity: 1; }
+  24.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-e3 {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  41% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-e1 {
+  0% { opacity: 0; }
+  42.25% { opacity: 0; }
+  43.75% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-epulse {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  14.5% { opacity: 1; }
+  23% { opacity: 1; }
+  24.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-eex {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  41% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-eup {
+  0% { opacity: 0; }
+  42.25% { opacity: 0; }
+  43.75% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-env0 {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  18% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-envn0 {
+  0% { opacity: 0; }
+  17.25% { opacity: 0; }
+  18.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-env1 {
+  0% { opacity: 0; }
+  17.75% { opacity: 0; }
+  19.25% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-envn1 {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  20% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-env2 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  20.5% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-envn2 {
+  0% { opacity: 0; }
+  19.75% { opacity: 0; }
+  21.25% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-hslot {
+  0% { opacity: 0; }
+  24.5% { opacity: 0; }
+  25% { opacity: 1; }
+  45.75% { opacity: 1; }
+  46.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-hsolid {
+  0% { opacity: 0; }
+  45.75% { opacity: 0; }
+  46.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-hex {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  44.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-hup {
+  0% { opacity: 0; }
+  45.75% { opacity: 0; }
+  47.25% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-img2 {
+  0% { opacity: 0; }
+  45.75% { opacity: 0; }
+  47.25% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-shared {
+  0% { opacity: 0; }
+  69.25% { opacity: 0; }
+  70.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-sharedhl {
+  0% { opacity: 0; }
+  69.25% { opacity: 0; }
+  70.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-rt0 {
+  0% { opacity: 0; }
+  52.978% { opacity: 0; }
+  53.378% { opacity: 1; }
+  54.478% { opacity: 1; }
+  55.228% { opacity: 0; }
+  60.785% { opacity: 0; }
+  61.185% { opacity: 1; }
+  62.285% { opacity: 1; }
+  63.035% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-rt1 {
+  0% { opacity: 0; }
+  53.4% { opacity: 0; }
+  53.8% { opacity: 1; }
+  54.9% { opacity: 1; }
+  55.65% { opacity: 0; }
+  61.164% { opacity: 0; }
+  61.564% { opacity: 1; }
+  62.664% { opacity: 1; }
+  63.414% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-rt2 {
+  0% { opacity: 0; }
+  53.822% { opacity: 0; }
+  54.222% { opacity: 1; }
+  55.322% { opacity: 1; }
+  56.072% { opacity: 0; }
+  61.543% { opacity: 0; }
+  61.943% { opacity: 1; }
+  63.043% { opacity: 1; }
+  63.793% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-c1o {
+  0% { opacity: 0; }
+  55.1% { opacity: 0; }
+  56.6% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-c1c {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  57.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-c1w {
+  0% { opacity: 0; }
+  56.9% { opacity: 0; }
+  58.4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-c2o {
+  0% { opacity: 0; }
+  66.35% { opacity: 0; }
+  67.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-c2c {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  68.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-c2w {
+  0% { opacity: 0; }
+  68.15% { opacity: 0; }
+  69.65% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-mem {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-fill {
+  0% { transform: scaleX(0.55); }
+  77% { transform: scaleX(0.55); }
+  81.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes dk-full {
+  0% { opacity: 0; }
+  81.75% { opacity: 0; }
+  82.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-lim {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  81.75% { opacity: 1; }
+  82.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes dk-oom {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  82.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-red {
+  0% { opacity: 0; }
+  84.25% { opacity: 0; }
+  85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-lost {
+  0% { opacity: 0; }
+  87% { opacity: 0; }
+  88.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-ker {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  90% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-l0 {
+  0% { opacity: 0; }
+  89.5% { opacity: 0; }
+  91% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-l1 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  93% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-l2 {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  95% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes dk-commit {
+  0% { transform: translate(141px, 138px); opacity: 0; }
+  1.75% { transform: translate(141px, 138px); opacity: 0; }
+  2% { opacity: 1; }
+  4% { transform: translate(141px, 180px); opacity: 1; }
+  4.25% { transform: translate(141px, 180px); opacity: 0; }
+  26.25% { transform: translate(141px, 138px); opacity: 0; }
+  26.5% { opacity: 1; }
+  28% { transform: translate(141px, 180px); opacity: 1; }
+  28.25% { transform: translate(141px, 180px); opacity: 0; }
+  100% { transform: translate(141px, 180px); opacity: 0; }
+}
+@keyframes dk-push1 {
+  0% { transform: translate(236px, 277px); opacity: 0; }
+  10.75% { transform: translate(236px, 277px); opacity: 0; }
+  11% { opacity: 1; }
+  13% { transform: translate(282px, 277px); opacity: 1; }
+  13.25% { transform: translate(282px, 277px); opacity: 0; }
+  100% { transform: translate(282px, 277px); opacity: 0; }
+}
+@keyframes dk-pull0 {
+  0% { transform: translate(414px, 246px); opacity: 0; }
+  14.25% { transform: translate(414px, 246px); opacity: 0; }
+  14.452% { transform: translate(423px, 246px); }
+  14.5% { opacity: 1; }
+  15.982% { transform: translate(423px, 178px); }
+  16.5% { transform: translate(446px, 178px); opacity: 1; }
+  16.75% { transform: translate(446px, 178px); opacity: 0; }
+  100% { transform: translate(446px, 178px); opacity: 0; }
+}
+@keyframes dk-pull1 {
+  0% { transform: translate(414px, 246px); opacity: 0; }
+  15.5% { transform: translate(414px, 246px); opacity: 0; }
+  15.75% { opacity: 1; }
+  17.75% { transform: translate(446px, 246px); opacity: 1; }
+  18% { transform: translate(446px, 246px); opacity: 0; }
+  100% { transform: translate(446px, 246px); opacity: 0; }
+}
+@keyframes dk-pull2 {
+  0% { transform: translate(414px, 246px); opacity: 0; }
+  16.75% { transform: translate(414px, 246px); opacity: 0; }
+  16.953% { transform: translate(423px, 246px); }
+  17% { opacity: 1; }
+  18.482% { transform: translate(423px, 314px); }
+  19% { transform: translate(446px, 314px); opacity: 1; }
+  19.25% { transform: translate(446px, 314px); opacity: 0; }
+  100% { transform: translate(446px, 314px); opacity: 0; }
+}
+@keyframes dk-push2 {
+  0% { transform: translate(228px, 345px); opacity: 0; }
+  39.5% { transform: translate(228px, 345px); opacity: 0; }
+  39.75% { opacity: 1; }
+  40.109% { transform: translate(255px, 345px); }
+  41.641% { transform: translate(255px, 277px); }
+  42.25% { transform: translate(282px, 277px); opacity: 1; }
+  42.5% { transform: translate(282px, 277px); opacity: 0; }
+  100% { transform: translate(282px, 277px); opacity: 0; }
+}
+@keyframes dk-pull3 {
+  0% { transform: translate(406px, 277px); opacity: 0; }
+  43% { transform: translate(406px, 277px); opacity: 0; }
+  43.25% { opacity: 1; }
+  45.75% { transform: translate(590px, 277px); opacity: 1; }
+  46% { transform: translate(590px, 277px); opacity: 0; }
+  100% { transform: translate(590px, 277px); opacity: 0; }
+}
+@keyframes dk-run1 {
+  0% { transform: translate(640px, 132px); opacity: 0; }
+  51.5% { transform: translate(640px, 132px); opacity: 0; }
+  51.567% { transform: translate(640px, 138px); }
+  51.75% { opacity: 1; }
+  53.111% { transform: translate(501px, 138px); }
+  54.222% { transform: translate(501px, 238px); }
+  55.1% { transform: translate(580px, 238px); opacity: 1; }
+  55.35% { transform: translate(580px, 238px); opacity: 0; }
+  100% { transform: translate(580px, 238px); opacity: 0; }
+}
+@keyframes dk-run2 {
+  0% { transform: translate(640px, 132px); opacity: 0; }
+  59.5% { transform: translate(640px, 132px); opacity: 0; }
+  59.56% { transform: translate(640px, 138px); }
+  59.75% { opacity: 1; }
+  60.946% { transform: translate(501px, 138px); }
+  61.943% { transform: translate(501px, 238px); }
+  62.571% { transform: translate(564px, 238px); }
+  63.568% { transform: translate(564px, 138px); }
+  66.21% { transform: translate(829px, 138px); }
+  66.35% { transform: translate(829px, 152px); opacity: 1; }
+  66.6% { transform: translate(829px, 152px); opacity: 0; }
+  100% { transform: translate(829px, 152px); opacity: 0; }
+}
+@keyframes dk-kill {
+  0% { transform: translate(829px, 358px); opacity: 0; }
+  82.25% { transform: translate(829px, 358px); opacity: 0; }
+  82.5% { opacity: 1; }
+  84.25% { transform: translate(829px, 256px); opacity: 1; }
+  84.5% { transform: translate(829px, 256px); opacity: 0; }
+  100% { transform: translate(829px, 256px); opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- developer and CI -->
+<rect class="box" x="36" y="98" width="210" height="48" rx="12"/>
+<text class="label mid" x="141" y="118">developer</text>
+<g class="p134"><text class="sub mid" x="141" y="136">git push to main</text></g>
+<g class="p2"><text class="sub mid sb f-blue" x="141" y="136">edited src/price.ts</text></g>
+<line class="wire" x1="141" y1="146" x2="141" y2="163" marker-end="url(#ah)"/>
+<rect class="box" x="36" y="164" width="210" height="228" rx="12"/>
+<text class="label" x="50" y="186">CI pipeline</text>
+<text class="mono dk-c10 f-muted" x="50" y="202">docker buildx build --push</text>
+<rect class="dk-panel" x="44" y="210" width="194" height="176" rx="8"/>
+<text class="tiny sb f-ink" x="52" y="225">Dockerfile</text>
+<text class="dk-t10 end" x="230" y="225">abridged</text>
+<rect class="f-panel-2" x="46" y="315" width="190" height="64" rx="4"/>
+<text class="mono dk-c10" x="52" y="241"><tspan class="b">FROM</tspan> node:24 AS deps</text>
+<text class="mono dk-c10" x="52" y="253"><tspan class="b">COPY</tspan> package*.json ./</text>
+<text class="mono dk-c10" x="52" y="265"><tspan class="b">RUN</tspan> npm ci --omit=dev</text>
+<text class="mono dk-c10" x="52" y="277"><tspan class="b">FROM</tspan> deps AS build</text>
+<text class="mono dk-c10" x="52" y="289"><tspan class="b">RUN</tspan> npm ci</text>
+<text class="mono dk-c10" x="52" y="301"><tspan class="b">COPY</tspan> . .</text>
+<text class="mono dk-c10" x="52" y="313"><tspan class="b">RUN</tspan> npm run build</text>
+<text class="mono dk-c10" x="52" y="325"><tspan class="b">FROM</tspan> node:24-slim</text>
+<text class="mono dk-c10" x="52" y="337"><tspan class="b">COPY</tspan> --from=deps …</text>
+<text class="mono dk-c10" x="52" y="349"><tspan class="b">COPY</tspan> --from=build …</text>
+<text class="mono dk-c10" x="52" y="361"><tspan class="b">USER</tspan> node</text>
+<text class="mono dk-c10" x="52" y="373"><tspan class="b">CMD</tspan> ["node", …]</text>
+<g class="p134"><text class="dk-t10 end" x="230" y="325">final stage</text></g>
+<rect class="dk-cur f-blue-soft" x="46" y="-9" width="190" height="12" rx="2"/>
+<g class="p2"><text class="dk-t10 sb end f-teal dk-ct0" x="230" y="241">cached</text><text class="dk-t10 sb end f-teal dk-ct1" x="230" y="253">cached</text><text class="dk-t10 sb end f-teal dk-ct2" x="230" y="265">cached</text><text class="dk-t10 sb end f-teal dk-ct3" x="230" y="277">cached</text><text class="dk-t10 sb end f-teal dk-ct4" x="230" y="289">cached</text><text class="dk-t10 sb end f-blue dk-ct5" x="230" y="301">rebuilt</text><text class="dk-t10 sb end f-blue dk-ct6" x="230" y="313">rebuilt</text><text class="dk-t10 sb end f-teal dk-ct7" x="230" y="325">cached</text><text class="dk-t10 sb end f-teal dk-ct8" x="230" y="337">cached</text><text class="dk-t10 sb end f-green dk-ct9" x="230" y="349">new layer</text><text class="dk-t10 sb end f-faint dk-ct10" x="230" y="361">no layer</text><text class="dk-t10 sb end f-faint dk-ct11" x="230" y="373">no layer</text></g>
+<!-- Amazon ECR -->
+<rect class="box" x="264" y="96" width="150" height="296" rx="14"/>
+<text class="label" x="278" y="120">Amazon ECR</text>
+<text class="mono dk-c10 f-muted" x="278" y="136">repository catalog</text>
+<text class="dk-t10" x="278" y="158">tag → manifest digest</text>
+<rect class="f-panel-2 s-line" x="278" y="166" width="34" height="15" rx="7.5" stroke-width="1"/>
+<text class="mono dk-c10 sb mid f-ink" x="295" y="177">1.4.1</text>
+<text class="mono dk-c10 f-muted" x="318" y="177">sha256:51ab…</text>
+<g class="dk-tag"><rect class="f-teal-soft s-teal dk-taghl" x="274" y="184" width="134" height="19" rx="6" stroke-width="1.2"/><rect class="f-panel-2 s-ink" x="278" y="186" width="34" height="15" rx="7.5" stroke-width="1"/><text class="mono dk-c10 sb mid f-ink" x="295" y="197">1.4.2</text><text class="mono dk-c10 sb f-ink" x="318" y="197">sha256:9f2c…</text></g>
+<g class="p4"><text class="tiny sb f-amber-ink" x="278" y="222">scan every push,</text><text class="tiny sb f-amber-ink" x="278" y="237">sign it, pin the digest</text></g>
+<g class="p134"><text class="dk-t10" x="278" y="261">image layers (read-only)</text></g>
+<g class="p2"><text class="dk-t10 sb f-teal dk-e3" x="278" y="261">6 skipped</text><text class="dk-t10 sb f-green end dk-e1" x="404" y="261">1 uploaded</text></g>
+<rect class="dk-bar" x="274" y="268" width="130" height="18" rx="4"/>
+<text class="tiny f-ink" x="282" y="281">app code</text>
+<text class="mono dk-c10 f-muted end" x="398" y="280.5">c41e…</text>
+<rect class="dk-bar" x="274" y="289" width="130" height="18" rx="4"/>
+<text class="tiny f-ink" x="282" y="302">dependencies</text>
+<text class="mono dk-c10 f-muted end" x="398" y="301.5">8d7a…</text>
+<rect class="dk-bar" x="274" y="310" width="130" height="18" rx="4"/>
+<text class="tiny f-ink" x="282" y="323">Node.js 24</text>
+<text class="mono dk-c10 f-muted end" x="398" y="322.5">2b9f… +3</text>
+<rect class="dk-bar" x="274" y="331" width="130" height="18" rx="4"/>
+<text class="tiny f-ink" x="282" y="344">Debian 12 slim</text>
+<text class="mono dk-c10 f-muted end" x="398" y="343.5">e1f0…</text>
+<rect class="none s-teal dk-epulse" x="271" y="265" width="136" height="87" rx="6" stroke-width="1.6"/>
+<g class="p2"><g class="dk-eex"><rect class="f-teal-soft s-teal" x="274" y="289" width="130" height="18" rx="4" stroke-width="1.2"/><rect class="f-teal-soft s-teal" x="274" y="310" width="130" height="18" rx="4" stroke-width="1.2"/><rect class="f-teal-soft s-teal" x="274" y="331" width="130" height="18" rx="4" stroke-width="1.2"/></g></g>
+<g class="p2"><g class="dk-eup"><rect class="f-green-soft s-green" x="274" y="268" width="130" height="18" rx="4" stroke-width="1.5"/></g></g>
+<line class="wire" x1="246" y1="277" x2="263" y2="277" marker-end="url(#ah)"/>
+<g class="p1"><path class="wire" d="M414 246H444" marker-end="url(#ah)"/><path class="wire" d="M423 246V188Q423 178 433 178H444" marker-end="url(#ah)"/><path class="wire" d="M423 246V304Q423 314 433 314H444" marker-end="url(#ah)"/></g>
+<g class="p234"><line class="wire" x1="414" y1="277" x2="570" y2="277" marker-end="url(#ah)"/><text class="dk-t10 mid" x="501" y="271">docker pull</text></g>
+<!-- the product: a container host -->
+<rect class="dk-frame" x="432" y="96" width="492" height="296" rx="16"/>
+<text class="label" x="448" y="120">Container host</text>
+<g class="p1"><text class="tiny" x="448" y="137">one in every environment, same image</text></g>
+<g class="p234"><text class="tiny" x="576" y="120">host-1</text></g>
+<g class="p1"><rect class="box" x="446" y="148" width="464" height="60" rx="10"/><text class="label" x="462" y="173">laptop</text><text class="tiny" x="462" y="192">Docker Desktop</text><g class="dk-env0"><rect class="f-bg s-line" x="680" y="158" width="150" height="22" rx="11" stroke-width="1.2"/><text class="mono dk-c10 mid f-ink" x="755" y="173">catalog@sha256:9f2c…</text><circle class="f-green" cx="850" cy="169" r="9"/><path class="none s-bg" d="M846 169l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><g class="dk-envn0"><text class="dk-t10 f-muted" x="682" y="196">debug this exact build</text></g><rect class="box" x="446" y="216" width="464" height="60" rx="10"/><text class="label" x="462" y="241">staging</text><text class="tiny" x="462" y="260">Amazon ECS</text><g class="dk-env1"><rect class="f-bg s-line" x="680" y="226" width="150" height="22" rx="11" stroke-width="1.2"/><text class="mono dk-c10 mid f-ink" x="755" y="241">catalog@sha256:9f2c…</text><circle class="f-green" cx="850" cy="237" r="9"/><path class="none s-bg" d="M846 237l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><g class="dk-envn1"><text class="dk-t10 f-green sb" x="682" y="264">integration tests pass</text></g><rect class="box" x="446" y="284" width="464" height="60" rx="10"/><text class="label" x="462" y="309">production</text><text class="tiny" x="462" y="328">Kubernetes (Amazon EKS)</text><g class="dk-env2"><rect class="f-bg s-line" x="680" y="294" width="150" height="22" rx="11" stroke-width="1.2"/><text class="mono dk-c10 mid f-ink" x="755" y="309">catalog@sha256:9f2c…</text><circle class="f-green" cx="850" cy="305" r="9"/><path class="none s-bg" d="M846 305l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><g class="dk-envn2"><text class="dk-t10 f-muted" x="682" y="332">promoted, not rebuilt</text></g><text class="tiny" x="448" y="368">Pulled by digest: the image tested in staging is the image in production.</text></g>
+<g class="p234"><rect class="box" x="446" y="150" width="110" height="24" rx="7"/><text class="mono sb mid f-ink dk-c11" x="501" y="166">dockerd</text><rect class="box" x="446" y="188" width="110" height="24" rx="7"/><text class="mono sb mid f-ink dk-c11" x="501" y="204">containerd</text><rect class="box" x="446" y="226" width="110" height="24" rx="7"/><text class="mono sb mid f-ink dk-c11" x="501" y="242">runc</text><line class="wire" x1="501" y1="174" x2="501" y2="187" marker-end="url(#ah)"/><line class="wire" x1="501" y1="212" x2="501" y2="225" marker-end="url(#ah)"/></g>
+<g class="p234"><g class="dk-hslot"><rect class="dk-slot" x="572" y="268" width="340" height="18" rx="4"/><text class="tiny f-faint" x="582" y="281">app code</text><text class="mono dk-c10 f-faint end" x="902" y="280.5">c41e… missing</text></g><g class="dk-hsolid"><rect class="dk-bar" x="572" y="268" width="340" height="18" rx="4"/><text class="tiny f-ink" x="582" y="281">app code</text><text class="mono dk-c10 f-muted end" x="902" y="280.5">c41e…</text></g><rect class="dk-bar" x="572" y="289" width="340" height="18" rx="4"/><text class="tiny f-ink" x="582" y="302">dependencies</text><text class="mono dk-c10 f-muted end" x="902" y="301.5">8d7a…</text><rect class="dk-bar" x="572" y="310" width="340" height="18" rx="4"/><text class="tiny f-ink" x="582" y="323">Node.js 24</text><text class="mono dk-c10 f-muted end" x="902" y="322.5">2b9f… +3</text><rect class="dk-bar" x="572" y="331" width="340" height="18" rx="4"/><text class="tiny f-ink" x="582" y="344">Debian 12 slim</text><text class="mono dk-c10 f-muted end" x="902" y="343.5">e1f0…</text></g>
+<g class="p2"><g class="dk-hex"><rect class="f-teal-soft s-teal" x="572" y="289" width="340" height="18" rx="4" stroke-width="1.2"/><rect class="f-teal-soft s-teal" x="572" y="310" width="340" height="18" rx="4" stroke-width="1.2"/><rect class="f-teal-soft s-teal" x="572" y="331" width="340" height="18" rx="4" stroke-width="1.2"/><text class="dk-t10 sb f-teal" x="452" y="303">6 already here</text></g><g class="dk-hup"><rect class="f-green-soft s-green" x="572" y="268" width="340" height="18" rx="4" stroke-width="1.5"/><text class="dk-t10 sb f-green" x="452" y="317">1 layer pulled</text></g></g>
+<g class="p2"><rect class="dk-panel" x="596" y="160" width="296" height="82" rx="10"/><text class="dk-t10 sb f-ink" x="610" y="179">image store on host-1</text><rect class="f-panel-2 s-line" x="610" y="189" width="34" height="15" rx="7.5" stroke-width="1"/><text class="mono dk-c10 sb mid f-ink" x="627" y="200">1.4.1</text><text class="mono dk-c10 f-muted" x="652" y="200">sha256:51ab…</text><text class="dk-t10 end" x="882" y="200">pulled last release</text><g class="dk-img2"><rect class="f-panel-2 s-ink" x="610" y="212" width="34" height="15" rx="7.5" stroke-width="1"/><text class="mono dk-c10 sb mid f-ink" x="627" y="223">1.4.2</text><text class="mono dk-c10 sb f-ink" x="652" y="223">sha256:9f2c…</text><text class="dk-t10 sb f-green end" x="882" y="223">+1 layer, 6 reused</text></g></g>
+<g class="p34"><path class="none s-muted" d="M566 268H562V349H566" stroke-width="1.2"/><text class="dk-t10 sb f-ink end" x="556" y="303">image layers</text><text class="dk-t10 end" x="556" y="316">read-only,</text><text class="dk-t10 sb f-teal end dk-shared" x="556" y="329">shared by both</text><rect class="none s-teal dk-sharedhl" x="569" y="265" width="346" height="87" rx="6" stroke-width="1.8"/></g>
+<g class="p34"><rect class="dk-panel" x="618" y="102" width="294" height="30" rx="6"/><text class="mono dk-c10 f-ink" x="625" y="114">$ docker run -d --cpus=0.5 --memory=512m \</text><text class="mono dk-c10 f-ink" x="625" y="126.5">  --memory-swap=512m $ECR/catalog@sha256:9f2c…</text><path class="wire" d="M640 132V138H501V149" marker-end="url(#ah)"/><line class="wire" x1="556" y1="238" x2="571" y2="238" marker-end="url(#ah)"/></g>
+<g class="p3"><rect class="f-blue-soft s-blue dk-rt0" x="446" y="150" width="110" height="24" rx="7" stroke-width="1.5"/><rect class="f-blue-soft s-blue dk-rt1" x="446" y="188" width="110" height="24" rx="7" stroke-width="1.5"/><rect class="f-blue-soft s-blue dk-rt2" x="446" y="226" width="110" height="24" rx="7" stroke-width="1.5"/></g>
+<g class="p234"><rect class="box" x="446" y="357" width="466" height="28" rx="7"/><text class="dk-l13" x="458" y="375.5">Linux kernel</text><text class="tiny" x="552" y="375.5">shared by every container on host-1</text><g class="dk-ker"><rect class="f-bg" x="446" y="357" width="466" height="28" rx="7"/><rect class="f-amber-soft s-amber" x="446" y="357" width="466" height="28" rx="7" stroke-width="1.5"/><text class="dk-l13" x="458" y="375.5">Linux kernel</text><text class="tiny sb f-amber-ink" x="552" y="375.5">shared kernel: weaker isolation than a VM</text></g><g class="dk-oom"><rect class="f-red-soft s-red" x="790" y="362" width="78" height="18" rx="9" stroke-width="1.2"/><text class="dk-t10 sb mid f-red" x="829" y="375">OOM killer</text></g></g>
+<g class="p34"><g class="dk-c1o"><rect class="dk-cg" x="572" y="146" width="166" height="116" rx="10"/><text class="dk-t10 b f-amber-ink" x="580" y="158.5">cgroup</text><text class="dk-t10 sb f-amber-ink end" x="730" y="158.5">0.5 CPU · 512 MiB</text><rect class="dk-ns" x="578" y="164" width="154" height="92" rx="7"/></g><g class="dk-c1c"><circle class="f-green" cx="590" cy="175.5" r="3.5"/><text class="dk-l12" x="598" y="179.5">catalog-1</text><text class="dk-t10 end" x="726" y="179">namespaces</text><text class="mono dk-c10 sb f-ink" x="586" y="194">pid</text><text class="dk-t10" x="612" y="194">PID 1 is node</text><text class="mono dk-c10 sb f-ink" x="586" y="206">net</text><text class="dk-t10" x="612" y="206">own eth0</text><text class="mono dk-c10 sb f-ink" x="586" y="218">mnt</text><text class="dk-t10" x="612" y="218">own mounts</text><text class="mono dk-c10 sb f-ink" x="586" y="230">uts</text><text class="dk-t10" x="612" y="230">own hostname</text></g><g class="dk-c1w"><rect class="dk-rw" x="584" y="236" width="142" height="14" rx="3"/><text class="dk-t95 sb mid f-blue" x="655" y="246.5">thin writable layer</text></g><g class="dk-c2o"><rect class="dk-cg" x="746" y="146" width="166" height="116" rx="10"/><text class="dk-t10 b f-amber-ink" x="754" y="158.5">cgroup</text><text class="dk-t10 sb f-amber-ink end" x="904" y="158.5">0.5 CPU · 512 MiB</text><rect class="dk-ns" x="752" y="164" width="154" height="92" rx="7"/></g><g class="dk-c2c"><circle class="f-green" cx="764" cy="175.5" r="3.5"/><text class="dk-l12" x="772" y="179.5">catalog-2</text><text class="dk-t10 end" x="900" y="179">namespaces</text><text class="mono dk-c10 sb f-ink" x="760" y="194">pid</text><text class="dk-t10" x="786" y="194">PID 1 is node</text><text class="mono dk-c10 sb f-ink" x="760" y="206">net</text><text class="dk-t10" x="786" y="206">own eth0</text><text class="mono dk-c10 sb f-ink" x="760" y="218">mnt</text><text class="dk-t10" x="786" y="218">own mounts</text><text class="mono dk-c10 sb f-ink" x="760" y="230">uts</text><text class="dk-t10" x="786" y="230">own hostname</text></g><g class="dk-c2w"><rect class="dk-rw" x="758" y="236" width="142" height="14" rx="3"/><text class="dk-t95 sb mid f-blue" x="829" y="246.5">thin writable layer</text></g><g class="dk-mem"><rect class="f-bg" x="754" y="184" width="150" height="50" rx="4"/><text class="dk-t10 sb f-amber-ink" x="760" y="196">memory used</text><rect class="f-panel-2 s-line" x="760" y="203" width="138" height="10" rx="3" stroke-width="1"/><rect class="f-amber dk-fill" x="760" y="203" width="138" height="10" rx="3"/><g class="dk-lim"><text class="dk-t10" x="760" y="226">limit: memory.max 512 MiB</text></g><g class="dk-full"><rect class="f-red" x="760" y="203" width="138" height="10" rx="3"/><text class="dk-t10 sb f-red" x="760" y="226">limit reached: 512 MiB</text></g></g><g class="dk-red"><rect class="f-bg" x="746" y="146" width="166" height="116" rx="10"/><rect class="f-red-soft s-red" x="746" y="146" width="166" height="116" rx="10" stroke-width="1.5"/><text class="dk-l13 mid f-red" x="829" y="186">OOMKilled</text><text class="dk-t10 sb mid f-red" x="829" y="202">exit code 137 (SIGKILL)</text><text class="dk-t10 mid f-red" x="829" y="216">catalog-1 keeps running</text></g><g class="dk-lost"><rect class="dk-gone" x="758" y="236" width="142" height="14" rx="3"/><text class="dk-t95 sb mid f-red" x="829" y="246.5">deleted on docker rm</text></g></g>
+<!-- notes -->
+<rect class="box" x="36" y="400" width="888" height="66" rx="12"/>
+<g class="p1"><text class="dk-hd" x="52" y="418">BUILD ONCE, RUN ANYWHERE</text><text class="sub f-ink" x="52" y="437">CI builds catalog:1.4.2 once and pushes it to Amazon ECR, where the tag points to a digest: sha256:9f2c…, a hash of the image manifest.</text><text class="sub f-ink" x="52" y="455">Laptop, staging and production pull that digest, not the tag, so the image that passed in staging is, byte for byte, what runs in production.</text></g>
+<g class="p2"><text class="dk-hd" x="52" y="418">LAYERS AND THE BUILD CACHE</text><text class="sub f-ink" x="52" y="437">Each RUN, COPY or ADD saves its file changes as a read-only layer named by a hash of its content; the node:24 build stages are left behind.</text><text class="sub f-ink" x="52" y="455">Only src/ changed, so BuildKit re-runs the three steps that depend on it and takes the rest from its cache. Push and pull move just the new layer.</text></g>
+<g class="p3"><text class="dk-hd" x="52" y="418">A CONTAINER IS AN ISOLATED PROCESS</text><text class="sub f-ink" x="52" y="437">dockerd asks containerd, and runc starts node as PID 1 in new pid, net, mnt, uts, ipc and cgroup namespaces, so it sees only its own world.</text><text class="sub f-ink" x="52" y="455">Its cgroup caps it: cpu.max 50000 100000 (0.5 CPU), memory.max 512 MiB. Writes land in a thin writable layer; image layers and kernel are shared.</text></g>
+<g class="p4"><text class="dk-hd-amber" x="52" y="418">THE LIMITS</text><text class="sub f-ink" x="52" y="437">catalog-2 hit memory.max, so the kernel's OOM killer sent it SIGKILL (exit code 137). Removing it deletes its writable layer and all in it.</text><g class="dk-l0"><rect class="f-amber-soft s-amber" x="52" y="444" width="281" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="63" y="456.5">one shared kernel: weaker isolation than a VM</text></g><g class="dk-l1"><rect class="f-amber-soft s-amber" x="341" y="444" width="223" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="352" y="456.5">keep state in volumes or a database</text></g><g class="dk-l2"><rect class="f-amber-soft s-amber" x="572" y="444" width="223" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="583" y="456.5">scan, sign and pin images by digest</text></g></g>
+<!-- moving tokens -->
+<circle class="pkt f-blue dk-commit" r="5"/>
+<rect class="pkt f-teal dk-push1" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="pkt f-teal dk-pull0" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="pkt f-teal dk-pull1" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="pkt f-teal dk-pull2" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="pkt f-green dk-push2" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="pkt f-green dk-pull3" x="-7" y="-7" width="14" height="14" rx="3"/>
+<circle class="pkt f-blue dk-run1" r="5"/>
+<circle class="pkt f-blue dk-run2" r="5"/>
+<circle class="pkt f-red dk-kill" r="5"/>
+</g>
+</svg>

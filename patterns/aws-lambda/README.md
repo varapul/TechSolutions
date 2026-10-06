@@ -31,7 +31,7 @@ How a function is invoked decides who waits, who retries and where a failed even
 | Invocation | Used by | Who waits | When the handler fails |
 |---|---|---|---|
 | **Synchronous** (`InvocationType` `RequestResponse`) | API Gateway, function URLs, the SDKs and CLI | the caller, until the handler returns | The error goes back to the caller. Lambda doesn't retry, and API Gateway passes the error on to its client. |
-| **Asynchronous** (`InvocationType` `Event`) | S3 and SNS notifications, EventBridge rules, EventBridge Scheduler | nobody: Lambda puts the event on its internal queue and answers 202 at once | Lambda retries twice, waiting 1 minute and then 2, and then sends a record to an on-failure destination, or the event to a dead-letter queue, or drops it. |
+| **Asynchronous** (`InvocationType` `Event`) | S3 and SNS notifications, [EventBridge](../amazon-eventbridge/) rules, EventBridge Scheduler | nobody: Lambda puts the event on its internal queue and answers 202 at once | Lambda retries twice, waiting 1 minute and then 2, and then sends a record to an on-failure destination, or the event to a dead-letter queue, or drops it. |
 | **Event source mapping** (polling) | SQS, Kinesis, DynamoDB Streams, Amazon MSK and self-managed [Kafka](../kafka/), Amazon MQ, Amazon DocumentDB | Lambda's pollers, which read a batch and invoke the function synchronously with it | From a queue, the batch becomes visible again after the visibility timeout, and the queue's redrive policy moves repeat failures to its own dead-letter queue. From a stream, the batch is retried and holds up its shard until it succeeds or the records expire. |
 
 S3 could invoke `make-thumbnail` directly, asynchronously. The photo app sends the `ObjectCreated` events to `thumbnail-jobs` instead, so the queue absorbs bursts and the event source mapping decides batching, concurrency and retries.
@@ -83,7 +83,7 @@ Use Lambda when work arrives as separate requests or events, finishes within sec
 
 Look elsewhere for work that runs longer than 15 minutes in one go (split it into Step Functions steps, or use durable functions, below), for steady heavy load where always-on capacity is cheaper (see the costs below), for latency-critical paths that can't absorb a cold start and won't pay for provisioned concurrency, and for software that needs long-lived connections or large in-memory state.
 
-| | AWS Lambda | Amazon ECS on Fargate | Kubernetes Deployment | Azure Functions (Flex Consumption) | Google Cloud Run functions |
+| | AWS Lambda | Amazon ECS on Fargate | [Kubernetes](../kubernetes/) Deployment | Azure Functions (Flex Consumption) | Google Cloud Run functions |
 |---|---|---|---|---|---|
 | You deploy | a function (.zip or container image) | a task definition (containers) | a pod template, on a cluster you run | a function app | a function, built into a Cloud Run service |
 | Requests per instance | 1 per environment (several on Managed Instances) | as many as your app handles | as many as your app handles | several, set per function | up to 1,000 |

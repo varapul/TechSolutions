@@ -57,7 +57,7 @@ aws sqs delete-message \
 
 ### Delay queues and message timers
 
-A queue's `DelaySeconds` (0 to 15 minutes) hides every new message for that long before its first delivery. A message timer does the same for one message and overrides the queue's delay; FIFO queues support only the queue-wide delay. A delay hides a message before anyone has received it, the visibility timeout after a receive. For anything further out than 15 minutes, AWS points to EventBridge Scheduler.
+A queue's `DelaySeconds` (0 to 15 minutes) hides every new message for that long before its first delivery. A message timer does the same for one message and overrides the queue's delay; FIFO queues support only the queue-wide delay. A delay hides a message before anyone has received it, the visibility timeout after a receive. For anything further out than 15 minutes, AWS points to [EventBridge](../amazon-eventbridge/) Scheduler.
 
 ### Dead-letter queues and redrive
 
@@ -127,7 +127,7 @@ A message can be up to 1 MiB (since 4 August 2025; the limit was 256 KiB before)
 ### Encryption and access
 
 - New queues are encrypted at rest with SQS-managed keys (SSE-SQS) by default, since late 2022. SSE-KMS uses a key in AWS KMS instead, at the price of KMS calls; `KmsDataKeyReusePeriodSeconds` (1 minute to 24 hours, 5 minutes by default) sets how often SQS goes back to KMS. Requests to an encrypted queue must use HTTPS and Signature Version 4.
-- IAM policies give your own roles access. The queue's access policy, a resource-based policy, admits other accounts and AWS services that send to it, such as an SNS topic or an S3 bucket; scope such statements with `aws:SourceArn` or `aws:SourceAccount`. From a VPC, an interface VPC endpoint keeps the traffic off the internet (see [Private Endpoints](../private-endpoints/)).
+- IAM policies give your own roles access. The queue's access policy, a resource-based policy, admits other accounts and AWS services that send to it, such as an [SNS](../amazon-sns/) topic or an S3 bucket; scope such statements with `aws:SourceArn` or `aws:SourceAccount`. From a VPC, an interface VPC endpoint keeps the traffic off the internet (see [Private Endpoints](../private-endpoints/)).
 
 ### Pricing
 
@@ -187,7 +187,7 @@ You pay per request. The first million requests a month are free (counted across
 - [Competing Consumers](../competing-consumers/) — Several workers pull from one queue, so work is shared and throughput scales out.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
-- Amazon SNS *(planned)* — Managed publish-subscribe: a message published to a topic fans out to queues, functions, HTTP endpoints, email and SMS.
+- [Amazon SNS](../amazon-sns/) — Managed publish-subscribe: a message published to a topic fans out to queues, functions, HTTP endpoints, email and SMS.
 - [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
 - [RabbitMQ](../rabbitmq/) — A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it.
 - [Apache Kafka](../kafka/) — A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history.

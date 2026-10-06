@@ -39,7 +39,7 @@ aws sqs delete-message \
 
 ### Delay queue และ message timer
 
-`DelaySeconds` ของ queue (0 ถึง 15 นาที) ซ่อน message ใหม่ทุกตัวไว้นานเท่านั้นก่อนส่งครั้งแรก ส่วน message timer ทำแบบเดียวกันกับ message ตัวเดียวและมีผลเหนือ delay ของ queue โดยที่ FIFO queue รองรับแค่ delay ระดับทั้ง queue ส่วน delay จะซ่อน message ก่อนที่จะมีใครรับ แต่ visibility timeout ซ่อนหลังการรับ ถ้าต้องรอนานกว่า 15 นาที AWS แนะนำให้ใช้ EventBridge Scheduler
+`DelaySeconds` ของ queue (0 ถึง 15 นาที) ซ่อน message ใหม่ทุกตัวไว้นานเท่านั้นก่อนส่งครั้งแรก ส่วน message timer ทำแบบเดียวกันกับ message ตัวเดียวและมีผลเหนือ delay ของ queue โดยที่ FIFO queue รองรับแค่ delay ระดับทั้ง queue ส่วน delay จะซ่อน message ก่อนที่จะมีใครรับ แต่ visibility timeout ซ่อนหลังการรับ ถ้าต้องรอนานกว่า 15 นาที AWS แนะนำให้ใช้ [EventBridge](../amazon-eventbridge/) Scheduler
 
 ### Dead-letter queue และ redrive
 
@@ -109,7 +109,7 @@ message ใหญ่ได้ถึง 1 MiB (ตั้งแต่ 4 สิง�
 ### Encryption และสิทธิ์เข้าถึง
 
 - ตั้งแต่ปลายปี 2022 queue ใหม่จะถูกเข้ารหัสตอนเก็บด้วย key ที่ SQS จัดการให้ (SSE-SQS) เป็นค่าตั้งต้น ส่วน SSE-KMS ใช้ key ใน AWS KMS แทน แลกกับค่า KMS call แล้ว `KmsDataKeyReusePeriodSeconds` (1 นาทีถึง 24 ชั่วโมง ค่าตั้งต้น 5 นาที) ก็กำหนดว่า SQS จะกลับไปหา KMS บ่อยแค่ไหน request ที่ไปหา queue ที่เข้ารหัสต้องใช้ HTTPS และ Signature Version 4
-- IAM policy ให้สิทธิ์ role ของเราเอง ส่วน access policy ของ queue (เป็น resource-based policy) เปิดให้ account อื่นและ AWS service ที่ส่งเข้ามา อย่าง SNS topic หรือ S3 bucket ส่วน statement พวกนี้ควรจำกัดด้วย `aws:SourceArn` หรือ `aws:SourceAccount` ถ้าเรียกจากใน VPC ตัว interface VPC endpoint จะกัน traffic ไม่ให้ออก internet (ดู [Private Endpoints](../private-endpoints/))
+- IAM policy ให้สิทธิ์ role ของเราเอง ส่วน access policy ของ queue (เป็น resource-based policy) เปิดให้ account อื่นและ AWS service ที่ส่งเข้ามา อย่าง [SNS](../amazon-sns/) topic หรือ S3 bucket ส่วน statement พวกนี้ควรจำกัดด้วย `aws:SourceArn` หรือ `aws:SourceAccount` ถ้าเรียกจากใน VPC ตัว interface VPC endpoint จะกัน traffic ไม่ให้ออก internet (ดู [Private Endpoints](../private-endpoints/))
 
 ### Pricing
 

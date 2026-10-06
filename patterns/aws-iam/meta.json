@@ -1,0 +1,80 @@
+{
+  "aka": ["IAM", "Identity and Access Management"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Calls to AWS are signed with credentials (SigV4) and checked by IAM: people, functions and CI alike.",
+      "body": "Requests to AWS APIs are signed with credentials (**Signature Version 4**); IAM authenticates the signature, then evaluates the policies before the service acts. In the photo app, `make-thumbnail` calls S3 with its **execution role** `thumbnailer-role`, a developer signs in through **IAM Identity Center** with MFA and works in the role of the `PhotoDev` permission set, and GitHub Actions trades its **OIDC** token for the role `gha-deploy`. Other workloads get roles the same way (ECS task roles, EC2 instance profiles), and other accounts reach in through cross-account roles."
+    },
+    {
+      "title": "Temporary credentials",
+      "caption": "Lambda assumes thumbnailer-role; STS returns keys that expire; the SDK signs each S3 call with them.",
+      "body": "When `make-thumbnail` runs, Lambda assumes `thumbnailer-role`, which the role's **trust policy** allows for the service principal `lambda.amazonaws.com`, and AWS STS returns **temporary credentials**: an access key ID that starts with `ASIA`, a secret access key, a session token and an expiration time. Lambda hands them to the function as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`; the SDK signs each S3 request with a key derived from the secret and sends the token along. No secret is stored in the code or the image, and the credentials stop working when they expire."
+    },
+    {
+      "title": "Evaluating a request",
+      "caption": "An explicit Deny anywhere wins; without one, the call needs an Allow, or it is implicitly denied.",
+      "body": "Three calls on `u/9f3c/IMG_0042.jpg`. **GetObject over HTTPS**: no Deny applies, the organization's SCPs and RCPs allow it and the identity policy allows it, so S3 returns the photo. **DeleteObject**: no policy allows it, so it ends in an **implicit deny** (403 `AccessDenied`). **GetObject over plain HTTP**: the bucket policy denies requests where `aws:SecureTransport` is `false`, and that **explicit deny** beats any Allow. Permissions boundaries and session policies, where present, only narrow what the other policies allow."
+    },
+    {
+      "title": "Least privilege, limits",
+      "caption": "Tighten with Access Analyzer and CloudTrail; mind size quotas, propagation and long-lived keys.",
+      "body": "Least privilege is hard to write by hand: start narrow, and let **IAM Access Analyzer** check roles against CloudTrail. Here it finds most of the AWS managed policy `AWSLambda_FullAccess` unused by `gha-deploy` over 90 days, and drafts a policy from the calls the role made, such as `lambda:UpdateFunctionCode`. The limits (October 2026): a managed policy holds 6,144 characters and a role's inline policies 10,240 in total; an AssumeRole session lasts 15 minutes to 12 hours (1 hour by default); and IAM is **eventually consistent**, so a change takes time to reach every endpoint. A long-lived access key (`AKIA…`) works until it is deactivated or deleted, so prefer roles and federation, require MFA for people, and keep the root user for the few tasks that need it."
+    }
+  ],
+  "related": ["policy-based-authorization", "zero-trust-access", "federated-identity", "token-exchange", "valet-key", "amazon-s3", "aws-lambda", "amazon-cognito"],
+  "references": [
+    { "title": "AWS IAM User Guide — What is IAM?", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html" },
+    { "title": "AWS IAM User Guide — Policy evaluation logic", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html" },
+    { "title": "AWS IAM User Guide — How AWS enforcement code logic evaluates requests to allow or deny access", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic_policy-eval-denyallow.html" },
+    { "title": "AWS IAM User Guide — Cross-account policy evaluation logic", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic-cross-account.html" },
+    { "title": "AWS IAM User Guide — Policies and permissions in AWS Identity and Access Management", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html" },
+    { "title": "AWS IAM User Guide — IAM JSON policy element reference", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html" },
+    { "title": "AWS IAM User Guide — IAM roles", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html" },
+    { "title": "AWS IAM User Guide — Temporary security credentials in IAM", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html" },
+    { "title": "AWS IAM User Guide — IAM identifiers (unique ID prefixes)", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html" },
+    { "title": "AWS IAM User Guide — AWS Signature Version 4 for API requests", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html" },
+    { "title": "AWS IAM User Guide — Create a signed AWS API request", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-create-signed-request.html" },
+    { "title": "AWS IAM User Guide — IAM and AWS STS quotas", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html" },
+    { "title": "AWS IAM User Guide — Troubleshoot IAM: changes that I make are not always immediately visible", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot.html#troubleshoot_general_eventual-consistency" },
+    { "title": "AWS IAM User Guide — Security best practices in IAM", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html" },
+    { "title": "AWS IAM User Guide — AWS account root user", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html" },
+    { "title": "AWS IAM User Guide — Centralize root access for member accounts", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-enable-root-access.html" },
+    { "title": "AWS IAM User Guide — AWS Multi-factor authentication in IAM", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html" },
+    { "title": "AWS IAM User Guide — Permissions boundaries for IAM entities", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html" },
+    { "title": "AWS IAM User Guide — Access to AWS accounts owned by third parties", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_common-scenarios_third-party.html" },
+    { "title": "AWS IAM User Guide — The confused deputy problem", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html" },
+    { "title": "AWS IAM User Guide — Create an OpenID Connect (OIDC) identity provider in IAM", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html" },
+    { "title": "AWS IAM User Guide — Identity-provider controls for shared OIDC providers", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc_secure-by-default.html" },
+    { "title": "AWS IAM User Guide — Define permissions based on attributes with ABAC authorization", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_attribute-based-access-control.html" },
+    { "title": "AWS IAM User Guide — Revoke IAM role temporary security credentials", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_revoke-sessions.html" },
+    { "title": "AWS IAM User Guide — Using AWS Identity and Access Management Access Analyzer", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html" },
+    { "title": "AWS IAM User Guide — IAM Access Analyzer policy generation", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-policy-generation.html" },
+    { "title": "AWS IAM User Guide — IAM policy testing with the IAM policy simulator", "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html" },
+    { "title": "AWS STS API Reference — AssumeRole", "url": "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html" },
+    { "title": "AWS STS API Reference — AssumeRoleWithWebIdentity", "url": "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html" },
+    { "title": "AWS Organizations User Guide — Service control policies (SCPs)", "url": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html" },
+    { "title": "AWS Organizations User Guide — Resource control policies (RCPs)", "url": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_rcps.html" },
+    { "title": "AWS Organizations User Guide — Quotas and service limits for AWS Organizations", "url": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html" },
+    { "title": "AWS What's New — Introducing resource control policies (RCPs) (November 2024)", "url": "https://aws.amazon.com/about-aws/whats-new/2024/11/resource-control-policies-restrict-access-aws-resources/" },
+    { "title": "AWS IAM Identity Center User Guide — What is IAM Identity Center?", "url": "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html" },
+    { "title": "AWS IAM Identity Center User Guide — Manage AWS accounts with permission sets", "url": "https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html" },
+    { "title": "AWS IAM Identity Center User Guide — Set session duration for AWS accounts", "url": "https://docs.aws.amazon.com/singlesignon/latest/userguide/howtosessionduration.html" },
+    { "title": "AWS Lambda — Defining Lambda function permissions with an execution role", "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html" },
+    { "title": "AWS Lambda — Working with Lambda environment variables", "url": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html" },
+    { "title": "Amazon S3 User Guide — Examples of Amazon S3 bucket policies", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html" },
+    { "title": "Amazon S3 User Guide — Troubleshoot access denied (403 Forbidden) errors in Amazon S3", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/troubleshoot-403-errors.html" },
+    { "title": "Amazon S3 User Guide — Download and upload objects with presigned URLs", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html" },
+    { "title": "AWS CloudTrail User Guide — Working with CloudTrail event history", "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html" },
+    { "title": "AWS CloudTrail User Guide — Logging data events", "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html" },
+    { "title": "IAM Access Analyzer pricing", "url": "https://aws.amazon.com/iam/access-analyzer/pricing/" },
+    { "title": "IAM Roles Anywhere User Guide — What is IAM Roles Anywhere?", "url": "https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html" },
+    { "title": "GitHub Docs — Configuring OpenID Connect in Amazon Web Services", "url": "https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws" },
+    { "title": "Microsoft Learn — What is Azure role-based access control (Azure RBAC)?", "url": "https://learn.microsoft.com/en-us/azure/role-based-access-control/overview" },
+    { "title": "Microsoft Learn — List Azure deny assignments", "url": "https://learn.microsoft.com/en-us/azure/role-based-access-control/deny-assignments" },
+    { "title": "Microsoft Learn — Workload identity federation (Microsoft Entra Workload ID)", "url": "https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" },
+    { "title": "Google Cloud — IAM overview", "url": "https://docs.cloud.google.com/iam/docs/overview" },
+    { "title": "Google Cloud — Deny policies", "url": "https://docs.cloud.google.com/iam/docs/deny-overview" },
+    { "title": "Google Cloud — Workload Identity Federation", "url": "https://docs.cloud.google.com/iam/docs/workload-identity-federation" }
+  ]
+}

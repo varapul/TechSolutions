@@ -1,0 +1,823 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">AWS IAM</title>
+<desc id="dg-desc">AWS IAM. Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated. Step 1, Where it sits: Calls to AWS are signed with credentials (SigV4) and checked by IAM: people, functions and CI alike. Step 2, Temporary credentials: Lambda assumes thumbnailer-role; STS returns keys that expire; the SDK signs each S3 call with them. Step 3, Evaluating a request: An explicit Deny anywhere wins; without one, the call needs an Allow, or it is implicitly denied. Step 4, Least privilege, limits: Tighten with Access Analyzer and CloudTrail; mind size quotas, propagation and long-lived keys.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">AWS SERVICES</text>
+  <text class="title" x="40" y="64">AWS IAM</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Temporary credentials</text>
+  <text class="step on p2" x="262" y="518">2 · Temporary credentials</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Evaluating a request</text>
+  <text class="step on p3" x="484" y="518">3 · Evaluating a request</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Least privilege, limits</text>
+  <text class="step on p4" x="706" y="518">4 · Least privilege, limits</text>
+  <text class="caption p1" x="40" y="552">Calls to AWS are signed with credentials (SigV4) and checked by IAM: people, functions and CI alike.</text>
+  <text class="caption p2" x="40" y="552">Lambda assumes thumbnailer-role; STS returns keys that expire; the SDK signs each S3 call with them.</text>
+  <text class="caption p3" x="40" y="552">An explicit Deny anywhere wins; without one, the call needs an Allow, or it is implicitly denied.</text>
+  <text class="caption p4" x="40" y="552">Tighten with Access Analyzer and CloudTrail; mind size quotas, propagation and long-lived keys.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* AWS IAM. The photo app's thumbnail function and its neighbours (20 s loop, 1 s = 5%):
+   0-5 s    where it sits: make-thumbnail, a developer (Identity Center) and GitHub Actions (OIDC) send signed calls through IAM
+   5-10 s   temporary credentials: Lambda assumes thumbnailer-role, STS returns ASIA... keys, the SDK signs GetObject (200 OK)
+   10-15 s  evaluation: GetObject over https allowed; DeleteObject implicitly denied; GetObject over http explicitly denied
+   15-20 s  limits: Access Analyzer reads CloudTrail; size quotas, session length, eventual consistency, long-lived keys
+   Generated by a scratch script with scripts/lib/motion.mjs. */
+.diagram .iam-l13 { font-size: 13px; font-weight: 600; }
+.diagram .iam-or { fill: var(--orange); }
+.diagram .iam-mono10 { font-size: 10px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; fill: var(--muted); }
+.diagram .iam-env-t { font-size: 9.5px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; fill: var(--orange); }
+.diagram .iam-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .iam-n { font-size: 11.5px; }
+.diagram .iam-key { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-weight: 600; letter-spacing: 0; }
+.diagram .iam-gh { font-size: 10px; fill: var(--muted); }
+.diagram .iam-gate { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .iam-card { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .iam-lane { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+.diagram .iam-fan { stroke: var(--wire); stroke-width: 1.5; }
+.diagram .iam-port-t { font-size: 9.5px; font-weight: 700; fill: var(--orange); }
+.diagram .iam-mk { font-size: 13px; }
+.diagram .iam-tk { font-size: 8.5px; font-weight: 700; fill: var(--bg); }
+.diagram .iam-d1a { animation: iam-d1a var(--T) linear infinite; }
+.diagram .iam-d1b { animation: iam-d1b var(--T) linear infinite; }
+.diagram .iam-d1c { animation: iam-d1c var(--T) linear infinite; }
+.diagram .iam-g1a { animation: iam-g1a var(--T) linear infinite; }
+.diagram .iam-g1b { animation: iam-g1b var(--T) linear infinite; }
+.diagram .iam-g1c { animation: iam-g1c var(--T) linear infinite; }
+.diagram .iam-t1a { opacity: 0; animation: iam-t1a var(--T) linear infinite; }
+.diagram .iam-t1b { opacity: 0; animation: iam-t1b var(--T) linear infinite; }
+.diagram .iam-t1c { opacity: 0; animation: iam-t1c var(--T) linear infinite; }
+.diagram .iam-t2a { opacity: 0; animation: iam-t2a var(--T) linear infinite; }
+.diagram .iam-trust { opacity: 0; animation: iam-trust var(--T) linear infinite; }
+.diagram .iam-creds { opacity: 0; animation: iam-creds var(--T) linear infinite; }
+.diagram .iam-t2b { opacity: 0; animation: iam-t2b var(--T) linear infinite; }
+.diagram .iam-env { opacity: 0; animation: iam-env var(--T) linear infinite; }
+.diagram .iam-t2c { opacity: 0; animation: iam-t2c var(--T) linear infinite; }
+.diagram .iam-d2 { opacity: 0; animation: iam-d2 var(--T) linear infinite; }
+.diagram .iam-g2 { opacity: 0; animation: iam-g2 var(--T) linear infinite; }
+.diagram .iam-t3a { opacity: 0; animation: iam-t3a var(--T) linear infinite; }
+.diagram .iam-t3b { opacity: 0; animation: iam-t3b var(--T) linear infinite; }
+.diagram .iam-t3c { opacity: 0; animation: iam-t3c var(--T) linear infinite; }
+.diagram .iam-ka0 { opacity: 0; animation: iam-ka0 var(--T) linear infinite; }
+.diagram .iam-ka1 { opacity: 0; animation: iam-ka1 var(--T) linear infinite; }
+.diagram .iam-ka2 { opacity: 0; animation: iam-ka2 var(--T) linear infinite; }
+.diagram .iam-ka3 { opacity: 0; animation: iam-ka3 var(--T) linear infinite; }
+.diagram .iam-ka4 { opacity: 0; animation: iam-ka4 var(--T) linear infinite; }
+.diagram .iam-ka5 { opacity: 0; animation: iam-ka5 var(--T) linear infinite; }
+.diagram .iam-d3a { opacity: 0; animation: iam-d3a var(--T) linear infinite; }
+.diagram .iam-g3a { opacity: 0; animation: iam-g3a var(--T) linear infinite; }
+.diagram .iam-kb0 { opacity: 0; animation: iam-kb0 var(--T) linear infinite; }
+.diagram .iam-kb1 { opacity: 0; animation: iam-kb1 var(--T) linear infinite; }
+.diagram .iam-kb2 { opacity: 0; animation: iam-kb2 var(--T) linear infinite; }
+.diagram .iam-kb3 { opacity: 0; animation: iam-kb3 var(--T) linear infinite; }
+.diagram .iam-x3b { opacity: 0; animation: iam-x3b var(--T) linear infinite; }
+.diagram .iam-d3b { opacity: 0; animation: iam-d3b var(--T) linear infinite; }
+.diagram .iam-g3b { opacity: 0; animation: iam-g3b var(--T) linear infinite; }
+.diagram .iam-kc0 { opacity: 0; animation: iam-kc0 var(--T) linear infinite; }
+.diagram .iam-x3c { opacity: 0; animation: iam-x3c var(--T) linear infinite; }
+.diagram .iam-bp { opacity: 0; animation: iam-bp var(--T) linear infinite; }
+.diagram .iam-d3c { opacity: 0; animation: iam-d3c var(--T) linear infinite; }
+.diagram .iam-g3c { opacity: 0; animation: iam-g3c var(--T) linear infinite; }
+.diagram .iam-port { opacity: 0; animation: iam-port var(--T) linear infinite; }
+.diagram .iam-t40 { opacity: 0; animation: iam-t40 var(--T) linear infinite; }
+.diagram .iam-t41 { opacity: 0; animation: iam-t41 var(--T) linear infinite; }
+.diagram .iam-t42 { opacity: 0; animation: iam-t42 var(--T) linear infinite; }
+.diagram .iam-aa1 { opacity: 0; animation: iam-aa1 var(--T) linear infinite; }
+.diagram .iam-aa2 { opacity: 0; animation: iam-aa2 var(--T) linear infinite; }
+@keyframes iam-t1a {
+  0% { transform: translate(184px, 202px); opacity: 0; }
+  1.75% { transform: translate(184px, 202px); opacity: 0; }
+  1.856% { transform: translate(194px, 202px); }
+  2% { opacity: 1; }
+  3.367% { transform: translate(194px, 344px); }
+  4.048% { transform: translate(258px, 344px); }
+  4.154% { transform: translate(268px, 344px); }
+  7.473% { transform: translate(580px, 344px); }
+  8.473% { transform: translate(674px, 344px); }
+  8.92% { transform: translate(716px, 344px); opacity: 1; }
+  9.17% { transform: translate(716px, 344px); opacity: 0; }
+  100% { transform: translate(716px, 344px); opacity: 0; }
+}
+@keyframes iam-t1b {
+  0% { transform: translate(184px, 255px); opacity: 0; }
+  4.75% { transform: translate(184px, 255px); opacity: 0; }
+  4.856% { transform: translate(194px, 255px); }
+  5% { opacity: 1; }
+  5.803% { transform: translate(194px, 344px); }
+  6.484% { transform: translate(258px, 344px); }
+  6.761% { transform: translate(268px, 368px); }
+  10.08% { transform: translate(580px, 368px); }
+  11.08% { transform: translate(674px, 368px); }
+  11.527% { transform: translate(716px, 368px); opacity: 1; }
+  11.777% { transform: translate(716px, 368px); opacity: 0; }
+  100% { transform: translate(716px, 368px); opacity: 0; }
+}
+@keyframes iam-t1c {
+  0% { transform: translate(184px, 344px); opacity: 0; }
+  7.75% { transform: translate(184px, 344px); opacity: 0; }
+  8% { opacity: 1; }
+  8.537% { transform: translate(258px, 344px); }
+  8.814% { transform: translate(268px, 320px); }
+  12.133% { transform: translate(580px, 320px); }
+  13.133% { transform: translate(674px, 320px); }
+  13.399% { transform: translate(699px, 320px); }
+  14.484% { transform: translate(699px, 218px); }
+  14.665% { transform: translate(716px, 218px); opacity: 1; }
+  14.915% { transform: translate(716px, 218px); opacity: 0; }
+  100% { transform: translate(716px, 218px); opacity: 0; }
+}
+@keyframes iam-d1a {
+  0% { opacity: 0; }
+  7.686% { opacity: 0; }
+  8.936% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-d1b {
+  0% { opacity: 0; }
+  10.293% { opacity: 0; }
+  11.543% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-d1c {
+  0% { opacity: 0; }
+  12.346% { opacity: 0; }
+  13.596% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-g1a {
+  0% { opacity: 0; }
+  8.92% { opacity: 0; }
+  10.17% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-g1b {
+  0% { opacity: 0; }
+  11.527% { opacity: 0; }
+  12.777% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-g1c {
+  0% { opacity: 0; }
+  14.665% { opacity: 0; }
+  15.915% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-t2a {
+  0% { transform: translate(184px, 176px); opacity: 0; }
+  26.25% { transform: translate(184px, 176px); opacity: 0; }
+  26.5% { opacity: 1; }
+  28.432% { transform: translate(232px, 176px); opacity: 1; }
+  28.682% { transform: translate(232px, 176px); opacity: 0; }
+  100% { transform: translate(232px, 176px); opacity: 0; }
+}
+@keyframes iam-trust {
+  0% { opacity: 0; }
+  28.682% { opacity: 0; }
+  29.932% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-creds {
+  0% { opacity: 0; }
+  30.682% { opacity: 0; }
+  31.932% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-t2b {
+  0% { transform: translate(232px, 176px); opacity: 0; }
+  32.182% { transform: translate(232px, 176px); opacity: 0; }
+  32.432% { opacity: 1; }
+  33.782% { transform: translate(184px, 176px); }
+  35.092% { transform: translate(146px, 186px); opacity: 1; }
+  35.342% { transform: translate(146px, 186px); opacity: 0; }
+  100% { transform: translate(146px, 186px); opacity: 0; }
+}
+@keyframes iam-env {
+  0% { opacity: 0; }
+  35.342% { opacity: 0; }
+  36.592% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-t2c {
+  0% { transform: translate(184px, 202px); opacity: 0; }
+  37.092% { transform: translate(184px, 202px); opacity: 0; }
+  37.181% { transform: translate(194px, 202px); }
+  37.342% { opacity: 1; }
+  38.449% { transform: translate(194px, 344px); }
+  39.021% { transform: translate(258px, 344px); }
+  39.11% { transform: translate(268px, 344px); }
+  41.896% { transform: translate(580px, 344px); }
+  42.735% { transform: translate(674px, 344px); }
+  43.11% { transform: translate(716px, 344px); opacity: 1; }
+  43.36% { transform: translate(716px, 344px); opacity: 0; }
+  100% { transform: translate(716px, 344px); opacity: 0; }
+}
+@keyframes iam-d2 {
+  0% { opacity: 0; }
+  42.075% { opacity: 0; }
+  43.325% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-g2 {
+  0% { opacity: 0; }
+  43.11% { opacity: 0; }
+  44.36% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-t3a {
+  0% { transform: translate(184px, 202px); opacity: 0; }
+  51.25% { transform: translate(184px, 202px); opacity: 0; }
+  51.346% { transform: translate(194px, 202px); }
+  51.5% { opacity: 1; }
+  52.712% { transform: translate(194px, 344px); }
+  53.327% { transform: translate(258px, 344px); }
+  53.577% { transform: translate(268px, 320px); }
+  56.577% { transform: translate(580px, 320px); }
+  57.481% { transform: translate(674px, 320px); }
+  57.885% { transform: translate(716px, 320px); opacity: 1; }
+  58.135% { transform: translate(716px, 320px); opacity: 0; }
+  100% { transform: translate(716px, 320px); opacity: 0; }
+}
+@keyframes iam-t3b {
+  0% { transform: translate(184px, 202px); opacity: 0; }
+  54.75% { transform: translate(184px, 202px); opacity: 0; }
+  54.846% { transform: translate(194px, 202px); }
+  55% { opacity: 1; }
+  56.212% { transform: translate(194px, 344px); }
+  56.827% { transform: translate(258px, 344px); }
+  56.923% { transform: translate(268px, 344px); }
+  58.673% { transform: translate(450px, 344px); opacity: 1; }
+  58.923% { transform: translate(450px, 344px); opacity: 0; }
+  100% { transform: translate(450px, 344px); opacity: 0; }
+}
+@keyframes iam-t3c {
+  0% { transform: translate(184px, 202px); opacity: 0; }
+  58.5% { transform: translate(184px, 202px); opacity: 0; }
+  58.596% { transform: translate(194px, 202px); }
+  58.75% { opacity: 1; }
+  59.962% { transform: translate(194px, 344px); }
+  60.577% { transform: translate(258px, 344px); }
+  60.827% { transform: translate(268px, 368px); }
+  61.077% { transform: translate(294px, 368px); opacity: 1; }
+  61.327% { transform: translate(294px, 368px); opacity: 0; }
+  100% { transform: translate(294px, 368px); opacity: 0; }
+}
+@keyframes iam-ka0 {
+  0% { opacity: 0; }
+  53.727% { opacity: 0; }
+  54.977% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-ka1 {
+  0% { opacity: 0; }
+  54.227% { opacity: 0; }
+  55.477% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-ka2 {
+  0% { opacity: 0; }
+  54.727% { opacity: 0; }
+  55.977% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-ka3 {
+  0% { opacity: 0; }
+  55.227% { opacity: 0; }
+  56.477% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-ka4 {
+  0% { opacity: 0; }
+  55.727% { opacity: 0; }
+  56.977% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-ka5 {
+  0% { opacity: 0; }
+  56.227% { opacity: 0; }
+  57.477% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-d3a {
+  0% { opacity: 0; }
+  56.769% { opacity: 0; }
+  58.019% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-g3a {
+  0% { opacity: 0; }
+  57.885% { opacity: 0; }
+  59.135% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-kb0 {
+  0% { opacity: 0; }
+  57.073% { opacity: 0; }
+  58.323% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-kb1 {
+  0% { opacity: 0; }
+  57.573% { opacity: 0; }
+  58.823% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-kb2 {
+  0% { opacity: 0; }
+  58.073% { opacity: 0; }
+  59.323% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-kb3 {
+  0% { opacity: 0; }
+  58.673% { opacity: 0; }
+  59.923% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-x3b {
+  0% { opacity: 0; }
+  58.673% { opacity: 0; }
+  59.923% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-d3b {
+  0% { opacity: 0; }
+  60.173% { opacity: 0; }
+  61.423% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-g3b {
+  0% { opacity: 0; }
+  61.423% { opacity: 0; }
+  62.673% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-kc0 {
+  0% { opacity: 0; }
+  61.077% { opacity: 0; }
+  62.327% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-x3c {
+  0% { opacity: 0; }
+  61.077% { opacity: 0; }
+  62.327% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-bp {
+  0% { opacity: 0; }
+  61.577% { opacity: 0; }
+  62.827% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-d3c {
+  0% { opacity: 0; }
+  62.577% { opacity: 0; }
+  63.827% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-g3c {
+  0% { opacity: 0; }
+  63.827% { opacity: 0; }
+  65.077% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-port {
+  0% { opacity: 0; }
+  3.267% { opacity: 0; }
+  3.867% { opacity: 1; }
+  5.367% { opacity: 1; }
+  5.703% { opacity: 0; }
+  6.303% { opacity: 1; }
+  6.367% { opacity: 0; }
+  7.756% { opacity: 0; }
+  7.803% { opacity: 1; }
+  8.356% { opacity: 1; }
+  8.803% { opacity: 0; }
+  9.856% { opacity: 1; }
+  10.856% { opacity: 0; }
+  38.269% { opacity: 0; }
+  38.869% { opacity: 1; }
+  40.369% { opacity: 1; }
+  41.369% { opacity: 0; }
+  52.564% { opacity: 0; }
+  53.164% { opacity: 1; }
+  54.664% { opacity: 1; }
+  55.664% { opacity: 0; }
+  56.064% { opacity: 0; }
+  56.664% { opacity: 1; }
+  58.164% { opacity: 1; }
+  59.164% { opacity: 0; }
+  59.814% { opacity: 0; }
+  60.414% { opacity: 1; }
+  61.914% { opacity: 1; }
+  62.914% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-t40 {
+  0% { transform: translate(708px, 124px); opacity: 0; }
+  76.75% { transform: translate(708px, 124px); opacity: 0; }
+  76.857% { transform: translate(699px, 124px); }
+  77% { opacity: 1; }
+  78.905% { transform: translate(699px, 296px); }
+  79.345% { transform: translate(662px, 296px); opacity: 1; }
+  79.595% { transform: translate(662px, 296px); opacity: 0; }
+  100% { transform: translate(662px, 296px); opacity: 0; }
+}
+@keyframes iam-t41 {
+  0% { transform: translate(708px, 124px); opacity: 0; }
+  78% { transform: translate(708px, 124px); opacity: 0; }
+  78.107% { transform: translate(699px, 124px); }
+  78.25% { opacity: 1; }
+  80.155% { transform: translate(699px, 296px); }
+  80.595% { transform: translate(662px, 296px); opacity: 1; }
+  80.845% { transform: translate(662px, 296px); opacity: 0; }
+  100% { transform: translate(662px, 296px); opacity: 0; }
+}
+@keyframes iam-t42 {
+  0% { transform: translate(708px, 124px); opacity: 0; }
+  79.25% { transform: translate(708px, 124px); opacity: 0; }
+  79.357% { transform: translate(699px, 124px); }
+  79.5% { opacity: 1; }
+  81.405% { transform: translate(699px, 296px); }
+  81.845% { transform: translate(662px, 296px); opacity: 1; }
+  82.095% { transform: translate(662px, 296px); opacity: 0; }
+  100% { transform: translate(662px, 296px); opacity: 0; }
+}
+@keyframes iam-aa1 {
+  0% { opacity: 0; }
+  82.345% { opacity: 0; }
+  83.595% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes iam-aa2 {
+  0% { opacity: 0; }
+  84.845% { opacity: 0; }
+  86.095% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- wires: principals -> bus -> SigV4 port; lanes -> S3 -->
+<path class="wire" d="M184 202H194V344"/>
+<path class="wire" d="M184 255H194"/>
+<path class="wire" d="M184 344H221" marker-end="url(#ah)"/>
+<g class="p2"><line class="wire" x1="184" y1="176" x2="217" y2="176" marker-end="url(#ah)"/></g>
+<g class="p123">
+<line class="wire" x1="674" y1="344" x2="705" y2="344" marker-end="url(#ah)"/>
+<line class="wire" x1="674" y1="368" x2="705" y2="368" marker-end="url(#ah)"/>
+</g>
+<g class="p23"><line class="wire" x1="674" y1="320" x2="705" y2="320" marker-end="url(#ah)"/></g>
+<g class="p1"><path class="wire" d="M674 320H699V218H705" marker-end="url(#ah)"/></g>
+<g class="p4"><path class="wire dash s-teal" d="M708 124H699V296H677" marker-end="url(#ah-teal)"/></g>
+<!-- principals -->
+<rect class="box" x="34" y="98" width="150" height="112" rx="10"/>
+<text class="iam-l13 mono" x="46" y="118">make-thumbnail</text>
+<text class="tiny" x="46" y="133">Lambda function · Python</text>
+<text class="tiny" x="46" y="151">execution role</text>
+<text class="tiny mono iam-or" x="46" y="165">thumbnailer-role</text>
+<g class="iam-env"><text class="iam-env-t" x="46" y="182">AWS_ACCESS_KEY_ID</text><text class="iam-env-t" x="46" y="193">AWS_SECRET_ACCESS_KEY</text><text class="iam-env-t" x="46" y="204">AWS_SESSION_TOKEN</text></g>
+<g class="p14"><text class="tiny" x="46" y="186">no key in code or image</text></g>
+<rect class="box" x="34" y="218" width="150" height="74" rx="10"/>
+<text class="label" x="46" y="238">developer</text>
+<text class="tiny" x="46" y="253">IAM Identity Center</text>
+<text class="tiny" x="46" y="267">sign-in with MFA</text>
+<text class="tiny" x="46" y="281">permission set <tspan class="mono iam-or">PhotoDev</tspan></text>
+<rect class="box" x="34" y="300" width="150" height="88" rx="10"/>
+<text class="label" x="46" y="320">GitHub Actions</text>
+<text class="tiny" x="46" y="336">OIDC token (JWT) for</text>
+<text class="tiny" x="46" y="350">role <tspan class="mono iam-or">gha-deploy</tspan></text>
+<text class="tiny" x="46" y="368">no AWS keys stored</text>
+<text class="tiny" x="46" y="381">in GitHub</text>
+<!-- the product: AWS IAM -->
+<rect class="box" x="204" y="96" width="486" height="292" rx="16" stroke-width="2"/>
+<text class="label" x="220" y="118">AWS IAM</text>
+<text class="sub" x="292" y="118">identity and access management</text>
+<g class="p123"><text class="tiny end" x="674" y="118">authenticate, then authorize</text></g>
+<g class="p4"><text class="tiny sb end f-amber-ink" x="674" y="118">IAM is eventually consistent</text></g>
+<rect class="box" x="220" y="128" width="176" height="116" rx="10"/>
+<text class="iam-l13" x="232" y="147">AWS STS</text>
+<text class="tiny" x="232" y="161">Security Token Service</text>
+<g class="p13"><text class="tiny mono" x="232" y="182">AssumeRole</text><text class="iam-mono10" x="232" y="196">AssumeRoleWithWebIdentity</text><text class="tiny" x="232" y="216">returns temporary credentials</text><text class="tiny" x="232" y="230">that expire</text></g>
+<g class="iam-creds"><rect class="f-orange-soft s-orange" x="228" y="168" width="160" height="70" rx="6" stroke-width="1.5"/><text class="iam-mono10 iam-or" x="236" y="182">AccessKeyId</text><text class="iam-mono10 iam-or b end" x="380" y="182">ASIA…</text><text class="iam-mono10 iam-or" x="236" y="196">SecretAccessKey</text><text class="iam-mono10 iam-or end" x="380" y="196">••••••</text><text class="iam-mono10 iam-or" x="236" y="210">SessionToken</text><text class="iam-mono10 iam-or end" x="380" y="210">••••••</text><text class="iam-mono10 iam-or" x="236" y="224">Expiration</text><text class="iam-mono10 iam-or end" x="380" y="224">timestamp</text></g>
+<g class="p4"><rect class="f-bg" x="228" y="168" width="160" height="70" rx="6"/><rect class="f-amber-soft s-amber" x="228" y="168" width="160" height="70" rx="6" stroke-width="1.5"/><text class="iam-hd f-amber-ink" x="236" y="182">SESSION LENGTH</text><text class="tiny" x="236" y="197">AssumeRole: 15 min to 12 h,</text><text class="tiny" x="236" y="210">default 1 h, capped by the</text><text class="tiny" x="236" y="223">role; role chaining: 1 h max</text></g>
+<rect class="box" x="408" y="128" width="266" height="116" rx="10"/>
+<text class="iam-l13 mono" x="420" y="147">thumbnailer-role</text>
+<rect class="f-panel-2 s-line" x="614" y="136" width="52" height="16" rx="8" stroke-width="1"/>
+<text class="tiny sb mid f-muted" x="640" y="148">IAM role</text>
+<text class="tiny sb f-muted" x="420" y="167">trust policy</text>
+<text class="tiny mono end" x="662" y="167">sts:AssumeRole</text>
+<text class="tiny mono" x="420" y="181">Service: lambda.amazonaws.com</text>
+<text class="tiny sb f-muted" x="420" y="201">permissions policy</text>
+<text class="tiny sb end f-green" x="662" y="201">Allow</text>
+<text class="tiny mono" x="420" y="216">s3:GetObject</text>
+<text class="tiny mono" x="510" y="216">photos-prod/u/*</text>
+<text class="tiny mono" x="420" y="231">s3:PutObject</text>
+<text class="tiny mono" x="510" y="231">photos-prod/thumbnails/*</text>
+<g class="iam-trust"><rect class="f-green-soft s-green" x="414" y="156" width="254" height="31" rx="6" stroke-width="1.5"/><text class="tiny b end f-green" x="664" y="181">✓</text></g>
+<g class="p4"><rect class="f-bg" x="414" y="156" width="254" height="82" rx="6"/><rect class="f-amber-soft s-amber" x="414" y="156" width="254" height="82" rx="6" stroke-width="1.5"/><text class="iam-hd f-amber-ink" x="422" y="170">POLICY SIZE QUOTAS (OCT 2026)</text><text class="tiny" x="422" y="185">managed policy: 6,144 characters</text><text class="tiny" x="422" y="199">inline policies: 10,240 per role</text><text class="tiny" x="422" y="213">trust policy: 2,048 (raise to 8,192)</text><text class="tiny" x="422" y="227">managed policies: 20 per role (25)</text></g>
+<rect class="box" x="220" y="254" width="454" height="132" rx="10"/>
+<g class="p123">
+<text class="iam-hd" x="232" y="271">POLICY EVALUATION</text>
+<g class="p12"><text class="tiny end" x="662" y="271">on every request</text></g>
+<rect class="f-orange-soft s-orange" x="224" y="335" width="34" height="18" rx="4" stroke-width="1.5"/>
+<text class="iam-port-t mid" x="241" y="347.5">SigV4</text>
+<line class="iam-fan" x1="258" y1="344" x2="268" y2="320"/>
+<line class="iam-fan" x1="258" y1="344" x2="268" y2="344"/>
+<line class="iam-fan" x1="258" y1="344" x2="268" y2="368"/>
+<rect class="iam-gate" x="271" y="277" width="46" height="103" rx="6"/>
+<rect class="iam-gate" x="323" y="277" width="46" height="103" rx="6"/>
+<rect class="iam-gate" x="375" y="277" width="46" height="103" rx="6"/>
+<rect class="iam-gate" x="427" y="277" width="46" height="103" rx="6"/>
+<rect class="iam-gate" x="479" y="277" width="46" height="103" rx="6"/>
+<rect class="iam-gate" x="531" y="277" width="46" height="103" rx="6"/>
+<rect class="iam-gate" x="584" y="277" width="90" height="103" rx="6"/>
+<line class="iam-lane" x1="268" y1="320" x2="584" y2="320"/>
+<line class="iam-lane" x1="268" y1="344" x2="584" y2="344"/>
+<line class="iam-lane" x1="268" y1="368" x2="584" y2="368"/>
+<text class="iam-gh mid" x="294" y="289">explicit</text><text class="iam-gh mid" x="294" y="299">Deny?</text>
+<text class="iam-gh mid" x="346" y="289">SCPs</text><text class="iam-gh mid" x="346" y="299">RCPs</text>
+<text class="iam-gh mid" x="398" y="289">resource</text><text class="iam-gh mid" x="398" y="299">policy</text>
+<text class="iam-gh mid" x="450" y="289">identity</text><text class="iam-gh mid" x="450" y="299">policy</text>
+<text class="iam-gh mid" x="502" y="289">boundary</text><text class="iam-gh mid" x="502" y="299">if set</text>
+<text class="iam-gh mid" x="554" y="289">session</text><text class="iam-gh mid" x="554" y="299">policy</text>
+<text class="iam-gh mid b" x="629" y="294">decision</text>
+</g>
+<g class="iam-port"><rect class="f-orange s-orange" x="224" y="335" width="34" height="18" rx="4" stroke-width="1.5"/><text class="iam-port-t mid f-bg" x="241" y="347.5">SigV4</text></g>
+<!-- neighbours: CloudTrail, other AWS APIs, S3 -->
+<rect class="box" x="708" y="98" width="218" height="52" rx="10"/>
+<text class="label" x="720" y="118">AWS CloudTrail</text>
+<text class="tiny" x="720" y="134">API activity log · 90-day history</text>
+<rect class="box" x="708" y="160" width="218" height="84" rx="10"/>
+<text class="label" x="720" y="180">other AWS APIs</text>
+<text class="tiny" x="720" y="195">Lambda · CloudWatch · DynamoDB · …</text>
+<rect class="box" x="708" y="254" width="218" height="134" rx="10"/>
+<text class="label" x="720" y="273">Amazon S3</text>
+<text class="iam-l13 mono" x="810" y="273">photos-prod</text>
+<text class="tiny" x="720" y="289">bucket policy: Deny s3:* if</text>
+<text class="tiny mono" x="720" y="302">aws:SecureTransport is false</text>
+<g class="iam-bp"><rect class="f-red-soft s-red" x="714" y="278" width="206" height="30" rx="6" stroke-width="1.5"/></g>
+<g class="iam-d1c"><text class="tiny sb mid f-green" x="629" y="324">Allow</text></g>
+<g class="iam-d1a"><text class="tiny sb mid f-green" x="629" y="348">Allow</text></g>
+<g class="iam-d1b"><text class="tiny sb mid f-green" x="629" y="372">Allow</text></g>
+<g class="iam-g1c"><text class="tiny mono" x="720" y="222">UpdateFunctionCode</text><text class="tiny sb end f-green" x="914" y="222">✓</text><text class="tiny" x="720" y="236">as role gha-deploy</text></g>
+<g class="iam-g1a"><text class="tiny mono" x="720" y="348">GetObject</text><text class="tiny end" x="901" y="348">thumbnailer-role</text><text class="tiny sb end f-green" x="914" y="348">✓</text></g>
+<g class="iam-g1b"><text class="tiny mono" x="720" y="372">ListObjectsV2</text><text class="tiny end" x="901" y="372">PhotoDev role</text><text class="tiny sb end f-green" x="914" y="372">✓</text></g>
+<g class="iam-d2"><text class="tiny sb mid f-green" x="629" y="348">Allow</text></g>
+<g class="iam-g2"><text class="tiny mono" x="720" y="348">GetObject</text><text class="tiny sb end f-green" x="914" y="348">200 OK</text></g>
+<g class="iam-ka0"><text class="iam-mk mid f-faint" x="294" y="324">–</text></g>
+<g class="iam-ka1"><text class="iam-mk mid f-green b" x="346" y="324">✓</text></g>
+<g class="iam-ka2"><text class="iam-mk mid f-faint" x="398" y="324">–</text></g>
+<g class="iam-ka3"><text class="iam-mk mid f-green b" x="450" y="324">✓</text></g>
+<g class="iam-ka4"><text class="iam-mk mid f-faint" x="502" y="324">–</text></g>
+<g class="iam-ka5"><text class="iam-mk mid f-faint" x="554" y="324">–</text></g>
+<g class="iam-kb0"><text class="iam-mk mid f-faint" x="294" y="348">–</text></g>
+<g class="iam-kb1"><text class="iam-mk mid f-green b" x="346" y="348">✓</text></g>
+<g class="iam-kb2"><text class="iam-mk mid f-faint" x="398" y="348">–</text></g>
+<g class="iam-kb3"><text class="iam-mk mid f-red b" x="450" y="348">✕</text></g>
+<g class="iam-kc0"><text class="iam-mk mid f-red b" x="294" y="372">Deny</text></g>
+<circle class="none s-red iam-x3b" cx="450" cy="344" r="10" stroke-width="2"/>
+<rect class="none s-red iam-x3c" x="274" y="359" width="40" height="18" rx="9" stroke-width="2"/>
+<g class="iam-d3a"><text class="tiny sb mid f-green" x="629" y="324">Allow</text></g>
+<g class="iam-d3b"><text class="tiny sb mid f-red" x="629" y="348">implicit deny</text></g>
+<g class="iam-d3c"><text class="tiny sb mid f-red" x="629" y="372">explicit deny</text></g>
+<g class="iam-g3a"><text class="tiny mono" x="720" y="324">GetObject</text><text class="tiny" x="783" y="324">https</text><text class="tiny sb end f-green" x="914" y="324">200 OK</text></g>
+<g class="iam-g3b"><text class="tiny mono" x="720" y="348">DeleteObject</text><text class="tiny sb end f-red" x="914" y="348">403 AccessDenied</text></g>
+<g class="iam-g3c"><text class="tiny mono" x="720" y="372">GetObject</text><text class="tiny" x="783" y="372">http</text><text class="tiny sb end f-red" x="914" y="372">403 AccessDenied</text></g>
+<g class="p3"><text class="tiny end" x="662" y="271">✓ allows · – no match · ✕ no Allow</text></g>
+<g class="p4">
+<rect class="box" x="220" y="254" width="454" height="132" rx="10"/>
+<text class="iam-l13" x="232" y="272">IAM Access Analyzer</text>
+<text class="tiny end" x="662" y="272">part of IAM · uses CloudTrail</text>
+<rect class="iam-card" x="232" y="282" width="212" height="96" rx="8"/>
+<text class="tiny sb" x="242" y="298">unused access findings</text>
+<text class="tiny" x="242" y="313">unused roles, access keys and</text>
+<text class="tiny" x="242" y="326">passwords; unused actions</text>
+<rect class="iam-card" x="456" y="282" width="208" height="96" rx="8"/>
+<text class="tiny sb" x="466" y="298">policy generation</text>
+<text class="tiny" x="466" y="313">reads up to 90 days of</text>
+<text class="tiny" x="466" y="326">CloudTrail for one role</text>
+</g>
+<g class="iam-aa1"><text class="tiny sb f-green" x="466" y="345">draft for gha-deploy:</text><text class="tiny mono f-green" x="466" y="359">lambda:UpdateFunctionCode, …</text><text class="tiny f-amber-ink" x="466" y="373">S3 object calls: service only</text></g>
+<g class="iam-aa2"><text class="tiny sb f-amber-ink" x="242" y="345">role gha-deploy, 90 days:</text><text class="tiny mono f-amber-ink" x="242" y="359">AWSLambda_FullAccess</text><text class="tiny f-amber-ink" x="242" y="373">mostly unused: trim it</text></g>
+<!-- notes, one per step -->
+<g class="p1"><rect class="box" x="34" y="398" width="892" height="70" rx="10"/><text class="iam-hd" x="48" y="414">EVERY CALL IS SIGNED, THEN AUTHORIZED</text><text class="iam-n" x="48" y="430">People sign in through IAM Identity Center with MFA and work in the role their permission set provides. Workloads use roles: Lambda</text><text class="iam-n" x="48" y="444">execution roles, ECS task roles, EC2 instance profiles. CI trades an OIDC token for a role; other accounts assume cross-account roles.</text><text class="iam-n" x="48" y="458">Requests carry a SigV4 signature. IAM checks it, then the policies: anything that no policy allows is denied (the root user aside).</text></g>
+<g class="p2"><rect class="box" x="34" y="398" width="442" height="70" rx="10"/><text class="iam-hd" x="48" y="414">A ROLE HAS TWO POLICIES</text><text class="iam-n" x="48" y="430">Trust policy: who may assume it, here lambda.amazonaws.com.</text><text class="iam-n" x="48" y="444">Permissions policy: what its sessions may do in photos-prod.</text><text class="iam-n" x="48" y="458">Lambda assumes it for you: nothing secret in code or image.</text><rect class="box" x="486" y="398" width="440" height="70" rx="10"/><text class="iam-hd" x="500" y="414">TEMPORARY CREDENTIALS</text><text class="iam-n" x="500" y="430">STS returns an AccessKeyId (ASIA…), secret, session token, expiry.</text><text class="iam-n" x="500" y="444">Lambda exposes them as AWS_ACCESS_KEY_ID … AWS_SESSION_TOKEN.</text><text class="iam-n" x="500" y="458">The SDK signs with SigV4 and sends X-Amz-Security-Token along.</text></g>
+<g class="p3"><rect class="box" x="34" y="398" width="442" height="70" rx="10"/><text class="iam-hd" x="48" y="414">THE RULE, IN ORDER</text><text class="iam-n" x="48" y="430">An explicit Deny in any policy ends it: denied, whatever allows.</text><text class="iam-n" x="48" y="444">Otherwise SCPs and RCPs, an identity or resource policy, and any</text><text class="iam-n" x="48" y="458">boundary or session policy must all allow it; if not, implicit deny.</text><rect class="box" x="486" y="398" width="440" height="70" rx="10"/><text class="iam-hd" x="500" y="414">WHAT S3 SAYS ABOUT <tspan class="iam-key">u/9f3c/IMG_0042.jpg</tspan></text><text class="iam-n" x="500" y="430">DeleteObject: 403, no identity-based policy allows the action.</text><text class="iam-n" x="500" y="444">http GetObject: 403, explicit deny in a resource-based policy.</text><text class="iam-n" x="500" y="458">S3 adds this context for callers in the same account or org.</text></g>
+<g class="p4"><rect class="box" x="34" y="398" width="442" height="70" rx="10"/><text class="iam-hd" x="48" y="414">TIGHTEN WITH EVIDENCE</text><text class="iam-n" x="48" y="430">Start narrow. Access Analyzer drafts a policy from up to 90 days</text><text class="iam-n" x="48" y="444">of CloudTrail (S3 object calls are data events: service only) and</text><text class="iam-n" x="48" y="458">flags unused roles, keys, passwords and actions, for a monthly fee.</text><rect class="f-amber-soft s-amber" x="486" y="398" width="440" height="70" rx="10" stroke-width="1.5"/><text class="iam-hd f-amber-ink" x="500" y="414">LONG-LIVED KEYS AND THE ROOT USER</text><text class="iam-n" x="500" y="430">An access key (AKIA…) works until it is deactivated or deleted.</text><text class="iam-n" x="500" y="444">Prefer roles and federation, MFA for people, and the root user</text><text class="iam-n" x="500" y="458">only for the few tasks that need it.</text></g>
+<!-- tokens -->
+<g class="iam-t1a"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">GetObject</text></g>
+<g class="iam-t1b"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">ListObjectsV2</text></g>
+<g class="iam-t1c"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">UpdateFunctionCode</text></g>
+<g class="iam-t2a"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="19">AssumeRole</text></g>
+<g class="iam-t2b"><rect class="f-orange pkt" x="-15" y="-8" width="30" height="16" rx="4"/><text class="iam-tk mid" y="3">ASIA…</text></g>
+<g class="iam-t2c"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">GetObject</text></g>
+<g class="iam-t3a"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">GetObject</text></g>
+<g class="iam-t3b"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">DeleteObject</text></g>
+<g class="iam-t3c"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">GetObject (http)</text></g>
+<circle class="f-teal pkt iam-t40" r="5"/>
+<circle class="f-teal pkt iam-t41" r="5"/>
+<circle class="f-teal pkt iam-t42" r="5"/>
+</g>
+</svg>

@@ -1,0 +1,217 @@
+{
+  "aka": [
+    "nginx",
+    "engine x",
+    "NGINX Open Source"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "NGINX meets every request for shop.example: it ends TLS, serves /static/ and proxies /api/.",
+      "body": "Every request for **shop.example** reaches NGINX first. It terminates TLS on port 443 with the site's certificate, serves `location /static/` from local disk, and passes `location /api/` to the upstream **catalog**, three app servers that speak plain HTTP on port 8080, with a 60 s cache for product responses and a limit of 10 requests a second per client IP. It is the job an ingress controller does in Kubernetes, and a cloud load balancer often sits in front of it."
+    },
+    {
+      "title": "Event-driven workers",
+      "caption": "One worker per core, one event loop each: least_conn sends GET /api/products/42 to app-2.",
+      "body": "The **master process** reads `nginx.conf` and, with `worker_processes auto`, starts one **worker** per CPU core, four here. Each worker serves all of its connections from one event loop (epoll on Linux), not a thread per connection. `GET /api/products/42` is decrypted, matched to `location /api/products/` (the longest matching prefix; a cache MISS) and sent by `least_conn` to **app-2**, which has the fewest active connections, over a kept-alive connection; the 200 comes back and is cached for 60 s."
+    },
+    {
+      "title": "Cache, limits, failures",
+      "caption": "A HIT never reaches the apps; a client past 10 r/s and a queue of 20 gets 429; app-2 is skipped.",
+      "body": "The mobile app asks for `/api/products/42` within the 60 s, so NGINX answers from **proxy_cache** (a HIT) and no app server is called. The scraper at 203.0.113.7 sends more than 10 requests a second; the excess waits in a queue of 20 (`burst=20`), and once it is full the next request is rejected with **429** (set by `limit_req_status`; the default is 503). **app-2** refuses `GET /api/reviews/42`, its third failure within 10 s (`max_fails=3 fail_timeout=10s`), so NGINX skips it for 10 s and passes the request on to **app-3**."
+    },
+    {
+      "title": "Reload, and the limits",
+      "caption": "nginx -s reload: new workers start, old ones finish and exit. Limits: static config, Plus features.",
+      "body": "`nginx -s reload` sends HUP to the master, which checks the new configuration, starts new workers with it and asks the old ones to shut down gracefully: they stop accepting connections, finish the requests they are serving and exit. The limits: configuration is mostly static, so a new upstream server means a reload (or DNS re-resolution with the `resolve` parameter; the NGINX Plus API changes upstreams without one), active health checks are an NGINX Plus feature, and rich per-request policy such as per-key quotas or request transformation is easier in an API gateway or Envoy."
+    }
+  ],
+  "related": [
+    "load-balancing",
+    "gateway-offloading",
+    "rate-limiting",
+    "api-gateway",
+    "cdn-edge-caching",
+    "kubernetes",
+    "health-endpoint-monitoring",
+    "mutual-tls"
+  ],
+  "references": [
+    {
+      "title": "nginx.org — Beginner's Guide",
+      "url": "https://nginx.org/en/docs/beginners_guide.html"
+    },
+    {
+      "title": "nginx.org — Controlling nginx (reload and binary upgrade)",
+      "url": "https://nginx.org/en/docs/control.html"
+    },
+    {
+      "title": "nginx.org — Connection processing methods",
+      "url": "https://nginx.org/en/docs/events.html"
+    },
+    {
+      "title": "nginx.org — Core functionality (worker_processes, worker_connections)",
+      "url": "https://nginx.org/en/docs/ngx_core_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_core_module (location matching)",
+      "url": "https://nginx.org/en/docs/http/ngx_http_core_module.html"
+    },
+    {
+      "title": "nginx.org — How nginx processes a request",
+      "url": "https://nginx.org/en/docs/http/request_processing.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_upstream_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_upstream_module.html"
+    },
+    {
+      "title": "nginx.org — Using nginx as HTTP load balancer",
+      "url": "https://nginx.org/en/docs/http/load_balancing.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_proxy_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_limit_req_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_limit_req_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_limit_conn_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_limit_conn_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_realip_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_realip_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_gzip_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_gzip_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_stub_status_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_stub_status_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_ssl_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_ssl_module.html"
+    },
+    {
+      "title": "nginx.org — Support for QUIC and HTTP/3",
+      "url": "https://nginx.org/en/docs/quic.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_v3_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_v3_module.html"
+    },
+    {
+      "title": "nginx.org — Module ngx_http_acme_module",
+      "url": "https://nginx.org/en/docs/http/ngx_http_acme_module.html"
+    },
+    {
+      "title": "nginx.org — WebSocket proxying",
+      "url": "https://nginx.org/en/docs/http/websocket.html"
+    },
+    {
+      "title": "nginx.org — Changes in the mainline branch (1.31.6, September 2026)",
+      "url": "https://nginx.org/en/CHANGES"
+    },
+    {
+      "title": "nginx.org — Changes in the stable branch (1.30.5, September 2026)",
+      "url": "https://nginx.org/en/CHANGES-1.30"
+    },
+    {
+      "title": "nginx.org — License (2-clause BSD)",
+      "url": "https://nginx.org/LICENSE"
+    },
+    {
+      "title": "freenginx — about the fork",
+      "url": "https://freenginx.org/en/"
+    },
+    {
+      "title": "NGINX Documentation — Control NGINX Processes at Runtime (Control API)",
+      "url": "https://docs.nginx.com/nginx/admin-guide/basic-functionality/runtime-control/"
+    },
+    {
+      "title": "NGINX Documentation — HTTP Health Checks",
+      "url": "https://docs.nginx.com/nginx/admin-guide/load-balancer/http-health-check/"
+    },
+    {
+      "title": "NGINX Documentation — Dynamic Configuration of Upstreams with the NGINX Plus API",
+      "url": "https://docs.nginx.com/nginx/admin-guide/load-balancer/dynamic-configuration-api/"
+    },
+    {
+      "title": "Owen Garrett — Inside NGINX: How We Designed for Performance & Scale (NGINX blog, 2015)",
+      "url": "https://blog.nginx.org/blog/inside-nginx-how-we-designed-for-performance-scale"
+    },
+    {
+      "title": "Andrew Alexeev — nginx, in The Architecture of Open Source Applications, Volume II",
+      "url": "https://aosabook.org/en/v2/nginx.html"
+    },
+    {
+      "title": "Kubernetes blog — Ingress NGINX Retirement: What You Need to Know (November 2025)",
+      "url": "https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/"
+    },
+    {
+      "title": "GitHub — kubernetes/ingress-nginx (archived March 2026)",
+      "url": "https://github.com/kubernetes/ingress-nginx"
+    },
+    {
+      "title": "NGINX Documentation — F5 NGINX Ingress Controller",
+      "url": "https://docs.nginx.com/nginx-ingress-controller/"
+    },
+    {
+      "title": "NGINX Documentation — F5 NGINXaaS for Azure",
+      "url": "https://docs.nginx.com/nginxaas-azure/"
+    },
+    {
+      "title": "NGINX Documentation — Installing NGINX Plus AMIs on Amazon EC2",
+      "url": "https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus-amazon-web-services/"
+    },
+    {
+      "title": "AWS — What is an Application Load Balancer?",
+      "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html"
+    },
+    {
+      "title": "AWS WAF Developer Guide — Using rate-based rule statements in AWS WAF",
+      "url": "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html"
+    },
+    {
+      "title": "HAProxy — project home page (features, news and release notes)",
+      "url": "https://www.haproxy.org/"
+    },
+    {
+      "title": "HAProxy — LICENSE (GPL with LGPL headers)",
+      "url": "https://github.com/haproxy/haproxy/blob/master/LICENSE"
+    },
+    {
+      "title": "Envoy documentation — What is Envoy",
+      "url": "https://www.envoyproxy.io/docs/envoy/latest/intro/what_is_envoy"
+    },
+    {
+      "title": "Envoy documentation — xDS REST and gRPC protocol",
+      "url": "https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol"
+    },
+    {
+      "title": "Envoy documentation — Cache filter",
+      "url": "https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/cache_filter"
+    },
+    {
+      "title": "Caddy documentation — Automatic HTTPS",
+      "url": "https://caddyserver.com/docs/automatic-https"
+    },
+    {
+      "title": "Caddy documentation — reverse_proxy (health checks)",
+      "url": "https://caddyserver.com/docs/caddyfile/directives/reverse_proxy"
+    },
+    {
+      "title": "Caddy documentation — API",
+      "url": "https://caddyserver.com/docs/api"
+    },
+    {
+      "title": "Traefik documentation — Providers",
+      "url": "https://doc.traefik.io/traefik/reference/install-configuration/providers/overview/"
+    }
+  ]
+}

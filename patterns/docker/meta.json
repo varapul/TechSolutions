@@ -1,0 +1,146 @@
+{
+  "aka": [
+    "Docker",
+    "Containers",
+    "Container images",
+    "OCI images"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "CI builds catalog:1.4.2 once; laptop, staging and production pull the same digest from Amazon ECR.",
+      "body": "Acme Shop's CI builds the Catalog service's image **catalog:1.4.2** once and pushes it to Amazon ECR, where the tag points to a manifest digest, `sha256:9f2c…`. A developer's laptop (Docker Desktop), staging (Amazon ECS) and production (Kubernetes on Amazon EKS) all pull that **digest**, so the image that passed the tests in staging is, byte for byte, the one that runs in production. The image carries the service and everything it needs above the kernel: a Debian userland, Node.js 24, its npm dependencies and its compiled code."
+    },
+    {
+      "title": "Layers and the cache",
+      "caption": "Only the app code changed: BuildKit builds one new layer, and push and pull move only that layer.",
+      "body": "Each `RUN`, `COPY` or `ADD` instruction saves its file changes as a read-only **layer**, named by a hash of its content. Only `src/price.ts` changed, so BuildKit re-runs `COPY . .`, the build and the `COPY` that takes its output, takes every other step from its **cache**, and the image gets one new layer; the `node:24` build stages, with TypeScript and the dev dependencies, never reach it, because the last stage starts `FROM node:24-slim` and copies in only what it needs. Push and pull compare digests, so ECR and host-1 receive just that one layer."
+    },
+    {
+      "title": "Running a container",
+      "caption": "docker run: runc starts node as PID 1 in its own namespaces, in a cgroup capped at 0.5 CPU, 512 MiB.",
+      "body": "`docker run` goes to **dockerd**, which asks **containerd** to create the container; containerd has **runc** start `node` as PID 1 in new pid, net, mnt, uts, ipc and cgroup **namespaces**, so it gets its own process tree, network interface, mounts and hostname. A **cgroup** caps it at 0.5 CPU (`cpu.max` 50000 100000) and 512 MiB (`memory.max`). Each container adds only a thin **writable layer** (copy-on-write) on top of the image layers, which both containers share, and both run on host-1's one kernel."
+    },
+    {
+      "title": "Limits and trade-offs",
+      "caption": "catalog-2 hits 512 MiB: OOM-killed (exit 137). Shared kernel; the writable layer is temporary.",
+      "body": "When catalog-2 reaches its 512 MiB limit, the kernel's OOM killer sends it SIGKILL: `docker inspect` reports `OOMKilled` and exit code **137** (128 + 9). Its writable layer is deleted when the container is removed, so state belongs in volumes or in a database. Every container shares the host's kernel, so isolation is weaker than a virtual machine's: run as non-root, drop capabilities, keep the root filesystem read-only, and scan, sign and pin images by digest."
+    }
+  ],
+  "related": [
+    "immutable-infrastructure",
+    "kubernetes",
+    "amazon-ecs",
+    "aws-lambda",
+    "sidecar",
+    "rolling-update",
+    "blue-green-deployment",
+    "gitops"
+  ],
+  "references": [
+    {
+      "title": "Docker Docs — Understanding the image layers",
+      "url": "https://docs.docker.com/get-started/docker-concepts/building-images/understanding-image-layers/"
+    },
+    {
+      "title": "Docker Docs — Multi-stage builds",
+      "url": "https://docs.docker.com/build/building/multi-stage/"
+    },
+    {
+      "title": "Docker Docs — Build cache invalidation",
+      "url": "https://docs.docker.com/build/cache/invalidation/"
+    },
+    {
+      "title": "Docker Docs — Building best practices",
+      "url": "https://docs.docker.com/build/building/best-practices/"
+    },
+    {
+      "title": "Docker Docs — Storage drivers",
+      "url": "https://docs.docker.com/engine/storage/drivers/"
+    },
+    {
+      "title": "Docker Docs — Resource constraints",
+      "url": "https://docs.docker.com/engine/containers/resource_constraints/"
+    },
+    {
+      "title": "Docker Docs — Docker Engine security",
+      "url": "https://docs.docker.com/engine/security/"
+    },
+    {
+      "title": "Docker Docs — Docker Hub pull usage and limits",
+      "url": "https://docs.docker.com/docker-hub/usage/pulls/"
+    },
+    {
+      "title": "Docker Docs — Docker Desktop license agreement",
+      "url": "https://docs.docker.com/subscription-billing/desktop-license/"
+    },
+    {
+      "title": "Docker Docs — Docker Engine version 29 release notes",
+      "url": "https://docs.docker.com/engine/release-notes/29/"
+    },
+    {
+      "title": "Open Container Initiative — About the OCI",
+      "url": "https://opencontainers.org/about/overview/"
+    },
+    {
+      "title": "OCI Image Format Specification — release v1.1.1 (March 2025)",
+      "url": "https://github.com/opencontainers/image-spec/releases/tag/v1.1.1"
+    },
+    {
+      "title": "OCI Runtime Specification — release v1.3.0 (November 2025)",
+      "url": "https://github.com/opencontainers/runtime-spec/releases/tag/v1.3.0"
+    },
+    {
+      "title": "OCI Distribution Specification",
+      "url": "https://github.com/opencontainers/distribution-spec/blob/main/spec.md"
+    },
+    {
+      "title": "Linux manual page — namespaces(7)",
+      "url": "https://man7.org/linux/man-pages/man7/namespaces.7.html"
+    },
+    {
+      "title": "Linux manual page — cgroups(7)",
+      "url": "https://man7.org/linux/man-pages/man7/cgroups.7.html"
+    },
+    {
+      "title": "Linux kernel documentation — Control Group v2",
+      "url": "https://docs.kernel.org/admin-guide/cgroup-v2.html"
+    },
+    {
+      "title": "containerd — an industry-standard container runtime",
+      "url": "https://containerd.io/"
+    },
+    {
+      "title": "Kubernetes — Container Runtimes",
+      "url": "https://kubernetes.io/docs/setup/production-environment/container-runtimes/"
+    },
+    {
+      "title": "Kubernetes Blog — Updated: Dockershim Removal FAQ (2022)",
+      "url": "https://kubernetes.io/blog/2022/02/17/dockershim-faq/"
+    },
+    {
+      "title": "Agache et al. — Firecracker: Lightweight Virtualization for Serverless Applications (NSDI 2020)",
+      "url": "https://www.usenix.org/conference/nsdi20/presentation/agache"
+    },
+    {
+      "title": "Firecracker — project site",
+      "url": "https://firecracker-microvm.github.io/"
+    },
+    {
+      "title": "Amazon ECR User Guide — Scan images for software vulnerabilities",
+      "url": "https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html"
+    },
+    {
+      "title": "Sigstore — Signing containers with Cosign",
+      "url": "https://docs.sigstore.dev/cosign/signing/signing_with_containers/"
+    },
+    {
+      "title": "Podman documentation — What is Podman?",
+      "url": "https://docs.podman.io/en/latest/"
+    },
+    {
+      "title": "AWS Lambda Developer Guide — Lambda quotas",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html"
+    }
+  ]
+}

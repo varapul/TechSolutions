@@ -1,0 +1,812 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Elasticsearch &amp; OpenSearch</title>
+<desc id="dg-desc">Elasticsearch &amp; OpenSearch. Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes. Step 1, Where it sits: Acme Shop writes to PostgreSQL; CDC through Kafka feeds the products index; searches go there. Step 2, Analyse, index, refresh: Red ceramic mug is analysed into red, ceram, mug; a refresh 1 s later makes it searchable in P1. Step 3, Route, replicate, search: _id 14 routes to P1, which copies it to R1. node-1 asks one copy of each shard, merges, fetches 3. Step 4, Failover and the limits: node-2 fails: R1 becomes primary, health turns yellow. Limits: a copy, mappings, paging, shards.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">Elasticsearch &amp; OpenSearch</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Analyse, index, refresh</text>
+  <text class="step on p2" x="262" y="518">2 · Analyse, index, refresh</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Route, replicate, search</text>
+  <text class="step on p3" x="484" y="518">3 · Route, replicate, search</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Failover and the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Failover and the limits</text>
+  <text class="caption p1" x="40" y="552">Acme Shop writes to PostgreSQL; CDC through Kafka feeds the products index; searches go there.</text>
+  <text class="caption p2" x="40" y="552">Red ceramic mug is analysed into red, ceram, mug; a refresh 1 s later makes it searchable in P1.</text>
+  <text class="caption p3" x="40" y="552">_id 14 routes to P1, which copies it to R1. node-1 asks one copy of each shard, merges, fetches 3.</text>
+  <text class="caption p4" x="40" y="552">node-2 fails: R1 becomes primary, health turns yellow. Limits: a copy, mappings, paging, shards.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Elasticsearch and OpenSearch. Timeline (20s loop, 1s = 5%):
+   0-25%   step 1: Acme Shop inserts product 14 into PostgreSQL; Debezium publishes the change to Kafka,
+           search-indexer sends it to the cluster with _bulk (2.35 s); 1 s later the app searches
+           "red mug" on node-1 (3.6 s) and gets 5 hits (4.15 s): ranked hits and brand counts
+   25-50%  step 2: inside P1: the doc is analysed (red, ceram, mug), lands in the in-memory buffer and
+           the translog (fsync, ack 7.7 s), a 1 s refresh writes segment _3 (8.4 s): 14 is searchable
+           and appears in the inverted index; segments _1 _2 _3 merge into _4 (9.0 s)
+   50-75%  step 3: _bulk reaches node-3, hash(_id) % 3 = 1 routes it to P1 on node-2 (10.9 s), which
+           copies it to R1 on node-3 (11.6 s); the search reaches node-1, which queries R0, P2 and R1
+           (12.8-13.0 s), merges top hits and brand counts (13.7 s), fetches and answers (14.35 s)
+   75-100% step 4: node-2 fails (15.3 s); the master promotes R1 to primary (16.5 s), health is yellow;
+           the limits appear (17.0-18.8 s); everything resets in the last half-second */
+.diagram .es-frame { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+.diagram .es-in { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.diagram .es-pri { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 1.5; }
+.diagram .es-rep { fill: var(--bg); stroke: var(--teal); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.diagram .es-chip { fill: var(--panel-2); stroke: var(--line); stroke-width: 1.2; }
+.diagram .es-term { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 1.2; }
+.diagram .es-bus { fill: none; stroke: var(--wire); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.diagram .es-ghost { fill: var(--bg); fill-opacity: 0.72; }
+.diagram .es-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .es-hd-amber { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--amber-ink); }
+.diagram .es-hd-red { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--red); }
+.diagram .es-rbar { transform-box: fill-box; transform-origin: 0 50%; }
+/* arrivals: forward 10.90 s, copy 11.60 s, scatter 12.81/12.93/12.99 s, gather 13.46/13.58/13.64 s, promote 16.46 s */
+.diagram .es-ok3 { opacity: 0; animation: es-ok3 var(--T) linear infinite; }
+.diagram .es-yel { opacity: 0; animation: es-yel var(--T) linear infinite; }
+.diagram .es-f1 { opacity: 0; animation: es-f1 var(--T) linear infinite; }
+.diagram .es-zdoc { opacity: 0; animation: es-zdoc var(--T) linear infinite; }
+.diagram .es-tok { opacity: 0; animation: es-tok var(--T) linear infinite; }
+.diagram .es-stm { opacity: 0; animation: es-stm var(--T) linear infinite; }
+.diagram .es-buf { opacity: 0; animation: es-buf var(--T) linear infinite; }
+.diagram .es-tl { opacity: 0; animation: es-tl var(--T) linear infinite; }
+.diagram .es-ack { opacity: 0; animation: es-ack var(--T) linear infinite; }
+.diagram .es-s3 { opacity: 0; animation: es-s3 var(--T) linear infinite; }
+.diagram .es-s4 { opacity: 0; animation: es-s4 var(--T) linear infinite; }
+.diagram .es-srch { opacity: 0; animation: es-srch var(--T) linear infinite; }
+.diagram .es-mrg { opacity: 0; animation: es-mrg var(--T) linear infinite; }
+.diagram .es-ix { opacity: 0; animation: es-ix var(--T) linear infinite; }
+.diagram .es-n1c { opacity: 0; animation: es-n1c var(--T) linear infinite; }
+.diagram .es-mg { opacity: 0; animation: es-mg var(--T) linear infinite; }
+.diagram .es-fe { opacity: 0; animation: es-fe var(--T) linear infinite; }
+.diagram .es-n3r { opacity: 0; animation: es-n3r var(--T) linear infinite; }
+.diagram .es-n2w { opacity: 0; animation: es-n2w var(--T) linear infinite; }
+.diagram .es-r1c { opacity: 0; animation: es-r1c var(--T) linear infinite; }
+.diagram .es-q0 { opacity: 0; animation: es-q0 var(--T) linear infinite; }
+.diagram .es-q1 { opacity: 0; animation: es-q1 var(--T) linear infinite; }
+.diagram .es-q2 { opacity: 0; animation: es-q2 var(--T) linear infinite; }
+.diagram .es-p1r { opacity: 0; animation: es-p1r var(--T) linear infinite; }
+.diagram .es-down { opacity: 0; animation: es-down var(--T) linear infinite; }
+.diagram .es-prom { opacity: 0; animation: es-prom var(--T) linear infinite; }
+.diagram .es-f4 { opacity: 0; animation: es-f4 var(--T) linear infinite; }
+.diagram .es-l1 { opacity: 0; animation: es-l1 var(--T) linear infinite; }
+.diagram .es-l2 { opacity: 0; animation: es-l2 var(--T) linear infinite; }
+.diagram .es-l3 { opacity: 0; animation: es-l3 var(--T) linear infinite; }
+.diagram .es-l4 { opacity: 0; animation: es-l4 var(--T) linear infinite; }
+.diagram .es-ha { opacity: 0; animation: es-ha var(--T) linear infinite; }
+.diagram .es-hn { opacity: 0; animation: es-hn var(--T) linear infinite; }
+.diagram .es-t1ins { opacity: 0; animation: es-t1ins var(--T) linear infinite; }
+.diagram .es-t1cdc { opacity: 0; animation: es-t1cdc var(--T) linear infinite; }
+.diagram .es-t1kfk { opacity: 0; animation: es-t1kfk var(--T) linear infinite; }
+.diagram .es-t1blk { opacity: 0; animation: es-t1blk var(--T) linear infinite; }
+.diagram .es-t1q { opacity: 0; animation: es-t1q var(--T) linear infinite; }
+.diagram .es-t1r { opacity: 0; animation: es-t1r var(--T) linear infinite; }
+.diagram .es-t2d { opacity: 0; animation: es-t2d var(--T) linear infinite; }
+.diagram .es-t2b { opacity: 0; animation: es-t2b var(--T) linear infinite; }
+.diagram .es-t2t { opacity: 0; animation: es-t2t var(--T) linear infinite; }
+.diagram .es-t3b { opacity: 0; animation: es-t3b var(--T) linear infinite; }
+.diagram .es-t3f { opacity: 0; animation: es-t3f var(--T) linear infinite; }
+.diagram .es-t3c { opacity: 0; animation: es-t3c var(--T) linear infinite; }
+.diagram .es-t3a { opacity: 0; animation: es-t3a var(--T) linear infinite; }
+.diagram .es-t3q { opacity: 0; animation: es-t3q var(--T) linear infinite; }
+.diagram .es-sq0 { opacity: 0; animation: es-sq0 var(--T) linear infinite; }
+.diagram .es-sg0 { opacity: 0; animation: es-sg0 var(--T) linear infinite; }
+.diagram .es-sq1 { opacity: 0; animation: es-sq1 var(--T) linear infinite; }
+.diagram .es-sg1 { opacity: 0; animation: es-sg1 var(--T) linear infinite; }
+.diagram .es-sq2 { opacity: 0; animation: es-sq2 var(--T) linear infinite; }
+.diagram .es-sg2 { opacity: 0; animation: es-sg2 var(--T) linear infinite; }
+.diagram .es-t3r { opacity: 0; animation: es-t3r var(--T) linear infinite; }
+.diagram .es-t4p { opacity: 0; animation: es-t4p var(--T) linear infinite; }
+.diagram .es-res { animation: es-res var(--T) linear infinite; }
+.diagram .es-old { animation: es-old var(--T) linear infinite; }
+.diagram .es-rbar { animation: es-rbar var(--T) linear infinite; }
+.diagram .es-hb { animation: es-hb var(--T) linear infinite; }
+@keyframes es-ok3 {
+  0% { opacity: 0; }
+  60.25% { opacity: 0; }
+  61.75% { opacity: 1; }
+  73% { opacity: 1; }
+  74.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-yel {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-f1 {
+  0% { opacity: 0; }
+  12.25% { opacity: 0; }
+  13.5% { opacity: 1; }
+  16.5% { opacity: 1; }
+  18.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-res {
+  0% { opacity: 0; }
+  20.75% { opacity: 0; }
+  22.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-zdoc {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-tok {
+  0% { opacity: 0; }
+  30.75% { opacity: 0; }
+  32.25% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-stm {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-buf {
+  0% { opacity: 0; }
+  37.25% { opacity: 0; }
+  38.5% { opacity: 1; }
+  42% { opacity: 1; }
+  43.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-tl {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  39% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-ack {
+  0% { opacity: 0; }
+  38.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-s3 {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  43.25% { opacity: 1; }
+  45% { opacity: 1; }
+  46.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-ix {
+  0% { opacity: 0; }
+  42.25% { opacity: 0; }
+  43.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-srch {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  43.75% { opacity: 1; }
+  44.75% { opacity: 1; }
+  46% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-mrg {
+  0% { opacity: 0; }
+  46% { opacity: 0; }
+  47.5% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-s4 {
+  0% { opacity: 0; }
+  45% { opacity: 0; }
+  46.5% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-old {
+  0% { opacity: 1; }
+  44.75% { opacity: 1; }
+  46.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-rbar {
+  0% { transform: scaleX(0); opacity: 1; }
+  37.25% { transform: scaleX(0); opacity: 1; }
+  42% { transform: scaleX(1); opacity: 1; }
+  42.75% { transform: scaleX(1); opacity: 0; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes es-n3r {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  54% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-p1r {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  56% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-n2w {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-r1c {
+  0% { opacity: 0; }
+  58.25% { opacity: 0; }
+  59.5% { opacity: 1; }
+  64.75% { opacity: 1; }
+  65.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-n1c {
+  0% { opacity: 0; }
+  62.25% { opacity: 0; }
+  63.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-q0 {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-q2 {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  66.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-q1 {
+  0% { opacity: 0; }
+  65.25% { opacity: 0; }
+  66.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-mg {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  70% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-fe {
+  0% { opacity: 0; }
+  69.75% { opacity: 0; }
+  71.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-down {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-prom {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  84% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-f4 {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-l1 {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-l2 {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-l3 {
+  0% { opacity: 0; }
+  89.5% { opacity: 0; }
+  91% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-l4 {
+  0% { opacity: 0; }
+  91.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-hb {
+  0% { opacity: 1; }
+  82.75% { opacity: 1; }
+  84% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes es-ha {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-hn {
+  0% { opacity: 0; }
+  83.75% { opacity: 0; }
+  85.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes es-t1ins {
+  0% { transform: translate(109px, 196px); opacity: 0; }
+  1.75% { transform: translate(109px, 196px); opacity: 0; }
+  2% { opacity: 1; }
+  3.75% { transform: translate(109px, 214px); opacity: 1; }
+  4% { transform: translate(109px, 214px); opacity: 0; }
+  100% { transform: translate(109px, 214px); opacity: 0; }
+}
+@keyframes es-t1cdc {
+  0% { transform: translate(109px, 289px); opacity: 0; }
+  4.75% { transform: translate(109px, 289px); opacity: 0; }
+  5% { opacity: 1; }
+  6.75% { transform: translate(109px, 309px); opacity: 1; }
+  7% { transform: translate(109px, 309px); opacity: 0; }
+  100% { transform: translate(109px, 309px); opacity: 0; }
+}
+@keyframes es-t1kfk {
+  0% { transform: translate(109px, 359px); opacity: 0; }
+  7.5% { transform: translate(109px, 359px); opacity: 0; }
+  7.75% { opacity: 1; }
+  9.25% { transform: translate(109px, 377px); opacity: 1; }
+  9.5% { transform: translate(109px, 377px); opacity: 0; }
+  100% { transform: translate(109px, 377px); opacity: 0; }
+}
+@keyframes es-t1blk {
+  0% { transform: translate(185px, 403px); opacity: 0; }
+  10% { transform: translate(185px, 403px); opacity: 0; }
+  10.25% { opacity: 1; }
+  11.75% { transform: translate(212px, 403px); opacity: 1; }
+  12% { transform: translate(212px, 403px); opacity: 0; }
+  100% { transform: translate(212px, 403px); opacity: 0; }
+}
+@keyframes es-t1q {
+  0% { transform: translate(185px, 169px); opacity: 0; }
+  16.5% { transform: translate(185px, 169px); opacity: 0; }
+  16.75% { opacity: 1; }
+  18% { transform: translate(212px, 169px); opacity: 1; }
+  18.25% { transform: translate(212px, 169px); opacity: 0; }
+  100% { transform: translate(212px, 169px); opacity: 0; }
+}
+@keyframes es-t1r {
+  0% { transform: translate(212px, 169px); opacity: 0; }
+  19.25% { transform: translate(212px, 169px); opacity: 0; }
+  19.5% { opacity: 1; }
+  20.75% { transform: translate(185px, 169px); opacity: 1; }
+  21% { transform: translate(185px, 169px); opacity: 0; }
+  100% { transform: translate(185px, 169px); opacity: 0; }
+}
+@keyframes es-t2d {
+  0% { transform: translate(356px, 279px); opacity: 0; }
+  26.75% { transform: translate(356px, 279px); opacity: 0; }
+  27% { opacity: 1; }
+  29.25% { transform: translate(414px, 169px); opacity: 1; }
+  29.5% { transform: translate(414px, 169px); opacity: 0; }
+  100% { transform: translate(414px, 169px); opacity: 0; }
+}
+@keyframes es-t2b {
+  0% { transform: translate(551px, 246px); opacity: 0; }
+  35% { transform: translate(551px, 246px); opacity: 0; }
+  35.25% { opacity: 1; }
+  37.25% { transform: translate(514px, 294px); opacity: 1; }
+  37.5% { transform: translate(514px, 294px); opacity: 0; }
+  100% { transform: translate(514px, 294px); opacity: 0; }
+}
+@keyframes es-t2t {
+  0% { transform: translate(551px, 246px); opacity: 0; }
+  35% { transform: translate(551px, 246px); opacity: 0; }
+  35.25% { opacity: 1; }
+  37.5% { transform: translate(514px, 342px); opacity: 1; }
+  37.75% { transform: translate(514px, 342px); opacity: 0; }
+  100% { transform: translate(514px, 342px); opacity: 0; }
+}
+@keyframes es-t3b {
+  0% { transform: translate(185px, 403px); opacity: 0; }
+  51% { transform: translate(185px, 403px); opacity: 0; }
+  51.25% { opacity: 1; }
+  52.5% { transform: translate(212px, 403px); opacity: 1; }
+  52.75% { transform: translate(212px, 403px); opacity: 0; }
+  100% { transform: translate(212px, 403px); opacity: 0; }
+}
+@keyframes es-t3f {
+  0% { transform: translate(364px, 355px); opacity: 0; }
+  53% { transform: translate(364px, 355px); opacity: 0; }
+  53.106% { transform: translate(371px, 355px); }
+  53.25% { opacity: 1; }
+  54.258% { transform: translate(371px, 279px); }
+  54.515% { transform: translate(354px, 279px); opacity: 1; }
+  54.765% { transform: translate(354px, 279px); opacity: 0; }
+  100% { transform: translate(354px, 279px); opacity: 0; }
+}
+@keyframes es-t3c {
+  0% { transform: translate(354px, 279px); opacity: 0; }
+  55.75% { transform: translate(354px, 279px); opacity: 0; }
+  55.974% { transform: translate(371px, 279px); }
+  56% { opacity: 1; }
+  57.763% { transform: translate(371px, 415px); }
+  57.987% { transform: translate(354px, 415px); opacity: 1; }
+  58.237% { transform: translate(354px, 415px); opacity: 0; }
+  100% { transform: translate(354px, 415px); opacity: 0; }
+}
+@keyframes es-t3a {
+  0% { transform: translate(212px, 403px); opacity: 0; }
+  58.75% { transform: translate(212px, 403px); opacity: 0; }
+  59% { opacity: 1; }
+  60.25% { transform: translate(185px, 403px); opacity: 1; }
+  60.5% { transform: translate(185px, 403px); opacity: 0; }
+  100% { transform: translate(185px, 403px); opacity: 0; }
+}
+@keyframes es-t3q {
+  0% { transform: translate(185px, 169px); opacity: 0; }
+  60.5% { transform: translate(185px, 169px); opacity: 0; }
+  60.75% { opacity: 1; }
+  62% { transform: translate(212px, 169px); opacity: 1; }
+  62.25% { transform: translate(212px, 169px); opacity: 0; }
+  100% { transform: translate(212px, 169px); opacity: 0; }
+}
+@keyframes es-sq0 {
+  0% { transform: translate(364px, 147px); opacity: 0; }
+  62.5% { transform: translate(364px, 147px); opacity: 0; }
+  62.558% { transform: translate(371px, 147px); }
+  62.75% { opacity: 1; }
+  63.925% { transform: translate(371px, 311px); }
+  64.067% { transform: translate(354px, 311px); opacity: 1; }
+  64.317% { transform: translate(354px, 311px); opacity: 0; }
+  100% { transform: translate(354px, 311px); opacity: 0; }
+}
+@keyframes es-sg0 {
+  0% { transform: translate(354px, 311px); opacity: 0; }
+  65.75% { transform: translate(354px, 311px); opacity: 0; }
+  65.892% { transform: translate(371px, 311px); }
+  66% { opacity: 1; }
+  67.258% { transform: translate(371px, 147px); }
+  67.317% { transform: translate(364px, 147px); opacity: 1; }
+  67.567% { transform: translate(364px, 147px); opacity: 0; }
+  100% { transform: translate(364px, 147px); opacity: 0; }
+}
+@keyframes es-sq1 {
+  0% { transform: translate(364px, 147px); opacity: 0; }
+  62.5% { transform: translate(364px, 147px); opacity: 0; }
+  62.558% { transform: translate(371px, 147px); }
+  62.75% { opacity: 1; }
+  64.525% { transform: translate(371px, 383px); }
+  64.667% { transform: translate(354px, 383px); opacity: 1; }
+  64.917% { transform: translate(354px, 383px); opacity: 0; }
+  100% { transform: translate(354px, 383px); opacity: 0; }
+}
+@keyframes es-sg1 {
+  0% { transform: translate(354px, 383px); opacity: 0; }
+  65.75% { transform: translate(354px, 383px); opacity: 0; }
+  65.892% { transform: translate(371px, 383px); }
+  66% { opacity: 1; }
+  67.858% { transform: translate(371px, 147px); }
+  67.917% { transform: translate(364px, 147px); opacity: 1; }
+  68.167% { transform: translate(364px, 147px); opacity: 0; }
+  100% { transform: translate(364px, 147px); opacity: 0; }
+}
+@keyframes es-sq2 {
+  0% { transform: translate(364px, 147px); opacity: 0; }
+  62.5% { transform: translate(364px, 147px); opacity: 0; }
+  62.558% { transform: translate(371px, 147px); }
+  62.75% { opacity: 1; }
+  64.792% { transform: translate(371px, 415px); }
+  64.933% { transform: translate(354px, 415px); opacity: 1; }
+  65.183% { transform: translate(354px, 415px); opacity: 0; }
+  100% { transform: translate(354px, 415px); opacity: 0; }
+}
+@keyframes es-sg2 {
+  0% { transform: translate(354px, 415px); opacity: 0; }
+  65.75% { transform: translate(354px, 415px); opacity: 0; }
+  65.892% { transform: translate(371px, 415px); }
+  66% { opacity: 1; }
+  68.125% { transform: translate(371px, 147px); }
+  68.183% { transform: translate(364px, 147px); opacity: 1; }
+  68.433% { transform: translate(364px, 147px); opacity: 0; }
+  100% { transform: translate(364px, 147px); opacity: 0; }
+}
+@keyframes es-t3r {
+  0% { transform: translate(212px, 169px); opacity: 0; }
+  70.25% { transform: translate(212px, 169px); opacity: 0; }
+  70.5% { opacity: 1; }
+  71.75% { transform: translate(185px, 169px); opacity: 1; }
+  72% { transform: translate(185px, 169px); opacity: 0; }
+  100% { transform: translate(185px, 169px); opacity: 0; }
+}
+@keyframes es-t4p {
+  0% { transform: translate(364px, 147px); opacity: 0; }
+  79.5% { transform: translate(364px, 147px); opacity: 0; }
+  79.567% { transform: translate(371px, 147px); }
+  79.75% { opacity: 1; }
+  82.144% { transform: translate(371px, 415px); }
+  82.308% { transform: translate(354px, 415px); opacity: 1; }
+  82.558% { transform: translate(354px, 415px); opacity: 0; }
+  100% { transform: translate(354px, 415px); opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- neighbours: the shop, its database and the change stream -->
+<rect class="box" x="34" y="144" width="150" height="50" rx="12"/>
+<text class="label mid" x="109" y="166">Acme Shop</text>
+<text class="sub mid" x="109" y="183">web app</text>
+<line class="wire" x1="184" y1="169" x2="212" y2="169" marker-end="url(#ah)"/>
+<line class="wire" x1="109" y1="194" x2="109" y2="214" marker-end="url(#ah)"/>
+<text class="tiny" x="117" y="209">writes</text>
+<path class="box" d="M34 224V278A75 8 0 0 0 184 278V224"/>
+<ellipse class="box" cx="109" cy="224" rx="75" ry="8"/>
+<text class="label mid" x="109" y="255">PostgreSQL</text>
+<text class="sub mid" x="109" y="272">system of record</text>
+<line class="wire" x1="109" y1="287" x2="109" y2="309" marker-end="url(#ah)"/>
+<text class="tiny end" x="101" y="302">CDC</text>
+<text class="tiny" x="117" y="302">Debezium</text>
+<rect class="box" x="34" y="311" width="150" height="46" rx="12"/>
+<text class="label mid" x="109" y="330">Kafka</text>
+<text class="tiny mono mid" x="109" y="347">acme.public.products</text>
+<line class="wire" x1="109" y1="357" x2="109" y2="377" marker-end="url(#ah)"/>
+<rect class="box" x="34" y="379" width="150" height="48" rx="12"/>
+<text class="label mid" x="109" y="399">search-indexer</text>
+<text class="sub mid" x="109" y="416">_bulk into products</text>
+<line class="wire" x1="184" y1="403" x2="212" y2="403" marker-end="url(#ah)"/>
+<g class="es-ok3"><circle class="f-green" cx="180" cy="383" r="8"/><path class="none s-bg" d="M176.5 383l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- the product: an Elasticsearch (or OpenSearch) cluster of three nodes -->
+<rect class="es-frame" x="200" y="98" width="500" height="360" rx="16"/>
+<text class="label" x="216" y="122">Elasticsearch</text>
+<text class="sub" x="322" y="122">or OpenSearch, its Apache 2.0 fork</text>
+<rect class="f-panel-2 s-line" x="590" y="108" width="98" height="20" rx="10" stroke-width="1.2"/>
+<circle class="f-green" cx="603" cy="118" r="4"/>
+<text class="tiny" x="612" y="122">health <tspan class="sb f-green">green</tspan></text>
+<g class="es-yel"><rect class="f-bg" x="590" y="108" width="98" height="20" rx="10"/><rect class="f-amber-soft s-amber" x="590" y="108" width="98" height="20" rx="10" stroke-width="1.5"/><circle class="f-amber" cx="603" cy="118" r="4"/><text class="tiny" x="612" y="122">health <tspan class="sb f-amber-ink">yellow</tspan></text></g>
+<g class="p34"><path class="es-bus" d="M364 147H371V415H354M371 279H354M371 311H354M371 383H354M371 355H364"/></g>
+<rect class="es-in" x="214" y="132" width="150" height="94" rx="12"/>
+<text class="label" x="226" y="152">node-1</text>
+<rect class="es-pri" x="224" y="162" width="130" height="26" rx="7"/>
+<text class="tiny mono b f-ink" x="234" y="179">P0</text>
+<text class="tiny" x="258" y="179">primary</text>
+<rect class="es-rep" x="224" y="194" width="130" height="26" rx="7"/>
+<text class="tiny mono b f-ink" x="234" y="211">R2</text>
+<text class="tiny" x="258" y="211">replica</text>
+<rect class="es-in" x="214" y="236" width="150" height="94" rx="12"/>
+<text class="label" x="226" y="256">node-2</text>
+<rect class="es-pri" x="224" y="266" width="130" height="26" rx="7"/>
+<text class="tiny mono b f-ink" x="234" y="283">P1</text>
+<text class="tiny" x="258" y="283">primary</text>
+<rect class="es-rep" x="224" y="298" width="130" height="26" rx="7"/>
+<text class="tiny mono b f-ink" x="234" y="315">R0</text>
+<text class="tiny" x="258" y="315">replica</text>
+<rect class="es-in" x="214" y="340" width="150" height="94" rx="12"/>
+<text class="label" x="226" y="360">node-3</text>
+<rect class="es-pri" x="224" y="370" width="130" height="26" rx="7"/>
+<text class="tiny mono b f-ink" x="234" y="387">P2</text>
+<text class="tiny" x="258" y="387">primary</text>
+<rect class="es-rep" x="224" y="402" width="130" height="26" rx="7"/>
+<text class="tiny mono b f-ink" x="234" y="419">R1</text>
+<text class="tiny" x="258" y="419">replica</text>
+<rect class="f-panel-2 s-line" x="304" y="139" width="50" height="18" rx="9" stroke-width="1.2"/>
+<text class="tiny sb mid f-ink" x="329" y="152">master</text>
+<g class="es-f1"><rect class="none s-teal" x="222" y="264" width="134" height="30" rx="8" stroke-width="2.5"/><rect class="none s-teal" x="222" y="400" width="134" height="30" rx="8" stroke-width="2.5"/></g>
+<!-- step 1: what the cluster holds -->
+<g class="p1"><rect class="es-in" x="382" y="132" width="306" height="94" rx="10"/><text class="es-hd" x="394" y="150">INDEX <tspan class="mono">products</tspan></text><text class="tiny" x="394" y="168">a search copy of the catalogue in PostgreSQL</text><text class="tiny" x="394" y="184">3 primary shards P0–P2, 1 replica each R0–R2;</text><text class="tiny" x="394" y="200">a replica never sits on its primary’s node</text><text class="tiny" x="394" y="216">CDC keeps it in step; refresh_interval 1s</text><rect class="es-in" x="382" y="236" width="306" height="94" rx="10"/><text class="es-hd" x="394" y="254">WHAT THE APP ASKS FOR</text><text class="tiny" x="394" y="272">full text: red mug in title or description,</text><text class="tiny" x="394" y="288">ranked by relevance (BM25)</text><text class="tiny" x="394" y="304">filter: category = kitchen</text><text class="tiny" x="394" y="320">facets: how many hits per brand</text><rect class="es-in" x="382" y="340" width="306" height="94" rx="10"/><text class="es-hd" x="394" y="358">ALSO: LOGS FOR OBSERVABILITY</text><text class="tiny" x="394" y="376">the same engine stores logs in data streams</text><text class="tiny" x="394" y="392">(logs-acme); ILM, or ISM in OpenSearch, rolls</text><text class="tiny" x="394" y="408">them over and deletes old ones, and Kibana or</text><text class="tiny" x="394" y="424">OpenSearch Dashboards searches and charts them</text></g>
+<!-- right panel -->
+<rect class="box" x="712" y="98" width="216" height="360" rx="12"/>
+<g class="p1"><text class="es-hd" x="724" y="120">RESPONSE TO ACME SHOP</text><rect class="f-bg s-blue" x="724" y="130" width="192" height="26" rx="13" stroke-width="1.5"/><text class="sub f-ink" x="738" y="147">red mug</text><rect class="f-panel-2 s-line" x="810" y="135" width="100" height="16" rx="8" stroke-width="1"/><text class="tiny mid" x="860" y="147">category: kitchen</text><g class="es-res"><text class="tiny" x="724" y="178">5 hits, top 3 shown</text><text class="tiny end" x="916" y="178">_score</text><text class="sub sb f-ink" x="724" y="200">Red ceramic mug</text><text class="tiny mono end f-ink" x="916" y="200">3.1</text><text class="tiny" x="724" y="215">Clayworks · _id 14</text><text class="sub sb f-ink" x="724" y="238">Stoneware mug</text><text class="tiny mono end f-ink" x="916" y="238">1.9</text><text class="tiny" x="724" y="253">Oakline · _id 24</text><text class="sub sb f-ink" x="724" y="276">Red kettle</text><text class="tiny mono end f-ink" x="916" y="276">1.4</text><text class="tiny" x="724" y="291">Hearth · _id 63</text><text class="es-hd" x="724" y="322">BRAND COUNTS</text><text class="tiny" x="724" y="344">Hearth</text><rect class="f-teal" x="796" y="335" width="90" height="11" rx="3"/><text class="tiny mono f-ink" x="894" y="344">3</text><text class="tiny" x="724" y="362">Clayworks</text><rect class="f-teal" x="796" y="353" width="30" height="11" rx="3"/><text class="tiny mono f-ink" x="834" y="362">1</text><text class="tiny" x="724" y="380">Oakline</text><rect class="f-teal" x="796" y="371" width="30" height="11" rx="3"/><text class="tiny mono f-ink" x="834" y="380">1</text><text class="tiny" x="724" y="410">hits are ranked by _score; the</text><text class="tiny" x="724" y="425">counts cover all 5 hits, not just 3</text></g></g>
+<!-- step 2: inside shard P1 -->
+<g class="p2"><rect class="none s-blue" x="221" y="263" width="136" height="32" rx="9" stroke-width="2"/><line class="s-muted" x1="357" y1="264" x2="382" y2="140" stroke-width="1.2" stroke-dasharray="4 3"/><line class="s-muted" x1="357" y1="294" x2="382" y2="426" stroke-width="1.2" stroke-dasharray="4 3"/><rect class="es-in" x="382" y="132" width="306" height="302" rx="12"/><text class="es-hd" x="394" y="150">INSIDE P1 · ONE LUCENE INDEX</text><g class="es-zdoc"><rect class="f-blue-soft s-blue" x="394" y="158" width="282" height="22" rx="6" stroke-width="1.2"/><text class="tiny mono f-ink" x="402" y="173">_id 14 · title: "Red ceramic mug"</text></g><text class="tiny sb f-ink" x="394" y="196">english analyzer</text><g class="es-tok"><text class="tiny" x="394" y="215">tokenise</text><rect class="es-chip" x="486" y="203" width="30" height="18" rx="5"/><text class="tiny mono mid f-ink" x="501" y="216">Red</text><rect class="es-chip" x="522" y="203" width="58" height="18" rx="5"/><text class="tiny mono mid f-ink" x="551" y="216">ceramic</text><rect class="es-chip" x="586" y="203" width="32" height="18" rx="5"/><text class="tiny mono mid f-ink" x="602" y="216">mug</text></g><g class="es-stm"><text class="tiny" x="394" y="239">lowercase, stem</text><rect class="es-term" x="486" y="227" width="30" height="18" rx="5"/><text class="tiny mono mid f-ink" x="501" y="240">red</text><rect class="es-term" x="522" y="227" width="58" height="18" rx="5"/><text class="tiny mono mid f-ink" x="551" y="240">ceram</text><rect class="es-term" x="586" y="227" width="32" height="18" rx="5"/><text class="tiny mono mid f-ink" x="602" y="240">mug</text><text class="tiny" x="394" y="259">stems need not be words: ceramic → ceram</text></g><rect class="box" x="394" y="270" width="142" height="40" rx="8"/><text class="tiny sb f-ink" x="402" y="285">in-memory buffer</text><text class="tiny" x="402" y="301">not searchable</text><g class="es-buf"><rect class="f-teal-soft s-teal" x="500" y="285" width="28" height="18" rx="4" stroke-width="1.2"/><text class="tiny mono b mid f-ink" x="514" y="298">14</text></g><rect class="box" x="394" y="318" width="142" height="40" rx="8"/><text class="tiny sb f-ink" x="402" y="333">translog · on disk</text><g class="es-tl"><rect class="f-teal-soft s-teal" x="500" y="333" width="28" height="18" rx="4" stroke-width="1.2"/><text class="tiny mono b mid f-ink" x="514" y="346">14</text></g><g class="es-ack"><text class="tiny sb f-green" x="402" y="349">fsync, then ack</text></g><text class="tiny sb f-ink" x="394" y="378">refresh every 1 s</text><rect class="f-line" x="492" y="371" width="44" height="8" rx="4"/><rect class="f-amber es-rbar" x="492" y="371" width="44" height="8" rx="4"/><text class="tiny" x="394" y="398">segments</text><rect class="f-teal-soft s-teal" x="448" y="387" width="22" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono mid f-ink" x="459" y="399">_0</text><g class="es-old"><rect class="f-teal-soft s-teal" x="473" y="387" width="20" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono mid f-ink" x="483" y="399">_1</text><rect class="f-teal-soft s-teal" x="496" y="387" width="20" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono mid f-ink" x="506" y="399">_2</text></g><g class="es-s3"><rect class="f-teal-soft s-teal" x="519" y="387" width="20" height="16" rx="4" stroke-width="2"/><text class="tiny mono b mid f-ink" x="529" y="399">_3</text></g><g class="es-s4"><rect class="f-teal-soft s-teal" x="473" y="387" width="66" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono mid f-ink" x="506" y="399">_4</text></g><g class="es-srch"><text class="tiny sb f-green" x="394" y="418">14 is searchable now</text></g><g class="es-mrg"><text class="tiny" x="394" y="418">merged in the background</text></g><rect class="box" x="544" y="270" width="138" height="150" rx="8"/><text class="tiny sb f-ink" x="554" y="286">inverted index · title</text><text class="tiny" x="554" y="304">term</text><text class="tiny" x="624" y="304">doc IDs</text><line class="s-line" x1="554" y1="309" x2="672" y2="309" stroke-width="1"/><g class="es-ix"><text class="tiny mono f-ink b" x="554" y="324">ceram</text><text class="tiny mono b f-teal" x="624" y="324">14</text><text class="tiny mono b f-teal" x="624" y="375">14</text><text class="tiny mono b f-teal" x="624" y="392">14</text></g><text class="tiny mono f-ink" x="554" y="341">espresso</text><text class="tiny mono f-ink" x="646" y="341">30</text><text class="tiny mono f-ink" x="554" y="358">lamp</text><text class="tiny mono f-ink" x="646" y="358">60</text><text class="tiny mono f-ink" x="554" y="375">mug</text><text class="tiny mono f-ink" x="646" y="375">30</text><text class="tiny mono f-ink" x="554" y="392">red</text><text class="tiny mono f-ink" x="646" y="392">60</text><text class="tiny" x="554" y="411">one ID list per term</text></g>
+<!-- step 2: mapping and settings -->
+<g class="p2"><text class="es-hd" x="724" y="120">MAPPING · <tspan class="mono">products</tspan></text><text class="tiny mono f-ink" x="724" y="142">title</text><text class="tiny mono" x="812" y="142">text, english</text><text class="tiny mono f-ink" x="724" y="158">description</text><text class="tiny mono" x="812" y="158">text, english</text><text class="tiny mono f-ink" x="724" y="174">category</text><text class="tiny mono" x="812" y="174">keyword</text><text class="tiny mono f-ink" x="724" y="190">brand</text><text class="tiny mono" x="812" y="190">keyword</text><text class="tiny" x="724" y="214">text: analysed into terms, for</text><text class="tiny" x="724" y="229">full-text search</text><text class="tiny" x="724" y="247">keyword: kept whole, for filters,</text><text class="tiny" x="724" y="262">sorting and aggregations</text><text class="es-hd" x="724" y="292">SETTINGS</text><text class="tiny mono f-ink" x="724" y="312">number_of_shards</text><text class="tiny mono sb end f-ink" x="916" y="312">3</text><text class="tiny mono f-ink" x="724" y="328">number_of_replicas</text><text class="tiny mono sb end f-ink" x="916" y="328">1</text><text class="tiny mono f-ink" x="724" y="344">refresh_interval</text><text class="tiny mono sb end f-ink" x="916" y="344">1s</text><text class="tiny mono f-ink" x="724" y="360">translog.durability</text><text class="tiny mono sb end f-ink" x="916" y="360">request</text><text class="tiny" x="724" y="388">the shard count is fixed when the</text><text class="tiny" x="724" y="403">index is created; replicas and the</text><text class="tiny" x="724" y="418">refresh interval can change later</text></g>
+<!-- step 3: write routing and the query, then fetch phases -->
+<g class="p3"><text class="es-hd" x="382" y="150">NODE-1 COORDINATES THE SEARCH</text><g class="es-n1c"><text class="tiny" x="382" y="168">query phase: one copy of every shard</text></g><g class="es-mg"><text class="tiny sb f-ink" x="382" y="188">merged top 3: <tspan class="mono">14 · 3.1, 24 · 1.9, 63 · 1.4</tspan></text><text class="tiny" x="382" y="204">brands: Hearth 3 · Clayworks 1 · Oakline 1</text></g><g class="es-fe"><text class="tiny" x="382" y="220">fetch phase: load the _source of 14, 24, 63</text></g><g class="es-n3r"><text class="tiny" x="382" y="359">_bulk arrives: <tspan class="mono f-ink">hash(_id) % 3 = 1</tspan> → P1</text></g><g class="es-n2w"><text class="tiny sb f-teal" x="382" y="283">P1 indexes _id 14, then copies it to R1</text></g><g class="es-r1c"><text class="tiny sb f-teal" x="382" y="419">R1 has _id 14 too: an in-sync copy</text></g><g class="es-q0"><rect class="none s-blue" x="221" y="295" width="136" height="32" rx="9" stroke-width="2"/><text class="tiny f-ink" x="382" y="315"><tspan class="mono b">R0</tspan> → 24 · 1.9 <tspan class="f-muted">· Oakline 1</tspan></text></g><g class="es-q2"><rect class="none s-blue" x="221" y="367" width="136" height="32" rx="9" stroke-width="2"/><text class="tiny f-ink" x="382" y="387"><tspan class="mono b">P2</tspan> → 63 · 1.4, 91 · 0.9 <tspan class="f-muted">· Hearth 2</tspan></text></g><g class="es-q1"><rect class="none s-blue" x="221" y="399" width="136" height="32" rx="9" stroke-width="2"/><text class="tiny f-ink" x="382" y="419"><tspan class="mono b">R1</tspan> → 14 · 3.1, 30 · 1.2 <tspan class="f-muted">· Clayworks 1, Hearth 1</tspan></text></g><g class="es-p1r"><rect class="none s-blue" x="221" y="263" width="136" height="32" rx="9" stroke-width="2"/></g></g>
+<!-- step 3: the query -->
+<g class="p3"><text class="es-hd" x="724" y="120">QUERY</text><rect class="f-blue" x="716" y="158" width="3" height="54" rx="1.5"/><rect class="f-muted" x="716" y="214" width="3" height="26" rx="1.5"/><rect class="f-teal" x="716" y="242" width="3" height="26" rx="1.5"/><text class="tiny mono f-ink" x="724" y="140">GET products/_search</text><text class="tiny mono f-ink" x="724" y="154">"query": {"bool": {</text><text class="tiny mono f-ink" x="730" y="168">"must": {"multi_match": {</text><text class="tiny mono f-ink" x="736" y="182">"query": "red mug",</text><text class="tiny mono f-ink" x="736" y="196">"fields": ["title",</text><text class="tiny mono f-ink" x="742" y="210">"description"]}},</text><text class="tiny mono f-ink" x="730" y="224">"filter": {"term":</text><text class="tiny mono f-ink" x="736" y="238">{"category": "kitchen"}}}},</text><text class="tiny mono f-ink" x="724" y="252">"aggs": {"brands": {"terms":</text><text class="tiny mono f-ink" x="730" y="266">{"field": "brand"}}},</text><text class="tiny mono f-ink" x="724" y="280">"size": 3</text><text class="tiny" x="724" y="300"><tspan class="sb f-blue">must</tspan>: scored by relevance (BM25)</text><text class="tiny" x="724" y="316"><tspan class="sb f-ink">filter</tspan>: yes or no, no score; often-</text><text class="tiny" x="724" y="331">used filters are cached</text><text class="tiny" x="724" y="349"><tspan class="sb f-teal">aggs</tspan>: counted on every shard,</text><text class="tiny" x="724" y="364">then summed by node-1</text><text class="tiny" x="724" y="382"><tspan class="sb f-ink">size 3</tspan>: each shard sends its own</text><text class="tiny" x="724" y="397">top 3 (IDs and scores only), then</text><text class="tiny" x="724" y="412">node-1 fetches the 3 winners</text></g>
+<!-- step 4: node-2 fails -->
+<g class="es-down"><rect class="f-red-soft s-red" x="214" y="236" width="150" height="94" rx="12" stroke-width="2"/><rect class="es-ghost" x="225" y="267" width="128" height="24" rx="6"/><rect class="es-ghost" x="225" y="299" width="128" height="24" rx="6"/><text class="tiny sb f-red end" x="354" y="256">✕ failed</text></g>
+<g class="es-prom"><rect class="f-bg" x="224" y="402" width="130" height="26" rx="7"/><rect class="f-green-soft s-green" x="224" y="402" width="130" height="26" rx="7" stroke-width="2"/><text class="tiny mono b f-ink" x="234" y="419">P1</text><text class="tiny sb f-green" x="258" y="419">primary now</text></g>
+<g class="p4"><g class="es-f4"><text class="es-hd-red" x="382" y="150">NODE-2 FAILS</text><text class="tiny" x="382" y="168">the master on node-1 promotes R1 on node-3 to</text><text class="tiny" x="382" y="184">primary and publishes the new cluster state;</text><text class="tiny" x="382" y="200">searches and writes go on. Health is yellow until</text><text class="tiny" x="382" y="216">R0 and R1 are rebuilt, which waits 1 min by default</text></g><g class="es-l1"><text class="es-hd-amber" x="382" y="252">THE LIMITS</text><rect class="f-amber-soft s-amber" x="382" y="260" width="212" height="18" rx="9" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="392" y="273">a copy, not the system of record</text><text class="tiny" x="382" y="293">it lags by the refresh; no multi-document transactions</text></g><g class="es-l2"><rect class="f-amber-soft s-amber" x="382" y="302" width="126" height="18" rx="9" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="392" y="315">mapping explosion</text><text class="tiny" x="382" y="335">every new field name grows the mapping: limit 1000</text></g><g class="es-l3"><rect class="f-amber-soft s-amber" x="382" y="344" width="160" height="18" rx="9" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="392" y="357">deep pages are expensive</text><text class="tiny" x="382" y="377">from + size stops at 10,000: page with search_after</text></g><g class="es-l4"><rect class="f-amber-soft s-amber" x="382" y="386" width="190" height="18" rx="9" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="392" y="399">shard count fixed at creation</text><text class="tiny" x="382" y="419">plan it: Elastic suggests 10–50 GB per shard</text></g></g>
+<g class="p4"><g class="es-hl0"><text class="es-hd" x="724" y="120">CLUSTER HEALTH</text><text class="tiny mono f-ink" x="724" y="140">GET _cluster/health</text><text class="tiny mono f-ink" x="724" y="162">status</text><text class="tiny mono f-ink" x="724" y="182">number_of_nodes</text><text class="tiny mono f-ink" x="724" y="199">active_primary_shards</text><text class="tiny mono f-ink" x="724" y="216">active_shards</text><text class="tiny mono f-ink" x="724" y="233">unassigned_shards</text><text class="tiny mono f-ink" x="724" y="250">delayed_unassigned_shards</text><g class="es-hb"><rect class="f-green-soft s-green" x="862" y="151" width="54" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-green" x="889" y="163">green</text><text class="tiny mono sb end f-ink" x="916" y="182">3</text><text class="tiny mono sb end f-ink" x="916" y="199">3</text><text class="tiny mono sb end f-ink" x="916" y="216">6</text><text class="tiny mono sb end f-ink" x="916" y="233">0</text><text class="tiny mono sb end f-ink" x="916" y="250">0</text></g><g class="es-ha"><rect class="f-amber-soft s-amber" x="862" y="151" width="54" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-amber-ink" x="889" y="163">yellow</text><text class="tiny mono sb end f-ink" x="916" y="182">2</text><text class="tiny mono sb end f-ink" x="916" y="199">3</text><text class="tiny mono sb end f-ink" x="916" y="216">4</text><text class="tiny mono sb end f-ink" x="916" y="233">2</text><text class="tiny mono sb end f-ink" x="916" y="250">2</text></g><g class="es-hn"><text class="tiny" x="724" y="278">all 3 primaries are active, so</text><text class="tiny" x="724" y="293">searches and writes go on</text><text class="tiny" x="724" y="311">R0 and R1 wait 1 min in case</text><text class="tiny" x="724" y="326">node-2 comes back, then R0 is</text><text class="tiny" x="724" y="341">rebuilt on node-3 and R1 on node-1;</text><text class="tiny" x="724" y="356">health is green again after that</text><text class="tiny mono f-faint" x="724" y="386">index.unassigned.node_left</text><text class="tiny mono f-faint" x="724" y="401">.delayed_timeout: 1m</text></g></g></g>
+<!-- moving requests, events, copies and responses -->
+<g class="es-t1ins"><circle class="pkt f-blue" r="6"/></g>
+<g class="es-t1cdc"><rect class="pkt f-purple" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="es-t1kfk"><rect class="pkt f-purple" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="es-t1blk"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" x="0" y="-11">_bulk</text></g>
+<g class="es-t1q"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" x="0" y="-11">red mug</text></g>
+<g class="es-t1r"><circle class="pkt f-green" r="6"/><text class="tiny mono b mid f-green" x="0" y="-11">5 hits</text></g>
+<g class="es-t2d"><rect class="pkt f-blue" x="-6" y="-6" width="12" height="12" rx="3"/><text class="tiny mono b mid f-blue" x="0" y="-11">14</text></g>
+<g class="es-t2b"><rect class="pkt f-teal" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="es-t2t"><rect class="pkt f-teal" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="es-t3b"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" x="0" y="-11">_bulk</text></g>
+<g class="es-t3f"><circle class="pkt f-blue" r="6"/></g>
+<g class="es-t3c"><rect class="pkt f-teal" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="es-t3a"><circle class="pkt f-green" r="6"/></g>
+<g class="es-t3q"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" x="0" y="-11">red mug</text></g>
+<g class="es-sq0"><circle class="pkt f-blue" r="6"/></g>
+<g class="es-sg0"><circle class="pkt f-green" r="6"/></g>
+<g class="es-sq1"><circle class="pkt f-blue" r="6"/></g>
+<g class="es-sg1"><circle class="pkt f-green" r="6"/></g>
+<g class="es-sq2"><circle class="pkt f-blue" r="6"/></g>
+<g class="es-sg2"><circle class="pkt f-green" r="6"/></g>
+<g class="es-t3r"><circle class="pkt f-green" r="6"/><text class="tiny mono b mid f-green" x="0" y="-11">3 hits</text></g>
+<g class="es-t4p"><circle class="pkt f-blue" r="6"/></g>
+</g>
+</svg>

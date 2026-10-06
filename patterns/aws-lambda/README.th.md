@@ -13,7 +13,7 @@ AWS Lambda รัน **function** คือ handler ของเราพร้�
 | Invocation | ใครใช้ | ใครรอ | ตอน handler พัง |
 |---|---|---|---|
 | **Synchronous** (`InvocationType` `RequestResponse`) | API Gateway, function URL, SDK และ CLI | ตัวเรียก จนกว่า handler จะ return | error กลับไปหาตัวเรียก โดยที่ Lambda ไม่ retry และ API Gateway ก็ส่ง error ต่อไปให้ client ของมัน |
-| **Asynchronous** (`InvocationType` `Event`) | notification ของ S3 และ SNS, EventBridge rule, EventBridge Scheduler | ไม่มีใครรอ: Lambda เอา event เข้า queue ภายในของตัวเองแล้วตอบ 202 ทันที | Lambda retry สองครั้ง รอ 1 นาทีแล้วรออีก 2 นาที จากนั้นก็ส่ง record ไปที่ on-failure destination หรือส่ง event ไปที่ dead-letter queue หรือทิ้งไป |
+| **Asynchronous** (`InvocationType` `Event`) | notification ของ S3 และ SNS, [EventBridge](../amazon-eventbridge/) rule, EventBridge Scheduler | ไม่มีใครรอ: Lambda เอา event เข้า queue ภายในของตัวเองแล้วตอบ 202 ทันที | Lambda retry สองครั้ง รอ 1 นาทีแล้วรออีก 2 นาที จากนั้นก็ส่ง record ไปที่ on-failure destination หรือส่ง event ไปที่ dead-letter queue หรือทิ้งไป |
 | **Event source mapping** (polling) | SQS, Kinesis, DynamoDB Streams, Amazon MSK และ [Kafka](../kafka/) ที่ดูแลเอง, Amazon MQ, Amazon DocumentDB | poller ของ Lambda ที่อ่าน batch แล้วเรียก function แบบ synchronous พร้อม batch นั้น | ถ้ามาจาก queue ตัว batch จะกลับมามองเห็นได้อีกหลัง visibility timeout และ redrive policy ของ queue ก็ย้ายตัวที่พังซ้ำ ๆ ไปที่ dead-letter queue ของ queue เอง ถ้ามาจาก stream ตัว batch จะถูก retry และทำให้ shard ของมันติดอยู่จนกว่าจะสำเร็จหรือ record หมดอายุ |
 
 S3 เรียก `make-thumbnail` ตรง ๆ แบบ asynchronous ก็ได้ แต่แอปรูปเลือกส่ง event `ObjectCreated` ไปที่ `thumbnail-jobs` แทน ทำให้ queue ช่วยรับ burst และ event source mapping เป็นตัวตัดสินเรื่อง batching, concurrency และ retry
@@ -65,7 +65,7 @@ request ที่หา environment ว่างไม่เจอต้อง�
 
 มองหาตัวอื่นสำหรับงานที่รันรวดเดียวนานเกิน 15 นาที (แบ่งเป็น step ใน Step Functions หรือใช้ durable functions ดูข้างล่าง), สำหรับโหลดหนักที่สม่ำเสมอที่ capacity แบบเปิดตลอดถูกกว่า (ดูเรื่องต้นทุนข้างล่าง), สำหรับเส้นทางที่ latency สำคัญมากจนรับ cold start ไม่ได้และไม่ยอมจ่ายค่า provisioned concurrency และสำหรับซอฟต์แวร์ที่ต้องใช้ connection ที่เปิดค้างนาน ๆ หรือ state ใน memory ขนาดใหญ่
 
-| | AWS Lambda | Amazon ECS on Fargate | Kubernetes Deployment | Azure Functions (Flex Consumption) | Google Cloud Run functions |
+| | AWS Lambda | Amazon ECS on Fargate | [Kubernetes](../kubernetes/) Deployment | Azure Functions (Flex Consumption) | Google Cloud Run functions |
 |---|---|---|---|---|---|
 | สิ่งที่ deploy | function (.zip หรือ container image) | task definition (container) | pod template บน cluster ที่เรารันเอง | function app | function ที่ build เป็น Cloud Run service |
 | request ต่อ instance | 1 ต่อ environment (หลายตัวบน Managed Instances) | เท่าที่แอปรับไหว | เท่าที่แอปรับไหว | หลายตัว ตั้งแยกแต่ละ function | ได้ถึง 1,000 |

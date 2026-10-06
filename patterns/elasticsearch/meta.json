@@ -1,0 +1,182 @@
+{
+  "aka": [
+    "Elasticsearch",
+    "OpenSearch",
+    "Elastic Stack",
+    "ELK"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Acme Shop writes to PostgreSQL; CDC through Kafka feeds the products index; searches go there.",
+      "body": "Acme Shop keeps its catalogue in **PostgreSQL**, the system of record. Debezium reads each committed change and publishes it to the Kafka topic `acme.public.products`, and **search-indexer** writes it to the index **products** with the `_bulk` API. The app sends its searches here instead of to the database and gets ranked hits with brand counts; the same engine also serves log analytics, with logs kept in data streams."
+    },
+    {
+      "title": "Analyse, index, refresh",
+      "caption": "Red ceramic mug is analysed into red, ceram, mug; a refresh 1 s later makes it searchable in P1.",
+      "body": "The `english` analyzer splits *Red ceramic mug* into tokens, lower-cases them and stems them to the terms **red**, **ceram** and **mug**, and the **inverted index** lists, for each term, the documents that contain it. The write lands in an in-memory buffer and the **translog**, which is fsynced before the write is acknowledged. A **refresh**, every second here, turns the buffer into a new segment that search can see (near real time), and small segments are merged in the background."
+    },
+    {
+      "title": "Route, replicate, search",
+      "caption": "_id 14 routes to P1, which copies it to R1. node-1 asks one copy of each shard, merges, fetches 3.",
+      "body": "The `_bulk` request reaches node-3, and `hash(_id) % 3` sends document `14` to shard 1: primary **P1** on node-2 indexes it and forwards it to replica **R1** on node-3, and only then is the write acknowledged. The search for *red mug* reaches **node-1**, which sends it to one copy of every shard (R0, R1 and P2 here); each returns its top hits with scores and its brand counts, and node-1 merges them, fetches the 3 winning documents and answers."
+    },
+    {
+      "title": "Failover and the limits",
+      "caption": "node-2 fails: R1 becomes primary, health turns yellow. Limits: a copy, mappings, paging, shards.",
+      "body": "**node-2** fails. The master promotes **R1** on node-3 to primary, searches and writes go on, and the cluster health is **yellow** until the missing replicas are rebuilt, which by default starts after 1 minute. The limits: the index is a derived copy that lags by the refresh interval and has no multi-document transactions, uncontrolled field names can blow up the mapping, deep pages with `from` and `size` are expensive, and the shard count is fixed when the index is created."
+    }
+  ],
+  "related": [
+    "materialized-view",
+    "cqrs",
+    "change-data-capture",
+    "centralized-logging",
+    "kafka",
+    "postgresql",
+    "sharding",
+    "read-replicas"
+  ],
+  "references": [
+    {
+      "title": "Elastic Docs — Elasticsearch release notes",
+      "url": "https://www.elastic.co/docs/release-notes/elasticsearch"
+    },
+    {
+      "title": "Elastic Docs — Near real-time search",
+      "url": "https://www.elastic.co/docs/manage-data/data-store/near-real-time-search"
+    },
+    {
+      "title": "Elastic Docs — Reading and writing documents",
+      "url": "https://www.elastic.co/docs/deploy-manage/distributed-architecture/reading-and-writing-documents"
+    },
+    {
+      "title": "Elastic Docs — Node roles",
+      "url": "https://www.elastic.co/docs/deploy-manage/distributed-architecture/clusters-nodes-shards/node-roles"
+    },
+    {
+      "title": "Elasticsearch Reference — _routing field",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/mapping-reference/mapping-routing-field"
+    },
+    {
+      "title": "Elasticsearch Reference — General index settings",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/index-settings/index-modules"
+    },
+    {
+      "title": "Elasticsearch Reference — Translog settings",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/index-settings/translog"
+    },
+    {
+      "title": "Elasticsearch Reference — Similarity settings (BM25)",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/index-settings/similarity"
+    },
+    {
+      "title": "Elasticsearch Reference — Language analyzers",
+      "url": "https://www.elastic.co/docs/reference/text-analysis/analysis-lang-analyzer"
+    },
+    {
+      "title": "Elastic Docs — Query DSL (query and filter context)",
+      "url": "https://www.elastic.co/docs/explore-analyze/query-filter/languages/querydsl"
+    },
+    {
+      "title": "Elasticsearch Reference — Terms aggregation",
+      "url": "https://www.elastic.co/docs/reference/aggregations/search-aggregations-bucket-terms-aggregation"
+    },
+    {
+      "title": "Elasticsearch Reference — Paginate search results",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/rest-apis/paginate-search-results"
+    },
+    {
+      "title": "Elasticsearch Reference — Mapping limit settings",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/index-settings/mapping-limit"
+    },
+    {
+      "title": "Elastic Docs — Delaying allocation when a node leaves",
+      "url": "https://www.elastic.co/docs/deploy-manage/distributed-architecture/shard-allocation-relocation-recovery/delaying-allocation-when-node-leaves"
+    },
+    {
+      "title": "Elastic Docs — Cluster fault detection",
+      "url": "https://www.elastic.co/docs/deploy-manage/distributed-architecture/discovery-cluster-formation/cluster-fault-detection"
+    },
+    {
+      "title": "Elastic Docs — Red or yellow cluster health status",
+      "url": "https://www.elastic.co/docs/troubleshoot/elasticsearch/red-yellow-cluster-status"
+    },
+    {
+      "title": "Elastic Docs — Size your shards",
+      "url": "https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/size-shards"
+    },
+    {
+      "title": "Elasticsearch Reference — JVM settings",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/jvm-settings"
+    },
+    {
+      "title": "Elastic Docs — Tune for indexing speed",
+      "url": "https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/indexing-speed"
+    },
+    {
+      "title": "Elasticsearch Reference — Dense vector field type",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/mapping-reference/dense-vector"
+    },
+    {
+      "title": "Elastic Docs — Index lifecycle management (ILM) in Elasticsearch",
+      "url": "https://www.elastic.co/docs/manage-data/lifecycle/index-lifecycle-management"
+    },
+    {
+      "title": "Elastic Docs — Snapshot and restore",
+      "url": "https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore"
+    },
+    {
+      "title": "Elastic Blog — Doubling down on open, Part II (January 2021)",
+      "url": "https://www.elastic.co/blog/licensing-change"
+    },
+    {
+      "title": "Elastic Blog — Elasticsearch is open source. Again! (August 2024)",
+      "url": "https://www.elastic.co/blog/elasticsearch-is-open-source-again"
+    },
+    {
+      "title": "Elastic — FAQ on software licensing",
+      "url": "https://www.elastic.co/pricing/faq/licensing"
+    },
+    {
+      "title": "AWS Open Source Blog — Introducing OpenSearch (April 2021)",
+      "url": "https://aws.amazon.com/blogs/opensource/introducing-opensearch/"
+    },
+    {
+      "title": "Linux Foundation — Linux Foundation Announces OpenSearch Software Foundation (September 2024)",
+      "url": "https://www.linuxfoundation.org/press/linux-foundation-announces-opensearch-software-foundation-to-foster-open-collaboration-in-search-and-analytics"
+    },
+    {
+      "title": "OpenSearch — FAQ",
+      "url": "https://opensearch.org/faq/"
+    },
+    {
+      "title": "OpenSearch documentation — Index settings",
+      "url": "https://docs.opensearch.org/latest/install-and-configure/configuring-opensearch/index-settings/"
+    },
+    {
+      "title": "OpenSearch documentation — Methods and engines (k-NN)",
+      "url": "https://docs.opensearch.org/latest/mappings/supported-field-types/knn-methods-engines/"
+    },
+    {
+      "title": "OpenSearch documentation — Index State Management",
+      "url": "https://docs.opensearch.org/latest/im-plugin/ism/index/"
+    },
+    {
+      "title": "Amazon OpenSearch Service Developer Guide — What is Amazon OpenSearch Service?",
+      "url": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html"
+    },
+    {
+      "title": "Amazon OpenSearch Service Developer Guide — What is Amazon OpenSearch Serverless?",
+      "url": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-overview.html"
+    },
+    {
+      "title": "Amazon OpenSearch Service Developer Guide — Choosing the number of shards",
+      "url": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/bp-sharding.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Controlling Text Search",
+      "url": "https://www.postgresql.org/docs/current/textsearch-controls.html"
+    }
+  ]
+}

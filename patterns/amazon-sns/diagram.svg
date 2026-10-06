@@ -1,0 +1,884 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Amazon SNS</title>
+<desc id="dg-desc">Amazon SNS. Managed publish-subscribe: a message published to a topic fans out to queues, functions, HTTP endpoints, email and SMS. Step 1, Where it sits: Orders publishes OrderPlaced once; SNS pushes a copy to every subscription whose filter matches. Step 2, Publish and filter: Stored in several AZs before the 200. Filters: 640 passes fraud-check (≥ 500), not the SMS (≥ 5000). Step 3, Delivery and retries: The partner answers 503: 3 retries, 20 s apart, then partner-dlq. Delivery is at least once. Step 4, No archive, FIFO, limits: No archive: a later subscriber misses earlier messages. FIFO topics order, dedupe and can replay.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">AWS SERVICES</text>
+  <text class="title" x="40" y="64">Amazon SNS</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Publish and filter</text>
+  <text class="step on p2" x="262" y="518">2 · Publish and filter</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Delivery and retries</text>
+  <text class="step on p3" x="484" y="518">3 · Delivery and retries</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · No archive, FIFO, limits</text>
+  <text class="step on p4" x="706" y="518">4 · No archive, FIFO, limits</text>
+  <text class="caption p1" x="40" y="552">Orders publishes OrderPlaced once; SNS pushes a copy to every subscription whose filter matches.</text>
+  <text class="caption p2" x="40" y="552">Stored in several AZs before the 200. Filters: 640 passes fraud-check (≥ 500), not the SMS (≥ 5000).</text>
+  <text class="caption p3" x="40" y="552">The partner answers 503: 3 retries, 20 s apart, then partner-dlq. Delivery is at least once.</text>
+  <text class="caption p4" x="40" y="552">No archive: a later subscriber misses earlier messages. FIFO topics order, dedupe and can replay.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Amazon SNS. Acme Shop's order events (20 s loop, 1 s = 5%). Generated by a scratch script:
+   0-25%   Orders publishes OrderPlaced (amount 640, country TH) once to the standard topic order-events;
+           copies fan out to email-queue, analytics-queue, fraud-check and the partner; the SMS
+           subscription's filter (amount >= 5000) is not met; analytics-queue's copy waits behind 2
+   25-50%  the same publish slowed down: copies in several AZs, 200 + MessageId back to Orders, then each
+           subscription's filter policy: no policy passes, 640 >= 500 passes, 640 >= 5000 does not
+   50-75%  delivery: SQS stores, Lambda accepts (202, async); the partner answers 503; the default HTTP/S
+           delivery policy retries 3 times, 20 s apart (sped up here), then partner-dlq takes the copy
+   75-100% limits: a queue subscribed the next day gets no earlier messages; FIFO, quotas, EventBridge.
+   Resting styles = the scene at t = 3.6 s, so the no-animation fallback reads as step 1. */
+.diagram .sn-card { fill: var(--purple); stroke: var(--bg); stroke-width: 1.5; }
+.diagram .sn-cid { fill: var(--bg); }
+.diagram .sn-old { opacity: 0.5; }
+.diagram .sn-row { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.diagram .sn-chip { fill: var(--panel-2); stroke: var(--line); stroke-width: 1; }
+.diagram .sn-h { letter-spacing: 0.08em; }
+.diagram .sn-tl { fill: var(--teal); stroke: var(--bg); stroke-width: 1.5; }
+.diagram .sn-card1{transform:translate(252px,196px);opacity:1;animation:sn-card1 var(--T) linear infinite}
+.diagram .sn-az10{transform:translate(210px,269px);opacity:1;animation:sn-az10 var(--T) linear infinite}
+.diagram .sn-az11{transform:translate(252px,269px);opacity:1;animation:sn-az11 var(--T) linear infinite}
+.diagram .sn-az12{transform:translate(294px,269px);opacity:1;animation:sn-az12 var(--T) linear infinite}
+.diagram .sn-c1email{transform:translate(652px,116px);opacity:0;animation:sn-c1email var(--T) linear infinite}
+.diagram .sn-c1analytics{transform:translate(688px,164px);opacity:1;animation:sn-c1analytics var(--T) linear infinite}
+.diagram .sn-c1fraud{transform:translate(664px,212px);opacity:0;animation:sn-c1fraud var(--T) linear infinite}
+.diagram .sn-c1partner{transform:translate(652px,308px);opacity:0;animation:sn-c1partner var(--T) linear infinite}
+.diagram .sn-card2{transform:translate(150px,199px);opacity:0;animation:sn-card2 var(--T) linear infinite}
+.diagram .sn-az20{transform:translate(252px,196px);opacity:0;animation:sn-az20 var(--T) linear infinite}
+.diagram .sn-az21{transform:translate(252px,196px);opacity:0;animation:sn-az21 var(--T) linear infinite}
+.diagram .sn-az22{transform:translate(252px,196px);opacity:0;animation:sn-az22 var(--T) linear infinite}
+.diagram .sn-mid{transform:translate(182px,199px);opacity:0;animation:sn-mid var(--T) linear infinite}
+.diagram .sn-c2email{transform:translate(322px,180px);opacity:0;animation:sn-c2email var(--T) linear infinite}
+.diagram .sn-c2analytics{transform:translate(322px,200px);opacity:0;animation:sn-c2analytics var(--T) linear infinite}
+.diagram .sn-c2fraud{transform:translate(322px,220px);opacity:0;animation:sn-c2fraud var(--T) linear infinite}
+.diagram .sn-c2sms{transform:translate(322px,240px);opacity:0;animation:sn-c2sms var(--T) linear infinite}
+.diagram .sn-c2partner{transform:translate(322px,260px);opacity:0;animation:sn-c2partner var(--T) linear infinite}
+.diagram .sn-try0{transform:translate(560px,308px);opacity:0;animation:sn-try0 var(--T) linear infinite}
+.diagram .sn-try1{transform:translate(560px,308px);opacity:0;animation:sn-try1 var(--T) linear infinite}
+.diagram .sn-try2{transform:translate(560px,308px);opacity:0;animation:sn-try2 var(--T) linear infinite}
+.diagram .sn-5030{transform:translate(618px,308px);opacity:0;animation:sn-5030 var(--T) linear infinite}
+.diagram .sn-5031{transform:translate(618px,308px);opacity:0;animation:sn-5031 var(--T) linear infinite}
+.diagram .sn-5032{transform:translate(618px,308px);opacity:0;animation:sn-5032 var(--T) linear infinite}
+.diagram .sn-5033{transform:translate(618px,308px);opacity:0;animation:sn-5033 var(--T) linear infinite}
+.diagram .sn-flash{opacity:0;animation:sn-flash var(--T) linear infinite}
+.diagram .sn-idle-email{opacity:0;animation:sn-idle-email var(--T) linear infinite}
+.diagram .sn-s1-email{opacity:1;animation:sn-s1-email var(--T) linear infinite}
+.diagram .sn-s3-email{opacity:0;animation:sn-s3-email var(--T) linear infinite}
+.diagram .sn-idle-analytics{opacity:0;animation:sn-idle-analytics var(--T) linear infinite}
+.diagram .sn-s1-analytics{opacity:1;animation:sn-s1-analytics var(--T) linear infinite}
+.diagram .sn-s3-analytics{opacity:0;animation:sn-s3-analytics var(--T) linear infinite}
+.diagram .sn-idle-fraud{opacity:0;animation:sn-idle-fraud var(--T) linear infinite}
+.diagram .sn-s1-fraud{opacity:1;animation:sn-s1-fraud var(--T) linear infinite}
+.diagram .sn-s3-fraud{opacity:0;animation:sn-s3-fraud var(--T) linear infinite}
+.diagram .sn-idle-sms{opacity:1;animation:sn-idle-sms var(--T) linear infinite}
+.diagram .sn-s2-sms{opacity:0;animation:sn-s2-sms var(--T) linear infinite}
+.diagram .sn-idle-partner{opacity:0;animation:sn-idle-partner var(--T) linear infinite}
+.diagram .sn-s1-partner{opacity:1;animation:sn-s1-partner var(--T) linear infinite}
+.diagram .sn-p503{opacity:0;animation:sn-p503 var(--T) linear infinite}
+.diagram .sn-pr1{opacity:0;animation:sn-pr1 var(--T) linear infinite}
+.diagram .sn-pr2{opacity:0;animation:sn-pr2 var(--T) linear infinite}
+.diagram .sn-pr3{opacity:0;animation:sn-pr3 var(--T) linear infinite}
+.diagram .sn-pgive{opacity:0;animation:sn-pgive var(--T) linear infinite}
+.diagram .sn-azhi{opacity:0;animation:sn-azhi var(--T) linear infinite}
+.diagram .sn-attr{opacity:0;animation:sn-attr var(--T) linear infinite}
+.diagram .sn-ok2{opacity:0;animation:sn-ok2 var(--T) linear infinite}
+.diagram .sn-verdict{opacity:0;animation:sn-verdict var(--T) linear infinite}
+.diagram .sn-ring{opacity:0;animation:sn-ring var(--T) linear infinite}
+.diagram .sn-dlq{opacity:0.4;animation:sn-dlq var(--T) linear infinite}
+.diagram .sn-dlqn{opacity:0;animation:sn-dlqn var(--T) linear infinite}
+.diagram .sn-dlq0{opacity:1;animation:sn-dlq0 var(--T) linear infinite}
+.diagram .sn-new{opacity:0;animation:sn-new var(--T) linear infinite}
+.diagram .sn-subdot{transform:translate(252px,351px);opacity:0;animation:sn-subdot var(--T) linear infinite}
+.diagram .sn-empty{opacity:0;animation:sn-empty var(--T) linear infinite}
+.diagram .sn-none{opacity:0;animation:sn-none var(--T) linear infinite}
+@keyframes sn-card1 {
+  0% { transform: translate(150px, 199px); opacity: 0; }
+  1.5% { transform: translate(150px, 199px); opacity: 0; }
+  4.2% { transform: translate(252px, 196px); opacity: 1; }
+  25% { transform: translate(252px, 196px); opacity: 1; }
+  26.25% { transform: translate(252px, 196px); opacity: 0; }
+  100% { transform: translate(252px, 196px); opacity: 0; }
+}
+@keyframes sn-az10 {
+  0% { transform: translate(210px, 269px); opacity: 0; }
+  5% { transform: translate(210px, 269px); opacity: 0; }
+  6% { transform: translate(210px, 269px); opacity: 1; }
+  25% { transform: translate(210px, 269px); opacity: 1; }
+  26.25% { transform: translate(210px, 269px); opacity: 0; }
+  100% { transform: translate(210px, 269px); opacity: 0; }
+}
+@keyframes sn-az11 {
+  0% { transform: translate(252px, 269px); opacity: 0; }
+  5.3% { transform: translate(252px, 269px); opacity: 0; }
+  6.3% { transform: translate(252px, 269px); opacity: 1; }
+  25% { transform: translate(252px, 269px); opacity: 1; }
+  26.25% { transform: translate(252px, 269px); opacity: 0; }
+  100% { transform: translate(252px, 269px); opacity: 0; }
+}
+@keyframes sn-az12 {
+  0% { transform: translate(294px, 269px); opacity: 0; }
+  5.6% { transform: translate(294px, 269px); opacity: 0; }
+  6.6% { transform: translate(294px, 269px); opacity: 1; }
+  25% { transform: translate(294px, 269px); opacity: 1; }
+  26.25% { transform: translate(294px, 269px); opacity: 0; }
+  100% { transform: translate(294px, 269px); opacity: 0; }
+}
+@keyframes sn-c1email {
+  0% { transform: translate(322px, 180px); opacity: 0; }
+  6.5% { transform: translate(322px, 180px); opacity: 0; }
+  7.5% { transform: translate(374px, 116px); opacity: 1; }
+  10.45% { transform: translate(624px, 116px); opacity: 1; }
+  10.8% { transform: translate(652px, 116px); opacity: 1; }
+  13.75% { transform: translate(652px, 116px); opacity: 1; }
+  15% { transform: translate(652px, 116px); opacity: 0; }
+  100% { transform: translate(652px, 116px); opacity: 0; }
+}
+@keyframes sn-c1analytics {
+  0% { transform: translate(322px, 200px); opacity: 0; }
+  6.5% { transform: translate(322px, 200px); opacity: 0; }
+  7.25% { transform: translate(374px, 164px); opacity: 1; }
+  10.25% { transform: translate(624px, 164px); opacity: 1; }
+  11% { transform: translate(688px, 164px); opacity: 1; }
+  25% { transform: translate(688px, 164px); opacity: 1; }
+  26.25% { transform: translate(688px, 164px); opacity: 0; }
+  100% { transform: translate(688px, 164px); opacity: 0; }
+}
+@keyframes sn-c1fraud {
+  0% { transform: translate(322px, 220px); opacity: 0; }
+  6.5% { transform: translate(322px, 220px); opacity: 0; }
+  7.15% { transform: translate(374px, 212px); opacity: 1; }
+  10.1% { transform: translate(624px, 212px); opacity: 1; }
+  10.6% { transform: translate(664px, 212px); opacity: 1; }
+  12.25% { transform: translate(664px, 212px); opacity: 1; }
+  13.5% { transform: translate(664px, 212px); opacity: 0; }
+  100% { transform: translate(664px, 212px); opacity: 0; }
+}
+@keyframes sn-c1partner {
+  0% { transform: translate(322px, 260px); opacity: 0; }
+  6.5% { transform: translate(322px, 260px); opacity: 0; }
+  7.35% { transform: translate(374px, 308px); opacity: 1; }
+  10.3% { transform: translate(624px, 308px); opacity: 1; }
+  10.65% { transform: translate(652px, 308px); opacity: 1; }
+  12.25% { transform: translate(652px, 308px); opacity: 1; }
+  13.5% { transform: translate(652px, 308px); opacity: 0; }
+  100% { transform: translate(652px, 308px); opacity: 0; }
+}
+@keyframes sn-card2 {
+  0% { transform: translate(150px, 199px); opacity: 0; }
+  26.5% { transform: translate(150px, 199px); opacity: 0; }
+  26.75% { transform: translate(150px, 199px); opacity: 1; }
+  29.45% { transform: translate(252px, 196px); opacity: 1; }
+  69.25% { transform: translate(252px, 196px); opacity: 1; }
+  70.5% { transform: translate(252px, 196px); opacity: 0; }
+  100% { transform: translate(252px, 196px); opacity: 0; }
+}
+@keyframes sn-az20 {
+  0% { transform: translate(252px, 196px); opacity: 0; }
+  30.5% { transform: translate(252px, 196px); opacity: 0; }
+  30.75% { transform: translate(252px, 196px); opacity: 1; }
+  32.35% { transform: translate(210px, 269px); opacity: 1; }
+  69.25% { transform: translate(210px, 269px); opacity: 1; }
+  70.5% { transform: translate(210px, 269px); opacity: 0; }
+  100% { transform: translate(210px, 269px); opacity: 0; }
+}
+@keyframes sn-az21 {
+  0% { transform: translate(252px, 196px); opacity: 0; }
+  30.5% { transform: translate(252px, 196px); opacity: 0; }
+  31% { transform: translate(252px, 196px); opacity: 1; }
+  32.4% { transform: translate(252px, 269px); opacity: 1; }
+  69.25% { transform: translate(252px, 269px); opacity: 1; }
+  70.5% { transform: translate(252px, 269px); opacity: 0; }
+  100% { transform: translate(252px, 269px); opacity: 0; }
+}
+@keyframes sn-az22 {
+  0% { transform: translate(252px, 196px); opacity: 0; }
+  30.5% { transform: translate(252px, 196px); opacity: 0; }
+  31% { transform: translate(252px, 196px); opacity: 1; }
+  31.25% { transform: translate(252px, 196px); opacity: 1; }
+  32.85% { transform: translate(294px, 269px); opacity: 1; }
+  69.25% { transform: translate(294px, 269px); opacity: 1; }
+  70.5% { transform: translate(294px, 269px); opacity: 0; }
+  100% { transform: translate(294px, 269px); opacity: 0; }
+}
+@keyframes sn-mid {
+  0% { transform: translate(182px, 199px); opacity: 0; }
+  32.75% { transform: translate(182px, 199px); opacity: 0; }
+  33% { transform: translate(182px, 199px); opacity: 1; }
+  34.25% { transform: translate(152px, 199px); opacity: 1; }
+  35.25% { transform: translate(152px, 199px); opacity: 0; }
+  100% { transform: translate(152px, 199px); opacity: 0; }
+}
+@keyframes sn-c2email {
+  0% { transform: translate(322px, 180px); opacity: 0; }
+  35% { transform: translate(322px, 180px); opacity: 0; }
+  36.35% { transform: translate(374px, 116px); opacity: 1; }
+  37.35% { transform: translate(432px, 116px); opacity: 1; }
+  41.5% { transform: translate(432px, 116px); opacity: 1; }
+  43.3% { transform: translate(540px, 116px); opacity: 1; }
+  50.5% { transform: translate(540px, 116px); opacity: 1; }
+  52.1% { transform: translate(624px, 116px); opacity: 1; }
+  52.65% { transform: translate(652px, 116px); opacity: 1; }
+  75% { transform: translate(652px, 116px); opacity: 1; }
+  76.25% { transform: translate(652px, 116px); opacity: 0; }
+  100% { transform: translate(652px, 116px); opacity: 0; }
+}
+@keyframes sn-c2analytics {
+  0% { transform: translate(322px, 200px); opacity: 0; }
+  35% { transform: translate(322px, 200px); opacity: 0; }
+  36.05% { transform: translate(374px, 164px); opacity: 1; }
+  37% { transform: translate(432px, 164px); opacity: 1; }
+  41.5% { transform: translate(432px, 164px); opacity: 1; }
+  43.3% { transform: translate(540px, 164px); opacity: 1; }
+  50.5% { transform: translate(540px, 164px); opacity: 1; }
+  52.1% { transform: translate(624px, 164px); opacity: 1; }
+  53.35% { transform: translate(688px, 164px); opacity: 1; }
+  75% { transform: translate(688px, 164px); opacity: 1; }
+  76.25% { transform: translate(688px, 164px); opacity: 0; }
+  100% { transform: translate(688px, 164px); opacity: 0; }
+}
+@keyframes sn-c2fraud {
+  0% { transform: translate(322px, 220px); opacity: 0; }
+  35% { transform: translate(322px, 220px); opacity: 0; }
+  35.9% { transform: translate(374px, 212px); opacity: 1; }
+  36.85% { transform: translate(432px, 212px); opacity: 1; }
+  41.5% { transform: translate(432px, 212px); opacity: 1; }
+  43.3% { transform: translate(540px, 212px); opacity: 1; }
+  50.5% { transform: translate(540px, 212px); opacity: 1; }
+  52.1% { transform: translate(624px, 212px); opacity: 1; }
+  52.9% { transform: translate(664px, 212px); opacity: 1; }
+  53.5% { transform: translate(664px, 212px); opacity: 1; }
+  54.75% { transform: translate(664px, 212px); opacity: 0; }
+  100% { transform: translate(664px, 212px); opacity: 0; }
+}
+@keyframes sn-c2sms {
+  0% { transform: translate(322px, 240px); opacity: 0; }
+  35% { transform: translate(322px, 240px); opacity: 0; }
+  35.95% { transform: translate(374px, 260px); opacity: 1; }
+  36.9% { transform: translate(432px, 260px); opacity: 1; }
+  41.5% { transform: translate(432px, 260px); opacity: 1; }
+  43% { transform: translate(432px, 260px); opacity: 0; }
+  100% { transform: translate(432px, 260px); opacity: 0; }
+}
+@keyframes sn-c2partner {
+  0% { transform: translate(322px, 260px); opacity: 0; }
+  35% { transform: translate(322px, 260px); opacity: 0; }
+  36.2% { transform: translate(374px, 308px); opacity: 1; }
+  37.15% { transform: translate(432px, 308px); opacity: 1; }
+  41.5% { transform: translate(432px, 308px); opacity: 1; }
+  43.3% { transform: translate(540px, 308px); opacity: 1; }
+  50.5% { transform: translate(540px, 308px); opacity: 1; }
+  51.9% { transform: translate(614px, 308px); opacity: 1; }
+  52.5% { transform: translate(614px, 308px); opacity: 1; }
+  53.75% { transform: translate(548px, 308px); opacity: 1; }
+  66.5% { transform: translate(548px, 308px); opacity: 1; }
+  68.2% { transform: translate(548px, 386px); opacity: 1; }
+  97.25% { transform: translate(548px, 386px); opacity: 1; }
+  98.5% { transform: translate(548px, 386px); opacity: 0; }
+  100% { transform: translate(548px, 386px); opacity: 0; }
+}
+@keyframes sn-try0 {
+  0% { transform: translate(560px, 308px); opacity: 0; }
+  55.75% { transform: translate(560px, 308px); opacity: 0; }
+  56% { transform: translate(560px, 308px); opacity: 1; }
+  57.1% { transform: translate(618px, 308px); opacity: 1; }
+  57.5% { transform: translate(618px, 308px); opacity: 0; }
+  100% { transform: translate(618px, 308px); opacity: 0; }
+}
+@keyframes sn-try1 {
+  0% { transform: translate(560px, 308px); opacity: 0; }
+  59.25% { transform: translate(560px, 308px); opacity: 0; }
+  59.5% { transform: translate(560px, 308px); opacity: 1; }
+  60.6% { transform: translate(618px, 308px); opacity: 1; }
+  61% { transform: translate(618px, 308px); opacity: 0; }
+  100% { transform: translate(618px, 308px); opacity: 0; }
+}
+@keyframes sn-try2 {
+  0% { transform: translate(560px, 308px); opacity: 0; }
+  62.75% { transform: translate(560px, 308px); opacity: 0; }
+  63% { transform: translate(560px, 308px); opacity: 1; }
+  64.1% { transform: translate(618px, 308px); opacity: 1; }
+  64.5% { transform: translate(618px, 308px); opacity: 0; }
+  100% { transform: translate(618px, 308px); opacity: 0; }
+}
+@keyframes sn-5030 {
+  0% { transform: translate(618px, 308px); opacity: 0; }
+  52.1% { transform: translate(618px, 308px); opacity: 0; }
+  52.35% { transform: translate(618px, 308px); opacity: 1; }
+  53.55% { transform: translate(560px, 308px); opacity: 1; }
+  53.95% { transform: translate(560px, 308px); opacity: 0; }
+  100% { transform: translate(560px, 308px); opacity: 0; }
+}
+@keyframes sn-5031 {
+  0% { transform: translate(618px, 308px); opacity: 0; }
+  57% { transform: translate(618px, 308px); opacity: 0; }
+  57.25% { transform: translate(618px, 308px); opacity: 1; }
+  58.45% { transform: translate(560px, 308px); opacity: 1; }
+  58.85% { transform: translate(560px, 308px); opacity: 0; }
+  100% { transform: translate(560px, 308px); opacity: 0; }
+}
+@keyframes sn-5032 {
+  0% { transform: translate(618px, 308px); opacity: 0; }
+  60.5% { transform: translate(618px, 308px); opacity: 0; }
+  60.75% { transform: translate(618px, 308px); opacity: 1; }
+  61.95% { transform: translate(560px, 308px); opacity: 1; }
+  62.35% { transform: translate(560px, 308px); opacity: 0; }
+  100% { transform: translate(560px, 308px); opacity: 0; }
+}
+@keyframes sn-5033 {
+  0% { transform: translate(618px, 308px); opacity: 0; }
+  64% { transform: translate(618px, 308px); opacity: 0; }
+  64.25% { transform: translate(618px, 308px); opacity: 1; }
+  65.45% { transform: translate(560px, 308px); opacity: 1; }
+  65.85% { transform: translate(560px, 308px); opacity: 0; }
+  100% { transform: translate(560px, 308px); opacity: 0; }
+}
+@keyframes sn-flash {
+  0% { opacity: 0; }
+  51.85% { opacity: 0; }
+  52.35% { opacity: 1; }
+  53.6% { opacity: 1; }
+  54.1% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.25% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  60.25% { opacity: 0; }
+  60.75% { opacity: 1; }
+  62% { opacity: 1; }
+  62.5% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.25% { opacity: 1; }
+  65.5% { opacity: 1; }
+  66% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-idle-email {
+  0% { opacity: 1; }
+  13.5% { opacity: 1; }
+  14.75% { opacity: 0; }
+  25% { opacity: 0; }
+  26.25% { opacity: 1; }
+  52.5% { opacity: 1; }
+  53.75% { opacity: 0; }
+  75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sn-s1-email {
+  0% { opacity: 0; }
+  13.5% { opacity: 0; }
+  14.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-s3-email {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53.75% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-idle-analytics {
+  0% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12.75% { opacity: 0; }
+  25% { opacity: 0; }
+  26.25% { opacity: 1; }
+  52.5% { opacity: 1; }
+  53.75% { opacity: 0; }
+  75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sn-s1-analytics {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-s3-analytics {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53.75% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-idle-fraud {
+  0% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12.75% { opacity: 0; }
+  25% { opacity: 0; }
+  26.25% { opacity: 1; }
+  52.5% { opacity: 1; }
+  53.75% { opacity: 0; }
+  75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sn-s1-fraud {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-s3-fraud {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53.75% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-idle-sms {
+  0% { opacity: 1; }
+  41.5% { opacity: 1; }
+  42.75% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sn-s2-sms {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-idle-partner {
+  0% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12.75% { opacity: 0; }
+  25% { opacity: 0; }
+  26.25% { opacity: 1; }
+  52% { opacity: 1; }
+  53.25% { opacity: 0; }
+  75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sn-s1-partner {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-p503 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53.25% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-pr1 {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.75% { opacity: 1; }
+  59% { opacity: 1; }
+  60.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-pr2 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60.25% { opacity: 1; }
+  62.5% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-pr3 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.75% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-pgive {
+  0% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.75% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-azhi {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  32.25% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-attr {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  35.25% { opacity: 1; }
+  69.25% { opacity: 1; }
+  70.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-ok2 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  34.25% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-verdict {
+  0% { opacity: 0; }
+  41% { opacity: 0; }
+  42.25% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-ring {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  55% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-dlq {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.4; }
+  51.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0.4; }
+  100% { opacity: 0.4; }
+}
+@keyframes sn-dlqn {
+  0% { opacity: 0; }
+  68.25% { opacity: 0; }
+  69.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-dlq0 {
+  0% { opacity: 1; }
+  68% { opacity: 1; }
+  69.25% { opacity: 0; }
+  98.5% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes sn-new {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-subdot {
+  0% { transform: translate(252px, 351px); opacity: 0; }
+  78% { transform: translate(252px, 351px); opacity: 0; }
+  78.25% { transform: translate(252px, 351px); opacity: 1; }
+  79.8% { transform: translate(252px, 301px); opacity: 1; }
+  79.85% { transform: translate(252px, 301px); opacity: 1; }
+  80.45% { transform: translate(252px, 301px); opacity: 0; }
+  100% { transform: translate(252px, 301px); opacity: 0; }
+}
+@keyframes sn-empty {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes sn-none {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.25% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- ===== left: the publisher ===== -->
+<text class="tiny sb mid f-ink" x="93" y="160">Acme Shop</text>
+<rect class="box" x="38" y="176" width="110" height="46" rx="12"/>
+<text class="label mid" x="93" y="196">Orders</text>
+<text class="sub mid" x="93" y="212">service</text>
+<line class="wire" x1="148" y1="199" x2="181" y2="199" marker-end="url(#ah)"/>
+<g class="p1"><text class="tiny mid" x="93" y="246">calls Publish once</text><text class="tiny mid" x="93" y="260">per order and never</text><text class="tiny mid" x="93" y="274">sees the list of</text><text class="tiny mid" x="93" y="288">subscribers</text></g>
+<g class="p2"><g class="sn-ok2"><text class="tiny mid" x="93" y="246">200 OK, MessageId:</text><text class="tiny mid" x="93" y="260">nothing about who</text><text class="tiny mid" x="93" y="274">gets a copy</text></g></g>
+<g class="p3"><text class="tiny mid" x="93" y="246">finished at the 200:</text><text class="tiny mid" x="93" y="260">SNS retries the</text><text class="tiny mid" x="93" y="274">partner on its own</text></g>
+<g class="p4"><text class="tiny mid sb f-amber-ink" x="93" y="246">a message ≤ 256 KiB</text><text class="tiny mid" x="93" y="260">(1 MiB on topics with</text><text class="tiny mid" x="93" y="274">only SQS, Lambda and</text><text class="tiny mid" x="93" y="288">Firehose subscribers)</text><text class="tiny mid sb f-amber-ink" x="93" y="302">Publish: 30,000 msg/s</text><text class="tiny mid" x="93" y="316">per account in</text><text class="tiny mid" x="93" y="330">us-east-1 (a soft quota)</text></g>
+
+<!-- ===== Amazon SNS: one frame, the topic and its subscriptions inside ===== -->
+<rect class="none s-ink" x="166" y="94" width="438" height="238" rx="16" stroke-width="1.5" opacity="0.55"/>
+<text class="label" x="182" y="117">Amazon SNS</text>
+<text class="tiny" x="182" y="132">pub/sub · Region us-east-1</text>
+
+<!-- the standard topic order-events -->
+<rect class="box" x="182" y="142" width="140" height="158" rx="10"/>
+<text class="label mono" x="196" y="162">order-events</text>
+<text class="tiny" x="196" y="177">standard topic</text>
+<g class="sn-attr"><text class="tiny mono" x="194" y="224">amount</text><text class="tiny f-faint" x="246" y="224">Number</text><text class="tiny mono b f-ink end" x="312" y="224">640</text>
+<text class="tiny mono" x="194" y="238">country</text><text class="tiny f-faint" x="246" y="238">String</text><text class="tiny mono b f-ink end" x="312" y="238">TH</text></g>
+<rect class="sn-row" x="192" y="252" width="36" height="40" rx="6" stroke-dasharray="4 3"/><text class="tiny mid f-faint" x="210" y="287">AZ</text><rect class="sn-row" x="234" y="252" width="36" height="40" rx="6" stroke-dasharray="4 3"/><text class="tiny mid f-faint" x="252" y="287">AZ</text><rect class="sn-row" x="276" y="252" width="36" height="40" rx="6" stroke-dasharray="4 3"/><text class="tiny mid f-faint" x="294" y="287">AZ</text>
+<g class="sn-azhi"><rect class="none s-teal" x="188" y="248" width="128" height="48" rx="8" stroke-width="2"/><text class="tiny mid sb f-teal" x="252" y="317">copies in several AZs</text></g>
+<g class="sn-empty"><rect class="none s-amber" x="206" y="185" width="92" height="22" rx="6" stroke-width="1.5" stroke-dasharray="4 3"/><text class="tiny mid sb f-amber-ink" x="252" y="225">kept only until</text><text class="tiny mid sb f-amber-ink" x="252" y="239">delivered</text></g>
+
+<!-- the fan of subscriptions, each with its filter policy (funnel) -->
+<path class="wire" d="M322 180L374 116L623 116" marker-end="url(#ah)"/>
+<path class="wire" d="M322 200L374 164L623 164" marker-end="url(#ah)"/>
+<path class="wire" d="M322 220L374 212L623 212" marker-end="url(#ah)"/>
+<path class="wire" d="M322 240L374 260L623 260" marker-end="url(#ah)"/>
+<path class="wire" d="M322 260L374 308L623 308" marker-end="url(#ah)"/>
+<text class="tiny mono" x="380" y="108">sqs · raw</text><path class="f-bg s-line" d="M446 108h20l-7 8v7l-6 3v-10z" stroke-width="1.5" stroke-linejoin="round"/><text class="tiny f-faint" x="471" y="108">no filter</text>
+<text class="tiny mono" x="380" y="156">sqs</text><path class="f-bg s-line" d="M446 156h20l-7 8v7l-6 3v-10z" stroke-width="1.5" stroke-linejoin="round"/><text class="tiny f-faint" x="471" y="156">no filter</text>
+<text class="tiny mono" x="380" y="204">lambda</text><path class="f-amber-soft s-amber" d="M446 204h20l-7 8v7l-6 3v-10z" stroke-width="1.5" stroke-linejoin="round"/><text class="tiny mono sb f-amber-ink" x="471" y="204">amount ≥ 500</text>
+<text class="tiny mono" x="380" y="252">sms</text><path class="f-amber-soft s-amber" d="M446 252h20l-7 8v7l-6 3v-10z" stroke-width="1.5" stroke-linejoin="round"/><text class="tiny mono sb f-amber-ink" x="471" y="252">amount ≥ 5000</text>
+<text class="tiny mono" x="380" y="300">https</text><path class="f-bg s-line" d="M446 300h20l-7 8v7l-6 3v-10z" stroke-width="1.5" stroke-linejoin="round"/><text class="tiny f-faint" x="471" y="300">no filter</text>
+<g class="sn-verdict"><rect class="f-green-soft s-green" x="445" y="124" width="22" height="14" rx="7" stroke-width="1"/><text class="tiny b mid f-green" x="456" y="134.5">✓</text><rect class="f-green-soft s-green" x="445" y="172" width="22" height="14" rx="7" stroke-width="1"/><text class="tiny b mid f-green" x="456" y="182.5">✓</text><rect class="f-green-soft s-green" x="433" y="220" width="46" height="14" rx="7" stroke-width="1"/><text class="tiny b mid f-green" x="456" y="230.5">✓ 640</text><rect class="f-red-soft s-red" x="433" y="268" width="46" height="14" rx="7" stroke-width="1"/><text class="tiny b mid f-red" x="456" y="278.5">✕ 640</text><rect class="f-green-soft s-green" x="445" y="316" width="22" height="14" rx="7" stroke-width="1"/><text class="tiny b mid f-green" x="456" y="326.5">✓</text></g>
+<g class="sn-ring"><circle class="none s-amber pulse" cx="548" cy="308" r="11" stroke-width="2"/></g>
+
+<!-- ===== right: the subscribers ===== -->
+<rect class="box" x="624" y="96" width="300" height="40" rx="10"/>
+<rect class="sn-row" x="636" y="107" width="66" height="18" rx="5"/>
+<text class="label" x="712" y="113">email-queue</text><text class="tiny end" x="916" y="113">SQS queue</text>
+<g class="sn-idle-email"><text class="tiny" x="712" y="129">read by email-sender</text></g>
+<rect class="box" x="624" y="144" width="300" height="40" rx="10"/>
+<rect class="sn-row" x="636" y="155" width="66" height="18" rx="5"/>
+<text class="label" x="712" y="161">analytics-queue</text><text class="tiny end" x="916" y="161">SQS queue</text>
+<g class="sn-idle-analytics"><text class="tiny" x="712" y="177">read hourly by the loader</text></g>
+<rect class="box" x="624" y="192" width="300" height="40" rx="10"/>
+<rect class="sn-chip" x="640" y="202" width="48" height="20" rx="6"/><text class="label mid" x="664" y="217">λ</text>
+<text class="label" x="712" y="209">fraud-check</text><text class="tiny end" x="916" y="209">Lambda function</text>
+<g class="sn-idle-fraud"><text class="tiny" x="712" y="225">scores the order for fraud</text></g>
+<rect class="box" x="624" y="240" width="300" height="40" rx="10"/>
+<rect class="sn-chip" x="640" y="250" width="48" height="20" rx="6"/><text class="tiny b mid f-ink" x="664" y="264">SMS</text>
+<text class="label" x="712" y="257">on-call phone</text><text class="tiny end" x="916" y="257">SMS</text>
+<g class="sn-idle-sms"><text class="tiny" x="712" y="273">texts the on-call engineer</text></g>
+<rect class="box" x="624" y="288" width="300" height="40" rx="10"/>
+<rect class="sn-chip" x="640" y="298" width="48" height="20" rx="6"/><text class="tiny b mid f-ink" x="664" y="312">POST</text>
+<text class="label" x="712" y="305">partner</text><text class="tiny end" x="916" y="305">HTTPS endpoint</text>
+<g class="sn-idle-partner"><text class="tiny mono" x="712" y="321">partner.example/hooks</text></g>
+<rect class="sn-card sn-old" x="646" y="158" width="12" height="12" rx="3"/><rect class="sn-card sn-old" x="664" y="158" width="12" height="12" rx="3"/>
+<g class="sn-flash"><rect class="f-red" x="640" y="298" width="48" height="20" rx="6"/><text class="tiny b mid f-bg" x="664" y="312">503</text></g>
+
+<g class="sn-s1-email"><text class="tiny sb f-green" x="712" y="129">✓ email-sender took it at once</text></g>
+<g class="sn-s3-email"><text class="tiny sb f-green" x="712" y="129">✓ stored: the raw body only</text></g>
+<g class="sn-s1-analytics"><text class="tiny sb f-amber-ink" x="712" y="177">waits behind 2 for the hourly run</text></g>
+<g class="sn-s3-analytics"><text class="tiny sb f-green" x="712" y="177">✓ stored in a JSON envelope</text></g>
+<g class="sn-s1-fraud"><text class="tiny" x="712" y="225">checking the order</text><circle class="none s-line" cx="822" cy="221" r="5" stroke-width="2"/><circle class="none s-blue spin" cx="822" cy="221" r="5" stroke-width="2" stroke-dasharray="8 24" stroke-linecap="round"/></g>
+<g class="sn-s3-fraud"><text class="tiny sb f-green" x="712" y="225">✓ 202: Lambda queued the event</text></g>
+<g class="sn-s2-sms"><text class="tiny sb f-red" x="712" y="273">✕ no text: 640 is below 5000</text></g>
+<g class="sn-s1-partner"><text class="tiny sb f-blue" x="712" y="321">gets a POST from SNS</text></g>
+<g class="sn-p503"><text class="tiny sb f-red" x="712" y="321">503 Service Unavailable</text></g>
+<g class="sn-pr1"><text class="tiny sb f-amber-ink" x="712" y="321">503 · retry 1 of 3 at +20 s</text></g>
+<g class="sn-pr2"><text class="tiny sb f-amber-ink" x="712" y="321">503 · retry 2 of 3 at +40 s</text></g>
+<g class="sn-pr3"><text class="tiny sb f-amber-ink" x="712" y="321">503 · retry 3 of 3 at +60 s</text></g>
+<g class="sn-pgive"><text class="tiny sb f-red" x="712" y="321">✕ retries used up → partner-dlq</text></g>
+
+<!-- ===== below: the partner subscription's dead-letter queue (dim until step 3) ===== -->
+<g class="sn-dlq">
+<line class="wire s-amber" x1="548" y1="316" x2="548" y2="351" marker-end="url(#ah-amber)"/>
+<text class="tiny mono end" x="540" y="346">RedrivePolicy</text>
+<rect class="box" x="362" y="352" width="242" height="68" rx="10"/>
+<text class="label mono" x="376" y="374">partner-dlq</text>
+<text class="tiny" x="376" y="390">SQS queue, kept 14 days</text>
+<g class="sn-dlq0"><text class="tiny f-faint" x="376" y="406">empty</text></g>
+<g class="sn-dlqn"><text class="tiny sb f-red" x="376" y="406">1 message: alarm fires</text></g>
+<rect class="sn-row" x="526" y="377" width="66" height="18" rx="5"/>
+</g>
+
+<!-- ===== step 4: a queue that subscribes the next day ===== -->
+<g class="sn-new">
+<line class="wire s-amber dash" x1="252" y1="300" x2="252" y2="351" marker-end="url(#ah-amber)"/>
+<text class="tiny mono f-amber-ink" x="260" y="346">Subscribe, next day</text>
+<rect class="box" x="182" y="352" width="170" height="68" rx="10"/>
+<rect class="none s-amber" x="182" y="352" width="170" height="68" rx="10" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text class="label mono" x="196" y="374">search-queue</text>
+<text class="tiny" x="196" y="390">SQS queue, added later</text>
+</g>
+<g class="sn-none"><text class="tiny sb f-amber-ink" x="196" y="406">no earlier messages</text></g>
+
+<!-- ===== notes, one per step; limits in step 4 ===== -->
+<rect class="box" x="624" y="342" width="300" height="126" rx="12"/>
+<g class="p1">
+<text class="tiny b sn-h" x="638" y="361">PUBLISH ONCE, DELIVER TO MANY</text>
+<text class="tiny" x="638" y="378">SNS pushes a copy of OrderPlaced to every</text><text class="tiny" x="638" y="392">subscription whose filter policy matches;</text><text class="tiny" x="638" y="406">Orders never learns who they are. In the</text><text class="tiny" x="638" y="420">usual SNS-to-SQS fan-out each consumer</text><text class="tiny" x="638" y="434">reads its own queue, so the hourly loader</text><text class="tiny" x="638" y="448">can fall behind without holding up</text><text class="tiny" x="638" y="462">email-sender or fraud-check.</text></g>
+<g class="p2">
+<text class="tiny b sn-h" x="638" y="361">STORED, THEN FILTERED</text>
+<text class="tiny" x="638" y="378">Publish returns 200 with a MessageId once</text><text class="tiny" x="638" y="392">SNS holds copies in several Availability</text><text class="tiny" x="638" y="406">Zones. Then SNS checks each subscription's</text><text class="tiny" x="638" y="420">FilterPolicy against the attributes: no</text><text class="tiny" x="638" y="434">policy takes everything, 640 ≥ 500 passes</text><text class="tiny" x="638" y="448">for fraud-check, and the on-call SMS</text><text class="tiny" x="638" y="462">(≥ 5000) gets nothing.</text></g>
+<g class="p3">
+<text class="tiny b sn-h" x="638" y="361">RETRIES, THEN THE DEAD-LETTER QUEUE</text>
+<text class="tiny" x="638" y="378">SNS retries 5xx and 429 answers. HTTPS by</text><text class="tiny" x="638" y="392">default: 3 retries, 20 s apart, sped up</text><text class="tiny" x="638" y="406">here. SQS, Lambda: 100,015 attempts over</text><text class="tiny" x="638" y="420">23 days. Then the copy goes to the</text><text class="tiny" x="638" y="434">subscription's DLQ, or is dropped. At least</text><text class="tiny" x="638" y="448">once: a copy can arrive twice, so every</text><text class="tiny" x="638" y="462">consumer must be idempotent.</text></g>
+<g class="p4"><rect class="f-amber-soft s-amber" x="624" y="342" width="300" height="126" rx="12" stroke-width="1.5"/>
+<text class="tiny b sn-h f-amber-ink" x="638" y="361">LIMITS · OCTOBER 2026</text>
+<text class="tiny" x="638" y="378">A standard topic keeps no archive: a queue</text><text class="tiny" x="638" y="392">subscribed the next day never sees earlier</text><text class="tiny" x="638" y="406">orders. FIFO topics: order per message</text><text class="tiny" x="638" y="420">group, 5-min deduplication, SQS queues only,</text><text class="tiny" x="638" y="434">archive and replay up to 365 days. Routing</text><text class="tiny" x="638" y="448">events from many sources to many kinds of</text><text class="tiny" x="638" y="462">targets: EventBridge.</text></g>
+
+<!-- ===== moving things, drawn last ===== -->
+<g class="sn-card1"><rect class="sn-card" x="-46" y="-11" width="92" height="22" rx="6"/><text class="tiny mono b mid sn-cid" y="4">OrderPlaced</text></g>
+<g class="sn-card2"><rect class="sn-card" x="-46" y="-11" width="92" height="22" rx="6"/><text class="tiny mono b mid sn-cid" y="4">OrderPlaced</text></g>
+<g class="sn-az10"><rect class="sn-tl" x="-6" y="-6" width="12" height="12" rx="3"/></g><g class="sn-az20"><rect class="sn-tl" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-az11"><rect class="sn-tl" x="-6" y="-6" width="12" height="12" rx="3"/></g><g class="sn-az21"><rect class="sn-tl" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-az12"><rect class="sn-tl" x="-6" y="-6" width="12" height="12" rx="3"/></g><g class="sn-az22"><rect class="sn-tl" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c1email"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c1analytics"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c1fraud"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c1partner"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c2email"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c2analytics"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c2fraud"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c2sms"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="sn-c2partner"><rect class="sn-card" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<circle class="f-green pkt sn-mid" r="5"/><circle class="f-blue pkt sn-subdot" r="5"/>
+<circle class="f-amber pkt sn-try0" r="5"/><circle class="f-amber pkt sn-try1" r="5"/><circle class="f-amber pkt sn-try2" r="5"/>
+<circle class="f-red pkt sn-5030" r="5"/><circle class="f-red pkt sn-5031" r="5"/><circle class="f-red pkt sn-5032" r="5"/><circle class="f-red pkt sn-5033" r="5"/>
+</g>
+</svg>
