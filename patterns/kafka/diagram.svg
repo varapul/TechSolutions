@@ -1,0 +1,585 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Apache Kafka</title>
+<desc id="dg-desc">Apache Kafka. A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history. Step 1, Where it sits: Orders appends OrderPlaced to topic orders; three consumer groups each read it at their own pace. Step 2, Append and replicate: Key C-14 picks P1. Leader b2 appends offset 42, b1 and b3 copy it, then acks=all confirms the write. Step 3, Consumer groups: One consumer per partition per group. billing commits 43, search-indexer lags at 39; a 4th idles. Step 4, Failover and the limits: b2 fails; in-sync b1 takes over P1, writes go on. Limits: order per partition, hot keys, retention.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">Apache Kafka</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Append and replicate</text>
+  <text class="step on p2" x="262" y="518">2 · Append and replicate</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Consumer groups</text>
+  <text class="step on p3" x="484" y="518">3 · Consumer groups</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Failover and the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Failover and the limits</text>
+  <text class="caption p1" x="40" y="552">Orders appends OrderPlaced to topic orders; three consumer groups each read it at their own pace.</text>
+  <text class="caption p2" x="40" y="552">Key C-14 picks P1. Leader b2 appends offset 42, b1 and b3 copy it, then acks=all confirms the write.</text>
+  <text class="caption p3" x="40" y="552">One consumer per partition per group. billing commits 43, search-indexer lags at 39; a 4th idles.</text>
+  <text class="caption p4" x="40" y="552">b2 fails; in-sync b1 takes over P1, writes go on. Limits: order per partition, hot keys, retention.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Apache Kafka. Timeline (20s loop, 1s = 5%):
+   0-25%   step 1: Orders appends OrderPlaced (key C-14) to topic orders; billing, search-indexer and
+           analytics-loader each read it at their own pace (copies arrive at 2.43, 2.97, 3.93 s)
+   25-50%  step 2: the record hashes to P1, leader b2 appends offset 42 (6.51 s), followers b1 and b3
+           copy it (7.01, 7.21 s), the acks=all acknowledgement reaches Orders at 8.38 s
+   50-75%  step 3: billing-1 reads 42 (11.03 s) and commits 43 (11.43 s); billing-3 joins and a
+           rebalance moves P1 to it; billing-4 idles; search-indexer sits at 39 (lag 4)
+   75-100% step 4: b2 fails, b1 becomes P1's leader, Orders writes 43 to b1 (17.52 s), b3 copies it,
+           the ack arrives at 18.71 s; the limits appear; everything resets in the last half-second */
+.diagram .kf-frame { fill: none; stroke: var(--wire); stroke-width: 1.5; }
+.diagram .kf-band { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+.diagram .kf-cell { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .kf-slot { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.diagram .kf-rec { fill: var(--purple-soft); stroke: var(--purple); stroke-width: 1.2; }
+.diagram .kf-ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .kf-cp { fill: var(--teal); stroke: var(--bg); stroke-width: 2; }
+.diagram .kf-ack { fill: var(--green); stroke: var(--bg); stroke-width: 2; }
+.diagram .kf-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .kf-hd-amber { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--amber-ink); }
+.diagram .kf-ev1 { opacity: 0; animation: kf-ev1 var(--T) linear infinite; }
+.diagram .kf-cp1 { opacity: 0; animation: kf-cp1 var(--T) linear infinite; }
+.diagram .kf-ok1 { opacity: 0; animation: kf-ok1 var(--T) linear infinite; }
+.diagram .kf-cp2 { opacity: 0; animation: kf-cp2 var(--T) linear infinite; }
+.diagram .kf-ok2 { opacity: 0; animation: kf-ok2 var(--T) linear infinite; }
+.diagram .kf-cp3 { opacity: 0; animation: kf-cp3 var(--T) linear infinite; }
+.diagram .kf-ok3 { opacity: 0; animation: kf-ok3 var(--T) linear infinite; }
+.diagram .kf-ev2 { opacity: 0; animation: kf-ev2 var(--T) linear infinite; }
+.diagram .kf-f42a { opacity: 0; animation: kf-f42a var(--T) linear infinite; }
+.diagram .kf-o42 { opacity: 0; animation: kf-o42 var(--T) linear infinite; }
+.diagram .kf-c42b1 { opacity: 0; animation: kf-c42b1 var(--T) linear infinite; }
+.diagram .kf-c42b3 { opacity: 0; animation: kf-c42b3 var(--T) linear infinite; }
+.diagram .kf-f42b { opacity: 0; animation: kf-f42b var(--T) linear infinite; }
+.diagram .kf-f42c { opacity: 0; animation: kf-f42c var(--T) linear infinite; }
+.diagram .kf-ack2 { opacity: 0; animation: kf-ack2 var(--T) linear infinite; }
+.diagram .kf-ok42 { opacity: 0; animation: kf-ok42 var(--T) linear infinite; }
+.diagram .kf-rd { opacity: 0; animation: kf-rd var(--T) linear infinite; }
+.diagram .kf-got { opacity: 0; animation: kf-got var(--T) linear infinite; }
+.diagram .kf-b3 { opacity: 0; animation: kf-b3 var(--T) linear infinite; }
+.diagram .kf-reb { opacity: 0; animation: kf-reb var(--T) linear infinite; }
+.diagram .kf-b4 { opacity: 0; animation: kf-b4 var(--T) linear infinite; }
+.diagram .kf-dead { opacity: 0; animation: kf-dead var(--T) linear infinite; }
+.diagram .kf-off1 { opacity: 0; animation: kf-off1 var(--T) linear infinite; }
+.diagram .kf-newl { opacity: 0; animation: kf-newl var(--T) linear infinite; }
+.diagram .kf-ev4 { opacity: 0; animation: kf-ev4 var(--T) linear infinite; }
+.diagram .kf-f43a { opacity: 0; animation: kf-f43a var(--T) linear infinite; }
+.diagram .kf-c43 { opacity: 0; animation: kf-c43 var(--T) linear infinite; }
+.diagram .kf-f43b { opacity: 0; animation: kf-f43b var(--T) linear infinite; }
+.diagram .kf-ack4 { opacity: 0; animation: kf-ack4 var(--T) linear infinite; }
+.diagram .kf-ok43 { opacity: 0; animation: kf-ok43 var(--T) linear infinite; }
+.diagram .kf-okp { opacity: 0; animation: kf-okp var(--T) linear infinite; }
+.diagram .kf-l1 { opacity: 0; animation: kf-l1 var(--T) linear infinite; }
+.diagram .kf-l2 { opacity: 0; animation: kf-l2 var(--T) linear infinite; }
+.diagram .kf-l3 { opacity: 0; animation: kf-l3 var(--T) linear infinite; }
+.diagram .kf-rec1 { animation: kf-rec1 var(--T) linear infinite; }
+.diagram .kf-bcar { animation: kf-bcar var(--T) linear infinite; }
+.diagram .kf-chip { animation: kf-chip var(--T) linear infinite; }
+.diagram .kf-alive { animation: kf-alive var(--T) linear infinite; }
+.diagram .kf-lead { animation: kf-lead var(--T) linear infinite; }
+.diagram .kf-b1f { animation: kf-b1f var(--T) linear infinite; }
+@keyframes kf-ev1 {
+  0% { transform: translate(140px, 237px); opacity: 0; }
+  2.5% { transform: translate(140px, 237px); opacity: 0; }
+  2.75% { opacity: 1; }
+  7.138% { transform: translate(511px, 237px); }
+  7.475% { transform: translate(511px, 264px); opacity: 1; }
+  7.725% { transform: translate(511px, 264px); opacity: 0; }
+  100% { transform: translate(511px, 264px); opacity: 0; }
+}
+@keyframes kf-rec1 {
+  0% { opacity: 0; }
+  7.475% { opacity: 0; }
+  7.975% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes kf-cp1 {
+  0% { transform: translate(511px, 264px); opacity: 0; }
+  9% { transform: translate(511px, 264px); opacity: 0; }
+  9.25% { opacity: 1; }
+  9.321% { transform: translate(511px, 237px); }
+  10.952% { transform: translate(648px, 237px); }
+  11.988% { transform: translate(648px, 150px); }
+  12.155% { transform: translate(662px, 150px); opacity: 1; }
+  12.405% { transform: translate(662px, 150px); opacity: 0; }
+  100% { transform: translate(662px, 150px); opacity: 0; }
+}
+@keyframes kf-ok1 {
+  0% { opacity: 0; }
+  12.155% { opacity: 0; }
+  12.755% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-cp2 {
+  0% { transform: translate(511px, 264px); opacity: 0; }
+  12.75% { transform: translate(511px, 264px); opacity: 0; }
+  13% { opacity: 1; }
+  13.071% { transform: translate(511px, 237px); }
+  14.869% { transform: translate(662px, 237px); opacity: 1; }
+  15.119% { transform: translate(662px, 237px); opacity: 0; }
+  100% { transform: translate(662px, 237px); opacity: 0; }
+}
+@keyframes kf-ok2 {
+  0% { opacity: 0; }
+  14.869% { opacity: 0; }
+  15.469% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-cp3 {
+  0% { transform: translate(511px, 264px); opacity: 0; }
+  16.5% { transform: translate(511px, 264px); opacity: 0; }
+  16.75% { opacity: 1; }
+  16.821% { transform: translate(511px, 237px); }
+  18.452% { transform: translate(648px, 237px); }
+  19.488% { transform: translate(648px, 324px); }
+  19.655% { transform: translate(662px, 324px); opacity: 1; }
+  19.905% { transform: translate(662px, 324px); opacity: 0; }
+  100% { transform: translate(662px, 324px); opacity: 0; }
+}
+@keyframes kf-ok3 {
+  0% { opacity: 0; }
+  19.655% { opacity: 0; }
+  20.255% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-ev2 {
+  0% { transform: translate(140px, 237px); opacity: 0; }
+  28% { transform: translate(140px, 237px); opacity: 0; }
+  28.25% { opacity: 1; }
+  32.355% { transform: translate(471px, 237px); }
+  32.572% { transform: translate(471px, 253.5px); opacity: 1; }
+  32.822% { transform: translate(471px, 253.5px); opacity: 0; }
+  100% { transform: translate(471px, 253.5px); opacity: 0; }
+}
+@keyframes kf-f42a {
+  0% { opacity: 0; }
+  32.572% { opacity: 0; }
+  33.072% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-o42 {
+  0% { opacity: 0; }
+  32.572% { opacity: 0; }
+  33.072% { opacity: 1; }
+  48.25% { opacity: 1; }
+  48.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-c42b1 {
+  0% { transform: translate(471px, 253.5px); opacity: 0; }
+  33.572% { transform: translate(471px, 253.5px); opacity: 0; }
+  33.822% { opacity: 1; }
+  35.072% { transform: translate(471px, 273.5px); opacity: 1; }
+  35.322% { transform: translate(471px, 273.5px); opacity: 0; }
+  100% { transform: translate(471px, 273.5px); opacity: 0; }
+}
+@keyframes kf-c42b3 {
+  0% { transform: translate(471px, 253.5px); opacity: 0; }
+  33.572% { transform: translate(471px, 253.5px); opacity: 0; }
+  33.822% { opacity: 1; }
+  36.072% { transform: translate(471px, 293.5px); opacity: 1; }
+  36.322% { transform: translate(471px, 293.5px); opacity: 0; }
+  100% { transform: translate(471px, 293.5px); opacity: 0; }
+}
+@keyframes kf-f42b {
+  0% { opacity: 0; }
+  35.072% { opacity: 0; }
+  35.572% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-f42c {
+  0% { opacity: 0; }
+  36.072% { opacity: 0; }
+  36.572% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-ack2 {
+  0% { transform: translate(471px, 253.5px); opacity: 0; }
+  37.322% { transform: translate(471px, 253.5px); opacity: 0; }
+  37.539% { transform: translate(471px, 237px); }
+  37.572% { opacity: 1; }
+  41.894% { transform: translate(140px, 237px); opacity: 1; }
+  42.144% { transform: translate(140px, 237px); opacity: 0; }
+  100% { transform: translate(140px, 237px); opacity: 0; }
+}
+@keyframes kf-ok42 {
+  0% { opacity: 0; }
+  41.894% { opacity: 0; }
+  42.494% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-rd {
+  0% { transform: translate(471px, 253.5px); opacity: 0; }
+  52% { transform: translate(471px, 253.5px); opacity: 0; }
+  52.25% { opacity: 1; }
+  53.74% { transform: translate(638px, 253.5px); }
+  54.922% { transform: translate(638px, 140px); }
+  55.151% { transform: translate(660px, 140px); opacity: 1; }
+  55.401% { transform: translate(660px, 140px); opacity: 0; }
+  100% { transform: translate(660px, 140px); opacity: 0; }
+}
+@keyframes kf-got {
+  0% { opacity: 0; }
+  55.151% { opacity: 0; }
+  55.651% { opacity: 1; }
+  57.651% { opacity: 1; }
+  58.151% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-bcar {
+  0% { transform: translate(0px, 0px); }
+  55.651% { transform: translate(0px, 0px); }
+  57.151% { transform: translate(31px, 0px); }
+  100% { transform: translate(31px, 0px); }
+}
+@keyframes kf-b3 {
+  0% { opacity: 0; }
+  57.25% { opacity: 0; }
+  58.75% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-reb {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  60.25% { opacity: 1; }
+  67% { opacity: 1; }
+  68.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-chip {
+  0% { transform: translate(0px, 0px); }
+  59.75% { transform: translate(0px, 0px); }
+  62.75% { transform: translate(0px, 68px); }
+  100% { transform: translate(0px, 68px); }
+}
+@keyframes kf-b4 {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65.75% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-dead {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78.5% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-alive {
+  0% { opacity: 1; }
+  77% { opacity: 1; }
+  78.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-lead {
+  0% { transform: translate(0px, 0px); }
+  80% { transform: translate(0px, 0px); }
+  83% { transform: translate(0px, 20px); }
+  100% { transform: translate(0px, 20px); }
+}
+@keyframes kf-b1f {
+  0% { opacity: 1; }
+  80.25% { opacity: 1; }
+  81.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-off1 {
+  0% { opacity: 0; }
+  82.75% { opacity: 0; }
+  84.25% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-newl {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84.5% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-ev4 {
+  0% { transform: translate(140px, 237px); opacity: 0; }
+  83.75% { transform: translate(140px, 237px); opacity: 0; }
+  84% { opacity: 1; }
+  87.231% { transform: translate(502px, 237px); }
+  87.582% { transform: translate(502px, 273.5px); opacity: 1; }
+  87.832% { transform: translate(502px, 273.5px); opacity: 0; }
+  100% { transform: translate(502px, 273.5px); opacity: 0; }
+}
+@keyframes kf-f43a {
+  0% { opacity: 0; }
+  87.582% { opacity: 0; }
+  88.082% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-c43 {
+  0% { transform: translate(502px, 273.5px); opacity: 0; }
+  87.982% { transform: translate(502px, 273.5px); opacity: 0; }
+  88.232% { opacity: 1; }
+  89.232% { transform: translate(502px, 293.5px); opacity: 1; }
+  89.482% { transform: translate(502px, 293.5px); opacity: 0; }
+  100% { transform: translate(502px, 293.5px); opacity: 0; }
+}
+@keyframes kf-f43b {
+  0% { opacity: 0; }
+  89.232% { opacity: 0; }
+  89.732% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-ack4 {
+  0% { transform: translate(502px, 273.5px); opacity: 0; }
+  89.732% { transform: translate(502px, 273.5px); opacity: 0; }
+  89.982% { opacity: 1; }
+  90.083% { transform: translate(502px, 237px); }
+  93.564% { transform: translate(140px, 237px); opacity: 1; }
+  93.814% { transform: translate(140px, 237px); opacity: 0; }
+  100% { transform: translate(140px, 237px); opacity: 0; }
+}
+@keyframes kf-ok43 {
+  0% { opacity: 0; }
+  93.564% { opacity: 0; }
+  94.164% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-okp {
+  0% { opacity: 0; }
+  41.894% { opacity: 0; }
+  42.494% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.1% { opacity: 0; }
+  93.564% { opacity: 0; }
+  94.164% { opacity: 1; }
+  98.75% { opacity: 1; }
+  99.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kf-l1 {
+  0% { opacity: 0; }
+  89.5% { opacity: 0; }
+  91% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-l2 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  93% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kf-l3 {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  95% { opacity: 1; }
+  99% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- producer -->
+<rect class="box" x="36" y="205" width="104" height="64" rx="12"/>
+<text class="label mid" x="88" y="233">Orders</text>
+<text class="sub mid" x="88" y="252">producer</text>
+<line class="wire" x1="140" y1="237" x2="170" y2="237" marker-end="url(#ah)"/>
+<g class="p1"><text class="tiny mid" x="88" y="292">doesn't know</text><text class="tiny mid" x="88" y="306">who reads</text></g>
+<g class="p2"><rect class="box" x="36" y="298" width="104" height="64" rx="10"/><text class="tiny" x="46" y="316">key → partition</text><text class="tiny mono f-ink" x="46" y="334">murmur2(C-14)</text><text class="tiny mono sb f-ink" x="46" y="352">% 3 = 1 → P1</text></g>
+<g class="kf-okp"><circle class="f-green" cx="138" cy="207" r="9"/><path class="none s-bg" d="M134 207l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="kf-ok42"><text class="tiny sb mid f-green" x="88" y="286">acked: P1 @ 42</text></g>
+<g class="kf-ok43"><text class="tiny sb mid f-green" x="88" y="286">acked: P1 @ 43</text></g>
+<!-- the product: one Kafka cluster -->
+<rect class="kf-frame" x="172" y="98" width="456" height="294" rx="16"/>
+<text class="label" x="188" y="122">Kafka cluster</text>
+<text class="tiny mono" x="188" y="140">topic orders · 3 partitions × 3 replicas</text>
+<text class="tiny end" x="494" y="121">brokers</text>
+<rect class="f-panel-2 s-line" x="500" y="107" width="36" height="20" rx="6" stroke-width="1.2"/>
+<text class="tiny mono sb mid f-ink" x="518" y="121">b1</text>
+<rect class="f-panel-2 s-line" x="542" y="107" width="36" height="20" rx="6" stroke-width="1.2"/>
+<text class="tiny mono sb mid f-ink" x="560" y="121">b2</text>
+<rect class="f-panel-2 s-line" x="584" y="107" width="36" height="20" rx="6" stroke-width="1.2"/>
+<text class="tiny mono sb mid f-ink" x="602" y="121">b3</text>
+<rect class="f-red-soft s-red kf-dead" x="542" y="107" width="36" height="20" rx="6" stroke-width="1.5"/>
+<rect class="f-panel s-line" x="520" y="131" width="100" height="16" rx="8" stroke-width="1.2"/>
+<text class="tiny mid" x="570" y="143">KRaft controllers</text>
+<!-- step 1: the topic seen from outside -->
+<g class="p1"><rect class="box" x="196" y="180" width="408" height="190" rx="14"/><text class="label" x="214" y="206">topic orders</text><text class="tiny end" x="588" y="206">kept 7 days</text><rect class="kf-rec" x="214" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="238" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="262" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="286" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="310" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="334" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="358" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="382" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="406" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="430" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="454" y="255" width="18" height="18" rx="4"/><rect class="kf-rec" x="478" y="255" width="18" height="18" rx="4"/><text class="tiny" x="214" y="298">Records are appended in order and stay after they are read;</text><text class="tiny" x="214" y="314">each group remembers its own position, its offset.</text><text class="tiny" x="214" y="340">Inside, the topic is split into partitions, and every</text><text class="tiny" x="214" y="356">partition is copied to several brokers.</text><g class="kf-rec1"><rect class="kf-ev" x="502" y="255" width="18" height="18" rx="4"/><text class="tiny mid b f-purple" x="507" y="249">OrderPlaced · C-14</text></g></g>
+<!-- steps 2-4: three partitions, each with a leader and two followers -->
+<g class="p234"><rect class="kf-band" x="180" y="150" width="440" height="77" rx="10"/><text class="label" x="190" y="200">P0</text><text class="tiny mono sb f-ink" x="222" y="178.5">b1</text><rect class="kf-cell" x="302" y="166" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="178.5">58</text><rect class="kf-cell" x="333" y="166" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="178.5">59</text><rect class="kf-cell" x="364" y="166" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="178.5">60</text><rect class="kf-cell" x="395" y="166" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="178.5">61</text><rect class="kf-cell" x="426" y="166" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="178.5">62</text><rect class="kf-cell" x="457" y="166" width="28" height="17" rx="3"/><text class="tiny mono mid" x="471" y="178.5">63</text><rect class="kf-slot" x="488" y="166" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="178.5">64</text><circle class="f-green" cx="534" cy="174.5" r="4"/><text class="tiny mono sb f-ink" x="222" y="198.5">b2</text><text class="tiny f-faint kf-alive" x="248" y="198.5">follower</text><rect class="kf-cell" x="302" y="186" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="198.5">58</text><rect class="kf-cell" x="333" y="186" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="198.5">59</text><rect class="kf-cell" x="364" y="186" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="198.5">60</text><rect class="kf-cell" x="395" y="186" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="198.5">61</text><rect class="kf-cell" x="426" y="186" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="198.5">62</text><rect class="kf-cell" x="457" y="186" width="28" height="17" rx="3"/><text class="tiny mono mid" x="471" y="198.5">63</text><rect class="kf-slot" x="488" y="186" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="198.5">64</text><circle class="f-green kf-alive" cx="534" cy="194.5" r="4"/><text class="tiny mono sb f-ink" x="222" y="218.5">b3</text><text class="tiny f-faint" x="248" y="218.5">follower</text><rect class="kf-cell" x="302" y="206" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="218.5">58</text><rect class="kf-cell" x="333" y="206" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="218.5">59</text><rect class="kf-cell" x="364" y="206" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="218.5">60</text><rect class="kf-cell" x="395" y="206" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="218.5">61</text><rect class="kf-cell" x="426" y="206" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="218.5">62</text><rect class="kf-cell" x="457" y="206" width="28" height="17" rx="3"/><text class="tiny mono mid" x="471" y="218.5">63</text><rect class="kf-slot" x="488" y="206" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="218.5">64</text><circle class="f-green" cx="534" cy="214.5" r="4"/><rect class="kf-band" x="180" y="229" width="440" height="77" rx="10"/><text class="label" x="190" y="279">P1</text><text class="tiny mono sb f-ink" x="222" y="257.5">b2</text><rect class="kf-cell" x="302" y="245" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="257.5">37</text><rect class="kf-cell" x="333" y="245" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="257.5">38</text><rect class="kf-cell" x="364" y="245" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="257.5">39</text><rect class="kf-cell" x="395" y="245" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="257.5">40</text><rect class="kf-cell" x="426" y="245" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="257.5">41</text><rect class="kf-slot" x="457" y="245" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="471" y="257.5">42</text><rect class="kf-slot" x="488" y="245" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="257.5">43</text><circle class="f-green kf-alive" cx="534" cy="253.5" r="4"/><text class="tiny mono sb f-ink" x="222" y="277.5">b1</text><text class="tiny f-faint kf-b1f" x="248" y="277.5">follower</text><rect class="kf-cell" x="302" y="265" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="277.5">37</text><rect class="kf-cell" x="333" y="265" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="277.5">38</text><rect class="kf-cell" x="364" y="265" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="277.5">39</text><rect class="kf-cell" x="395" y="265" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="277.5">40</text><rect class="kf-cell" x="426" y="265" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="277.5">41</text><rect class="kf-slot" x="457" y="265" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="471" y="277.5">42</text><rect class="kf-slot" x="488" y="265" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="277.5">43</text><circle class="f-green" cx="534" cy="273.5" r="4"/><text class="tiny mono sb f-ink" x="222" y="297.5">b3</text><text class="tiny f-faint" x="248" y="297.5">follower</text><rect class="kf-cell" x="302" y="285" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="297.5">37</text><rect class="kf-cell" x="333" y="285" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="297.5">38</text><rect class="kf-cell" x="364" y="285" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="297.5">39</text><rect class="kf-cell" x="395" y="285" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="297.5">40</text><rect class="kf-cell" x="426" y="285" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="297.5">41</text><rect class="kf-slot" x="457" y="285" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="471" y="297.5">42</text><rect class="kf-slot" x="488" y="285" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="297.5">43</text><circle class="f-green" cx="534" cy="293.5" r="4"/><rect class="kf-band" x="180" y="308" width="440" height="77" rx="10"/><text class="label" x="190" y="358">P2</text><text class="tiny mono sb f-ink" x="222" y="336.5">b3</text><rect class="kf-cell" x="302" y="324" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="336.5">25</text><rect class="kf-cell" x="333" y="324" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="336.5">26</text><rect class="kf-cell" x="364" y="324" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="336.5">27</text><rect class="kf-cell" x="395" y="324" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="336.5">28</text><rect class="kf-cell" x="426" y="324" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="336.5">29</text><rect class="kf-cell" x="457" y="324" width="28" height="17" rx="3"/><text class="tiny mono mid" x="471" y="336.5">30</text><rect class="kf-slot" x="488" y="324" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="336.5">31</text><circle class="f-green" cx="534" cy="332.5" r="4"/><text class="tiny mono sb f-ink" x="222" y="356.5">b1</text><text class="tiny f-faint" x="248" y="356.5">follower</text><rect class="kf-cell" x="302" y="344" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="356.5">25</text><rect class="kf-cell" x="333" y="344" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="356.5">26</text><rect class="kf-cell" x="364" y="344" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="356.5">27</text><rect class="kf-cell" x="395" y="344" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="356.5">28</text><rect class="kf-cell" x="426" y="344" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="356.5">29</text><rect class="kf-cell" x="457" y="344" width="28" height="17" rx="3"/><text class="tiny mono mid" x="471" y="356.5">30</text><rect class="kf-slot" x="488" y="344" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="356.5">31</text><circle class="f-green" cx="534" cy="352.5" r="4"/><text class="tiny mono sb f-ink" x="222" y="376.5">b2</text><text class="tiny f-faint kf-alive" x="248" y="376.5">follower</text><rect class="kf-cell" x="302" y="364" width="28" height="17" rx="3"/><text class="tiny mono mid" x="316" y="376.5">25</text><rect class="kf-cell" x="333" y="364" width="28" height="17" rx="3"/><text class="tiny mono mid" x="347" y="376.5">26</text><rect class="kf-cell" x="364" y="364" width="28" height="17" rx="3"/><text class="tiny mono mid" x="378" y="376.5">27</text><rect class="kf-cell" x="395" y="364" width="28" height="17" rx="3"/><text class="tiny mono mid" x="409" y="376.5">28</text><rect class="kf-cell" x="426" y="364" width="28" height="17" rx="3"/><text class="tiny mono mid" x="440" y="376.5">29</text><rect class="kf-cell" x="457" y="364" width="28" height="17" rx="3"/><text class="tiny mono mid" x="471" y="376.5">30</text><rect class="kf-slot" x="488" y="364" width="28" height="17" rx="3"/><text class="tiny mono mid f-faint" x="502" y="376.5">31</text><circle class="f-green kf-alive" cx="534" cy="372.5" r="4"/><text class="tiny mid" x="534" y="162">in sync</text><rect class="f-panel-2 s-ink" x="246" y="167" width="48" height="15" rx="7.5" stroke-width="1.2"/><text class="tiny sb mid f-ink" x="270" y="178">leader</text><rect class="f-panel-2 s-ink" x="246" y="325" width="48" height="15" rx="7.5" stroke-width="1.2"/><text class="tiny sb mid f-ink" x="270" y="336">leader</text><g class="kf-f42a"><rect class="f-bg" x="457" y="245" width="28" height="17" rx="3"/><rect class="f-purple-soft s-purple" x="457" y="245" width="28" height="17" rx="3" stroke-width="1.5"/><text class="tiny mono mid b f-ink" x="471" y="257.5">42</text></g><g class="kf-f42b"><rect class="f-bg" x="457" y="265" width="28" height="17" rx="3"/><rect class="f-teal-soft s-teal" x="457" y="265" width="28" height="17" rx="3" stroke-width="1.5"/><text class="tiny mono mid b f-ink" x="471" y="277.5">42</text></g><g class="kf-f42c"><rect class="f-bg" x="457" y="285" width="28" height="17" rx="3"/><rect class="f-teal-soft s-teal" x="457" y="285" width="28" height="17" rx="3" stroke-width="1.5"/><text class="tiny mono mid b f-ink" x="471" y="297.5">42</text></g><g class="kf-f43a"><rect class="f-bg" x="488" y="265" width="28" height="17" rx="3"/><rect class="f-purple-soft s-purple" x="488" y="265" width="28" height="17" rx="3" stroke-width="1.5"/><text class="tiny mono mid b f-ink" x="502" y="277.5">43</text></g><g class="kf-f43b"><rect class="f-bg" x="488" y="285" width="28" height="17" rx="3"/><rect class="f-teal-soft s-teal" x="488" y="285" width="28" height="17" rx="3" stroke-width="1.5"/><text class="tiny mono mid b f-ink" x="502" y="297.5">43</text></g><g class="kf-o42"><text class="tiny b mid f-purple" x="471" y="242">appended</text></g><g class="kf-lead"><rect class="f-panel-2 s-ink" x="246" y="246" width="48" height="15" rx="7.5" stroke-width="1.2"/><text class="tiny sb mid f-ink" x="270" y="257">leader</text></g><rect class="f-red-soft s-red kf-dead" x="216" y="184.5" width="308" height="20" rx="4" stroke-width="1.2"/><path class="none s-red kf-dead" d="M530 190.5l8 8m0 -8l-8 8" stroke-width="2" stroke-linecap="round"/><text class="tiny sb f-red kf-dead" x="248" y="198.5">offline</text><rect class="f-red-soft s-red kf-dead" x="216" y="243.5" width="308" height="20" rx="4" stroke-width="1.2"/><path class="none s-red kf-dead" d="M530 249.5l8 8m0 -8l-8 8" stroke-width="2" stroke-linecap="round"/><rect class="f-red-soft s-red kf-dead" x="216" y="362.5" width="308" height="20" rx="4" stroke-width="1.2"/><path class="none s-red kf-dead" d="M530 368.5l8 8m0 -8l-8 8" stroke-width="2" stroke-linecap="round"/><text class="tiny sb f-red kf-dead" x="248" y="376.5">offline</text><text class="tiny sb f-red kf-off1" x="248" y="257.5">offline</text><g class="kf-newl"><text class="tiny sb f-ink" x="546" y="277.5">← new leader</text></g></g>
+<g class="p3"><path class="f-teal" d="M497.5 158H506.5L502 165Z"/><path class="f-bg s-teal" d="M404.5 158H413.5L409 165Z" stroke-width="1.5" stroke-linejoin="round"/><path class="f-teal" d="M497.5 316H506.5L502 323Z"/><path class="f-bg s-teal" d="M404.5 316H413.5L409 323Z" stroke-width="1.5" stroke-linejoin="round"/><g class="kf-bcar"><path class="f-teal" d="M466.5 237H475.5L471 244Z"/><text class="tiny sb f-teal" x="479" y="242">billing</text></g><path class="f-bg s-teal" d="M373.5 237H382.5L378 244Z" stroke-width="1.5" stroke-linejoin="round"/><text class="tiny sb f-teal end" x="370" y="242">search-indexer <tspan class="f-amber-ink">· lag 4</tspan></text></g>
+<!-- consumer groups -->
+<g class="p12"><text class="tiny sb" x="668" y="112">consumer groups</text><path class="wire" d="M628 237H666" marker-end="url(#ah)"/><path class="wire" d="M648 237V160Q648 150 658 150H666" marker-end="url(#ah)"/><path class="wire" d="M648 237V314Q648 324 658 324H666" marker-end="url(#ah)"/><rect class="box" x="668" y="122" width="248" height="56" rx="12"/><text class="label mid" x="792" y="147">billing</text><text class="sub mid" x="792" y="166">charges the card</text><rect class="box" x="668" y="209" width="248" height="56" rx="12"/><text class="label mid" x="792" y="234">search-indexer</text><text class="sub mid" x="792" y="253">updates order search</text><rect class="box" x="668" y="296" width="248" height="56" rx="12"/><text class="label mid" x="792" y="321">analytics-loader</text><text class="sub mid" x="792" y="340">loads the warehouse</text></g>
+<g class="kf-ok1"><circle class="f-green" cx="912" cy="126" r="9"/><path class="none s-bg" d="M908 126l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="kf-ok2"><circle class="f-green" cx="912" cy="213" r="9"/><path class="none s-bg" d="M908 213l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="kf-ok3"><circle class="f-green" cx="912" cy="300" r="9"/><path class="none s-bg" d="M908 300l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="p34"><path class="wire" d="M628 183H646" marker-end="url(#ah)"/><path class="wire" d="M628 307H646" marker-end="url(#ah)"/><path class="wire" d="M628 368H646" marker-end="url(#ah)"/><rect class="zone" x="648" y="100" width="276" height="166" rx="12"/><text class="tiny sb" x="662" y="117">group billing</text><g class="kf-reb"><text class="tiny sb end f-blue" x="912" y="117">rebalance: P1 → billing-3</text></g><rect class="box" x="660" y="126" width="252" height="28" rx="8"/><text class="sub sb f-ink" x="674" y="144.5">billing-1</text><rect class="f-panel-2 s-line" x="846" y="132" width="28" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-ink" x="860" y="144">P0</text><rect class="none s-purple kf-got" x="660" y="126" width="252" height="28" rx="8" stroke-width="2.5"/><rect class="box" x="660" y="160" width="252" height="28" rx="8"/><text class="sub sb f-ink" x="674" y="178.5">billing-2</text><rect class="f-panel-2 s-line" x="878" y="166" width="28" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-ink" x="892" y="178">P2</text><g class="kf-b3"><rect class="box" x="660" y="194" width="252" height="28" rx="8"/><text class="sub sb f-ink" x="674" y="212.5">billing-3</text><text class="tiny" x="740" y="212.5">joins</text></g><g class="kf-b4"><rect class="box" x="660" y="228" width="252" height="28" rx="8"/><text class="sub sb f-ink" x="674" y="246.5">billing-4</text><text class="tiny sb f-amber-ink end" x="858" y="246.5">no partition left</text><rect class="f-amber-soft s-amber" x="866" y="234" width="40" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb mid f-amber-ink" x="886" y="246">idle</text></g><g class="kf-chip"><rect class="f-panel-2 s-line" x="878" y="132" width="28" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-ink" x="892" y="144">P1</text></g><rect class="zone" x="648" y="276" width="276" height="62" rx="12"/><text class="tiny sb" x="662" y="293">group search-indexer</text><rect class="box" x="660" y="302" width="252" height="28" rx="8"/><text class="sub sb f-ink" x="674" y="320.5">search-indexer-1</text><rect class="f-panel-2 s-line" x="814" y="308" width="28" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-ink" x="828" y="320">P0</text><rect class="f-panel-2 s-line" x="846" y="308" width="28" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-ink" x="860" y="320">P1</text><rect class="f-panel-2 s-line" x="878" y="308" width="28" height="16" rx="8" stroke-width="1.2"/><text class="tiny mono sb mid f-ink" x="892" y="320">P2</text><rect class="zone" x="648" y="348" width="276" height="40" rx="12"/><text class="tiny sb" x="662" y="365">group analytics-loader</text><text class="tiny" x="662" y="380">its own offsets, read at its own pace</text></g>
+<!-- notes, one per step -->
+<rect class="box" x="36" y="400" width="888" height="66" rx="12"/>
+<g class="p1"><text class="kf-hd" x="52" y="418">A LOG, NOT A QUEUE</text><text class="sub f-ink" x="52" y="437">Reading a record doesn't remove it. Each group keeps its own position, so all three read every event at their own pace.</text><text class="sub f-ink" x="52" y="455">Records stay until retention.ms runs out (7 days here), so a group can fall behind, catch up, or replay from an earlier offset.</text></g>
+<g class="p2"><text class="kf-hd" x="52" y="418">APPEND, THEN REPLICATE</text><text class="sub f-ink" x="52" y="437">The key picks the partition: with 3 partitions, C-14 always lands on P1, so one customer's events stay in order. Only P1's leader takes writes.</text><text class="sub f-ink" x="52" y="455">b2 appends at offset 42, b1 and b3 fetch it, and with acks=all (the default since Kafka 3.0) the ack waits for every in-sync replica.</text></g>
+<g class="p3"><text class="kf-hd" x="52" y="418">CONSUMER GROUPS</text><text class="sub f-ink" x="52" y="437">Each partition goes to one consumer per group, so 3 partitions keep at most 3 consumers busy. Each group commits its own offsets:</text><text class="sub f-ink" x="52" y="455">billing has read 42 and committed 43; search-indexer is at 39, 4 behind, and that is fine. Resetting offsets replays history.</text></g>
+<g class="p4"><text class="kf-hd" x="52" y="418">FAILOVER, THEN THE LIMITS</text><text class="sub f-ink" x="52" y="437">b2 is down, but b1 and b3 are in sync and min.insync.replicas=2, so acks=all writes go on. The controller picked b1 from the ISR.</text><g class="kf-l1"><rect class="f-amber-soft s-amber" x="52" y="444" width="223" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="63" y="456.5">order holds only within a partition</text></g><g class="kf-l2"><rect class="f-amber-soft s-amber" x="283" y="444" width="212" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="294" y="456.5">a hot key overloads one partition</text></g><g class="kf-l3"><rect class="f-amber-soft s-amber" x="503" y="444" width="344" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="514" y="456.5">deleted after 7 days, or compacted to the latest per key</text></g></g>
+<!-- moving records, copies and acknowledgements -->
+<g class="kf-ev1"><rect class="kf-ev" x="-9" y="-9" width="18" height="18" rx="4"/><text class="tiny mid b f-purple" x="0" y="-15">OrderPlaced · C-14</text></g>
+<rect class="kf-ev kf-cp1" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="kf-ev kf-cp2" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="kf-ev kf-cp3" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="kf-ev kf-ev2" x="-8" y="-8" width="16" height="16" rx="4"/>
+<rect class="kf-cp kf-c42b1" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="kf-cp kf-c42b3" x="-6" y="-6" width="12" height="12" rx="3"/>
+<circle class="kf-ack kf-ack2" r="6"/>
+<rect class="kf-ev kf-rd" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="kf-ev kf-ev4" x="-8" y="-8" width="16" height="16" rx="4"/>
+<rect class="kf-cp kf-c43" x="-6" y="-6" width="12" height="12" rx="3"/>
+<circle class="kf-ack kf-ack4" r="6"/>
+</g>
+</svg>

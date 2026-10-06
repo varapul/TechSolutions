@@ -1,0 +1,53 @@
+{
+  "aka": ["Lambda", "Functions as a Service"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "API Gateway waits on get-photo; S3 events reach make-thumbnail via SQS. Pay per request and GB-s.",
+      "body": "The photo app runs two functions and no servers. API Gateway invokes `get-photo` **synchronously** and waits for its answer, while S3 sends each `ObjectCreated` event to the SQS queue `thumbnail-jobs`, where an **event source mapping** polls and invokes `make-thumbnail` (Python, 1,024 MB, 60 s timeout) with batches of up to 10. The third style, **asynchronous** invocation (S3, SNS or EventBridge calling a function directly), puts the event on Lambda's internal queue; in every case you pay per request plus duration × memory, in GB-seconds."
+    },
+    {
+      "title": "Cold and warm starts",
+      "caption": "None idle: a microVM boots, code loads, init runs (cold start). An idle one runs only the handler.",
+      "body": "An execution environment handles one request at a time. Request 2 finds env A idle, so Lambda thaws it and runs only the handler: a **warm start**. Request 3 finds none free, so Lambda creates env B in a new Firecracker microVM, loads the code, starts the runtime and runs the init code outside the handler (SDK clients, configuration): a **cold start**, which is billed and adds latency. Idle environments are frozen and removed later, so reuse is likely but never promised."
+    },
+    {
+      "title": "Concurrency",
+      "caption": "One request per environment: 50 uploads/s × 0.8 s ≈ 40 at once, inside reserved concurrency 100.",
+      "body": "Concurrency is requests per second × duration: 50 uploads a second at 0.8 s each keep about **40 environments** busy. The SQS mapping starts with 5 concurrent invokes and adds up to 300 a minute; **reserved concurrency** 100 caps `make-thumbnail` and sets that capacity aside within the account's default quota of 1,000 per Region, and invokes past a limit are throttled (429). **Provisioned concurrency** keeps 2 `get-photo` environments initialised ahead of requests, and **SnapStart** (Java, Python, .NET) restores new environments from a snapshot instead."
+    },
+    {
+      "title": "Failures and limits",
+      "caption": "A bad photo: only its message is retried, then parked in the DLQ. Mind the 15 min and size limits.",
+      "body": "One upload is corrupt. With `ReportBatchItemFailures` on, the handler returns that message in `batchItemFailures`: Lambda deletes the other 9, the failed one reappears after the 360 s visibility timeout, and after 5 receives the queue's redrive policy moves it to `thumbnail-jobs-dlq`. Delivery is at least once, so the handler must be **idempotent**; an asynchronous invoke would instead be retried twice and then go to an on-failure destination. The limits to plan for (October 2026): 15 minutes per invocation, 128 to 10,240 MB of memory with CPU in proportion, 6 MB synchronous and 1 MB asynchronous payloads, and /tmp up to 10,240 MB."
+    }
+  ],
+  "related": ["serverless", "event-driven-architecture", "amazon-sqs", "amazon-s3", "amazon-dynamodb", "aws-step-functions", "idempotent-consumer", "queue-based-load-leveling"],
+  "references": [
+    { "title": "AWS Lambda Developer Guide — What is AWS Lambda?", "url": "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html" },
+    { "title": "AWS Lambda — Understanding Lambda function invocation methods", "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-invocation.html" },
+    { "title": "AWS Lambda — Understanding the Lambda execution environment lifecycle", "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html" },
+    { "title": "AWS Lambda — Understanding Lambda function scaling", "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html" },
+    { "title": "AWS Lambda — Lambda scaling behavior", "url": "https://docs.aws.amazon.com/lambda/latest/dg/scaling-behavior.html" },
+    { "title": "AWS Lambda — Configuring reserved concurrency for a function", "url": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html" },
+    { "title": "AWS Lambda — Configuring provisioned concurrency for a function", "url": "https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html" },
+    { "title": "AWS Lambda — Improving startup performance with Lambda SnapStart", "url": "https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html" },
+    { "title": "AWS Lambda — How Lambda handles errors and retries with asynchronous invocation", "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-error-handling.html" },
+    { "title": "AWS Lambda — Capturing records of Lambda asynchronous invocations", "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-retain-records.html" },
+    { "title": "AWS Lambda — Using Lambda with Amazon SQS", "url": "https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html" },
+    { "title": "AWS Lambda — Configuring scaling behavior for SQS event source mappings", "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-scaling.html" },
+    { "title": "AWS Lambda — Handling errors for an SQS event source in Lambda", "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html" },
+    { "title": "AWS Lambda — Lambda quotas", "url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html" },
+    { "title": "AWS Lambda pricing", "url": "https://aws.amazon.com/lambda/pricing/" },
+    { "title": "AWS Compute Blog — AWS Lambda standardizes billing for INIT Phase", "url": "https://aws.amazon.com/blogs/compute/aws-lambda-standardizes-billing-for-init-phase/" },
+    { "title": "AWS Lambda — Response streaming for Lambda functions", "url": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html" },
+    { "title": "AWS Lambda — Giving Lambda functions access to resources in an Amazon VPC", "url": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html" },
+    { "title": "AWS Lambda — Lambda Managed Instances", "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-managed-instances.html" },
+    { "title": "AWS Lambda — Lambda durable functions", "url": "https://docs.aws.amazon.com/lambda/latest/dg/durable-functions.html" },
+    { "title": "Powertools for AWS Lambda (Python) — Idempotency", "url": "https://docs.powertools.aws.dev/lambda/python/latest/utilities/idempotency/" },
+    { "title": "Agache et al. — Firecracker: Lightweight Virtualization for Serverless Applications (NSDI 2020)", "url": "https://www.usenix.org/conference/nsdi20/presentation/agache" },
+    { "title": "Amazon ECS — Task definition differences for Fargate", "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-tasks-services.html" },
+    { "title": "Azure Functions — Scale and hosting", "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale" },
+    { "title": "Google Cloud — Compare Cloud Run functions", "url": "https://docs.cloud.google.com/run/docs/functions/comparison" }
+  ]
+}

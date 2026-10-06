@@ -1,0 +1,50 @@
+{
+  "aka": ["Valkey", "Redis OSS", "Redis Open Source"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Three stateless app servers share one Redis: a cache, sessions, a rate limiter and a leaderboard.",
+      "body": "Acme Shop's API runs on three **stateless** app servers that share one Redis. It caches product JSON in front of PostgreSQL (`product:42`), holds every session (`session:9f3c`), counts each API key's requests (`ratelimit:key-7:1201`) and keeps a leaderboard (`top-sellers`). Every command is one network round trip, answered from memory."
+    },
+    {
+      "title": "One command at a time",
+      "caption": "Commands wait in line and run one at a time: INCR returns 101, over 100, so app-1 answers 429.",
+      "body": "INCR, GET and ZINCRBY arrive from three app servers at once and wait in line: one main thread executes every command, one after another, so each is atomic without locks. `INCR ratelimit:key-7:1201` returns 101, over the limit of 100, so app-1 answers 429; `GET product:42` is a hit; `ZINCRBY top-sellers 1 mug` takes the mug to 813. A key with a TTL is deleted once it expires."
+    },
+    {
+      "title": "Durability and failover",
+      "caption": "Writes go to the AOF and, later, to the replicas. The primary dies: an unreplicated write is lost.",
+      "body": "The primary appends every write to its **AOF** (with `appendfsync everysec` a crash can lose about a second of writes), can save **RDB** snapshots from a forked child, and sends writes to the replicas **asynchronously**. `SET product:42` reaches both replicas, but the `ZINCRBY` acknowledged as 814 is still in the primary's buffer when the primary crashes. Two Sentinels agree it is down and promote replica-1, which has the mug at 813: the acknowledged write is lost."
+    },
+    {
+      "title": "Scale out, and the limits",
+      "caption": "Cluster: 16,384 hash slots over primaries; multi-key commands need one slot. Memory is the hard cap.",
+      "body": "**Redis Cluster** splits the keyspace into 16,384 hash slots, `CRC16(key) mod 16384`, spread over several primaries with their own replicas, so `product:42` (slot 12456) moves to shard C and `top-sellers` (slot 9501) to shard B. A command on several keys needs them all in one slot, otherwise it fails with `CROSSSLOT`; a hash tag such as `{user:42}` keeps related keys together. Memory is the hard limit: at `maxmemory` the default policy, `noeviction`, rejects new writes with an OOM error, so a cache runs `allkeys-lru` or a similar policy instead."
+    }
+  ],
+  "related": ["cache-aside", "rate-limiting", "sessions-vs-tokens", "leader-election", "sliding-window", "hash-table", "postgresql"],
+  "references": [
+    { "title": "Redis docs — Redis data types", "url": "https://redis.io/docs/latest/develop/data-types/" },
+    { "title": "Redis docs — Redis persistence", "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/" },
+    { "title": "Redis docs — Redis replication", "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/replication/" },
+    { "title": "Redis docs — High availability with Redis Sentinel", "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/" },
+    { "title": "Redis docs — Redis cluster specification", "url": "https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/" },
+    { "title": "Redis docs — Key eviction", "url": "https://redis.io/docs/latest/develop/reference/eviction/" },
+    { "title": "Redis docs — Diagnosing latency issues", "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/latency/" },
+    { "title": "Redis docs — Distributed locks with Redis", "url": "https://redis.io/docs/latest/develop/clients/patterns/distributed-locks/" },
+    { "title": "Redis docs — What's new (Redis 8.x releases)", "url": "https://redis.io/docs/latest/develop/whats-new/" },
+    { "title": "Redis blog — Redis 8 GA (May 2025)", "url": "https://redis.io/blog/redis-8-ga/" },
+    { "title": "Redis — Licenses", "url": "https://redis.io/legal/licenses/" },
+    { "title": "Redis blog — Redis adopts dual source-available licensing (March 2024)", "url": "https://redis.io/blog/redis-adopts-dual-source-available-licensing/" },
+    { "title": "Redis blog — Redis is now available under the AGPLv3 open source license (May 2025)", "url": "https://redis.io/blog/agplv3/" },
+    { "title": "Linux Foundation — Linux Foundation launches open source Valkey community (March 2024)", "url": "https://www.linuxfoundation.org/press/linux-foundation-launches-open-source-valkey-community" },
+    { "title": "Valkey blog — Valkey 9.0: innovation, features, and improvements", "url": "https://valkey.io/blog/introducing-valkey-9/" },
+    { "title": "Valkey docs — Valkey Bundle getting started guide", "url": "https://valkey.io/topics/valkey-bundle/" },
+    { "title": "Amazon ElastiCache User Guide — What is Amazon ElastiCache?", "url": "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html" },
+    { "title": "Amazon MemoryDB Developer Guide — What is MemoryDB", "url": "https://docs.aws.amazon.com/memorydb/latest/devguide/what-is-memorydb.html" },
+    { "title": "Microsoft Learn — What is Azure Managed Redis?", "url": "https://learn.microsoft.com/en-us/azure/redis/overview" },
+    { "title": "Google Cloud — Memorystore for Valkey overview", "url": "https://docs.cloud.google.com/memorystore/docs/valkey/product-overview" },
+    { "title": "Martin Kleppmann — How to do distributed locking (2016)", "url": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" },
+    { "title": "Salvatore Sanfilippo (antirez) — Is Redlock safe? (2016)", "url": "https://antirez.com/news/101" }
+  ]
+}

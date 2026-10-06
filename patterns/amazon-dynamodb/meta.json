@@ -1,0 +1,44 @@
+{
+  "aka": ["DynamoDB", "DDB"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "API Gateway → Lambda → PutItem on Orders: no servers to run, and Streams passes each change on.",
+      "body": "The shop's API Gateway invokes the **orders-api** Lambda function, which saves each order in the table **Orders** with `PutItem`. Every call is a signed HTTPS request, so there are no servers, versions or connection pools to manage, and in **on-demand** mode you pay per request. **DynamoDB Streams** passes every change to **order-views**, which keeps other views up to date; the table is designed around access patterns known in advance."
+    },
+    {
+      "title": "Partition and sort key",
+      "caption": "hash(C-17) picks P2, where orders sit sorted by sort key on 3 replicas. Query: one range. Scan: all.",
+      "body": "The partition key `C-17` is hashed to pick partition **P2**, and inside it C-17's items are kept in order of the sort key `sk` (`orderDate#orderId`), so `2026-10-06#o-981` lands after `2026-10-02#o-967`. P2 is stored on **3 replicas in 3 Availability Zones**, and the write is acknowledged once 2 of them have it. A `Query` for `C-17` with `begins_with(sk, \"2026-10\")` reads one contiguous range of one partition; a `Scan` reads every item in the table."
+    },
+    {
+      "title": "Throughput and hot keys",
+      "caption": "Every guest order uses key GUEST: P3 hits 1,000 writes/s and throttles while P1, P2 idle. Shard it.",
+      "body": "Each partition serves at most **3,000 read units and 1,000 write units per second**. In the flash sale every guest order is saved under `customerId = GUEST`, so 2,400 writes/s hash to P3, which throttles while P1 and P2 sit idle and the table as a whole has room. Adaptive capacity moves throughput to busy partitions but not past that ceiling; the fix is a key with many values (an id per guest) or **write sharding** (`GUEST#0` … `GUEST#9`)."
+    },
+    {
+      "title": "Consistency and limits",
+      "caption": "byOrderId lags the table, so a lookup misses o-982 briefly. Limits: 400 KB items, keyed queries.",
+      "body": "Reads are **eventually consistent** by default; `ConsistentRead=true` costs twice the read units, and global secondary indexes don't offer it. **byOrderId** is updated asynchronously, so a lookup right after `PutItem` misses `o-982` until the index catches up. Conditional writes give optimistic locking and a transaction covers up to 100 items, but an item is at most **400 KB**, queries must follow the keys you designed (export to S3 for analytics), and global tables settle conflicting writes with last writer wins unless you choose multi-Region strong consistency."
+    }
+  ],
+  "related": ["sharding", "serverless", "aws-lambda", "change-data-capture", "idempotent-consumer", "cassandra", "amazon-rds-aurora", "materialized-view"],
+  "references": [
+    { "title": "Amazon DynamoDB Developer Guide — Core components of Amazon DynamoDB", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Partitions and data distribution", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.Partitions.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Best practices for designing and using partition keys effectively", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Burst and adaptive capacity", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/burst-adaptive-capacity.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Read consistency", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Transactions: how it works", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html" },
+    { "title": "Amazon DynamoDB Developer Guide — How global tables work", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Constraints", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Constraints.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Quotas", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html" },
+    { "title": "Amazon DynamoDB Developer Guide — On-demand capacity mode", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/on-demand-capacity-mode.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Diagnosing throttling", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/throttling-diagnosing-workflow.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Change data capture with Amazon DynamoDB", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/streamsmain.html" },
+    { "title": "Amazon DynamoDB pricing", "url": "https://aws.amazon.com/dynamodb/pricing/" },
+    { "title": "AWS Database Blog — Amazon DynamoDB lowers pricing for on-demand throughput and global tables (November 2024)", "url": "https://aws.amazon.com/blogs/database/new-amazon-dynamodb-lowers-pricing-for-on-demand-throughput-and-global-tables/" },
+    { "title": "Elhemali et al. — Amazon DynamoDB: A Scalable, Predictably Performant, and Fully Managed NoSQL Database Service (USENIX ATC 2022)", "url": "https://www.usenix.org/conference/atc22/presentation/elhemali" },
+    { "title": "DeCandia et al. — Dynamo: Amazon's Highly Available Key-value Store (SOSP 2007)", "url": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" }
+  ]
+}

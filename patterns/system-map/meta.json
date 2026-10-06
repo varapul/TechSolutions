@@ -1,0 +1,70 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "A page view",
+      "caption": "A page view: DNS, the CDN for images and scripts, then GET /products/42 answered from Redis.",
+      "body": "The browser resolves **shop.example** in DNS and loads images and scripts from the nearest **CDN** edge. Its API call `GET /products/42` passes the **load balancer** and the **API gateway**, which checks the token and the rate limit, to the **Catalog** service, which finds product 42 in the **cache** (Redis) and answers without querying the **database**."
+    },
+    {
+      "title": "An order, one transaction",
+      "caption": "POST /orders: one transaction writes order 1001 and an outbox row; 201 Created when it commits.",
+      "body": "`POST /orders` takes the same path to the **Orders** service. One **database transaction** writes order 1001 and an `OrderPlaced` row in an **outbox** table, and the customer gets **201 Created** as soon as it commits. Nothing else is called while the customer waits."
+    },
+    {
+      "title": "The event fans out",
+      "caption": "The relay publishes OrderPlaced; email, search and analytics each react, after the response.",
+      "body": "The **outbox relay** publishes `OrderPlaced` to the **event stream** (topic `orders`). Three consumer groups read it independently: the **Email worker** (a Lambda function) sends the confirmation, the **Search indexer** adds order 1001 to the search index and the **analytics loader** stores the event in the **data lake** on S3. All of it happens after the customer already has the response."
+    },
+    {
+      "title": "Running it",
+      "caption": "Every box reports to observability. The indexer crashes: orders still work, search falls 3 behind.",
+      "body": "Every box sends metrics, logs and traces to **observability** (Prometheus and Grafana, or CloudWatch). When the **Search indexer** crashes, orders 1002–1004 still succeed and their events wait in the stream; the dashboard shows the search group's **consumer lag** climbing to 3, and search results stay behind until the indexer is back. That delay is the price of the asynchronous half: **eventual consistency**."
+    }
+  ],
+  "related": ["kafka", "redis", "postgresql", "amazon-sqs", "aws-lambda", "amazon-s3", "api-gateway", "cache-aside", "transactional-outbox", "load-balancing"],
+  "references": [
+    { "title": "AWS Well-Architected Framework", "url": "https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html" },
+    { "title": "AWS Architecture Center — Reference architecture examples and best practices", "url": "https://aws.amazon.com/architecture/" },
+    { "title": "Azure Architecture Center — Web-Queue-Worker architecture style", "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/web-queue-worker" },
+    { "title": "Martin Kleppmann & Chris Riccomini — Designing Data-Intensive Applications, 2nd Edition (O'Reilly, 2026)", "url": "https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html" },
+    { "title": "RFC 9110 — HTTP Semantics, §15.3.2 201 Created", "url": "https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.2" },
+    { "title": "Amazon Route 53 — Choosing between alias and non-alias records", "url": "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-choosing-alias-non-alias.html" },
+    { "title": "Amazon CloudFront — What is Amazon CloudFront?", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html" },
+    { "title": "Amazon CloudFront — Invalidate files to remove content", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html" },
+    { "title": "Elastic Load Balancing — What is an Application Load Balancer?", "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html" },
+    { "title": "NGINX — Using nginx as HTTP load balancer", "url": "https://nginx.org/en/docs/http/load_balancing.html" },
+    { "title": "NGINX — License (2-clause BSD)", "url": "https://nginx.org/LICENSE" },
+    { "title": "Kong Gateway — source repository (Apache License 2.0)", "url": "https://github.com/Kong/kong" },
+    { "title": "Amazon API Gateway — Throttle requests to your REST APIs (token bucket, 429)", "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html" },
+    { "title": "Amazon API Gateway — Control access to HTTP APIs with JWT authorizers", "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html" },
+    { "title": "Kubernetes — Overview", "url": "https://kubernetes.io/docs/concepts/overview/" },
+    { "title": "Amazon ECS — What is Amazon Elastic Container Service?", "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html" },
+    { "title": "Amazon EKS — What is Amazon EKS?", "url": "https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html" },
+    { "title": "Amazon ElastiCache — What is Amazon ElastiCache? (Valkey, Memcached, Redis OSS)", "url": "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html" },
+    { "title": "Redis — Licenses (Redis 8 and later: RSALv2, SSPLv1 or AGPLv3)", "url": "https://redis.io/legal/licenses/" },
+    { "title": "Valkey — an open-source (BSD) key/value datastore", "url": "https://valkey.io/" },
+    { "title": "Valkey — README (forked from Redis before its licence change)", "url": "https://github.com/valkey-io/valkey" },
+    { "title": "AWS Prescriptive Guidance — Transactional outbox pattern", "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html" },
+    { "title": "Debezium — Outbox Event Router", "url": "https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html" },
+    { "title": "Apache Kafka 4.3 — Basic Kafka Operations (consumer groups and lag)", "url": "https://kafka.apache.org/43/operations/basic-kafka-operations/" },
+    { "title": "Apache Kafka 4.3 — Broker configs (log.retention.hours)", "url": "https://kafka.apache.org/43/configuration/broker-configs/" },
+    { "title": "Apache Kafka 4.3 — Kafka Connect overview", "url": "https://kafka.apache.org/43/kafka-connect/overview/" },
+    { "title": "Amazon MSK — Welcome to the Amazon MSK Developer Guide", "url": "https://docs.aws.amazon.com/msk/latest/developerguide/what-is-msk.html" },
+    { "title": "Amazon MSK — Monitor consumer lags", "url": "https://docs.aws.amazon.com/msk/latest/developerguide/consumer-lag.html" },
+    { "title": "Amazon SNS — Fanout to Amazon SQS queues", "url": "https://docs.aws.amazon.com/sns/latest/dg/sns-sqs-as-subscriber.html" },
+    { "title": "Amazon SQS — Message quotas (retention)", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html" },
+    { "title": "Amazon SQS — Available CloudWatch metrics", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-available-cloudwatch-metrics.html" },
+    { "title": "AWS Lambda — How Lambda processes records from stream and queue-based event sources", "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-eventsourcemapping.html" },
+    { "title": "Amazon SES — What is Amazon SES?", "url": "https://docs.aws.amazon.com/ses/latest/dg/Welcome.html" },
+    { "title": "Postfix — home page", "url": "https://www.postfix.org/" },
+    { "title": "Amazon OpenSearch Service — What is Amazon OpenSearch Service?", "url": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html" },
+    { "title": "OpenSearch — FAQ (Apache License 2.0)", "url": "https://opensearch.org/faq/" },
+    { "title": "Elastic — FAQ on software licensing (AGPLv3 option)", "url": "https://www.elastic.co/pricing/faq/licensing" },
+    { "title": "Amazon Data Firehose — What is Amazon Data Firehose?", "url": "https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html" },
+    { "title": "AWS whitepaper — Amazon S3 as the data lake storage platform", "url": "https://docs.aws.amazon.com/whitepapers/latest/building-data-lakes/amazon-s3-data-lake-storage-platform.html" },
+    { "title": "Prometheus — Overview", "url": "https://prometheus.io/docs/introduction/overview/" },
+    { "title": "Grafana Labs — Licensing (AGPLv3)", "url": "https://grafana.com/licensing/" },
+    { "title": "OpenTelemetry — What is OpenTelemetry?", "url": "https://opentelemetry.io/docs/what-is-opentelemetry/" }
+  ]
+}

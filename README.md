@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**132 animated** · 31 planned · 14 categories
+**141 animated** · 22 planned · 14 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -29,8 +29,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 | 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
-| 🧱 | [System Components](#system-components) | 0 / 16 | The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it. |
-| 🟧 | [AWS Services](#aws-services) | 0 / 15 | Amazon Web Services' managed building blocks: how each service works, what it takes off your hands and how services combine into solutions. |
+| 🧱 | [System Components](#system-components) | 5 / 16 | The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it. |
+| 🟧 | [AWS Services](#aws-services) | 4 / 15 | Amazon Web Services' managed building blocks: how each service works, what it takes off your hands and how services combine into solutions. |
 
 ## Application Architecture
 
@@ -278,11 +278,11 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 
 | Pattern | In one line | Status |
 |---|---|:-:|
-| System Map | One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search. | ⏳ planned |
-| Apache Kafka | A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history. | ⏳ planned |
-| RabbitMQ | A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it. | ⏳ planned |
-| Redis & Valkey | An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process. | ⏳ planned |
-| PostgreSQL | A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes. | ⏳ planned |
+| [**System Map**](patterns/system-map/) | One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search. | ✅ animated |
+| [**Apache Kafka**](patterns/kafka/) | A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history. | ✅ animated |
+| [**RabbitMQ**](patterns/rabbitmq/) | A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it. | ✅ animated |
+| [**Redis & Valkey**](patterns/redis/) | An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process. | ✅ animated |
+| [**PostgreSQL**](patterns/postgresql/) | A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes. | ✅ animated |
 | MongoDB | A document database: JSON-like documents with flexible schemas, replica sets for failover and sharding to scale out. | ⏳ planned |
 | Apache Cassandra | A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage. | ⏳ planned |
 | Elasticsearch & OpenSearch | Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes. | ⏳ planned |
@@ -304,14 +304,14 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | Pattern | In one line | Status |
 |---|---|:-:|
 | Amazon VPC | Your private network in AWS: subnets in each Availability Zone, route tables, gateways, security groups and endpoints. | ⏳ planned |
-| Amazon S3 | Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events. | ⏳ planned |
-| Amazon SQS | A managed message queue: consumers poll, a visibility timeout hides messages in flight, and repeated failures go to a dead-letter queue. | ⏳ planned |
+| [**Amazon S3**](patterns/amazon-s3/) | Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events. | ✅ animated |
+| [**Amazon SQS**](patterns/amazon-sqs/) | A managed message queue: consumers poll, a visibility timeout hides messages in flight, and repeated failures go to a dead-letter queue. | ✅ animated |
 | Amazon SNS | Managed publish-subscribe: a message published to a topic fans out to queues, functions, HTTP endpoints, email and SMS. | ⏳ planned |
 | Amazon EventBridge | An event bus: rules match events from AWS services, SaaS apps and your own code by content and route them to targets. | ⏳ planned |
 | Amazon Kinesis Data Streams | Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it. | ⏳ planned |
-| Amazon DynamoDB | A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads. | ⏳ planned |
+| [**Amazon DynamoDB**](patterns/amazon-dynamodb/) | A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads. | ✅ animated |
 | Amazon RDS & Aurora | Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones. | ⏳ planned |
-| AWS Lambda | Functions as a service: code runs per event in managed execution environments that scale out with concurrency. | ⏳ planned |
+| [**AWS Lambda**](patterns/aws-lambda/) | Functions as a service: code runs per event in managed execution environments that scale out with concurrency. | ✅ animated |
 | AWS Step Functions | Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded. | ⏳ planned |
 | Amazon ECS & Fargate | Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate. | ⏳ planned |
 | Amazon Route 53 | Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks. | ⏳ planned |

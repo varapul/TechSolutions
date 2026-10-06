@@ -1,0 +1,1195 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">PostgreSQL</title>
+<desc id="dg-desc">PostgreSQL. A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes. Step 1, Where it sits: Orders and Catalog use PgBouncer; the WAL feeds a hot standby, Debezium and a backup archive. Step 2, MVCC: row versions: T1 adds a row version (qty 6); T2's older snapshot still reads 7, nobody waits; VACUUM cleans up. Step 3, Commit = WAL on disk: COMMIT returns once the WAL is on disk; the page is written later, and WAL replay rebuilds it. Step 4, Replicas and limits: Async replication: during 200 ms of replay lag, a standby report still reads qty 7 after the commit.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">PostgreSQL</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · MVCC: row versions</text>
+  <text class="step on p2" x="262" y="518">2 · MVCC: row versions</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Commit = WAL on disk</text>
+  <text class="step on p3" x="484" y="518">3 · Commit = WAL on disk</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Replicas and limits</text>
+  <text class="step on p4" x="706" y="518">4 · Replicas and limits</text>
+  <text class="caption p1" x="40" y="552">Orders and Catalog use PgBouncer; the WAL feeds a hot standby, Debezium and a backup archive.</text>
+  <text class="caption p2" x="40" y="552">T1 adds a row version (qty 6); T2's older snapshot still reads 7, nobody waits; VACUUM cleans up.</text>
+  <text class="caption p3" x="40" y="552">COMMIT returns once the WAL is on disk; the page is written later, and WAL replay rebuilds it.</text>
+  <text class="caption p4" x="40" y="552">Async replication: during 200 ms of replay lag, a standby report still reads qty 7 after the commit.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* PostgreSQL. One change, T1: UPDATE stock SET qty = qty - 1 WHERE sku = 'MUG-1' (qty 7 -> 6).
+   Every step replays T1 from the same starting state; the scene resets at 4.7 / 9.7 / 14.7 / 19.5 s.
+   0-25%   where it sits: Orders/Catalog -> PgBouncer -> backend; T1's WAL feeds the standby, Debezium -> Kafka, the archive
+   25-50%  MVCC: new version (xmin 742), old one gets xmax 742; T2 (repeatable read) keeps seeing 7, T3 sees 6; VACUUM
+   50-75%  WAL first: records in WAL buffers, COMMIT flushes them, OK; page written later; crash, replay from checkpoint
+   75-100% async replica: 200 ms replay lag, report reads 7 (stale); remote_apply; promotion; the limits in amber */
+.diagram .pg-ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .pg-dash { stroke-dasharray: 4 3; }
+.diagram .pg-q1 { opacity: 0; animation: pg-q1 var(--T) linear infinite; }
+.diagram .pg-q2 { opacity: 0; animation: pg-q2 var(--T) linear infinite; }
+.diagram .pg-q3 { opacity: 0; animation: pg-q3 var(--T) linear infinite; }
+.diagram .pg-upd { opacity: 0; animation: pg-upd var(--T) linear infinite; }
+.diagram .pg-wal { opacity: 0; animation: pg-wal var(--T) linear infinite; }
+.diagram .pg-rep { opacity: 0; animation: pg-rep var(--T) linear infinite; }
+.diagram .pg-cdc { opacity: 0; animation: pg-cdc var(--T) linear infinite; }
+.diagram .pg-evt { opacity: 0; animation: pg-evt var(--T) linear infinite; }
+.diagram .pg-arc { opacity: 0; animation: pg-arc var(--T) linear infinite; }
+.diagram .pg-rd { opacity: 0; animation: pg-rd var(--T) linear infinite; }
+.diagram .pg-r2 { opacity: 0; animation: pg-r2 var(--T) linear infinite; }
+.diagram .pg-r3 { opacity: 0; animation: pg-r3 var(--T) linear infinite; }
+.diagram .pg-vac { opacity: 0; animation: pg-vac var(--T) linear infinite; }
+.diagram .pg-redo { opacity: 0; animation: pg-redo var(--T) linear infinite; }
+.diagram .pg-sweep { opacity: 0; animation: pg-sweep var(--T) linear infinite; }
+.diagram .pg-ok { opacity: 0; animation: pg-ok var(--T) linear infinite; }
+.diagram .pg-cardA { animation: pg-cardA var(--T) linear infinite; }
+.diagram .pg-x742 { opacity: 0; animation: pg-x742 var(--T) linear infinite; }
+.diagram .pg-x0 { animation: pg-x0 var(--T) linear infinite; }
+.diagram .pg-oldtag { opacity: 0; animation: pg-oldtag var(--T) linear infinite; }
+.diagram .pg-dead { opacity: 0; animation: pg-dead var(--T) linear infinite; }
+.diagram .pg-cardB { opacity: 0; animation: pg-cardB var(--T) linear infinite; }
+.diagram .pg-bdash { opacity: 0; animation: pg-bdash var(--T) linear infinite; }
+.diagram .pg-bnew { opacity: 0; animation: pg-bnew var(--T) linear infinite; }
+.diagram .pg-unc { opacity: 0; animation: pg-unc var(--T) linear infinite; }
+.diagram .pg-newtag { opacity: 0; animation: pg-newtag var(--T) linear infinite; }
+.diagram .pg-free { opacity: 0; animation: pg-free var(--T) linear infinite; }
+.diagram .pg-dirty { opacity: 0; animation: pg-dirty var(--T) linear infinite; }
+.diagram .pg-recov { opacity: 0; animation: pg-recov var(--T) linear infinite; }
+.diagram .pg-c2 { opacity: 0; animation: pg-c2 var(--T) linear infinite; }
+.diagram .pg-c3 { opacity: 0; animation: pg-c3 var(--T) linear infinite; }
+.diagram .pg-c2d { opacity: 0; animation: pg-c2d var(--T) linear infinite; }
+.diagram .pg-c3d { opacity: 0; animation: pg-c3d var(--T) linear infinite; }
+.diagram .pg-buf { opacity: 0; animation: pg-buf var(--T) linear infinite; }
+.diagram .pg-flushed { opacity: 0; animation: pg-flushed var(--T) linear infinite; }
+.diagram .pg-redomark { opacity: 0; animation: pg-redomark var(--T) linear infinite; }
+.diagram .pg-t1ok { opacity: 0; animation: pg-t1ok var(--T) linear infinite; }
+.diagram .pg-t2ok { opacity: 0; animation: pg-t2ok var(--T) linear infinite; }
+.diagram .pg-ch2 { opacity: 0; animation: pg-ch2 var(--T) linear infinite; }
+.diagram .pg-ring2 { opacity: 0; animation: pg-ring2 var(--T) linear infinite; }
+.diagram .pg-ch3 { opacity: 0; animation: pg-ch3 var(--T) linear infinite; }
+.diagram .pg-vacring { opacity: 0; animation: pg-vacring var(--T) linear infinite; }
+.diagram .pg-ordok { opacity: 0; animation: pg-ordok var(--T) linear infinite; }
+.diagram .pg-hlupd { opacity: 0; animation: pg-hlupd var(--T) linear infinite; }
+.diagram .pg-hlcom { opacity: 0; animation: pg-hlcom var(--T) linear infinite; }
+.diagram .pg-conf { opacity: 0; animation: pg-conf var(--T) linear infinite; }
+.diagram .pg-sql { animation: pg-sql var(--T) linear infinite; }
+.diagram .pg-crash { opacity: 0; animation: pg-crash var(--T) linear infinite; }
+.diagram .pg-later { opacity: 0; animation: pg-later var(--T) linear infinite; }
+.diagram .pg-sb6 { opacity: 0; animation: pg-sb6 var(--T) linear infinite; }
+.diagram .pg-sb7 { animation: pg-sb7 var(--T) linear infinite; }
+.diagram .pg-sbok { opacity: 0; animation: pg-sbok var(--T) linear infinite; }
+.diagram .pg-sbbehind { opacity: 0; animation: pg-sbbehind var(--T) linear infinite; }
+.diagram .pg-lag { opacity: 0; animation: pg-lag var(--T) linear infinite; }
+.diagram .pg-promo { opacity: 0; animation: pg-promo var(--T) linear infinite; }
+.diagram .pg-ro { animation: pg-ro var(--T) linear infinite; }
+.diagram .pg-res6 { opacity: 0; animation: pg-res6 var(--T) linear infinite; }
+.diagram .pg-stale { opacity: 0; animation: pg-stale var(--T) linear infinite; }
+.diagram .pg-evlabel { opacity: 0; animation: pg-evlabel var(--T) linear infinite; }
+.diagram .pg-arcok { opacity: 0; animation: pg-arcok var(--T) linear infinite; }
+.diagram .pg-lim { opacity: 0; animation: pg-lim var(--T) linear infinite; }
+@keyframes pg-q1 {
+  0% { transform: translate(80px, 152px); opacity: 0; }
+  1.5% { transform: translate(80px, 152px); opacity: 0; }
+  1.75% { opacity: 1; }
+  4% { transform: translate(80px, 194px); opacity: 1; }
+  4.25% { transform: translate(80px, 194px); opacity: 0; }
+  100% { transform: translate(80px, 194px); opacity: 0; }
+}
+@keyframes pg-q2 {
+  0% { transform: translate(178px, 152px); opacity: 0; }
+  2.25% { transform: translate(178px, 152px); opacity: 0; }
+  2.5% { opacity: 1; }
+  4.75% { transform: translate(178px, 194px); opacity: 1; }
+  5% { transform: translate(178px, 194px); opacity: 0; }
+  100% { transform: translate(178px, 194px); opacity: 0; }
+}
+@keyframes pg-q3 {
+  0% { transform: translate(222px, 235px); opacity: 0; }
+  5% { transform: translate(222px, 235px); opacity: 0; }
+  5.25% { opacity: 1; }
+  6.25% { transform: translate(254px, 235px); opacity: 1; }
+  6.5% { transform: translate(254px, 235px); opacity: 0; }
+  100% { transform: translate(254px, 235px); opacity: 0; }
+}
+@keyframes pg-upd {
+  0% { transform: translate(350px, 235px); opacity: 0; }
+  6.5% { transform: translate(350px, 235px); opacity: 0; }
+  6.75% { opacity: 1; }
+  8.5% { transform: translate(404px, 316px); opacity: 1; }
+  8.75% { transform: translate(404px, 316px); opacity: 0; }
+  26.5% { transform: translate(350px, 235px); opacity: 0; }
+  26.75% { opacity: 1; }
+  28.5% { transform: translate(404px, 316px); opacity: 1; }
+  28.75% { transform: translate(404px, 316px); opacity: 0; }
+  51% { transform: translate(350px, 235px); opacity: 0; }
+  51.25% { opacity: 1; }
+  52.75% { transform: translate(404px, 316px); opacity: 1; }
+  53% { transform: translate(404px, 316px); opacity: 0; }
+  76% { transform: translate(350px, 235px); opacity: 0; }
+  76.25% { opacity: 1; }
+  77.5% { transform: translate(404px, 316px); opacity: 1; }
+  77.75% { transform: translate(404px, 316px); opacity: 0; }
+  100% { transform: translate(404px, 316px); opacity: 0; }
+}
+@keyframes pg-wal {
+  0% { transform: translate(330px, 216px); opacity: 0; }
+  8.5% { transform: translate(330px, 216px); opacity: 0; }
+  8.75% { opacity: 1; }
+  10.5% { transform: translate(576px, 188px); opacity: 1; }
+  10.75% { transform: translate(576px, 188px); opacity: 0; }
+  51% { transform: translate(330px, 216px); opacity: 0; }
+  51.25% { opacity: 1; }
+  52.75% { transform: translate(532px, 188px); opacity: 1; }
+  53% { transform: translate(532px, 188px); opacity: 0; }
+  54.5% { transform: translate(330px, 216px); opacity: 0; }
+  54.75% { opacity: 1; }
+  56.25% { transform: translate(620px, 188px); opacity: 1; }
+  56.5% { transform: translate(620px, 188px); opacity: 0; }
+  76% { transform: translate(330px, 216px); opacity: 0; }
+  76.25% { opacity: 1; }
+  77.5% { transform: translate(576px, 188px); opacity: 1; }
+  77.75% { transform: translate(576px, 188px); opacity: 0; }
+  100% { transform: translate(576px, 188px); opacity: 0; }
+}
+@keyframes pg-rep {
+  0% { transform: translate(668px, 164px); opacity: 0; }
+  11.5% { transform: translate(668px, 164px); opacity: 0; }
+  11.75% { opacity: 1; }
+  12.89% { transform: translate(714px, 164px); }
+  15.5% { transform: translate(800px, 170px); opacity: 1; }
+  15.75% { transform: translate(800px, 170px); opacity: 0; }
+  59.5% { transform: translate(668px, 164px); opacity: 0; }
+  59.75% { opacity: 1; }
+  60.72% { transform: translate(714px, 164px); }
+  63% { transform: translate(800px, 170px); opacity: 1; }
+  63.25% { transform: translate(800px, 170px); opacity: 0; }
+  78% { transform: translate(668px, 164px); opacity: 0; }
+  78.25% { opacity: 1; }
+  83% { transform: translate(714px, 164px); }
+  84.5% { transform: translate(800px, 170px); opacity: 1; }
+  84.75% { transform: translate(800px, 170px); opacity: 0; }
+  100% { transform: translate(800px, 170px); opacity: 0; }
+}
+@keyframes pg-cdc {
+  0% { transform: translate(668px, 164px); opacity: 0; }
+  11.5% { transform: translate(668px, 164px); opacity: 0; }
+  11.75% { opacity: 1; }
+  11.985% { transform: translate(696px, 164px); }
+  14.69% { transform: translate(696px, 321px); }
+  15% { transform: translate(714px, 321px); opacity: 1; }
+  15.25% { transform: translate(714px, 321px); opacity: 0; }
+  100% { transform: translate(714px, 321px); opacity: 0; }
+}
+@keyframes pg-evt {
+  0% { transform: translate(814px, 321px); opacity: 0; }
+  15.5% { transform: translate(814px, 321px); opacity: 0; }
+  15.75% { opacity: 1; }
+  17.5% { transform: translate(846px, 321px); opacity: 1; }
+  17.75% { transform: translate(846px, 321px); opacity: 0; }
+  100% { transform: translate(846px, 321px); opacity: 0; }
+}
+@keyframes pg-arc {
+  0% { transform: translate(668px, 164px); opacity: 0; }
+  16% { transform: translate(668px, 164px); opacity: 0; }
+  16.25% { opacity: 1; }
+  16.395% { transform: translate(696px, 164px); }
+  19.745% { transform: translate(696px, 403px); }
+  20% { transform: translate(714px, 403px); opacity: 1; }
+  20.25% { transform: translate(714px, 403px); opacity: 0; }
+  100% { transform: translate(714px, 403px); opacity: 0; }
+}
+@keyframes pg-rd {
+  0% { transform: translate(860px, 242px); opacity: 0; }
+  17.5% { transform: translate(860px, 242px); opacity: 0; }
+  17.75% { opacity: 1; }
+  19.25% { transform: translate(860px, 186px); opacity: 1; }
+  19.5% { transform: translate(860px, 186px); opacity: 0; }
+  80% { transform: translate(860px, 242px); opacity: 0; }
+  80.25% { opacity: 1; }
+  81.5% { transform: translate(860px, 186px); opacity: 1; }
+  81.75% { transform: translate(860px, 186px); opacity: 0; }
+  100% { transform: translate(860px, 186px); opacity: 0; }
+}
+@keyframes pg-r2 {
+  0% { transform: translate(350px, 281px); opacity: 0; }
+  30% { transform: translate(350px, 281px); opacity: 0; }
+  30.25% { opacity: 1; }
+  31.75% { transform: translate(404px, 279px); opacity: 1; }
+  32% { transform: translate(404px, 279px); opacity: 0; }
+  38.5% { transform: translate(350px, 281px); opacity: 0; }
+  38.75% { opacity: 1; }
+  40.25% { transform: translate(404px, 279px); opacity: 1; }
+  40.5% { transform: translate(404px, 279px); opacity: 0; }
+  100% { transform: translate(404px, 279px); opacity: 0; }
+}
+@keyframes pg-r3 {
+  0% { transform: translate(350px, 327px); opacity: 0; }
+  35.5% { transform: translate(350px, 327px); opacity: 0; }
+  35.75% { opacity: 1; }
+  37.25% { transform: translate(404px, 317px); opacity: 1; }
+  37.5% { transform: translate(404px, 317px); opacity: 0; }
+  100% { transform: translate(404px, 317px); opacity: 0; }
+}
+@keyframes pg-vac {
+  0% { transform: translate(630px, 431px); opacity: 0; }
+  44% { transform: translate(630px, 431px); opacity: 0; }
+  44.25% { opacity: 1; }
+  45.75% { transform: translate(588px, 290px); opacity: 1; }
+  46% { transform: translate(588px, 290px); opacity: 0; }
+  100% { transform: translate(588px, 290px); opacity: 0; }
+}
+@keyframes pg-redo {
+  0% { transform: translate(532px, 188px); opacity: 0; }
+  69.5% { transform: translate(532px, 188px); opacity: 0; }
+  69.75% { opacity: 1; }
+  71.25% { transform: translate(496px, 300px); opacity: 1; }
+  71.5% { transform: translate(496px, 300px); opacity: 0; }
+  100% { transform: translate(496px, 300px); opacity: 0; }
+}
+@keyframes pg-sweep {
+  0% { transform: translate(309px, 0px); opacity: 0; }
+  66.5% { transform: translate(309px, 0px); opacity: 0; }
+  66.75% { opacity: 1; }
+  69.5% { transform: translate(662px, 0px); opacity: 1; }
+  69.75% { transform: translate(662px, 0px); opacity: 0; }
+  100% { transform: translate(662px, 0px); opacity: 0; }
+}
+@keyframes pg-ok {
+  0% { transform: translate(252px, 235px); opacity: 0; }
+  58.5% { transform: translate(252px, 235px); opacity: 0; }
+  58.75% { opacity: 1; }
+  59.75% { transform: translate(224px, 235px); opacity: 1; }
+  60% { transform: translate(224px, 235px); opacity: 0; transform: translate(80px, 192px); opacity: 0; }
+  60.25% { opacity: 1; }
+  61.5% { transform: translate(80px, 154px); opacity: 1; }
+  61.75% { transform: translate(80px, 154px); opacity: 0; }
+  78% { transform: translate(252px, 235px); opacity: 0; }
+  78.25% { opacity: 1; }
+  79.25% { transform: translate(224px, 235px); opacity: 1; }
+  79.5% { transform: translate(224px, 235px); opacity: 0; transform: translate(80px, 192px); opacity: 0; }
+  79.75% { opacity: 1; }
+  81% { transform: translate(80px, 154px); opacity: 1; }
+  81.25% { transform: translate(80px, 154px); opacity: 0; }
+  100% { transform: translate(80px, 154px); opacity: 0; }
+}
+@keyframes pg-cardA {
+  0% { opacity: 1; }
+  45.75% { opacity: 1; }
+  47% { opacity: 0; }
+  50% { opacity: 0; }
+  50.5% { opacity: 1; }
+  65% { opacity: 1; }
+  66.25% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pg-x742 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  65.25% { opacity: 1; }
+  66% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-x0 {
+  0% { opacity: 1; }
+  8.5% { opacity: 1; }
+  9.25% { opacity: 0; }
+  23.5% { opacity: 0; }
+  24% { opacity: 1; }
+  28.5% { opacity: 1; }
+  29.25% { opacity: 0; }
+  48.5% { opacity: 0; }
+  49% { opacity: 1; }
+  53% { opacity: 1; }
+  53.75% { opacity: 0; }
+  65.25% { opacity: 0; }
+  65.75% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72.25% { opacity: 0; }
+  73.5% { opacity: 0; }
+  74% { opacity: 1; }
+  77.5% { opacity: 1; }
+  78.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pg-oldtag {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.5% { opacity: 1; }
+  43% { opacity: 1; }
+  43.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-dead {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.5% { opacity: 1; }
+  47% { opacity: 1; }
+  47.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-cardB {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.5% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.5% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  65% { opacity: 1; }
+  66% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.5% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-bdash {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29% { opacity: 1; }
+  34% { opacity: 1; }
+  34.75% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-bnew {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  65% { opacity: 1; }
+  65.75% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-unc {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29% { opacity: 1; }
+  34% { opacity: 1; }
+  34.75% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-newtag {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-free {
+  0% { opacity: 0; }
+  46.75% { opacity: 0; }
+  47.25% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-dirty {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  65% { opacity: 1; }
+  65.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-recov {
+  0% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-c2 {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-c3 {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  34% { opacity: 0; }
+  34.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  56.5% { opacity: 0; }
+  57% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-c2d {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29% { opacity: 1; }
+  34% { opacity: 1; }
+  34.75% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  57.5% { opacity: 1; }
+  58.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-c3d {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  57% { opacity: 1; }
+  57.5% { opacity: 1; }
+  58.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-buf {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  53.5% { opacity: 1; }
+  57.25% { opacity: 1; }
+  58% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-flushed {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-redomark {
+  0% { opacity: 0; }
+  65.5% { opacity: 0; }
+  66% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-t1ok {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  34.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  78% { opacity: 0; }
+  78.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-t2ok {
+  0% { opacity: 0; }
+  42.25% { opacity: 0; }
+  42.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-ch2 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-ring2 {
+  0% { opacity: 0; }
+  40.25% { opacity: 0; }
+  40.5% { opacity: 1; }
+  41.75% { opacity: 1; }
+  42.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-ch3 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-vacring {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  44% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-ordok {
+  0% { opacity: 0; }
+  11% { opacity: 0; }
+  11.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  81% { opacity: 0; }
+  81.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-hlupd {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27% { opacity: 1; }
+  33% { opacity: 1; }
+  33.75% { opacity: 0; }
+  51% { opacity: 0; }
+  51.5% { opacity: 1; }
+  54.5% { opacity: 1; }
+  55.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-hlcom {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  33.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-conf {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-sql {
+  0% { opacity: 1; }
+  86.5% { opacity: 1; }
+  87.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pg-crash {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  69.5% { opacity: 1; }
+  70.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-later {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-sb6 {
+  0% { opacity: 0; }
+  15.5% { opacity: 0; }
+  16% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  38% { opacity: 0; }
+  38.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  63% { opacity: 0; }
+  63.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  84.75% { opacity: 0; }
+  85.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-sb7 {
+  0% { opacity: 1; }
+  15.5% { opacity: 1; }
+  16.25% { opacity: 0; }
+  23.5% { opacity: 0; }
+  24% { opacity: 1; }
+  38% { opacity: 1; }
+  38.75% { opacity: 0; }
+  48.5% { opacity: 0; }
+  49% { opacity: 1; }
+  63% { opacity: 1; }
+  63.75% { opacity: 0; }
+  73.5% { opacity: 0; }
+  74% { opacity: 1; }
+  84.75% { opacity: 1; }
+  85.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pg-sbok {
+  0% { opacity: 0; }
+  15.5% { opacity: 0; }
+  16% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  38% { opacity: 0; }
+  38.5% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  63% { opacity: 0; }
+  63.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  84.75% { opacity: 0; }
+  85.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-sbbehind {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79% { opacity: 1; }
+  84.75% { opacity: 1; }
+  85.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-lag {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-promo {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  90.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-ro {
+  0% { opacity: 1; }
+  90% { opacity: 1; }
+  90.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes pg-res6 {
+  0% { opacity: 0; }
+  19.75% { opacity: 0; }
+  20.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-stale {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  82.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-evlabel {
+  0% { opacity: 0; }
+  15.5% { opacity: 0; }
+  16% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-arcok {
+  0% { opacity: 0; }
+  20% { opacity: 0; }
+  20.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pg-lim {
+  0% { opacity: 0; }
+  92% { opacity: 0; }
+  92.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- ===== left: the services, PgBouncer and T1's SQL ===== -->
+  <rect class="box" x="36" y="106" width="88" height="46" rx="10"/>
+  <text class="label mid" x="80" y="134">Orders</text>
+  <rect class="box" x="134" y="106" width="88" height="46" rx="10"/>
+  <text class="label mid" x="178" y="134">Catalog</text>
+  <line class="wire" x1="80" y1="152" x2="80" y2="193" marker-end="url(#ah)"/>
+  <line class="wire" x1="178" y1="152" x2="178" y2="193" marker-end="url(#ah)"/>
+  <rect class="box" x="36" y="194" width="186" height="84" rx="12"/>
+  <text class="label mid" x="129" y="220">PgBouncer</text>
+  <text class="sub mono mid" x="129" y="241">pool_mode = transaction</text>
+  <text class="tiny mid" x="129" y="263">200 clients → 20 server conns</text>
+  <line class="wire" x1="222" y1="235" x2="253" y2="235" marker-end="url(#ah)"/>
+
+  <rect class="box" x="36" y="296" width="186" height="166" rx="10"/>
+  <rect class="f-blue-soft pg-hlupd" x="40" y="340" width="178" height="45" rx="4"/>
+  <rect class="f-green-soft pg-hlcom" x="40" y="386" width="178" height="15" rx="4"/>
+  <g class="pg-sql">
+    <text class="tiny sb" x="46" y="316">Orders · T1</text>
+    <text class="tiny mono f-ink" x="46" y="336">BEGIN;</text>
+    <text class="tiny mono f-ink" x="46" y="351">UPDATE stock</text>
+    <text class="tiny mono f-ink" x="60" y="366">SET qty = qty - 1</text>
+    <text class="tiny mono f-ink" x="60" y="381">WHERE sku = 'MUG-1';</text>
+    <text class="tiny mono f-ink" x="46" y="397">COMMIT;</text>
+  </g>
+  <g class="p2">
+    <text class="tiny mono" x="46" y="424">-- T2 · Catalog export</text>
+    <text class="tiny mono f-ink" x="46" y="439">BEGIN ISOLATION LEVEL</text>
+    <text class="tiny mono f-ink" x="60" y="454">REPEATABLE READ;</text>
+  </g>
+  <g class="pg-conf">
+    <text class="tiny sb" x="46" y="316">postgresql.conf</text>
+    <text class="tiny mono f-ink" x="46" y="336">synchronous_commit</text>
+    <text class="tiny mono f-ink" x="60" y="351">= remote_apply</text>
+    <text class="tiny mono f-ink" x="46" y="366">synchronous_standby_names</text>
+    <text class="tiny mono f-ink" x="60" y="381">= 'standby1'</text>
+    <text class="tiny mono" x="46" y="404"># COMMIT now waits for</text>
+    <text class="tiny mono" x="46" y="419"># the standby's replay:</text>
+    <text class="tiny mono" x="46" y="434"># no stale reads, but a</text>
+    <text class="tiny mono" x="46" y="449"># round trip per commit</text>
+  </g>
+  <g class="pg-ordok"><circle class="f-green" cx="120" cy="110" r="8"/><path class="none s-bg" d="M116.5 110l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+  <!-- ===== the PostgreSQL primary ===== -->
+  <rect class="none s-wire" x="238" y="98" width="446" height="368" rx="16" stroke-width="2"/>
+  <text class="label" x="254" y="125">PostgreSQL</text>
+  <rect class="f-panel-2 s-line" x="350" y="112" width="58" height="18" rx="9" stroke-width="1"/>
+  <text class="tiny sb mid" x="379" y="125">primary</text>
+  <g class="pg-lim">
+    <rect class="f-amber-soft s-amber" x="424" y="110" width="244" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny sb mid f-amber-ink" x="546" y="125">one primary takes every write</text>
+  </g>
+
+  <!-- WAL: a log of numbered records (LSN); dashed = still in WAL buffers -->
+  <rect class="box" x="254" y="136" width="414" height="56" rx="10"/>
+  <text class="tiny sb" x="264" y="160">WAL</text>
+  <text class="tiny mono" x="264" y="176">pg_wal</text>
+  <rect class="f-teal-soft s-teal" x="314" y="142" width="84" height="44" rx="6" stroke-width="1.5"/><text class="tiny sb mid f-ink" x="356" y="160">INSERT</text><text class="tiny mono mid" x="356" y="176">0/3000060</text>
+  <rect class="f-teal-soft s-teal" x="402" y="142" width="84" height="44" rx="6" stroke-width="1.5"/><text class="tiny sb mid f-ink" x="444" y="160">COMMIT</text><text class="tiny mono mid" x="444" y="176">0/30000D8</text>
+  <g class="pg-c2">
+    <rect class="f-teal-soft s-teal" x="490" y="142" width="84" height="44" rx="6" stroke-width="1.5"/>
+    <g class="pg-c2d"><rect class="f-bg s-teal pg-dash" x="490" y="142" width="84" height="44" rx="6" stroke-width="1.5"/></g>
+    <text class="tiny sb mid f-ink" x="532" y="160">UPDATE</text><text class="tiny mono mid" x="532" y="176">0/3000148</text>
+  </g>
+  <g class="pg-c3">
+    <rect class="f-teal-soft s-teal" x="578" y="142" width="84" height="44" rx="6" stroke-width="1.5"/>
+    <g class="pg-c3d"><rect class="f-bg s-teal pg-dash" x="578" y="142" width="84" height="44" rx="6" stroke-width="1.5"/></g>
+    <text class="tiny sb mid f-ink" x="620" y="160">COMMIT</text><text class="tiny mono mid" x="620" y="176">0/30001A0</text>
+  </g>
+  <g class="pg-redomark">
+    <line class="s-teal" x1="309" y1="139" x2="309" y2="189" stroke-width="3" stroke-linecap="round"/>
+    <text class="tiny sb f-teal" x="302" y="206">▲ replay from the last checkpoint</text>
+  </g>
+  <text class="tiny sb mid f-amber-ink pg-buf" x="576" y="206">in WAL buffers (memory)</text>
+  <text class="tiny sb mid f-teal pg-flushed" x="576" y="206">flushed to disk</text>
+  <g class="pg-sweep"><rect class="f-teal" x="-1.5" y="139" width="3" height="50" rx="1.5"/></g>
+
+  <!-- backends: one server process per connection -->
+  <rect class="box" x="254" y="216" width="96" height="38" rx="8"/>
+  <g class="p1">
+    <text class="sub sb f-ink" x="263" y="232">backend</text>
+    <text class="tiny mono" x="263" y="247">pid 4711</text>
+  </g>
+  <g class="p234">
+    <text class="sub sb f-ink" x="263" y="232">T1 · Orders</text>
+    <text class="tiny mono" x="263" y="247">xid 742</text>
+  </g>
+  <rect class="box" x="254" y="262" width="96" height="38" rx="8"/>
+  <g class="p134">
+    <text class="sub sb f-ink" x="263" y="278">backend</text>
+    <text class="tiny mono" x="263" y="293">pid 4712</text>
+  </g>
+  <g class="p2">
+    <text class="sub sb f-ink" x="263" y="278">T2 · Catalog</text>
+    <text class="tiny" x="263" y="293">repeatable read</text>
+  </g>
+  <rect class="box" x="254" y="308" width="96" height="38" rx="8"/>
+  <g class="p134">
+    <text class="sub sb f-ink" x="263" y="324">backend</text>
+    <text class="tiny mono" x="263" y="339">pid 4713</text>
+  </g>
+  <g class="p2">
+    <text class="sub sb f-ink" x="263" y="324">T3 · Orders</text>
+    <text class="tiny" x="263" y="339">read committed</text>
+  </g>
+  <g class="pg-t1ok"><circle class="f-green" cx="346" cy="218" r="8"/><path class="none s-bg" d="M342.5 218l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="pg-t2ok"><circle class="f-green" cx="346" cy="264" r="8"/><path class="none s-bg" d="M342.5 264l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="pg-ch2">
+    <rect class="f-green-soft s-green" x="355" y="272" width="26" height="18" rx="9" stroke-width="1.5"/>
+    <text class="sub mono b mid f-green" x="368" y="285">7</text>
+  </g>
+  <rect class="none s-blue pg-ring2" x="351" y="268" width="34" height="26" rx="13" stroke-width="2"/>
+  <g class="pg-ch3">
+    <rect class="f-green-soft s-green" x="355" y="318" width="26" height="18" rx="9" stroke-width="1.5"/>
+    <text class="sub mono b mid f-green" x="368" y="331">6</text>
+  </g>
+  <rect class="f-panel-2 s-line p123" x="254" y="372" width="96" height="22" rx="11" stroke-width="1"/>
+  <text class="tiny mono mid p123" x="302" y="387">postmaster</text>
+  <g class="p123">
+    <text class="tiny" x="254" y="412">forks one backend</text>
+    <text class="tiny" x="254" y="427">per connection</text>
+  </g>
+  <g class="pg-lim">
+    <rect class="f-amber-soft s-amber" x="254" y="372" width="122" height="40" rx="10" stroke-width="1.5"/>
+    <text class="tiny sb mid f-amber-ink" x="315" y="388">every connection</text>
+    <text class="tiny sb mid f-amber-ink" x="315" y="403">is a process</text>
+  </g>
+
+  <!-- shared buffers (memory) with the stock page and its row versions -->
+  <rect class="box" x="386" y="216" width="282" height="130" rx="10"/>
+  <text class="tiny sb" x="398" y="234">shared buffers · memory</text>
+  <g class="pg-crash">
+    <rect class="f-red-soft s-red" x="386" y="216" width="282" height="130" rx="10" stroke-width="2"/>
+    <text class="tiny sb end f-red" x="656" y="234">crash: memory is lost</text>
+  </g>
+  <rect class="f-panel-2 s-line" x="606" y="244" width="22" height="22" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="634" y="244" width="22" height="22" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="606" y="272" width="22" height="22" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="634" y="272" width="22" height="22" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="606" y="300" width="22" height="22" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="634" y="300" width="22" height="22" rx="3" stroke-width="1"/>
+  <rect class="f-bg s-line" x="398" y="242" width="196" height="96" rx="8" stroke-width="1.5"/>
+  <text class="tiny mono" x="408" y="256">stock · page 0</text>
+  <text class="tiny sb end f-amber-ink pg-dirty" x="586" y="256">dirty</text>
+  <text class="tiny sb end f-green pg-recov" x="586" y="256">replayed ✓</text>
+  <g class="pg-free">
+    <rect class="none s-line pg-dash" x="406" y="262" width="180" height="34" rx="6" stroke-width="1.5"/>
+    <text class="tiny mid" x="496" y="283">free space, reusable</text>
+  </g>
+  <g class="pg-cardA">
+    <rect class="box" x="406" y="262" width="180" height="34" rx="6"/>
+    <g class="pg-dead"><rect class="f-amber-soft s-amber pg-dash" x="406" y="262" width="180" height="34" rx="6" stroke-width="1.5"/></g>
+    <text class="sub mono f-ink" x="414" y="276">MUG-1 qty 7</text>
+    <text class="tiny mono" x="414" y="290">xmin 610</text>
+    <text class="tiny mono" x="482" y="290">xmax</text>
+    <text class="tiny mono pg-x0" x="514" y="290">0</text>
+    <text class="tiny mono b f-amber-ink pg-x742" x="514" y="290">742</text>
+    <text class="tiny sb end pg-oldtag" x="578" y="276">old</text>
+    <text class="tiny sb end f-amber-ink pg-dead" x="578" y="276">dead</text>
+  </g>
+  <g class="pg-cardB">
+    <rect class="box" x="406" y="300" width="180" height="34" rx="6"/>
+    <g class="pg-bdash"><rect class="f-bg s-blue pg-dash" x="406" y="300" width="180" height="34" rx="6" stroke-width="1.5"/></g>
+    <g class="pg-bnew"><rect class="f-green-soft s-green" x="406" y="300" width="180" height="34" rx="6" stroke-width="1.5"/></g>
+    <text class="sub mono f-ink" x="414" y="314">MUG-1 qty 6</text>
+    <text class="tiny mono" x="414" y="328">xmin 742</text>
+    <text class="tiny mono" x="482" y="328">xmax</text>
+    <text class="tiny mono" x="514" y="328">0</text>
+    <text class="tiny sb end pg-unc" x="578" y="314">uncommitted</text>
+    <text class="tiny sb end f-green pg-newtag" x="578" y="314">new</text>
+  </g>
+
+  <!-- data files (disk) and background processes -->
+  <g class="p3">
+    <line class="wire dash" x1="470" y1="339" x2="470" y2="396" marker-end="url(#ah)"/>
+  </g>
+  <g class="p3">
+    <rect class="f-bg" x="478" y="352" width="168" height="16" rx="4"/>
+    <text class="tiny" x="480" y="364">later: bgwriter or checkpoint</text>
+  </g>
+  <g class="pg-lim">
+    <rect class="f-amber-soft s-amber" x="404" y="350" width="184" height="20" rx="10" stroke-width="1.5"/>
+    <text class="tiny sb mid f-amber-ink" x="496" y="364">dead row versions need VACUUM</text>
+  </g>
+  <rect class="box" x="386" y="372" width="196" height="84" rx="10"/>
+  <text class="tiny sb" x="398" y="390">data files · disk</text>
+  <rect class="f-bg s-line" x="398" y="398" width="172" height="48" rx="6" stroke-width="1.5"/>
+  <text class="tiny mono" x="408" y="414">stock · page 0</text>
+  <text class="sub mono f-ink" x="408" y="434">MUG-1 qty 7</text>
+  <g class="pg-later"><rect class="none s-amber" x="398" y="398" width="172" height="48" rx="6" stroke-width="1.5"/><text class="tiny sb end f-amber-ink" x="562" y="434">old copy</text></g>
+  <rect class="f-panel-2 s-line" x="592" y="372" width="76" height="22" rx="11" stroke-width="1"/>
+  <text class="tiny mid" x="630" y="387">checkpointer</text>
+  <rect class="f-panel-2 s-line" x="592" y="402" width="76" height="22" rx="11" stroke-width="1"/>
+  <text class="tiny mid" x="630" y="417">bgwriter</text>
+  <rect class="f-panel-2 s-line" x="592" y="432" width="76" height="22" rx="11" stroke-width="1"/>
+  <text class="tiny mid" x="630" y="447">autovacuum</text>
+  <rect class="none s-teal pg-vacring" x="592" y="432" width="76" height="22" rx="11" stroke-width="2"/>
+
+  <!-- ===== right: the WAL's consumers ===== -->
+  <path class="wire" d="M668 164H712" marker-end="url(#ah)"/>
+  <path class="wire" d="M696 164V321H712" marker-end="url(#ah)"/>
+  <path class="wire" d="M696 321V403H712" marker-end="url(#ah)"/>
+
+  <rect class="box" x="714" y="104" width="212" height="118" rx="12"/>
+  <text class="label" x="728" y="129">standby</text>
+  <text class="tiny pg-ro" x="728" y="147">hot standby: read-only, replays WAL</text>
+  <text class="tiny sb f-ink pg-promo" x="728" y="147">failover: Patroni promotes it</text>
+  <rect class="f-bg s-line" x="800" y="156" width="112" height="28" rx="6" stroke-width="1.5"/>
+  <text class="sub mono f-ink pg-sb7" x="808" y="175">MUG-1 qty 7</text>
+  <text class="sub mono f-ink pg-sb6" x="808" y="175">MUG-1 qty 6</text>
+  <text class="tiny sb f-green pg-sbok" x="728" y="175">replayed ✓</text>
+  <text class="tiny sb f-amber-ink pg-sbbehind" x="728" y="175">behind</text>
+  <g class="pg-lag">
+    <rect class="f-amber-soft s-amber" x="728" y="192" width="184" height="20" rx="10" stroke-width="1.5"/>
+    <text class="tiny sb mid f-amber-ink" x="820" y="206">replay_lag 200 ms</text>
+  </g>
+
+  <rect class="box" x="800" y="242" width="126" height="36" rx="10"/>
+  <text class="label mid" x="863" y="265">Reports</text>
+  <line class="wire" x1="860" y1="242" x2="860" y2="225" marker-end="url(#ah)"/>
+  <g class="pg-res6">
+    <rect class="f-green-soft s-green" x="714" y="249" width="78" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny sb mid f-green" x="753" y="264">qty 6 ✓</text>
+  </g>
+  <g class="pg-stale">
+    <rect class="f-amber-soft s-amber" x="714" y="249" width="78" height="22" rx="11" stroke-width="1.5"/>
+    <text class="tiny sb mid f-amber-ink" x="753" y="264">qty 7: stale</text>
+  </g>
+
+  <rect class="box" x="714" y="298" width="100" height="46" rx="10"/>
+  <text class="label mid" x="764" y="318">Debezium</text>
+  <text class="tiny mono mid" x="764" y="335">slot debezium</text>
+  <line class="wire" x1="814" y1="321" x2="845" y2="321" marker-end="url(#ah)"/>
+  <rect class="box" x="846" y="298" width="80" height="46" rx="10"/>
+  <text class="label mid" x="886" y="318">Kafka</text>
+  <text class="tiny mid" x="886" y="335">topic</text>
+  <text class="tiny sb mid f-purple pg-evlabel" x="820" y="359">change event: MUG-1 qty 6</text>
+
+  <rect class="box" x="714" y="368" width="212" height="70" rx="12"/>
+  <text class="label" x="728" y="392">WAL archive</text>
+  <text class="tiny" x="728" y="409">object storage (S3), full 16 MB</text>
+  <text class="tiny" x="728" y="425">segments: point-in-time recovery</text>
+  <g class="pg-arcok"><circle class="f-green" cx="914" cy="376" r="8"/><path class="none s-bg" d="M910.5 376l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+  <!-- ===== tokens ===== -->
+  <circle class="pkt f-blue pg-q1" r="7"/>
+  <circle class="pkt f-blue pg-q2" r="7"/>
+  <circle class="pkt f-blue pg-q3" r="7"/>
+  <circle class="pkt f-blue pg-upd" r="7"/>
+  <circle class="pkt f-blue pg-r2" r="7"/>
+  <circle class="pkt f-blue pg-r3" r="7"/>
+  <circle class="pkt f-blue pg-rd" r="7"/>
+  <circle class="pkt f-teal pg-wal" r="6"/>
+  <circle class="pkt f-teal pg-rep" r="6"/>
+  <circle class="pkt f-teal pg-cdc" r="6"/>
+  <rect class="pkt f-teal pg-arc" x="-10" y="-7" width="20" height="14" rx="3"/>
+  <rect class="pg-ev pg-evt" x="-8" y="-8" width="16" height="16" rx="4"/>
+  <g class="pg-vac">
+    <circle class="pkt f-teal" r="6"/>
+    <text class="tiny sb mid f-teal" y="-11">VACUUM</text>
+  </g>
+  <circle class="pkt f-teal pg-redo" r="6"/>
+  <circle class="pkt f-green pg-ok" r="7"/>
+</g>
+</svg>

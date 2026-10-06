@@ -1,0 +1,76 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Orders publishes, gets a confirm and moves on; RabbitMQ holds the work until each worker takes it.",
+      "body": "Acme Shop's **Orders** service publishes an event for every order and answers the customer as soon as RabbitMQ confirms it; it never waits for an email or a shipment. RabbitMQ keeps each message until a worker has processed it, so the email, fulfilment and audit workers take work at their own pace, and a burst of orders waits in the queues instead of slowing down the web tier."
+    },
+    {
+      "title": "Routing by binding",
+      "caption": "The topic exchange matches each routing key against the bindings: * is one word, # zero or more.",
+      "body": "Orders publishes to the **topic exchange** `orders` with a routing key such as `order.created.th` and never names a queue. The exchange compares the key with each **binding** word by word (`*` matches exactly one word, `#` zero or more) and puts a copy in every queue that matches: `order.created.th` lands in email, fulfilment-th and audit, while `order.cancelled.us` matches only `#` and lands in audit alone."
+    },
+    {
+      "title": "Push, ack, redeliver",
+      "caption": "Prefetch 10: email-2 crashes holding 3 unacked; they go back and on to email-1, marked redelivered.",
+      "body": "The broker **pushes** messages to consumers, at most 10 unacknowledged per email worker (`basic.qos` prefetch 10), and deletes a message only when its consumer acks it after the work is done. email-2 crashes holding 3 unacked messages, so RabbitMQ requeues them and email-1 receives them with `redelivered` set: delivery is at least once, so consumers must be idempotent. Each **quorum queue** keeps replicas on 3 nodes and Orders' publisher confirm arrives only after 2 of them have the message, so losing rabbit-3 loses nothing that was confirmed."
+    },
+    {
+      "title": "Poison message and limits",
+      "caption": "Order 1042 fails every time; past delivery-limit 20 the queue dead-letters it into orders.dead.",
+      "body": "Order 1042 makes the fulfilment worker fail every time: the worker rejects it with requeue, and the quorum queue counts each failed delivery in `x-delivery-count`. Once the count passes the **delivery limit** (20 by default since RabbitMQ 4.0), the queue dead-letters the message through `orders.dlx` into `orders.dead`, where a person can inspect it. The limits, in amber: an acked message is gone (a **stream** keeps a log you can replay), long queues use memory until the memory alarm blocks publishers, and several consumers plus redeliveries do not keep order."
+    }
+  ],
+  "related": ["competing-consumers", "queue-based-load-leveling", "dead-letter-queue", "priority-queue", "publish-subscribe", "asynchronous-request-reply", "idempotent-consumer", "kafka", "amazon-sqs"],
+  "references": [
+    { "title": "RabbitMQ — AMQP 0-9-1 Model Explained", "url": "https://www.rabbitmq.com/tutorials/amqp-concepts" },
+    { "title": "RabbitMQ — Exchanges", "url": "https://www.rabbitmq.com/docs/exchanges" },
+    { "title": "RabbitMQ tutorial — Topics", "url": "https://www.rabbitmq.com/tutorials/tutorial-five-python" },
+    { "title": "RabbitMQ tutorial — Work Queues", "url": "https://www.rabbitmq.com/tutorials/tutorial-two-python" },
+    { "title": "RabbitMQ tutorial — Remote procedure call (RPC)", "url": "https://www.rabbitmq.com/tutorials/tutorial-six-python" },
+    { "title": "RabbitMQ — Quorum Queues", "url": "https://www.rabbitmq.com/docs/quorum-queues" },
+    { "title": "RabbitMQ — Classic Queues", "url": "https://www.rabbitmq.com/docs/classic-queues" },
+    { "title": "RabbitMQ — Streams and Superstreams", "url": "https://www.rabbitmq.com/docs/streams" },
+    { "title": "RabbitMQ — Queues (message ordering)", "url": "https://www.rabbitmq.com/docs/queues" },
+    { "title": "RabbitMQ — Consumer Acknowledgements and Publisher Confirms", "url": "https://www.rabbitmq.com/docs/confirms" },
+    { "title": "RabbitMQ — Consumer Prefetch", "url": "https://www.rabbitmq.com/docs/consumer-prefetch" },
+    { "title": "RabbitMQ — Consumers (delivery acknowledgement timeout)", "url": "https://www.rabbitmq.com/docs/consumers" },
+    { "title": "RabbitMQ — Publishers (unroutable messages)", "url": "https://www.rabbitmq.com/docs/publishers" },
+    { "title": "RabbitMQ — Dead Letter Exchanges", "url": "https://www.rabbitmq.com/docs/dlx" },
+    { "title": "RabbitMQ — Time-To-Live and Expiration", "url": "https://www.rabbitmq.com/docs/ttl" },
+    { "title": "RabbitMQ — Priority Support in Queues", "url": "https://www.rabbitmq.com/docs/priority" },
+    { "title": "RabbitMQ — Direct Reply-To", "url": "https://www.rabbitmq.com/docs/direct-reply-to" },
+    { "title": "RabbitMQ — Policies", "url": "https://www.rabbitmq.com/docs/policies" },
+    { "title": "RabbitMQ — Schema Definition Export and Import", "url": "https://www.rabbitmq.com/docs/definitions" },
+    { "title": "RabbitMQ — Memory and Disk Alarms", "url": "https://www.rabbitmq.com/docs/alarms" },
+    { "title": "RabbitMQ — Memory Threshold and Limit", "url": "https://www.rabbitmq.com/docs/memory" },
+    { "title": "RabbitMQ — Free Disk Space Alarms", "url": "https://www.rabbitmq.com/docs/disk-alarms" },
+    { "title": "RabbitMQ — Connections (high connection churn)", "url": "https://www.rabbitmq.com/docs/connections" },
+    { "title": "RabbitMQ — Monitoring with Prometheus and Grafana", "url": "https://www.rabbitmq.com/docs/prometheus" },
+    { "title": "RabbitMQ — rabbitmqctl(8)", "url": "https://www.rabbitmq.com/docs/man/rabbitmqctl.8" },
+    { "title": "RabbitMQ — Metadata store", "url": "https://www.rabbitmq.com/docs/metadata-store" },
+    { "title": "RabbitMQ — MQTT Plugin", "url": "https://www.rabbitmq.com/docs/mqtt" },
+    { "title": "RabbitMQ — STOMP Plugin", "url": "https://www.rabbitmq.com/docs/stomp" },
+    { "title": "RabbitMQ 4.0.1 release notes (mirroring removed, AMQP 1.0 core, delivery limit 20)", "url": "https://github.com/rabbitmq/rabbitmq-server/blob/main/release-notes/4.0.1.md" },
+    { "title": "RabbitMQ 4.2.0 release notes (Khepri default for new clusters)", "url": "https://github.com/rabbitmq/rabbitmq-server/blob/main/release-notes/4.2.0.md" },
+    { "title": "RabbitMQ 4.3.0 release notes (Khepri only, quorum queue priorities and delayed retry)", "url": "https://github.com/rabbitmq/rabbitmq-server/blob/main/release-notes/4.3.0.md" },
+    { "title": "RabbitMQ 4.3.6 release", "url": "https://github.com/rabbitmq/rabbitmq-server/releases/tag/v4.3.6" },
+    { "title": "rabbitmq-server LICENSE (MPL 2.0)", "url": "https://github.com/rabbitmq/rabbitmq-server/blob/main/LICENSE" },
+    { "title": "Amazon MQ — Managing Amazon MQ for RabbitMQ engine versions", "url": "https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-version-management.html" },
+    { "title": "Amazon MQ — Deployment options for Amazon MQ for RabbitMQ brokers", "url": "https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-broker-architecture.html" },
+    { "title": "Amazon MQ — Quorum queues for RabbitMQ on Amazon MQ", "url": "https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/quorum-queues.html" },
+    { "title": "CloudAMQP", "url": "https://www.cloudamqp.com/" },
+    { "title": "Celery — Using RabbitMQ", "url": "https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/rabbitmq.html" },
+    { "title": "KEDA — RabbitMQ Queue scaler", "url": "https://keda.sh/docs/latest/scalers/rabbitmq-queue/" },
+    { "title": "Apache Kafka 4.3 — Introduction", "url": "https://kafka.apache.org/43/getting-started/introduction/" },
+    { "title": "Apache Kafka 4.3 — Design (push vs. pull)", "url": "https://kafka.apache.org/43/design/design/" },
+    { "title": "Apache Kafka 4.3 — Broker configs (log.retention.hours)", "url": "https://kafka.apache.org/43/configuration/broker-configs/" },
+    { "title": "Apache Kafka 4.3 — Group configs (share.delivery.count.limit)", "url": "https://kafka.apache.org/43/configuration/group-configs/" },
+    { "title": "Apache Kafka 4.2 — Upgrading (Queues for Kafka is production-ready)", "url": "https://kafka.apache.org/42/getting-started/upgrade/" },
+    { "title": "Amazon MSK", "url": "https://aws.amazon.com/msk/" },
+    { "title": "Amazon SQS — Queue types", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-types.html" },
+    { "title": "Amazon SQS — Message quotas", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html" },
+    { "title": "Amazon SQS — Using dead-letter queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html" }
+  ]
+}

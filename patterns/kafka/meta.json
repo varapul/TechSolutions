@@ -1,0 +1,93 @@
+{
+  "aka": [
+    "Kafka"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Orders appends OrderPlaced to topic orders; three consumer groups each read it at their own pace.",
+      "body": "The Orders service publishes every `OrderPlaced` event to the topic **orders** and moves on, without knowing who reads it. **billing**, **search-indexer** and **analytics-loader** are three consumer groups, and each reads every event at its own pace. Reading doesn't remove anything: the topic keeps records for 7 days (`retention.ms`), so a group can fall behind, catch up or start over."
+    },
+    {
+      "title": "Append and replicate",
+      "caption": "Key C-14 picks P1. Leader b2 appends offset 42, b1 and b3 copy it, then acks=all confirms the write.",
+      "body": "The topic has 3 partitions, each with 3 replicas on brokers b1, b2 and b3. The producer hashes the key `C-14` and gets **P1**, so every event for that customer lands in the same partition, in order. P1's leader on **b2** appends the record at **offset 42**, the followers on b1 and b3 fetch it, and with `acks=all` (the default since Kafka 3.0) the producer is acknowledged once every in-sync replica has it."
+    },
+    {
+      "title": "Consumer groups",
+      "caption": "One consumer per partition per group. billing commits 43, search-indexer lags at 39; a 4th idles.",
+      "body": "Within a group each partition belongs to exactly one consumer: billing-1 reads P0 and P1, billing-2 reads P2. When billing-3 joins, a **rebalance** moves P1 to it; billing-4 gets nothing, because 3 partitions keep at most 3 consumers of a group busy. Each group commits its own offsets: billing has processed 42 and committed 43, while search-indexer is at 39, 4 records behind, which is fine. A group can also reset its offsets to replay."
+    },
+    {
+      "title": "Failover and the limits",
+      "caption": "b2 fails; in-sync b1 takes over P1, writes go on. Limits: order per partition, hot keys, retention.",
+      "body": "Broker **b2** fails. The controller makes **b1**, an in-sync replica, the leader of P1, and because b1 and b3 still meet `min.insync.replicas=2`, `acks=all` writes go on. The limits: order holds only **within a partition**, a **hot key** sends all its traffic to one partition, and records are deleted after the retention period (7 days here) or, with compaction, reduced to the latest value per key."
+    }
+  ],
+  "related": [
+    "publish-subscribe",
+    "event-driven-architecture",
+    "change-data-capture",
+    "event-sourcing",
+    "transactional-outbox",
+    "idempotent-consumer",
+    "competing-consumers",
+    "rabbitmq",
+    "amazon-kinesis-data-streams",
+    "flink"
+  ],
+  "references": [
+    {
+      "title": "Apache Kafka 4.3 documentation — Design",
+      "url": "https://kafka.apache.org/43/design/design/"
+    },
+    {
+      "title": "Apache Kafka 4.3 documentation — Producer Configs",
+      "url": "https://kafka.apache.org/43/configuration/producer-configs/"
+    },
+    {
+      "title": "Apache Kafka 4.3 documentation — Consumer Rebalance Protocol",
+      "url": "https://kafka.apache.org/43/operations/consumer-rebalance-protocol/"
+    },
+    {
+      "title": "Apache Kafka 4.3 documentation — Eligible Leader Replicas",
+      "url": "https://kafka.apache.org/43/operations/eligible-leader-replicas/"
+    },
+    {
+      "title": "Apache Kafka 4.3 documentation — Basic Kafka Operations",
+      "url": "https://kafka.apache.org/43/operations/basic-kafka-operations/"
+    },
+    {
+      "title": "Apache Kafka 4.0.0 Release Announcement (March 2025)",
+      "url": "https://kafka.apache.org/blog/2025/03/18/apache-kafka-4.0.0-release-announcement/"
+    },
+    {
+      "title": "Apache Kafka 4.2.0 Release Announcement (February 2026)",
+      "url": "https://kafka.apache.org/blog/2026/02/17/apache-kafka-4.2.0-release-announcement/"
+    },
+    {
+      "title": "KIP-500: Replace ZooKeeper with a Self-Managed Metadata Quorum",
+      "url": "https://cwiki.apache.org/confluence/display/KAFKA/KIP-500%3A+Replace+ZooKeeper+with+a+Self-Managed+Metadata+Quorum"
+    },
+    {
+      "title": "KIP-848: The Next Generation of the Consumer Rebalance Protocol",
+      "url": "https://cwiki.apache.org/confluence/display/KAFKA/KIP-848%3A+The+Next+Generation+of+the+Consumer+Rebalance+Protocol"
+    },
+    {
+      "title": "KIP-932: Queues for Kafka",
+      "url": "https://cwiki.apache.org/confluence/display/KAFKA/KIP-932%3A+Queues+for+Kafka"
+    },
+    {
+      "title": "Jay Kreps — The Log: What every software engineer should know about real-time data's unifying abstraction (LinkedIn Engineering, 2013)",
+      "url": "https://www.linkedin.com/blog/engineering/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying"
+    },
+    {
+      "title": "Amazon MSK — Welcome to the Amazon MSK Developer Guide",
+      "url": "https://docs.aws.amazon.com/msk/latest/developerguide/what-is-msk.html"
+    },
+    {
+      "title": "Amazon MSK Developer Guide — Supported Apache Kafka versions",
+      "url": "https://docs.aws.amazon.com/msk/latest/developerguide/supported-kafka-versions.html"
+    }
+  ]
+}

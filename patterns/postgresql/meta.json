@@ -1,0 +1,43 @@
+{
+  "aka": ["Postgres"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Orders and Catalog use PgBouncer; the WAL feeds a hot standby, Debezium and a backup archive.",
+      "body": "Acme Shop's orders database is the **system of record**. Orders and Catalog reach it through **PgBouncer** in transaction mode, because every PostgreSQL connection is a server process of its own. Its write-ahead log (WAL) then feeds three neighbours: a hot **standby** that serves reports; **Debezium**, which reads a logical replication slot and publishes each committed change to Kafka; and a **WAL archive** in object storage that makes point-in-time recovery possible."
+    },
+    {
+      "title": "MVCC: row versions",
+      "caption": "T1 adds a row version (qty 6); T2's older snapshot still reads 7, nobody waits; VACUUM cleans up.",
+      "body": "T1 runs `UPDATE stock SET qty = qty - 1 WHERE sku = 'MUG-1'`. PostgreSQL does not overwrite the row: it adds a new **row version** (qty 6, `xmin` 742) and stamps the old one with `xmax` 742, so T2, a REPEATABLE READ export whose snapshot predates T1's commit, keeps reading 7 while T3, a new transaction, reads 6, and nobody waits for a lock. Once T2 ends, no snapshot can see the old version any more, and **VACUUM** removes it."
+    },
+    {
+      "title": "Commit = WAL on disk",
+      "caption": "COMMIT returns once the WAL is on disk; the page is written later, and WAL replay rebuilds it.",
+      "body": "Each change is first written as a **WAL record** in WAL buffers, and COMMIT flushes the WAL to disk before the client gets its OK. The table page stays dirty in shared buffers until the background writer or a **checkpoint** writes it, so if the server crashes first, recovery replays the WAL from the last checkpoint and rebuilds the page. The same WAL records stream to the standby."
+    },
+    {
+      "title": "Replicas and limits",
+      "caption": "Async replication: during 200 ms of replay lag, a standby report still reads qty 7 after the commit.",
+      "body": "Streaming replication is **asynchronous** by default: T1's commit returns before the standby has replayed it, so during 200 ms of replay lag a report there still reads qty 7. With `synchronous_commit = remote_apply` and the standby named in `synchronous_standby_names`, every commit waits for that replay instead, at the cost of commit latency. If the primary fails, the standby is promoted (by Patroni or the managed service), but the limits remain: one primary takes every write, every connection is a process, and dead row versions must be vacuumed."
+    }
+  ],
+  "related": ["read-replicas", "transactional-outbox", "change-data-capture", "database-per-service", "sharding", "materialized-view", "amazon-rds-aurora", "redis", "kafka"],
+  "references": [
+    { "title": "PostgreSQL documentation — Concurrency Control: Introduction (MVCC)", "url": "https://www.postgresql.org/docs/current/mvcc-intro.html" },
+    { "title": "PostgreSQL documentation — Transaction Isolation", "url": "https://www.postgresql.org/docs/current/transaction-iso.html" },
+    { "title": "PostgreSQL documentation — Write-Ahead Logging (WAL)", "url": "https://www.postgresql.org/docs/current/wal-intro.html" },
+    { "title": "PostgreSQL documentation — WAL Configuration (checkpoints)", "url": "https://www.postgresql.org/docs/current/wal-configuration.html" },
+    { "title": "PostgreSQL documentation — Log-Shipping Standby Servers (streaming and synchronous replication)", "url": "https://www.postgresql.org/docs/current/warm-standby.html" },
+    { "title": "PostgreSQL documentation — Failover", "url": "https://www.postgresql.org/docs/current/warm-standby-failover.html" },
+    { "title": "PostgreSQL documentation — Logical Decoding Concepts (replication slots)", "url": "https://www.postgresql.org/docs/current/logicaldecoding-explanation.html" },
+    { "title": "PostgreSQL documentation — Routine Vacuuming", "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html" },
+    { "title": "PostgreSQL documentation — Continuous Archiving and Point-in-Time Recovery", "url": "https://www.postgresql.org/docs/current/continuous-archiving.html" },
+    { "title": "PostgreSQL 18 release notes", "url": "https://www.postgresql.org/docs/18/release-18.html" },
+    { "title": "PostgreSQL — Versioning policy (supported releases)", "url": "https://www.postgresql.org/support/versioning/" },
+    { "title": "PgBouncer — Features (pooling modes)", "url": "https://www.pgbouncer.org/features.html" },
+    { "title": "Debezium — Connector for PostgreSQL", "url": "https://debezium.io/documentation/reference/stable/connectors/postgresql.html" },
+    { "title": "Amazon RDS User Guide — Amazon RDS for PostgreSQL", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html" },
+    { "title": "Amazon Aurora User Guide — Replication with Amazon Aurora", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Replication.html" }
+  ]
+}

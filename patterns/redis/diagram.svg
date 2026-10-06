@@ -1,0 +1,1111 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Redis &amp; Valkey</title>
+<desc id="dg-desc">Redis &amp; Valkey. An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process. Step 1, Where it sits: Three stateless app servers share one Redis: a cache, sessions, a rate limiter and a leaderboard. Step 2, One command at a time: Commands wait in line and run one at a time: INCR returns 101, over 100, so app-1 answers 429. Step 3, Durability and failover: Writes go to the AOF and, later, to the replicas. The primary dies: an unreplicated write is lost. Step 4, Scale out, and the limits: Cluster: 16,384 hash slots over primaries; multi-key commands need one slot. Memory is the hard cap.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">Redis &amp; Valkey</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · One command at a time</text>
+  <text class="step on p2" x="262" y="518">2 · One command at a time</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Durability and failover</text>
+  <text class="step on p3" x="484" y="518">3 · Durability and failover</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Scale out, and the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Scale out, and the limits</text>
+  <text class="caption p1" x="40" y="552">Three stateless app servers share one Redis: a cache, sessions, a rate limiter and a leaderboard.</text>
+  <text class="caption p2" x="40" y="552">Commands wait in line and run one at a time: INCR returns 101, over 100, so app-1 answers 429.</text>
+  <text class="caption p3" x="40" y="552">Writes go to the AOF and, later, to the replicas. The primary dies: an unreplicated write is lost.</text>
+  <text class="caption p4" x="40" y="552">Cluster: 16,384 hash slots over primaries; multi-key commands need one slot. Memory is the hard cap.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Redis and Valkey. Timeline (20s loop, 1s = 5%):
+   0-25%   four round trips (GET, HGETALL, INCR, ZINCRBY): one hop each, answered from memory
+   25-50%  INCR, GET and ZINCRBY arrive together, wait in line and run one at a time:
+           ratelimit:key-7:1201 100 -> 101 (app-1 answers 429), product:42 hit, mug 812 -> 813
+   50-75%  two writes: each is appended to the AOF and queued for the replicas; the SET reaches
+           both replicas, the primary crashes (12.6s) before the ZINCRBY (814) leaves its buffer,
+           Sentinel promotes replica-1, which has mug 813: the acknowledged 814 is lost
+   75-100% Redis Cluster: product:42 (slot 12456) and top-sellers (9501) move to shards C and B;
+           CROSSSLOT vs hash tags; memory fills to maxmemory, then OOM (noeviction) or eviction (allkeys-lru) */
+.diagram .rd-frame { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+.diagram .rd-in { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.diagram .rd-pill { fill: var(--panel-2); stroke: var(--line); stroke-width: 1; }
+.diagram .rd-key { font-size: 12px; font-weight: 600; }
+.diagram .rd-hd { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; fill: var(--muted); }
+.diagram .rd-doc { fill: var(--bg); stroke: var(--teal); stroke-width: 1.5; }
+.diagram .rd-ghost { fill: var(--panel); fill-opacity: 0.78; }
+.diagram .rd-get { opacity: 0; animation: rd-get var(--T) linear infinite; }
+.diagram .rd-hgetall { opacity: 0; animation: rd-hgetall var(--T) linear infinite; }
+.diagram .rd-incr { opacity: 0; animation: rd-incr var(--T) linear infinite; }
+.diagram .rd-zincr { opacity: 0; animation: rd-zincr var(--T) linear infinite; }
+.diagram .rd-set { opacity: 0; animation: rd-set var(--T) linear infinite; }
+.diagram .rd-r1 { opacity: 0; animation: rd-r1 var(--T) linear infinite; }
+.diagram .rd-r2 { opacity: 0; animation: rd-r2 var(--T) linear infinite; }
+.diagram .rd-r3 { opacity: 0; animation: rd-r3 var(--T) linear infinite; }
+.diagram .rd-r4 { opacity: 0; animation: rd-r4 var(--T) linear infinite; }
+.diagram .rd-aof { opacity: 0; animation: rd-aof var(--T) linear infinite; }
+.diagram .rd-buf1 { opacity: 0; animation: rd-buf1 var(--T) linear infinite; }
+.diagram .rd-rep1 { opacity: 0; animation: rd-rep1 var(--T) linear infinite; }
+.diagram .rd-rep2 { opacity: 0; animation: rd-rep2 var(--T) linear infinite; }
+.diagram .rd-buf2 { opacity: 0; animation: rd-buf2 var(--T) linear infinite; }
+.diagram .rd-chipp { opacity: 0; animation: rd-chipp var(--T) linear infinite; }
+.diagram .rd-chipz { opacity: 0; animation: rd-chipz var(--T) linear infinite; }
+.diagram .rd-busy { opacity: 0; animation: rd-busy var(--T) linear infinite; }
+.diagram .rd-f1 { opacity: 0; animation: rd-f1 var(--T) linear infinite; }
+.diagram .rd-f2 { opacity: 0; animation: rd-f2 var(--T) linear infinite; }
+.diagram .rd-f3 { opacity: 0; animation: rd-f3 var(--T) linear infinite; }
+.diagram .rd-f4 { opacity: 0; animation: rd-f4 var(--T) linear infinite; }
+.diagram .rd-fr1 { opacity: 0; animation: rd-fr1 var(--T) linear infinite; }
+.diagram .rd-fr2 { opacity: 0; animation: rd-fr2 var(--T) linear infinite; }
+.diagram .rd-faof { opacity: 0; animation: rd-faof var(--T) linear infinite; }
+.diagram .rd-v100 { opacity: 0; animation: rd-v100 var(--T) linear infinite; }
+.diagram .rd-v101 { opacity: 0; animation: rd-v101 var(--T) linear infinite; }
+.diagram .rd-m812 { opacity: 0; animation: rd-m812 var(--T) linear infinite; }
+.diagram .rd-m813 { opacity: 0; animation: rd-m813 var(--T) linear infinite; }
+.diagram .rd-m814 { opacity: 0; animation: rd-m814 var(--T) linear infinite; }
+.diagram .rd-a429 { opacity: 0; animation: rd-a429 var(--T) linear infinite; }
+.diagram .rd-ahit { opacity: 0; animation: rd-ahit var(--T) linear infinite; }
+.diagram .rd-a813 { opacity: 0; animation: rd-a813 var(--T) linear infinite; }
+.diagram .rd-aok { opacity: 0; animation: rd-aok var(--T) linear infinite; }
+.diagram .rd-a814 { opacity: 0; animation: rd-a814 var(--T) linear infinite; }
+.diagram .rd-log1 { opacity: 0; animation: rd-log1 var(--T) linear infinite; }
+.diagram .rd-log2 { opacity: 0; animation: rd-log2 var(--T) linear infinite; }
+.diagram .rd-log3 { opacity: 0; animation: rd-log3 var(--T) linear infinite; }
+.diagram .rd-ttl { opacity: 0; animation: rd-ttl var(--T) linear infinite; }
+.diagram .rd-crash { opacity: 0; animation: rd-crash var(--T) linear infinite; }
+.diagram .rd-lostb { opacity: 0; animation: rd-lostb var(--T) linear infinite; }
+.diagram .rd-sdown { opacity: 0; animation: rd-sdown var(--T) linear infinite; }
+.diagram .rd-squor { opacity: 0; animation: rd-squor var(--T) linear infinite; }
+.diagram .rd-sprom { opacity: 0; animation: rd-sprom var(--T) linear infinite; }
+.diagram .rd-promo { opacity: 0; animation: rd-promo var(--T) linear infinite; }
+.diagram .rd-lost { opacity: 0; animation: rd-lost var(--T) linear infinite; }
+.diagram .rd-gp { opacity: 0; animation: rd-gp var(--T) linear infinite; }
+.diagram .rd-gz { opacity: 0; animation: rd-gz var(--T) linear infinite; }
+.diagram .rd-pillp { opacity: 0; animation: rd-pillp var(--T) linear infinite; }
+.diagram .rd-pillz { opacity: 0; animation: rd-pillz var(--T) linear infinite; }
+.diagram .rd-n4a { opacity: 0; animation: rd-n4a var(--T) linear infinite; }
+.diagram .rd-n4b { opacity: 0; animation: rd-n4b var(--T) linear infinite; }
+.diagram .rd-full { opacity: 0; animation: rd-full var(--T) linear infinite; }
+.diagram .rd-oom { opacity: 0; animation: rd-oom var(--T) linear infinite; }
+.diagram .rd-lru { opacity: 0; animation: rd-lru var(--T) linear infinite; }
+.diagram .rd-st1 { animation: rd-st1 var(--T) linear infinite; }
+.diagram .rd-st2 { animation: rd-st2 var(--T) linear infinite; }
+.diagram .rd-st3 { animation: rd-st3 var(--T) linear infinite; }
+.diagram .rd-sidle { animation: rd-sidle var(--T) linear infinite; }
+.diagram .rd-ridle { animation: rd-ridle var(--T) linear infinite; }
+.diagram .rd-mem { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.55); animation: rd-mem var(--T) linear infinite; }
+@keyframes rd-get {
+  0% { transform: translate(150px, 241px); opacity: 0; }
+  1.5% { transform: translate(150px, 241px); opacity: 0; }
+  1.75% { opacity: 1; }
+  2.096% { transform: translate(212px, 241px); }
+  4.134% { transform: translate(424px, 241px); }
+  4.834% { transform: translate(424px, 241px); }
+  5.161% { transform: translate(458px, 241px); }
+  5.671% { transform: translate(458px, 188px); }
+  5.786% { transform: translate(470px, 188px); opacity: 1; }
+  6.036% { transform: translate(470px, 188px); opacity: 0; }
+  27.75% { transform: translate(150px, 241px); opacity: 0; }
+  28% { opacity: 1; }
+  28.346% { transform: translate(212px, 241px); }
+  29.346% { transform: translate(316px, 241px); }
+  31.75% { transform: translate(316px, 241px); }
+  32.288% { transform: translate(372px, 241px); }
+  34.75% { transform: translate(372px, 241px); }
+  35.25% { transform: translate(424px, 241px); }
+  36.25% { transform: translate(424px, 241px); }
+  36.577% { transform: translate(458px, 241px); }
+  37.087% { transform: translate(458px, 188px); }
+  37.202% { transform: translate(470px, 188px); opacity: 1; }
+  37.452% { transform: translate(470px, 188px); opacity: 0; }
+  100% { transform: translate(470px, 188px); opacity: 0; }
+}
+@keyframes rd-hgetall {
+  0% { transform: translate(150px, 183px); opacity: 0; }
+  5.6% { transform: translate(150px, 183px); opacity: 0; }
+  5.812% { transform: translate(172px, 183px); }
+  5.85% { opacity: 1; }
+  6.369% { transform: translate(172px, 241px); }
+  6.754% { transform: translate(212px, 241px); }
+  8.792% { transform: translate(424px, 241px); }
+  9.492% { transform: translate(424px, 241px); }
+  9.819% { transform: translate(458px, 241px); }
+  9.934% { transform: translate(470px, 241px); opacity: 1; }
+  10.184% { transform: translate(470px, 241px); opacity: 0; }
+  100% { transform: translate(470px, 241px); opacity: 0; }
+}
+@keyframes rd-incr {
+  0% { transform: translate(150px, 299px); opacity: 0; }
+  9.7% { transform: translate(150px, 299px); opacity: 0; }
+  9.912% { transform: translate(172px, 299px); }
+  9.95% { opacity: 1; }
+  10.469% { transform: translate(172px, 241px); }
+  10.854% { transform: translate(212px, 241px); }
+  12.892% { transform: translate(424px, 241px); }
+  13.592% { transform: translate(424px, 241px); }
+  13.919% { transform: translate(458px, 241px); }
+  14.429% { transform: translate(458px, 294px); }
+  14.544% { transform: translate(470px, 294px); opacity: 1; }
+  14.794% { transform: translate(470px, 294px); opacity: 0; }
+  26.75% { transform: translate(150px, 183px); opacity: 0; }
+  26.962% { transform: translate(172px, 183px); }
+  27% { opacity: 1; }
+  27.519% { transform: translate(172px, 241px); }
+  27.904% { transform: translate(212px, 241px); }
+  29.442% { transform: translate(372px, 241px); }
+  31.25% { transform: translate(372px, 241px); }
+  31.75% { transform: translate(424px, 241px); }
+  32.75% { transform: translate(424px, 241px); }
+  33.077% { transform: translate(458px, 241px); }
+  33.587% { transform: translate(458px, 294px); }
+  33.702% { transform: translate(470px, 294px); opacity: 1; }
+  33.952% { transform: translate(470px, 294px); opacity: 0; }
+  100% { transform: translate(470px, 294px); opacity: 0; }
+}
+@keyframes rd-zincr {
+  0% { transform: translate(150px, 241px); opacity: 0; }
+  13.8% { transform: translate(150px, 241px); opacity: 0; }
+  14.05% { opacity: 1; }
+  14.396% { transform: translate(212px, 241px); }
+  16.434% { transform: translate(424px, 241px); }
+  17.134% { transform: translate(424px, 241px); }
+  17.461% { transform: translate(458px, 241px); }
+  18.48% { transform: translate(458px, 347px); }
+  18.596% { transform: translate(470px, 347px); opacity: 1; }
+  18.846% { transform: translate(470px, 347px); opacity: 0; }
+  28.25% { transform: translate(150px, 299px); opacity: 0; }
+  28.462% { transform: translate(172px, 299px); }
+  28.5% { opacity: 1; }
+  29.019% { transform: translate(172px, 241px); }
+  29.404% { transform: translate(212px, 241px); }
+  29.866% { transform: translate(260px, 241px); }
+  31.75% { transform: translate(260px, 241px); }
+  32.288% { transform: translate(316px, 241px); }
+  35.25% { transform: translate(316px, 241px); }
+  35.788% { transform: translate(372px, 241px); }
+  38.25% { transform: translate(372px, 241px); }
+  38.75% { transform: translate(424px, 241px); }
+  39.75% { transform: translate(424px, 241px); }
+  40.077% { transform: translate(458px, 241px); }
+  41.096% { transform: translate(458px, 347px); }
+  41.212% { transform: translate(470px, 347px); opacity: 1; }
+  41.462% { transform: translate(470px, 347px); opacity: 0; }
+  54.25% { transform: translate(150px, 183px); opacity: 0; }
+  54.462% { transform: translate(172px, 183px); }
+  54.5% { opacity: 1; }
+  55.019% { transform: translate(172px, 241px); }
+  55.404% { transform: translate(212px, 241px); }
+  57.442% { transform: translate(424px, 241px); }
+  58.192% { transform: translate(424px, 241px); }
+  58.519% { transform: translate(458px, 241px); }
+  59.538% { transform: translate(458px, 347px); }
+  59.654% { transform: translate(470px, 347px); opacity: 1; }
+  59.904% { transform: translate(470px, 347px); opacity: 0; }
+  100% { transform: translate(470px, 347px); opacity: 0; }
+}
+@keyframes rd-set {
+  0% { transform: translate(150px, 241px); opacity: 0; }
+  51.25% { transform: translate(150px, 241px); opacity: 0; }
+  51.5% { opacity: 1; }
+  51.846% { transform: translate(212px, 241px); }
+  53.884% { transform: translate(424px, 241px); }
+  54.634% { transform: translate(424px, 241px); }
+  54.961% { transform: translate(458px, 241px); }
+  55.471% { transform: translate(458px, 188px); }
+  55.586% { transform: translate(470px, 188px); opacity: 1; }
+  55.836% { transform: translate(470px, 188px); opacity: 0; }
+  100% { transform: translate(470px, 188px); opacity: 0; }
+}
+@keyframes rd-r1 {
+  0% { transform: translate(470px, 188px); opacity: 0; }
+  6.035% { transform: translate(470px, 188px); opacity: 0; }
+  6.129% { transform: translate(458px, 188px); }
+  6.285% { opacity: 1; }
+  6.543% { transform: translate(458px, 241px); }
+  6.808% { transform: translate(424px, 241px); }
+  8.464% { transform: translate(212px, 241px); }
+  8.948% { transform: translate(150px, 241px); opacity: 1; }
+  9.198% { transform: translate(150px, 241px); opacity: 0; }
+  100% { transform: translate(150px, 241px); opacity: 0; }
+}
+@keyframes rd-r2 {
+  0% { transform: translate(470px, 241px); opacity: 0; }
+  10.185% { transform: translate(470px, 241px); opacity: 0; }
+  10.279% { transform: translate(458px, 241px); }
+  10.435% { opacity: 1; }
+  10.544% { transform: translate(424px, 241px); }
+  12.2% { transform: translate(212px, 241px); }
+  12.512% { transform: translate(172px, 241px); }
+  12.966% { transform: translate(172px, 183px); }
+  13.137% { transform: translate(150px, 183px); opacity: 1; }
+  13.387% { transform: translate(150px, 183px); opacity: 0; }
+  100% { transform: translate(150px, 183px); opacity: 0; }
+}
+@keyframes rd-r3 {
+  0% { transform: translate(470px, 294px); opacity: 0; }
+  14.795% { transform: translate(470px, 294px); opacity: 0; }
+  14.889% { transform: translate(458px, 294px); }
+  15.045% { opacity: 1; }
+  15.303% { transform: translate(458px, 241px); }
+  15.568% { transform: translate(424px, 241px); }
+  17.224% { transform: translate(212px, 241px); }
+  17.537% { transform: translate(172px, 241px); }
+  17.99% { transform: translate(172px, 299px); }
+  18.162% { transform: translate(150px, 299px); opacity: 1; }
+  18.412% { transform: translate(150px, 299px); opacity: 0; }
+  100% { transform: translate(150px, 299px); opacity: 0; }
+}
+@keyframes rd-r4 {
+  0% { transform: translate(470px, 347px); opacity: 0; }
+  18.845% { transform: translate(470px, 347px); opacity: 0; }
+  18.939% { transform: translate(458px, 347px); }
+  19.095% { opacity: 1; }
+  19.767% { transform: translate(458px, 241px); }
+  20.032% { transform: translate(424px, 241px); }
+  21.688% { transform: translate(212px, 241px); }
+  22.172% { transform: translate(150px, 241px); opacity: 1; }
+  22.422% { transform: translate(150px, 241px); opacity: 0; }
+  100% { transform: translate(150px, 241px); opacity: 0; }
+}
+@keyframes rd-aof {
+  0% { transform: translate(424px, 262px); opacity: 0; }
+  54.635% { transform: translate(424px, 262px); opacity: 0; }
+  54.885% { opacity: 1; }
+  55.989% { transform: translate(424px, 392px); opacity: 1; }
+  56.239% { transform: translate(424px, 392px); opacity: 0; }
+  58.19% { transform: translate(424px, 262px); opacity: 0; }
+  58.44% { opacity: 1; }
+  59.544% { transform: translate(424px, 392px); opacity: 1; }
+  59.794% { transform: translate(424px, 392px); opacity: 0; }
+  100% { transform: translate(424px, 392px); opacity: 0; }
+}
+@keyframes rd-buf1 {
+  0% { transform: translate(424px, 262px); opacity: 0; }
+  54.635% { transform: translate(424px, 262px); opacity: 0; }
+  54.885% { opacity: 1; }
+  55.689% { transform: translate(424px, 380px); }
+  57.617% { transform: translate(640px, 380px); }
+  57.858% { transform: translate(640px, 407px); }
+  58.458% { transform: translate(640px, 407px); opacity: 1; }
+  58.708% { transform: translate(640px, 407px); opacity: 0; }
+  100% { transform: translate(640px, 407px); opacity: 0; }
+}
+@keyframes rd-rep1 {
+  0% { transform: translate(640px, 407px); opacity: 0; }
+  58.46% { transform: translate(640px, 407px); opacity: 0; }
+  58.71% { opacity: 1; }
+  59.264% { transform: translate(730px, 407px); }
+  60.308% { transform: translate(730px, 290px); }
+  60.451% { transform: translate(746px, 290px); opacity: 1; }
+  60.701% { transform: translate(746px, 290px); opacity: 0; }
+  100% { transform: translate(746px, 290px); opacity: 0; }
+}
+@keyframes rd-rep2 {
+  0% { transform: translate(640px, 407px); opacity: 0; }
+  58.46% { transform: translate(640px, 407px); opacity: 0; }
+  58.71% { opacity: 1; }
+  59.264% { transform: translate(730px, 407px); }
+  59.79% { transform: translate(730px, 348px); }
+  59.933% { transform: translate(746px, 348px); opacity: 1; }
+  60.183% { transform: translate(746px, 348px); opacity: 0; }
+  100% { transform: translate(746px, 348px); opacity: 0; }
+}
+@keyframes rd-buf2 {
+  0% { transform: translate(424px, 262px); opacity: 0; }
+  58.19% { transform: translate(424px, 262px); opacity: 0; }
+  58.44% { opacity: 1; }
+  59.244% { transform: translate(424px, 380px); }
+  61.172% { transform: translate(640px, 380px); }
+  61.413% { transform: translate(640px, 407px); }
+  63% { transform: translate(640px, 407px); opacity: 1; }
+  63.25% { transform: translate(640px, 407px); opacity: 0; }
+  100% { transform: translate(640px, 407px); opacity: 0; }
+}
+@keyframes rd-chipp {
+  0% { transform: translate(690px, 188px); opacity: 0; }
+  77.25% { transform: translate(690px, 188px); opacity: 0; }
+  77.5% { opacity: 1; }
+  77.726% { transform: translate(730px, 188px); }
+  78.679% { transform: translate(730px, 268px); }
+  79.107% { transform: translate(766px, 268px); opacity: 1; }
+  79.357% { transform: translate(766px, 268px); opacity: 0; }
+  100% { transform: translate(766px, 268px); opacity: 0; }
+}
+@keyframes rd-chipz {
+  0% { transform: translate(690px, 347px); opacity: 0; }
+  80.25% { transform: translate(690px, 347px); opacity: 0; }
+  80.5% { opacity: 1; }
+  80.726% { transform: translate(730px, 347px); }
+  82.429% { transform: translate(730px, 204px); }
+  82.857% { transform: translate(766px, 204px); opacity: 1; }
+  83.107% { transform: translate(766px, 204px); opacity: 0; }
+  100% { transform: translate(766px, 204px); opacity: 0; }
+}
+@keyframes rd-busy {
+  0% { opacity: 0; }
+  4.135% { opacity: 0; }
+  4.385% { opacity: 1; }
+  4.835% { opacity: 1; }
+  5.085% { opacity: 0; }
+  8.79% { opacity: 0; }
+  9.04% { opacity: 1; }
+  9.49% { opacity: 1; }
+  9.74% { opacity: 0; }
+  12.89% { opacity: 0; }
+  13.14% { opacity: 1; }
+  13.59% { opacity: 1; }
+  13.84% { opacity: 0; }
+  16.435% { opacity: 0; }
+  16.685% { opacity: 1; }
+  17.135% { opacity: 1; }
+  17.385% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32% { opacity: 1; }
+  32.75% { opacity: 1; }
+  33% { opacity: 0; }
+  35.25% { opacity: 0; }
+  35.5% { opacity: 1; }
+  36.25% { opacity: 1; }
+  36.5% { opacity: 0; }
+  38.75% { opacity: 0; }
+  39% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40% { opacity: 0; }
+  53.885% { opacity: 0; }
+  54.135% { opacity: 1; }
+  54.635% { opacity: 1; }
+  54.885% { opacity: 0; }
+  57.44% { opacity: 0; }
+  57.69% { opacity: 1; }
+  58.19% { opacity: 1; }
+  58.44% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-f1 {
+  0% { opacity: 0; }
+  5.785% { opacity: 0; }
+  6.035% { opacity: 1; }
+  8.035% { opacity: 1; }
+  8.535% { opacity: 0; }
+  37.2% { opacity: 0; }
+  37.45% { opacity: 1; }
+  39.7% { opacity: 1; }
+  40.2% { opacity: 0; }
+  55.585% { opacity: 0; }
+  55.835% { opacity: 1; }
+  57.835% { opacity: 1; }
+  58.335% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-f2 {
+  0% { opacity: 0; }
+  9.935% { opacity: 0; }
+  10.185% { opacity: 1; }
+  12.185% { opacity: 1; }
+  12.685% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-f3 {
+  0% { opacity: 0; }
+  14.545% { opacity: 0; }
+  14.795% { opacity: 1; }
+  16.795% { opacity: 1; }
+  17.295% { opacity: 0; }
+  33.7% { opacity: 0; }
+  33.95% { opacity: 1; }
+  36.2% { opacity: 1; }
+  36.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-f4 {
+  0% { opacity: 0; }
+  18.595% { opacity: 0; }
+  18.845% { opacity: 1; }
+  20.845% { opacity: 1; }
+  21.345% { opacity: 0; }
+  41.21% { opacity: 0; }
+  41.46% { opacity: 1; }
+  43.71% { opacity: 1; }
+  44.21% { opacity: 0; }
+  59.655% { opacity: 0; }
+  59.905% { opacity: 1; }
+  61.905% { opacity: 1; }
+  62.405% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-fr1 {
+  0% { opacity: 0; }
+  60.45% { opacity: 0; }
+  60.7% { opacity: 1; }
+  62.7% { opacity: 1; }
+  63.2% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-fr2 {
+  0% { opacity: 0; }
+  59.935% { opacity: 0; }
+  60.185% { opacity: 1; }
+  62.185% { opacity: 1; }
+  62.685% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-faof {
+  0% { opacity: 0; }
+  55.99% { opacity: 0; }
+  56.24% { opacity: 1; }
+  57.74% { opacity: 1; }
+  58.24% { opacity: 0; }
+  59.545% { opacity: 0; }
+  59.795% { opacity: 1; }
+  61.295% { opacity: 1; }
+  61.795% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-v100 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  33.7% { opacity: 1; }
+  34.2% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-v101 {
+  0% { opacity: 0; }
+  33.7% { opacity: 0; }
+  34.2% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-m812 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  41.21% { opacity: 1; }
+  41.71% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-m813 {
+  0% { opacity: 0; }
+  41.21% { opacity: 0; }
+  41.71% { opacity: 1; }
+  59.655% { opacity: 1; }
+  60.155% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-m814 {
+  0% { opacity: 0; }
+  59.655% { opacity: 0; }
+  60.155% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-st1 {
+  0% { opacity: 1; }
+  33.95% { opacity: 1; }
+  34.45% { opacity: 0; }
+  50% { opacity: 0; }
+  51.5% { opacity: 1; }
+  59.655% { opacity: 1; }
+  60.155% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rd-st2 {
+  0% { opacity: 1; }
+  37.45% { opacity: 1; }
+  37.95% { opacity: 0; }
+  50% { opacity: 0; }
+  51.5% { opacity: 1; }
+  55.585% { opacity: 1; }
+  56.085% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rd-st3 {
+  0% { opacity: 1; }
+  41.46% { opacity: 1; }
+  41.96% { opacity: 0; }
+  50% { opacity: 0; }
+  51.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes rd-a429 {
+  0% { opacity: 0; }
+  34.45% { opacity: 0; }
+  34.95% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-ahit {
+  0% { opacity: 0; }
+  37.95% { opacity: 0; }
+  38.45% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-a813 {
+  0% { opacity: 0; }
+  41.96% { opacity: 0; }
+  42.46% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-aok {
+  0% { opacity: 0; }
+  56.085% { opacity: 0; }
+  56.585% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-a814 {
+  0% { opacity: 0; }
+  60.155% { opacity: 0; }
+  60.655% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-log1 {
+  0% { opacity: 0; }
+  33.7% { opacity: 0; }
+  34.2% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-log2 {
+  0% { opacity: 0; }
+  37.2% { opacity: 0; }
+  37.7% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-log3 {
+  0% { opacity: 0; }
+  41.21% { opacity: 0; }
+  41.71% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-ttl {
+  0% { opacity: 0; }
+  42.96% { opacity: 0; }
+  43.46% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-crash {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-lostb {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-sidle {
+  0% { opacity: 1; }
+  63.6% { opacity: 1; }
+  64.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-sdown {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  65.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-squor {
+  0% { opacity: 0; }
+  66.6% { opacity: 0; }
+  67.1% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-sprom {
+  0% { opacity: 0; }
+  68.2% { opacity: 0; }
+  68.7% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-promo {
+  0% { opacity: 0; }
+  68.2% { opacity: 0; }
+  68.95% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-ridle {
+  0% { opacity: 1; }
+  68.2% { opacity: 1; }
+  68.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-lost {
+  0% { opacity: 0; }
+  69.4% { opacity: 0; }
+  69.9% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-gp {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-gz {
+  0% { opacity: 0; }
+  80.25% { opacity: 0; }
+  81.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-pillp {
+  0% { opacity: 0; }
+  79.105% { opacity: 0; }
+  80.105% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-pillz {
+  0% { opacity: 0; }
+  82.855% { opacity: 0; }
+  83.855% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rd-n4a {
+  0% { opacity: 0; }
+  84% { opacity: 0; }
+  84.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rd-n4b {
+  0% { opacity: 0; }
+  87% { opacity: 0; }
+  87.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rd-full {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  91.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rd-oom {
+  0% { opacity: 0; }
+  91.75% { opacity: 0; }
+  92.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rd-lru {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  94% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rd-mem {
+  0% { transform: scaleX(0.55); }
+  85% { transform: scaleX(0.55); }
+  91% { transform: scaleX(1); }
+  98.5% { transform: scaleX(1); }
+  100% { transform: scaleX(0.55); }
+}
+</style>
+<g class="stage">
+  <!-- ======== neighbours: the API's three stateless app servers, PostgreSQL behind them ======== -->
+  <rect class="zone" x="34" y="132" width="128" height="200" rx="12"/>
+  <text class="tiny sb mid" x="98" y="150">Acme Shop API</text>
+  <rect class="box" x="46" y="161" width="104" height="44" rx="10"/>
+  <rect class="box" x="46" y="219" width="104" height="44" rx="10"/>
+  <rect class="box" x="46" y="277" width="104" height="44" rx="10"/>
+  <text class="label mid" x="98" y="180">app-1</text>
+  <text class="label mid" x="98" y="238">app-2</text>
+  <text class="label mid" x="98" y="296">app-3</text>
+  <text class="sub mid rd-st1" x="98" y="197">stateless</text>
+  <text class="sub mid rd-st2" x="98" y="255">stateless</text>
+  <text class="sub mid rd-st3" x="98" y="313">stateless</text>
+  <text class="tiny mid sb f-red rd-a429" x="98" y="197">101 &gt; 100 → 429</text>
+  <text class="tiny mid sb f-green rd-ahit" x="98" y="255">← hit</text>
+  <text class="tiny mid sb f-green rd-a813" x="98" y="313">← 813</text>
+  <text class="tiny mid sb f-green rd-aok" x="98" y="255">← OK</text>
+  <text class="tiny mid sb f-green rd-a814" x="98" y="197">← 814</text>
+  <line class="wire dash" x1="98" y1="332" x2="98" y2="383" marker-end="url(#ah)"/>
+  <text class="tiny" x="106" y="362">cache miss</text>
+  <path class="box" d="M44 392V444A54 8 0 0 0 152 444V392"/>
+  <ellipse class="box" cx="98" cy="392" rx="54" ry="8"/>
+  <text class="label mid" x="98" y="423">PostgreSQL</text>
+  <text class="sub mid" x="98" y="440">source of truth</text>
+
+  <!-- ======== the product: Redis (or Valkey) ======== -->
+  <rect class="rd-frame" x="184" y="98" width="744" height="368" rx="18"/>
+  <text class="label" x="202" y="123">Redis</text>
+  <text class="sub" x="252" y="123">or Valkey, its BSD-licensed fork</text>
+  <rect class="zone" x="196" y="136" width="528" height="318" rx="12"/>
+  <text class="tiny sb p123" x="208" y="153">primary</text>
+  <text class="tiny sb p4" x="208" y="153">shard A primary · slots 0–5460</text>
+
+  <!-- connections from the app servers -->
+  <path class="wire" d="M150 183H162Q172 183 172 193V231Q172 241 182 241"/>
+  <path class="wire" d="M150 299H162Q172 299 172 289V251Q172 241 182 241"/>
+  <line class="wire" x1="150" y1="241" x2="211" y2="241" marker-end="url(#ah)"/>
+
+  <!-- command queue and the main thread -->
+  <text class="tiny mid" x="303" y="210">commands wait in line</text>
+  <rect class="rd-in" x="212" y="219" width="182" height="40" rx="10"/>
+  <line class="wire" x1="394" y1="241" x2="404" y2="241"/>
+  <text class="tiny mid sb" x="424" y="210">main thread</text>
+  <circle class="rd-in" cx="424" cy="241" r="20" stroke-width="2"/>
+  <circle class="none s-line" cx="424" cy="241" r="11" stroke-width="3"/>
+  <g class="rd-busy"><circle class="none s-blue" cx="424" cy="241" r="20" stroke-width="3"/><circle class="none s-blue spin" cx="424" cy="241" r="11" stroke-width="3" stroke-dasharray="17 52" stroke-linecap="round"/></g>
+  <line class="wire" x1="444" y1="241" x2="458" y2="241"/>
+  <path class="wire" d="M458 188V347"/>
+  <path class="wire" d="M458 188H469M458 241H469M458 294H469M458 347H469" marker-end="url(#ah)"/>
+
+  <!-- the keyspace: one key per job, each a different data type -->
+  <rect class="rd-in" x="470" y="165" width="244" height="46" rx="9"/>
+  <text class="rd-key mono" x="480" y="184">product:42</text>
+  <g class="p123"><rect class="rd-pill" x="640" y="172" width="66" height="17" rx="8.5"/><text class="tiny mid" x="673" y="184.5">TTL 300 s</text></g>
+  <g class="p4"><rect class="rd-pill" x="640" y="172" width="66" height="17" rx="8.5"/><text class="tiny mid sb f-ink" x="673" y="184.5">slot 12456</text></g>
+  <text class="tiny p1" x="480" y="202">cache: product JSON from PostgreSQL</text>
+  <text class="tiny sb p234" x="480" y="202">string</text>
+  <text class="tiny mono f-ink p23" x="522" y="202">{"id":42,"name":"Mug",…}</text>
+  <rect class="none s-blue rd-f1" x="470" y="165" width="244" height="46" rx="9" stroke-width="2.5"/>
+  <rect class="rd-in" x="470" y="218" width="244" height="46" rx="9"/>
+  <text class="rd-key mono" x="480" y="237">session:9f3c</text>
+  <g class="p123"><rect class="rd-pill" x="640" y="225" width="66" height="17" rx="8.5"/><text class="tiny mid" x="673" y="237.5">TTL 30 min</text></g>
+  <g class="p4"><rect class="rd-pill" x="640" y="225" width="66" height="17" rx="8.5"/><text class="tiny mid sb f-ink" x="673" y="237.5">slot 3248</text></g>
+  <text class="tiny p1" x="480" y="255">session store shared by all 3 apps</text>
+  <text class="tiny sb p234" x="480" y="255">hash</text>
+  <text class="tiny mono f-ink p23" x="514" y="255">user 42 · cart 2</text>
+  <rect class="none s-blue rd-f2" x="470" y="218" width="244" height="46" rx="9" stroke-width="2.5"/>
+  <rect class="rd-in" x="470" y="271" width="244" height="46" rx="9"/>
+  <text class="rd-key mono" x="480" y="290">ratelimit:key-7:1201</text>
+  <g class="p123"><rect class="rd-pill" x="640" y="278" width="66" height="17" rx="8.5"/><text class="tiny mid" x="673" y="290.5">TTL 60 s</text></g>
+  <g class="p4"><rect class="rd-pill" x="640" y="278" width="66" height="17" rx="8.5"/><text class="tiny mid sb f-ink" x="673" y="290.5">slot 4517</text></g>
+  <text class="tiny p1" x="480" y="308">rate limiter: 100 requests a minute</text>
+  <text class="tiny sb p234" x="480" y="308">string</text>
+  <text class="tiny mono f-ink rd-v100" x="522" y="308">100</text>
+  <text class="tiny mono b f-red rd-v101" x="522" y="308">101</text>
+  <rect class="none s-blue rd-f3" x="470" y="271" width="244" height="46" rx="9" stroke-width="2.5"/>
+  <rect class="rd-in" x="470" y="324" width="244" height="46" rx="9"/>
+  <text class="rd-key mono" x="480" y="343">top-sellers</text>
+  <g class="p123"><rect class="rd-pill" x="640" y="331" width="66" height="17" rx="8.5"/><text class="tiny mid" x="673" y="343.5">no TTL</text></g>
+  <g class="p4"><rect class="rd-pill" x="640" y="331" width="66" height="17" rx="8.5"/><text class="tiny mid sb f-ink" x="673" y="343.5">slot 9501</text></g>
+  <text class="tiny p1" x="480" y="361">leaderboard: units sold per product</text>
+  <text class="tiny sb p234" x="480" y="361">sorted set</text>
+  <text class="tiny mono f-ink rd-m812" x="544" y="361">mug 812 · lamp 640</text>
+  <text class="tiny mono f-ink rd-m813" x="544" y="361">mug 813 · lamp 640</text>
+  <text class="tiny mono f-ink rd-m814" x="544" y="361">mug 814 · lamp 640</text>
+  <rect class="none s-blue rd-f4" x="470" y="324" width="244" height="46" rx="9" stroke-width="2.5"/>
+  <rect class="rd-ghost rd-gp" x="471" y="166" width="242" height="44" rx="8"/>
+  <rect class="rd-ghost rd-gz" x="471" y="325" width="242" height="44" rx="8"/>
+  <g class="rd-gp"><text class="tiny sb f-teal end" x="706" y="203">moved to shard C</text></g>
+  <g class="rd-gz"><text class="tiny sb f-teal end" x="706" y="362">moved to shard B</text></g>
+
+  <!-- notes under the queue, one set per step -->
+  <g class="p1">
+    <text class="tiny mid" x="326" y="294">each call is one network round trip,</text>
+    <text class="tiny mid" x="326" y="309">answered from memory with no disk read</text>
+    <text class="tiny mid" x="326" y="334">the app servers keep no state, so any</text>
+    <text class="tiny mid" x="326" y="349">of them can serve any user</text>
+  </g>
+  <g class="p2">
+    <text class="tiny sb" x="214" y="290">one command at a time, in arrival order:</text>
+  </g>
+  <text class="tiny mono f-ink rd-log1" x="214" y="308">INCR ratelimit:key-7:1201 <tspan class="f-red b">→ 101</tspan></text>
+  <text class="tiny mono f-ink rd-log2" x="214" y="324">GET product:42 <tspan class="f-green b">→ hit</tspan></text>
+  <text class="tiny mono f-ink rd-log3" x="214" y="340">ZINCRBY top-sellers 1 mug <tspan class="f-green b">→ 813</tspan></text>
+  <text class="tiny rd-ttl" x="214" y="362">a key is deleted once its TTL runs out</text>
+  <g class="p3">
+    <text class="tiny" x="214" y="292">every write is appended to the AOF</text>
+    <text class="tiny" x="214" y="307">and queued for the replicas, which</text>
+    <text class="tiny" x="214" y="322">receive it asynchronously</text>
+    <text class="tiny" x="214" y="344">appendfsync everysec: a crash can</text>
+    <text class="tiny" x="214" y="359">lose about the last second of writes</text>
+  </g>
+  <g class="p4">
+    <text class="tiny mono sb f-ink" x="214" y="290">slot = CRC16(key) mod 16384</text>
+  </g>
+  <g class="rd-n4a">
+    <text class="tiny mono f-ink" x="214" y="310">MGET product:42 session:9f3c</text>
+    <text class="tiny sb f-red" x="214" y="324">✕ CROSSSLOT: slots 12456 and 3248</text>
+  </g>
+  <g class="rd-n4b">
+    <text class="tiny mono f-ink" x="214" y="344">{user:42}:cart, {user:42}:orders</text>
+    <text class="tiny sb f-green" x="214" y="358">✓ only user:42 is hashed: slot 15880</text>
+  </g>
+
+  <!-- bottom strip: memory (steps 1, 2, 4) -->
+  <g class="p124">
+    <text class="tiny sb" x="214" y="406">memory</text>
+    <rect class="f-line" x="262" y="397" width="340" height="12" rx="6"/>
+    <rect class="f-teal rd-mem" x="262" y="397" width="340" height="12" rx="6"/>
+    <rect class="none s-amber rd-full" x="262" y="397" width="340" height="12" rx="6" stroke-width="2.5"/>
+    <line class="s-amber" x1="602" y1="390" x2="602" y2="416" stroke-width="2"/>
+    <text class="tiny mono" x="610" y="407">maxmemory 4gb</text>
+  </g>
+  <g class="p12"><text class="tiny" x="214" y="432">the whole dataset lives in RAM</text></g>
+  <text class="tiny sb f-red rd-oom" x="214" y="430">noeviction (the default): new writes fail with OOM</text>
+  <text class="tiny sb f-amber-ink rd-lru" x="214" y="445">allkeys-lru: evict the least recently used keys</text>
+
+  <!-- bottom strip: persistence and the replication buffer (step 3) -->
+  <g class="p3">
+    <path class="rd-doc" d="M216 392h14l6 6v20h-20z"/>
+    <text class="tiny mono f-ink" x="244" y="403">dump.rdb</text>
+    <text class="tiny" x="244" y="417">fork(): a child saves</text>
+    <text class="tiny" x="244" y="431">a snapshot</text>
+    <path class="wire dash s-teal" d="M424 262V380"/>
+    <line class="wire dash s-teal" x1="424" y1="380" x2="424" y2="391" marker-end="url(#ah-teal)"/>
+    <path class="wire dash s-teal" d="M424 380H640V391" marker-end="url(#ah-teal)"/>
+    <path class="rd-doc" d="M414 393h14l6 6v20h-20z"/>
+    <text class="tiny mono f-ink" x="442" y="404">appendonly.aof</text>
+    <text class="tiny" x="442" y="418">fsync once a second</text>
+    <rect class="rd-in" x="600" y="392" width="114" height="30" rx="8"/>
+    <line class="wire dash" x1="714" y1="407" x2="724" y2="407"/>
+    <text class="tiny mid" x="657" y="437">replication buffer</text>
+  </g>
+  <rect class="none s-teal rd-faof" x="410" y="389" width="28" height="34" rx="4" stroke-width="2"/>
+
+  <!-- ======== high availability: Sentinel and two replicas (steps 1-3) ======== -->
+  <g class="p123">
+    <text class="rd-hd" x="746" y="156">SENTINEL ×3 · QUORUM 2</text>
+    <rect class="rd-in" x="746" y="164" width="50" height="28" rx="8"/>
+    <rect class="rd-in" x="803" y="164" width="50" height="28" rx="8"/>
+    <rect class="rd-in" x="860" y="164" width="50" height="28" rx="8"/>
+    <g class="rd-sdown"><rect class="f-red-soft s-red" x="746" y="164" width="50" height="28" rx="8" stroke-width="1.5"/><rect class="f-red-soft s-red" x="803" y="164" width="50" height="28" rx="8" stroke-width="1.5"/></g>
+    <text class="tiny sb mid f-ink" x="771" y="182">S1</text>
+    <text class="tiny sb mid f-ink" x="828" y="182">S2</text>
+    <text class="tiny sb mid f-ink" x="885" y="182">S3</text>
+    <g class="rd-sidle"><text class="tiny" x="746" y="212">watch the primary and fail</text><text class="tiny" x="746" y="226">over to a replica if it dies</text></g>
+    <text class="tiny sb f-red rd-sdown" x="746" y="212">S1, S2: primary is down</text>
+    <text class="tiny rd-squor" x="746" y="226">quorum of 2 reached: fail over</text>
+    <text class="tiny sb f-green rd-sprom" x="746" y="240">promote replica-1</text>
+
+    <path class="wire dash" d="M724 407H730V290H745" marker-end="url(#ah)"/>
+    <path class="wire dash" d="M730 348H745" marker-end="url(#ah)"/>
+    <rect class="rd-in" x="746" y="268" width="164" height="44" rx="10"/>
+    <rect class="rd-in" x="746" y="326" width="164" height="44" rx="10"/>
+    <rect class="f-green-soft s-green rd-promo" x="746" y="268" width="164" height="44" rx="10" stroke-width="2"/>
+    <rect class="none s-teal rd-fr1" x="746" y="268" width="164" height="44" rx="10" stroke-width="2.5"/>
+    <rect class="none s-teal rd-fr2" x="746" y="326" width="164" height="44" rx="10" stroke-width="2.5"/>
+    <text class="label mid" x="828" y="287">replica-1</text>
+    <text class="label mid" x="828" y="345">replica-2</text>
+    <text class="sub mid rd-ridle" x="828" y="304">async copy</text>
+    <text class="sub mid rd-ridle" x="828" y="362">async copy</text>
+    <text class="tiny sb mid f-green rd-promo" x="828" y="304">primary now · mug 813</text>
+    <text class="tiny mid rd-promo" x="828" y="362">follows replica-1</text>
+    <g class="rd-lost"><text class="tiny sb f-amber-ink" x="746" y="398">mug 814 was acknowledged</text><text class="tiny sb f-amber-ink" x="746" y="412">but never replicated: lost</text></g>
+  </g>
+
+  <!-- ======== scale out: Redis Cluster (step 4) ======== -->
+  <g class="p4">
+    <text class="rd-hd" x="746" y="156">CLUSTER · 16,384 SLOTS</text>
+    <rect class="rd-in" x="746" y="166" width="164" height="54" rx="10"/>
+    <rect class="rd-in" x="746" y="230" width="164" height="54" rx="10"/>
+    <text class="tiny sb f-ink" x="756" y="183">shard B · 5461–10922</text>
+    <text class="tiny sb f-ink" x="756" y="247">shard C · 10923–16383</text>
+    <text class="tiny" x="746" y="306">each shard is a primary with</text>
+    <text class="tiny" x="746" y="320">its own replicas; the cluster</text>
+    <text class="tiny" x="746" y="334">promotes one if it fails</text>
+  </g>
+
+  <!-- ======== crash overlay (step 3) ======== -->
+  <g class="rd-crash">
+    <rect class="f-red-soft s-red" x="196" y="136" width="528" height="318" rx="12" stroke-width="2"/>
+    <text class="tiny sb f-red end" x="712" y="153">✕ primary crashed</text>
+  </g>
+
+  <!-- ======== tokens ======== -->
+  <rect class="f-amber pkt rd-lostb" x="634" y="401" width="12" height="12" rx="3"/>
+  <rect class="f-teal pkt rd-aof" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="f-teal pkt rd-buf1" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="f-teal pkt rd-buf2" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="f-teal pkt rd-rep1" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="f-teal pkt rd-rep2" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <g class="rd-r1"><circle class="pkt f-green" r="6"/><text class="tiny mono b mid f-green" y="-11">hit</text></g>
+  <g class="rd-r2"><circle class="pkt f-green" r="6"/><text class="tiny mono b mid f-green" y="-11">user 42</text></g>
+  <g class="rd-r3"><circle class="pkt f-green" r="6"/><text class="tiny mono b mid f-green" y="-11">100</text></g>
+  <g class="rd-r4"><circle class="pkt f-green" r="6"/><text class="tiny mono b mid f-green" y="-11">812</text></g>
+  <g class="rd-get"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" y="-11">GET</text></g>
+  <g class="rd-hgetall"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" y="-11">HGETALL</text></g>
+  <g class="rd-incr"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" y="-11">INCR</text></g>
+  <g class="rd-zincr"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" y="-11">ZINCRBY</text></g>
+  <g class="rd-set"><circle class="pkt f-blue" r="6"/><text class="tiny mono b mid f-blue" y="-11">SET</text></g>
+  <rect class="f-teal pkt rd-chipp" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <rect class="f-teal pkt rd-chipz" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <g class="rd-pillp"><rect class="f-teal-soft s-teal" x="778" y="258" width="100" height="20" rx="10" stroke-width="1.5"/><text class="tiny mono sb mid f-ink" x="828" y="272">product:42</text></g>
+  <g class="rd-pillz"><rect class="f-teal-soft s-teal" x="778" y="194" width="100" height="20" rx="10" stroke-width="1.5"/><text class="tiny mono sb mid f-ink" x="828" y="208">top-sellers</text></g>
+</g>
+</svg>

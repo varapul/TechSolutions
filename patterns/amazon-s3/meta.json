@@ -1,0 +1,41 @@
+{
+  "aka": ["S3", "Simple Storage Service"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "S3 is the app's file store: phones upload with presigned URLs, CloudFront serves, events start work.",
+      "body": "The bucket `photos-prod` holds every photo. The API, a Lambda function, signs a **presigned PUT URL** that expires in 15 minutes, and the phone uploads `u/9f3c/IMG_0042.jpg` straight to S3, so the API never handles the bytes. The new object raises an **ObjectCreated** event that reaches a thumbnail function through SQS, CloudFront serves the thumbnails, and Athena can query objects where they lie."
+    },
+    {
+      "title": "Put an object",
+      "caption": "Signature and expiry checked, bytes stored redundantly across AZs, then 200 OK; a GET sees it.",
+      "body": "The URL carries a **SigV4** signature. S3 recomputes it and checks the expiry, stores the bytes redundantly (S3 Standard spreads them across at least three Availability Zones), and only then answers **200 OK** with an ETag. A GET or LIST right after returns the new photo: S3 has had **strong read-after-write consistency** since December 2020. There are no real folders: `u/9f3c/IMG_0042.jpg` is one key, and the slashes only group keys into prefixes. Large files go up in parts (multipart upload)."
+    },
+    {
+      "title": "Versions and lifecycle",
+      "caption": "A second PUT adds version 2; a DELETE adds a delete marker. A lifecycle rule moves originals colder.",
+      "body": "With versioning enabled, uploading `IMG_0042.jpg` again creates a second version and keeps the first. A DELETE adds a **delete marker**: a plain GET now returns 404, but both versions remain and the photo can be restored. A **lifecycle rule** on the prefix `u/` moves originals to S3 Glacier Instant Retrieval after 90 days and expires old versions 30 days after they are replaced. Storage gets cheaper per GB as access gets slower and reads cost more."
+    },
+    {
+      "title": "Events, access, limits",
+      "caption": "Event → SQS → thumbnail. An unsigned GET gets 403; CloudFront reads via OAC. Mind the limits.",
+      "body": "The event lands in SQS and the Thumbnailer writes `thumbnails/u/9f3c/IMG_0042.jpg`; the notification's prefix filter `u/` keeps that write from triggering it again. New buckets block public access, disable ACLs and encrypt with SSE-S3 by default, so an unsigned GET gets **403**, and the bucket policy lets only CloudFront read, through origin access control. The limits to plan for: at least 3,500 writes and 5,500 reads per second per prefix, objects that are replaced whole rather than edited, and charges for requests, retrievals and data out as well as storage."
+    }
+  ],
+  "related": ["valet-key", "claim-check", "medallion-architecture", "cdn-edge-caching", "aws-lambda", "amazon-sqs", "amazon-eventbridge", "disaster-recovery-strategies"],
+  "references": [
+    { "title": "Amazon S3 User Guide — Amazon S3 data consistency model", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html#ConsistencyModel" },
+    { "title": "AWS News Blog — Amazon S3 Update: Strong Read-After-Write Consistency (December 2020)", "url": "https://aws.amazon.com/blogs/aws/amazon-s3-update-strong-read-after-write-consistency/" },
+    { "title": "Amazon S3 User Guide — Data protection in Amazon S3", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/DataDurability.html" },
+    { "title": "Amazon S3 User Guide — Understanding and managing Amazon S3 storage classes", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html" },
+    { "title": "Amazon S3 User Guide — Retaining multiple versions of objects with S3 Versioning", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html" },
+    { "title": "Amazon S3 User Guide — Transitioning objects using Amazon S3 Lifecycle", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-transition-general-considerations.html" },
+    { "title": "Amazon S3 User Guide — Amazon S3 Event Notifications", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html" },
+    { "title": "Amazon S3 User Guide — Download and upload objects with presigned URLs", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html" },
+    { "title": "Amazon S3 User Guide — Amazon S3 multipart upload limits", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html" },
+    { "title": "Amazon S3 User Guide — Blocking public access to your Amazon S3 storage", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html" },
+    { "title": "Amazon S3 User Guide — Best practices design patterns: optimizing Amazon S3 performance", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html" },
+    { "title": "Amazon CloudFront Developer Guide — Restrict access to an Amazon S3 origin", "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html" },
+    { "title": "Amazon S3 pricing", "url": "https://aws.amazon.com/s3/pricing/" }
+  ]
+}

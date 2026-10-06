@@ -1,0 +1,1247 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">AWS Lambda</title>
+<desc id="dg-desc">AWS Lambda. Functions as a service: code runs per event in managed execution environments that scale out with concurrency. Step 1, Where it sits: API Gateway waits on get-photo; S3 events reach make-thumbnail via SQS. Pay per request and GB-s. Step 2, Cold and warm starts: None idle: a microVM boots, code loads, init runs (cold start). An idle one runs only the handler. Step 3, Concurrency: One request per environment: 50 uploads/s × 0.8 s ≈ 40 at once, inside reserved concurrency 100. Step 4, Failures and limits: A bad photo: only its message is retried, then parked in the DLQ. Mind the 15 min and size limits.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">AWS SERVICES</text>
+  <text class="title" x="40" y="64">AWS Lambda</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Cold and warm starts</text>
+  <text class="step on p2" x="262" y="518">2 · Cold and warm starts</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Concurrency</text>
+  <text class="step on p3" x="484" y="518">3 · Concurrency</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Failures and limits</text>
+  <text class="step on p4" x="706" y="518">4 · Failures and limits</text>
+  <text class="caption p1" x="40" y="552">API Gateway waits on get-photo; S3 events reach make-thumbnail via SQS. Pay per request and GB-s.</text>
+  <text class="caption p2" x="40" y="552">None idle: a microVM boots, code loads, init runs (cold start). An idle one runs only the handler.</text>
+  <text class="caption p3" x="40" y="552">One request per environment: 50 uploads/s × 0.8 s ≈ 40 at once, inside reserved concurrency 100.</text>
+  <text class="caption p4" x="40" y="552">A bad photo: only its message is retried, then parked in the DLQ. Mind the 15 min and size limits.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* AWS Lambda. The photo app's two functions (20 s loop, 1 s = 5%):
+   0-5 s    where it sits: API Gateway -> get-photo (sync, reads DynamoDB); S3 -> SQS -> event source mapping -> make-thumbnail
+   5-10 s   cold and warm: request 2 reuses idle env A (handler only); request 3 gets a new env B (microVM, code, runtime, init, handler)
+   10-15 s  concurrency: waves of new environments 2 -> 5 -> 10 -> 20 -> 30 -> 40 (50 uploads/s x 0.8 s); reserved 100; get-photo provisioned 2
+   15-20 s  failure: a batch of 10, one message fails, comes back 5 times, then the DLQ; environments go idle and are removed at 19.5 s
+   Generated by a scratch script with scripts/lib/motion.mjs. */
+.diagram .ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .lm-l13 { font-size: 13px; font-weight: 600; }
+.diagram .lm-sb { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .lm-st { font-size: 10px; fill: var(--faint); }
+.diagram .lm-blue { fill: var(--blue); font-weight: 600; }
+.diagram .lm-amber { fill: var(--amber-ink); font-weight: 600; }
+.diagram .lm-green { fill: var(--green); font-weight: 600; }
+.diagram .lm-sq { fill: var(--panel-2); stroke: var(--wire); stroke-width: 1; }
+.diagram .lm-slot { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 2; }
+.diagram .lm-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .lm-n { font-size: 11.5px; }
+.diagram .lm-tk { font-size: 9px; font-weight: 700; fill: var(--bg); }
+.diagram .lm-envb, .diagram .lm-ha, .diagram .lm-bvm, .diagram .lm-bcode, .diagram .lm-brt, .diagram .lm-binit, .diagram .lm-hb, .diagram .lm-pc, .diagram .lm-bya, .diagram .lm-fzb, .diagram .lm-byb, .diagram .lm-rdy, .diagram .lm-va, .diagram .lm-vb, .diagram .lm-n2, .diagram .lm-n5, .diagram .lm-n10, .diagram .lm-n20, .diagram .lm-n30, .diagram .lm-n40, .diagram .lm-q0, .diagram .lm-q1, .diagram .lm-w0, .diagram .lm-wa0, .diagram .lm-wb0, .diagram .lm-w1, .diagram .lm-wa1, .diagram .lm-wb1, .diagram .lm-w2, .diagram .lm-wa2, .diagram .lm-wb2, .diagram .lm-w3, .diagram .lm-wa3, .diagram .lm-wb3, .diagram .lm-w4, .diagram .lm-wa4, .diagram .lm-wb4, .diagram .lm-chip, .diagram .lm-r1, .diagram .lm-r2, .diagram .lm-r3, .diagram .lm-r4, .diagram .lm-r5, .diagram .lm-dlq, .diagram .lm-onf, .diagram .lm-reqa, .diagram .lm-ddb, .diagram .lm-resa, .diagram .lm-reqb, .diagram .lm-resb, .diagram .lm-up1, .diagram .lm-up2, .diagram .lm-bt1, .diagram .lm-bt2, .diagram .lm-bt4, .diagram .lm-th1, .diagram .lm-th2, .diagram .lm-th3, .diagram .lm-fail, .diagram .lm-da, .diagram .lm-db { opacity: 0; }
+.diagram .lm-envb { animation: lm-envb var(--T) linear infinite; }
+.diagram .lm-ha { animation: lm-ha var(--T) linear infinite; }
+.diagram .lm-bvm { animation: lm-bvm var(--T) linear infinite; }
+.diagram .lm-bcode { animation: lm-bcode var(--T) linear infinite; }
+.diagram .lm-brt { animation: lm-brt var(--T) linear infinite; }
+.diagram .lm-binit { animation: lm-binit var(--T) linear infinite; }
+.diagram .lm-hb { animation: lm-hb var(--T) linear infinite; }
+.diagram .lm-pc { animation: lm-pc var(--T) linear infinite; }
+.diagram .lm-bya { animation: lm-bya var(--T) linear infinite; }
+.diagram .lm-fzb { animation: lm-fzb var(--T) linear infinite; }
+.diagram .lm-byb { animation: lm-byb var(--T) linear infinite; }
+.diagram .lm-rdy { animation: lm-rdy var(--T) linear infinite; }
+.diagram .lm-va { animation: lm-va var(--T) linear infinite; }
+.diagram .lm-vb { animation: lm-vb var(--T) linear infinite; }
+.diagram .lm-n2 { animation: lm-n2 var(--T) linear infinite; }
+.diagram .lm-n5 { animation: lm-n5 var(--T) linear infinite; }
+.diagram .lm-n10 { animation: lm-n10 var(--T) linear infinite; }
+.diagram .lm-n20 { animation: lm-n20 var(--T) linear infinite; }
+.diagram .lm-n30 { animation: lm-n30 var(--T) linear infinite; }
+.diagram .lm-n40 { animation: lm-n40 var(--T) linear infinite; }
+.diagram .lm-q0 { animation: lm-q0 var(--T) linear infinite; }
+.diagram .lm-q1 { animation: lm-q1 var(--T) linear infinite; }
+.diagram .lm-w0 { animation: lm-w0 var(--T) linear infinite; }
+.diagram .lm-wa0 { animation: lm-wa0 var(--T) linear infinite; }
+.diagram .lm-wb0 { animation: lm-wb0 var(--T) linear infinite; }
+.diagram .lm-w1 { animation: lm-w1 var(--T) linear infinite; }
+.diagram .lm-wa1 { animation: lm-wa1 var(--T) linear infinite; }
+.diagram .lm-wb1 { animation: lm-wb1 var(--T) linear infinite; }
+.diagram .lm-w2 { animation: lm-w2 var(--T) linear infinite; }
+.diagram .lm-wa2 { animation: lm-wa2 var(--T) linear infinite; }
+.diagram .lm-wb2 { animation: lm-wb2 var(--T) linear infinite; }
+.diagram .lm-w3 { animation: lm-w3 var(--T) linear infinite; }
+.diagram .lm-wa3 { animation: lm-wa3 var(--T) linear infinite; }
+.diagram .lm-wb3 { animation: lm-wb3 var(--T) linear infinite; }
+.diagram .lm-w4 { animation: lm-w4 var(--T) linear infinite; }
+.diagram .lm-wa4 { animation: lm-wa4 var(--T) linear infinite; }
+.diagram .lm-wb4 { animation: lm-wb4 var(--T) linear infinite; }
+.diagram .lm-chip { animation: lm-chip var(--T) linear infinite; }
+.diagram .lm-r1 { animation: lm-r1 var(--T) linear infinite; }
+.diagram .lm-r2 { animation: lm-r2 var(--T) linear infinite; }
+.diagram .lm-r3 { animation: lm-r3 var(--T) linear infinite; }
+.diagram .lm-r4 { animation: lm-r4 var(--T) linear infinite; }
+.diagram .lm-r5 { animation: lm-r5 var(--T) linear infinite; }
+.diagram .lm-dlq { animation: lm-dlq var(--T) linear infinite; }
+.diagram .lm-onf { animation: lm-onf var(--T) linear infinite; }
+.diagram .lm-reqa { animation: lm-reqa var(--T) linear infinite; }
+.diagram .lm-ddb { animation: lm-ddb var(--T) linear infinite; }
+.diagram .lm-resa { animation: lm-resa var(--T) linear infinite; }
+.diagram .lm-reqb { animation: lm-reqb var(--T) linear infinite; }
+.diagram .lm-resb { animation: lm-resb var(--T) linear infinite; }
+.diagram .lm-up1 { animation: lm-up1 var(--T) linear infinite; }
+.diagram .lm-up2 { animation: lm-up2 var(--T) linear infinite; }
+.diagram .lm-bt1 { animation: lm-bt1 var(--T) linear infinite; }
+.diagram .lm-bt2 { animation: lm-bt2 var(--T) linear infinite; }
+.diagram .lm-bt4 { animation: lm-bt4 var(--T) linear infinite; }
+.diagram .lm-th1 { animation: lm-th1 var(--T) linear infinite; }
+.diagram .lm-th2 { animation: lm-th2 var(--T) linear infinite; }
+.diagram .lm-th3 { animation: lm-th3 var(--T) linear infinite; }
+.diagram .lm-fail { animation: lm-fail var(--T) linear infinite; }
+.diagram .lm-da { animation: lm-da var(--T) linear infinite; }
+.diagram .lm-db { animation: lm-db var(--T) linear infinite; }
+.diagram .lm-fza { animation: lm-fza var(--T) linear infinite; }
+@keyframes lm-envb {
+  0% { opacity: 0; }
+  27.25% { opacity: 0; }
+  28.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-ha {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.5% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12.75% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-bvm {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.75% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-bcode {
+  0% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-brt {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34.25% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-binit {
+  0% { opacity: 0; }
+  35.25% { opacity: 0; }
+  36% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-hb {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.25% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-pc {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  52.5% { opacity: 1; }
+  74% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-fza {
+  0% { opacity: 1; }
+  4.5% { opacity: 1; }
+  5.25% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.25% { opacity: 1; }
+  28.5% { opacity: 1; }
+  29.25% { opacity: 0; }
+  34.25% { opacity: 0; }
+  35% { opacity: 1; }
+  51% { opacity: 1; }
+  51.75% { opacity: 0; }
+  74% { opacity: 0; }
+  74.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes lm-bya {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.25% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12.25% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29.25% { opacity: 1; }
+  34.25% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-fzb {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42.25% { opacity: 1; }
+  51% { opacity: 1; }
+  52.5% { opacity: 0; }
+  74% { opacity: 0; }
+  74.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-byb {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.75% { opacity: 1; }
+  41.5% { opacity: 1; }
+  42.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-rdy {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  52.5% { opacity: 1; }
+  74% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-va {
+  0% { opacity: 0; }
+  34.75% { opacity: 0; }
+  36% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-vb {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  43.25% { opacity: 1; }
+  49.5% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-n2 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.4% { opacity: 1; }
+  54% { opacity: 1; }
+  54.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-n5 {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  54.4% { opacity: 1; }
+  56.5% { opacity: 1; }
+  56.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-n10 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  56.9% { opacity: 1; }
+  59% { opacity: 1; }
+  59.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-n20 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  59.4% { opacity: 1; }
+  61.5% { opacity: 1; }
+  61.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-n30 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  61.9% { opacity: 1; }
+  64% { opacity: 1; }
+  64.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-n40 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  64.4% { opacity: 1; }
+  74.25% { opacity: 1; }
+  74.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-q0 {
+  0% { opacity: 0; }
+  10% { opacity: 0; }
+  10.6% { opacity: 1; }
+  17% { opacity: 1; }
+  17.75% { opacity: 0; }
+  52.25% { opacity: 0; }
+  52.85% { opacity: 1; }
+  75.25% { opacity: 1; }
+  76% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.35% { opacity: 1; }
+  84% { opacity: 1; }
+  84.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-q1 {
+  0% { opacity: 0; }
+  52.25% { opacity: 0; }
+  52.85% { opacity: 1; }
+  75.25% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-w0 {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wa0 {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54.35% { opacity: 1; }
+  55.75% { opacity: 1; }
+  56.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wb0 {
+  0% { opacity: 0; }
+  55.75% { opacity: 0; }
+  56.25% { opacity: 1; }
+  75.25% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-w1 {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  56.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wa1 {
+  0% { opacity: 0; }
+  56.25% { opacity: 0; }
+  56.85% { opacity: 1; }
+  58.25% { opacity: 1; }
+  58.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wb1 {
+  0% { opacity: 0; }
+  58.25% { opacity: 0; }
+  58.75% { opacity: 1; }
+  75.25% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-w2 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wa2 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.35% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wb2 {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61.25% { opacity: 1; }
+  75.25% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-w3 {
+  0% { opacity: 0; }
+  61.25% { opacity: 0; }
+  61.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wa3 {
+  0% { opacity: 0; }
+  61.25% { opacity: 0; }
+  61.85% { opacity: 1; }
+  63.25% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wb3 {
+  0% { opacity: 0; }
+  63.25% { opacity: 0; }
+  63.75% { opacity: 1; }
+  75.25% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-w4 {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wa4 {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  64.35% { opacity: 1; }
+  65.75% { opacity: 1; }
+  66.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-wb4 {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  66.25% { opacity: 1; }
+  75.25% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-chip {
+  0% { opacity: 0; }
+  65.5% { opacity: 0; }
+  67% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-r1 {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  87.55% { opacity: 1; }
+  88.75% { opacity: 1; }
+  89.05% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-r2 {
+  0% { opacity: 0; }
+  88.75% { opacity: 0; }
+  89.05% { opacity: 1; }
+  90% { opacity: 1; }
+  90.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-r3 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  90.3% { opacity: 1; }
+  91.25% { opacity: 1; }
+  91.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-r4 {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  91.55% { opacity: 1; }
+  92.5% { opacity: 1; }
+  92.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-r5 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  92.8% { opacity: 1; }
+  97.75% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-dlq {
+  0% { opacity: 0; }
+  95% { opacity: 0; }
+  96% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-onf {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-reqa {
+  0% { transform: translate(168px, 185px); opacity: 0; }
+  1.665% { transform: translate(168px, 185px); opacity: 0; }
+  1.915% { opacity: 1; }
+  2.276% { transform: translate(212px, 185px); opacity: 1; }
+  2.526% { transform: translate(212px, 185px); opacity: 0; }
+  3.875% { transform: translate(312px, 185px); opacity: 0; }
+  4% { transform: translate(321px, 185px); }
+  4.125% { opacity: 1; }
+  4.264% { transform: translate(321px, 166px); }
+  4.5% { transform: translate(338px, 166px); opacity: 1; }
+  4.75% { transform: translate(338px, 166px); opacity: 0; }
+  25.665% { transform: translate(168px, 185px); opacity: 0; }
+  25.915% { opacity: 1; }
+  26.276% { transform: translate(212px, 185px); opacity: 1; }
+  26.526% { transform: translate(212px, 185px); opacity: 0; }
+  27.875% { transform: translate(312px, 185px); opacity: 0; }
+  28% { transform: translate(321px, 185px); }
+  28.125% { opacity: 1; }
+  28.264% { transform: translate(321px, 166px); }
+  28.5% { transform: translate(338px, 166px); opacity: 1; }
+  28.75% { transform: translate(338px, 166px); opacity: 0; }
+  100% { transform: translate(338px, 166px); opacity: 0; }
+}
+@keyframes lm-ddb {
+  0% { transform: translate(636px, 166px); opacity: 0; }
+  5.75% { transform: translate(636px, 166px); opacity: 0; }
+  6% { opacity: 1; }
+  7.528% { transform: translate(764px, 166px); opacity: 1; }
+  7.778% { transform: translate(764px, 166px); opacity: 0; }
+  8% { transform: translate(764px, 166px); opacity: 0; }
+  8.25% { opacity: 1; }
+  9.778% { transform: translate(636px, 166px); opacity: 1; }
+  10.028% { transform: translate(636px, 166px); opacity: 0; }
+  100% { transform: translate(636px, 166px); opacity: 0; }
+}
+@keyframes lm-resa {
+  0% { transform: translate(338px, 166px); opacity: 0; }
+  11.5% { transform: translate(338px, 166px); opacity: 0; }
+  11.736% { transform: translate(321px, 166px); }
+  11.75% { opacity: 1; }
+  12% { transform: translate(321px, 185px); }
+  12.125% { transform: translate(312px, 185px); opacity: 1; }
+  12.375% { transform: translate(312px, 185px); opacity: 0; }
+  13.725% { transform: translate(212px, 185px); opacity: 0; }
+  13.975% { opacity: 1; }
+  14.336% { transform: translate(168px, 185px); opacity: 1; }
+  14.586% { transform: translate(168px, 185px); opacity: 0; }
+  34.25% { transform: translate(338px, 166px); opacity: 0; }
+  34.486% { transform: translate(321px, 166px); }
+  34.5% { opacity: 1; }
+  34.75% { transform: translate(321px, 185px); }
+  34.875% { transform: translate(312px, 185px); opacity: 1; }
+  35.125% { transform: translate(312px, 185px); opacity: 0; }
+  36.475% { transform: translate(212px, 185px); opacity: 0; }
+  36.725% { opacity: 1; }
+  37.086% { transform: translate(168px, 185px); opacity: 1; }
+  37.336% { transform: translate(168px, 185px); opacity: 0; }
+  100% { transform: translate(168px, 185px); opacity: 0; }
+}
+@keyframes lm-reqb {
+  0% { transform: translate(168px, 185px); opacity: 0; }
+  27.245% { transform: translate(168px, 185px); opacity: 0; }
+  27.495% { opacity: 1; }
+  27.856% { transform: translate(212px, 185px); opacity: 1; }
+  28.106% { transform: translate(212px, 185px); opacity: 0; }
+  29.46% { transform: translate(312px, 185px); opacity: 0; }
+  29.585% { transform: translate(321px, 185px); }
+  29.71% { opacity: 1; }
+  29.766% { transform: translate(321px, 198px); }
+  30.002% { transform: translate(338px, 198px); opacity: 1; }
+  30.252% { transform: translate(338px, 198px); opacity: 0; }
+  100% { transform: translate(338px, 198px); opacity: 0; }
+}
+@keyframes lm-resb {
+  0% { transform: translate(338px, 198px); opacity: 0; }
+  41.5% { transform: translate(338px, 198px); opacity: 0; }
+  41.736% { transform: translate(321px, 198px); }
+  41.75% { opacity: 1; }
+  41.917% { transform: translate(321px, 185px); }
+  42.042% { transform: translate(312px, 185px); opacity: 1; }
+  42.292% { transform: translate(312px, 185px); opacity: 0; }
+  43.64% { transform: translate(212px, 185px); opacity: 0; }
+  43.89% { opacity: 1; }
+  44.251% { transform: translate(168px, 185px); opacity: 1; }
+  44.501% { transform: translate(168px, 185px); opacity: 0; }
+  100% { transform: translate(168px, 185px); opacity: 0; }
+}
+@keyframes lm-up1 {
+  0% { transform: translate(105px, 244px); opacity: 0; }
+  2.5% { transform: translate(105px, 244px); opacity: 0; }
+  2.75% { opacity: 1; }
+  3.25% { transform: translate(105px, 274px); opacity: 1; }
+  3.5% { transform: translate(105px, 274px); opacity: 0; }
+  50.5% { transform: translate(105px, 244px); opacity: 0; }
+  50.75% { opacity: 1; }
+  51.077% { transform: translate(105px, 274px); opacity: 1; }
+  51.327% { transform: translate(105px, 274px); opacity: 0; }
+  53% { transform: translate(105px, 244px); opacity: 0; }
+  53.25% { opacity: 1; }
+  53.577% { transform: translate(105px, 274px); opacity: 1; }
+  53.827% { transform: translate(105px, 274px); opacity: 0; }
+  55.5% { transform: translate(105px, 244px); opacity: 0; }
+  55.75% { opacity: 1; }
+  56.077% { transform: translate(105px, 274px); opacity: 1; }
+  56.327% { transform: translate(105px, 274px); opacity: 0; }
+  58% { transform: translate(105px, 244px); opacity: 0; }
+  58.25% { opacity: 1; }
+  58.577% { transform: translate(105px, 274px); opacity: 1; }
+  58.827% { transform: translate(105px, 274px); opacity: 0; }
+  60.5% { transform: translate(105px, 244px); opacity: 0; }
+  60.75% { opacity: 1; }
+  61.077% { transform: translate(105px, 274px); opacity: 1; }
+  61.327% { transform: translate(105px, 274px); opacity: 0; }
+  63% { transform: translate(105px, 244px); opacity: 0; }
+  63.25% { opacity: 1; }
+  63.577% { transform: translate(105px, 274px); opacity: 1; }
+  63.827% { transform: translate(105px, 274px); opacity: 0; }
+  65.5% { transform: translate(105px, 244px); opacity: 0; }
+  65.75% { opacity: 1; }
+  66.077% { transform: translate(105px, 274px); opacity: 1; }
+  66.327% { transform: translate(105px, 274px); opacity: 0; }
+  100% { transform: translate(105px, 274px); opacity: 0; }
+}
+@keyframes lm-up2 {
+  0% { transform: translate(105px, 244px); opacity: 0; }
+  51.75% { transform: translate(105px, 244px); opacity: 0; }
+  52% { opacity: 1; }
+  52.327% { transform: translate(105px, 274px); opacity: 1; }
+  52.577% { transform: translate(105px, 274px); opacity: 0; }
+  54.25% { transform: translate(105px, 244px); opacity: 0; }
+  54.5% { opacity: 1; }
+  54.827% { transform: translate(105px, 274px); opacity: 1; }
+  55.077% { transform: translate(105px, 274px); opacity: 0; }
+  56.75% { transform: translate(105px, 244px); opacity: 0; }
+  57% { opacity: 1; }
+  57.327% { transform: translate(105px, 274px); opacity: 1; }
+  57.577% { transform: translate(105px, 274px); opacity: 0; }
+  59.25% { transform: translate(105px, 244px); opacity: 0; }
+  59.5% { opacity: 1; }
+  59.827% { transform: translate(105px, 274px); opacity: 1; }
+  60.077% { transform: translate(105px, 274px); opacity: 0; }
+  61.75% { transform: translate(105px, 244px); opacity: 0; }
+  62% { opacity: 1; }
+  62.327% { transform: translate(105px, 274px); opacity: 1; }
+  62.577% { transform: translate(105px, 274px); opacity: 0; }
+  64.25% { transform: translate(105px, 244px); opacity: 0; }
+  64.5% { opacity: 1; }
+  64.827% { transform: translate(105px, 274px); opacity: 1; }
+  65.077% { transform: translate(105px, 274px); opacity: 0; }
+  100% { transform: translate(105px, 274px); opacity: 0; }
+}
+@keyframes lm-bt1 {
+  0% { transform: translate(162px, 297px); opacity: 0; }
+  7.1% { transform: translate(162px, 297px); opacity: 0; }
+  7.35% { opacity: 1; }
+  7.695% { transform: translate(212px, 297px); opacity: 1; }
+  7.945% { transform: translate(212px, 297px); opacity: 0; }
+  9.3% { transform: translate(312px, 297px); opacity: 0; }
+  9.407% { transform: translate(321px, 297px); }
+  9.55% { opacity: 1; }
+  9.818% { transform: translate(321px, 262.5px); }
+  10.002% { transform: translate(336.5px, 262.5px); opacity: 1; }
+  10.252% { transform: translate(336.5px, 262.5px); opacity: 0; }
+  50.245% { transform: translate(162px, 297px); opacity: 0; }
+  50.495% { opacity: 1; }
+  50.84% { transform: translate(212px, 297px); opacity: 1; }
+  51.09% { transform: translate(212px, 297px); opacity: 0; }
+  52.44% { transform: translate(312px, 297px); opacity: 0; }
+  52.547% { transform: translate(321px, 297px); }
+  52.69% { opacity: 1; }
+  52.815% { transform: translate(162px, 297px); opacity: 0; }
+  52.958% { transform: translate(321px, 262.5px); }
+  53.065% { opacity: 1; }
+  53.41% { transform: translate(212px, 297px); opacity: 1; }
+  53.66% { transform: translate(212px, 297px); opacity: 0; }
+  53.75% { transform: translate(387.5px, 262.5px); opacity: 1; }
+  54% { transform: translate(387.5px, 262.5px); opacity: 0; }
+  55.01% { transform: translate(312px, 297px); opacity: 0; }
+  55.117% { transform: translate(321px, 297px); }
+  55.26% { opacity: 1; }
+  55.528% { transform: translate(321px, 262.5px); }
+  58.02% { transform: translate(162px, 297px); opacity: 0; }
+  58.27% { opacity: 1; }
+  58.615% { transform: translate(212px, 297px); opacity: 1; }
+  58.748% { transform: translate(591.5px, 262.5px); opacity: 1; }
+  58.865% { transform: translate(212px, 297px); opacity: 0; }
+  58.998% { transform: translate(591.5px, 262.5px); opacity: 0; }
+  60.215% { transform: translate(312px, 297px); opacity: 0; }
+  60.322% { transform: translate(321px, 297px); }
+  60.465% { opacity: 1; }
+  60.53% { transform: translate(321px, 279.5px); }
+  63.751% { transform: translate(591.5px, 279.5px); opacity: 1; }
+  64.001% { transform: translate(591.5px, 279.5px); opacity: 0; }
+  64.495% { transform: translate(162px, 297px); opacity: 0; }
+  64.745% { opacity: 1; }
+  65.09% { transform: translate(212px, 297px); opacity: 1; }
+  65.34% { transform: translate(212px, 297px); opacity: 0; }
+  66.69% { transform: translate(312px, 297px); opacity: 0; }
+  66.797% { transform: translate(321px, 297px); }
+  66.94% { opacity: 1; }
+  67.005% { transform: translate(321px, 279.5px); }
+  68% { transform: translate(404.5px, 279.5px); opacity: 1; }
+  68.25% { transform: translate(404.5px, 279.5px); opacity: 0; }
+  100% { transform: translate(404.5px, 279.5px); opacity: 0; }
+}
+@keyframes lm-bt2 {
+  0% { transform: translate(162px, 297px); opacity: 0; }
+  51.935% { transform: translate(162px, 297px); opacity: 0; }
+  52.185% { opacity: 1; }
+  52.53% { transform: translate(212px, 297px); opacity: 1; }
+  52.78% { transform: translate(212px, 297px); opacity: 0; }
+  54.13% { transform: translate(312px, 297px); opacity: 0; }
+  54.237% { transform: translate(321px, 297px); }
+  54.38% { opacity: 1; }
+  54.648% { transform: translate(321px, 262.5px); }
+  56.249% { transform: translate(455.5px, 262.5px); opacity: 1; }
+  56.499% { transform: translate(455.5px, 262.5px); opacity: 0; }
+  57.545% { transform: translate(162px, 297px); opacity: 0; }
+  57.795% { opacity: 1; }
+  58.14% { transform: translate(212px, 297px); opacity: 1; }
+  58.39% { transform: translate(212px, 297px); opacity: 0; }
+  59.74% { transform: translate(312px, 297px); opacity: 0; }
+  59.847% { transform: translate(321px, 297px); }
+  59.99% { opacity: 1; }
+  60.055% { transform: translate(321px, 279.5px); }
+  61.252% { transform: translate(421.5px, 279.5px); opacity: 1; }
+  61.502% { transform: translate(421.5px, 279.5px); opacity: 0; }
+  62.65% { transform: translate(162px, 297px); opacity: 0; }
+  62.9% { opacity: 1; }
+  63.245% { transform: translate(212px, 297px); opacity: 1; }
+  63.495% { transform: translate(212px, 297px); opacity: 0; }
+  64.845% { transform: translate(312px, 297px); opacity: 0; }
+  64.952% { transform: translate(321px, 297px); }
+  65.095% { opacity: 1; }
+  65.363% { transform: translate(321px, 262.5px); }
+  65.685% { transform: translate(162px, 297px); opacity: 0; }
+  65.75% { transform: translate(353.5px, 262.5px); opacity: 1; }
+  65.935% { opacity: 1; }
+  66% { transform: translate(353.5px, 262.5px); opacity: 0; }
+  66.28% { transform: translate(212px, 297px); opacity: 1; }
+  66.53% { transform: translate(212px, 297px); opacity: 0; }
+  67.88% { transform: translate(312px, 297px); opacity: 0; }
+  67.987% { transform: translate(321px, 297px); }
+  68.13% { opacity: 1; }
+  68.398% { transform: translate(321px, 262.5px); }
+  69.999% { transform: translate(455.5px, 262.5px); opacity: 1; }
+  70.249% { transform: translate(455.5px, 262.5px); opacity: 0; }
+  100% { transform: translate(455.5px, 262.5px); opacity: 0; }
+}
+@keyframes lm-bt4 {
+  0% { transform: translate(162px, 297px); opacity: 0; }
+  76.85% { transform: translate(162px, 297px); opacity: 0; }
+  77.1% { opacity: 1; }
+  77.445% { transform: translate(212px, 297px); opacity: 1; }
+  77.695% { transform: translate(212px, 297px); opacity: 0; }
+  79.05% { transform: translate(312px, 297px); opacity: 0; }
+  79.157% { transform: translate(321px, 297px); }
+  79.3% { opacity: 1; }
+  79.568% { transform: translate(321px, 262.5px); }
+  79.752% { transform: translate(336.5px, 262.5px); opacity: 1; }
+  80.002% { transform: translate(336.5px, 262.5px); opacity: 0; }
+  100% { transform: translate(336.5px, 262.5px); opacity: 0; }
+}
+@keyframes lm-th1 {
+  0% { transform: translate(336.5px, 262.5px); opacity: 0; }
+  16.75% { transform: translate(336.5px, 262.5px); opacity: 0; }
+  17% { opacity: 1; }
+  20.592% { transform: translate(690px, 262.5px); }
+  20.967% { transform: translate(690px, 297px); }
+  21.772% { transform: translate(764px, 297px); opacity: 1; }
+  22.022% { transform: translate(764px, 297px); opacity: 0; }
+  84% { transform: translate(336.5px, 262.5px); opacity: 0; }
+  84.25% { opacity: 1; }
+  87.842% { transform: translate(690px, 262.5px); }
+  88.217% { transform: translate(690px, 297px); }
+  89.022% { transform: translate(764px, 297px); opacity: 1; }
+  89.272% { transform: translate(764px, 297px); opacity: 0; }
+  100% { transform: translate(764px, 297px); opacity: 0; }
+}
+@keyframes lm-th2 {
+  0% { transform: translate(387.5px, 262.5px); opacity: 0; }
+  60% { transform: translate(387.5px, 262.5px); opacity: 0; }
+  60.25% { opacity: 1; }
+  62.909% { transform: translate(690px, 262.5px); }
+  63.24% { transform: translate(690px, 297px); }
+  63.952% { transform: translate(764px, 297px); opacity: 1; }
+  64.202% { transform: translate(764px, 297px); opacity: 0; }
+  65% { transform: translate(540.5px, 262.5px); opacity: 0; }
+  65.25% { opacity: 1; }
+  66.438% { transform: translate(690px, 262.5px); }
+  66.769% { transform: translate(690px, 297px); }
+  67.481% { transform: translate(764px, 297px); opacity: 1; }
+  67.731% { transform: translate(764px, 297px); opacity: 0; }
+  100% { transform: translate(764px, 297px); opacity: 0; }
+}
+@keyframes lm-th3 {
+  0% { transform: translate(472.5px, 262.5px); opacity: 0; }
+  62.5% { transform: translate(472.5px, 262.5px); opacity: 0; }
+  62.75% { opacity: 1; }
+  64.591% { transform: translate(690px, 262.5px); }
+  64.923% { transform: translate(690px, 297px); }
+  65.635% { transform: translate(764px, 297px); opacity: 1; }
+  65.885% { transform: translate(764px, 297px); opacity: 0; }
+  67.5% { transform: translate(506.5px, 279.5px); opacity: 0; }
+  67.75% { opacity: 1; }
+  69.264% { transform: translate(690px, 279.5px); }
+  69.433% { transform: translate(690px, 297px); }
+  70.144% { transform: translate(764px, 297px); opacity: 1; }
+  70.394% { transform: translate(764px, 297px); opacity: 0; }
+  100% { transform: translate(764px, 297px); opacity: 0; }
+}
+@keyframes lm-fail {
+  0% { transform: translate(336.5px, 262.5px); opacity: 0; }
+  84% { transform: translate(336.5px, 262.5px); opacity: 0; }
+  84.194% { transform: translate(321px, 262.5px); }
+  84.25% { opacity: 1; }
+  84.625% { transform: translate(321px, 297px); }
+  84.737% { transform: translate(312px, 297px); opacity: 1; }
+  84.987% { transform: translate(312px, 297px); opacity: 0; }
+  86.34% { transform: translate(212px, 297px); opacity: 0; }
+  86.59% { opacity: 1; }
+  86.915% { transform: translate(166px, 297px); }
+  93.5% { transform: translate(166px, 297px); }
+  94.7% { transform: translate(166px, 369px); }
+  97.5% { transform: translate(166px, 369px); opacity: 1; }
+  97.75% { transform: translate(166px, 369px); opacity: 0; }
+  100% { transform: translate(166px, 369px); opacity: 0; }
+}
+@keyframes lm-da {
+  0% { opacity: 0; }
+  2.025% { opacity: 0; }
+  2.525% { opacity: 1; }
+  4.375% { opacity: 1; }
+  5.125% { opacity: 0; }
+  11.875% { opacity: 0; }
+  12.375% { opacity: 1; }
+  14.225% { opacity: 1; }
+  14.975% { opacity: 0; }
+  26.025% { opacity: 0; }
+  26.525% { opacity: 1; }
+  29.96% { opacity: 1; }
+  30.71% { opacity: 0; }
+  34.625% { opacity: 0; }
+  35.125% { opacity: 1; }
+  36.975% { opacity: 1; }
+  37.725% { opacity: 0; }
+  41.79% { opacity: 0; }
+  42.29% { opacity: 1; }
+  44.14% { opacity: 1; }
+  44.89% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lm-db {
+  0% { opacity: 0; }
+  7.45% { opacity: 0; }
+  7.95% { opacity: 1; }
+  9.8% { opacity: 1; }
+  10.55% { opacity: 0; }
+  50.59% { opacity: 0; }
+  51.09% { opacity: 1; }
+  55.51% { opacity: 1; }
+  56.26% { opacity: 0; }
+  57.89% { opacity: 0; }
+  58.39% { opacity: 1; }
+  60.715% { opacity: 1; }
+  61.465% { opacity: 0; }
+  62.995% { opacity: 0; }
+  63.495% { opacity: 1; }
+  68.38% { opacity: 1; }
+  69.13% { opacity: 0; }
+  77.2% { opacity: 0; }
+  77.7% { opacity: 1; }
+  79.55% { opacity: 1; }
+  80.3% { opacity: 0; }
+  84.49% { opacity: 0; }
+  84.99% { opacity: 1; }
+  86.84% { opacity: 1; }
+  87.59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- wires -->
+<line class="wire" x1="176" y1="185" x2="211" y2="185" marker-end="url(#ah)"/>
+<path class="wire" d="M312 185H321V166H329" marker-end="url(#ah)"/>
+<line class="wire" x1="720" y1="166" x2="763" y2="166" marker-end="url(#ah)"/>
+<line class="wire" x1="105" y1="256" x2="105" y2="269" marker-end="url(#ah)"/>
+<line class="wire" x1="176" y1="297" x2="211" y2="297" marker-end="url(#ah)"/>
+<line class="wire" x1="166" y1="324" x2="166" y2="349" marker-end="url(#ah)"/>
+<text class="tiny mono end" x="158" y="340">maxReceiveCount 5</text>
+<line class="wire" x1="312" y1="297" x2="325" y2="297" marker-end="url(#ah)"/>
+<line class="wire" x1="672" y1="297" x2="763" y2="297" marker-end="url(#ah)"/>
+<line class="wire dash" x1="736" y1="359" x2="763" y2="359" marker-end="url(#ah)"/>
+<!-- neighbours: event sources (left) -->
+<rect class="box" x="34" y="162" width="142" height="46" rx="10"/>
+<text class="label mid" x="105" y="180">API Gateway</text>
+<text class="tiny mid mono" x="105" y="195">GET /photos/{id}</text>
+<rect class="box" x="34" y="220" width="142" height="36" rx="10"/>
+<text class="label mid" x="105" y="236">S3 photos-prod</text>
+<text class="tiny mid" x="105" y="250">ObjectCreated on u/</text>
+<rect class="box" x="34" y="270" width="142" height="54" rx="10"/>
+<text class="label mid" x="105" y="288">SQS queue</text>
+<text class="tiny mid mono" x="105" y="303">thumbnail-jobs</text>
+<rect class="box" x="34" y="350" width="142" height="38" rx="10"/>
+<text class="sb mid lm-l13" x="98" y="366">dead-letter queue</text>
+<text class="tiny mid mono" x="98" y="380">thumbnail-jobs-dlq</text>
+<!-- neighbours: outputs (right) -->
+<rect class="box" x="764" y="146" width="162" height="44" rx="10"/>
+<text class="label mid" x="845" y="164">DynamoDB</text>
+<text class="tiny mid" x="845" y="179">photos table · GetItem</text>
+<rect class="box" x="764" y="274" width="162" height="46" rx="10"/>
+<text class="label mid" x="845" y="292">S3 photos-prod</text>
+<text class="tiny mid mono" x="845" y="307">thumbnails/…</text>
+<rect class="box" x="764" y="330" width="162" height="58" rx="10" stroke-dasharray="5 4"/>
+<text class="sb mid lm-l13" x="845" y="348">on-failure destination</text>
+<text class="tiny mid" x="845" y="362">for asynchronous invokes</text>
+<!-- the product: AWS Lambda -->
+<rect class="box" x="196" y="96" width="540" height="292" rx="16" stroke-width="2"/>
+<text class="label" x="212" y="120">AWS Lambda</text>
+<text class="sub" x="320" y="120">functions as a service</text>
+<text class="tiny end" x="720" y="120">us-east-1 · quota 1,000 concurrent (default)</text>
+<rect class="box" x="212" y="153" width="100" height="58" rx="10"/>
+<text class="sb mid lm-l13" x="262" y="179">Invoke</text>
+<text class="tiny mid" x="262" y="195">synchronous:</text>
+<text class="tiny mid" x="262" y="208">the caller waits</text>
+<rect class="box" x="212" y="256" width="100" height="81" rx="10"/>
+<text class="sb mid lm-l13" x="262" y="281">event source</text>
+<text class="sb mid lm-l13" x="262" y="296">mapping</text>
+<text class="tiny mid" x="262" y="313">polls in batches</text>
+<text class="tiny mid mono" x="262" y="327">BatchSize 10</text>
+<text class="label mono" x="330" y="145">get-photo</text>
+<text class="sub" x="422" y="145">Python · synchronous</text>
+<text class="tiny sb f-green end p3" x="720" y="145">provisioned concurrency 2</text>
+<!-- execution environments of get-photo -->
+<rect class="box" x="330" y="153" width="390" height="26" rx="8"/>
+<text class="tiny sb" x="338" y="170">env A</text>
+<rect class="lm-sb" x="374" y="157" width="58" height="18" rx="5"/>
+<text class="lm-st mid" x="403" y="169.5">microVM</text>
+<rect class="lm-sb" x="436" y="157" width="44" height="18" rx="5"/>
+<text class="lm-st mid" x="458" y="169.5">code</text>
+<rect class="lm-sb" x="484" y="157" width="56" height="18" rx="5"/>
+<text class="lm-st mid" x="512" y="169.5">runtime</text>
+<rect class="lm-sb" x="544" y="157" width="58" height="18" rx="5"/>
+<text class="lm-st mid" x="573" y="169.5">init code</text>
+<rect class="lm-sb" x="606" y="157" width="60" height="18" rx="5"/>
+<text class="lm-st mid" x="636" y="169.5">handler</text>
+<g class="lm-envb">
+<path class="wire" d="M321 185V198H329" marker-end="url(#ah)"/>
+<rect class="box" x="330" y="185" width="390" height="26" rx="8"/>
+<text class="tiny sb" x="338" y="202">env B</text>
+<rect class="lm-sb" x="374" y="189" width="58" height="18" rx="5"/>
+<text class="lm-st mid" x="403" y="201.5">microVM</text>
+<rect class="lm-sb" x="436" y="189" width="44" height="18" rx="5"/>
+<text class="lm-st mid" x="458" y="201.5">code</text>
+<rect class="lm-sb" x="484" y="189" width="56" height="18" rx="5"/>
+<text class="lm-st mid" x="512" y="201.5">runtime</text>
+<rect class="lm-sb" x="544" y="189" width="58" height="18" rx="5"/>
+<text class="lm-st mid" x="573" y="201.5">init code</text>
+<rect class="lm-sb" x="606" y="189" width="60" height="18" rx="5"/>
+<text class="lm-st mid" x="636" y="201.5">handler</text>
+</g>
+<g class="lm-ha"><rect class="f-blue-soft s-blue" x="606" y="157" width="60" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-blue" x="636" y="169.5">handler</text></g>
+<g class="lm-bvm"><rect class="f-amber-soft s-amber" x="374" y="189" width="58" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-amber" x="403" y="201.5">microVM</text></g>
+<g class="lm-bcode"><rect class="f-amber-soft s-amber" x="436" y="189" width="44" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-amber" x="458" y="201.5">code</text></g>
+<g class="lm-brt"><rect class="f-amber-soft s-amber" x="484" y="189" width="56" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-amber" x="512" y="201.5">runtime</text></g>
+<g class="lm-binit"><rect class="f-amber-soft s-amber" x="544" y="189" width="58" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-amber" x="573" y="201.5">init code</text></g>
+<g class="lm-hb"><rect class="f-blue-soft s-blue" x="606" y="189" width="60" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-blue" x="636" y="201.5">handler</text></g>
+<g class="lm-pc">
+<g class=""><rect class="f-green-soft s-green" x="374" y="157" width="58" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="403" y="169.5">microVM</text></g>
+<g class=""><rect class="f-green-soft s-green" x="436" y="157" width="44" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="458" y="169.5">code</text></g>
+<g class=""><rect class="f-green-soft s-green" x="484" y="157" width="56" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="512" y="169.5">runtime</text></g>
+<g class=""><rect class="f-green-soft s-green" x="544" y="157" width="58" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="573" y="169.5">init code</text></g>
+<g class=""><rect class="f-green-soft s-green" x="374" y="189" width="58" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="403" y="201.5">microVM</text></g>
+<g class=""><rect class="f-green-soft s-green" x="436" y="189" width="44" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="458" y="201.5">code</text></g>
+<g class=""><rect class="f-green-soft s-green" x="484" y="189" width="56" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="512" y="201.5">runtime</text></g>
+<g class=""><rect class="f-green-soft s-green" x="544" y="189" width="58" height="18" rx="5" stroke-width="1.5"/><text class="lm-st mid lm-green" x="573" y="201.5">init code</text></g>
+</g>
+<text class="tiny mid lm-fza" x="694" y="170">frozen</text>
+<text class="tiny mid sb f-blue lm-bya" x="694" y="170">busy</text>
+<text class="tiny mid lm-fzb" x="694" y="202">frozen</text>
+<text class="tiny mid sb f-blue lm-byb" x="694" y="202">busy</text>
+<g class="lm-rdy"><text class="tiny mid sb f-green" x="694" y="170">ready</text><text class="tiny mid sb f-green" x="694" y="202">ready</text></g>
+<text class="tiny sb f-blue lm-va" x="330" y="225">env A · warm start: handler only</text>
+<text class="tiny sb f-amber-ink end lm-vb" x="720" y="225">env B · cold start: init, then handler</text>
+<!-- make-thumbnail: one square per execution environment -->
+<text class="label mono" x="330" y="246">make-thumbnail</text>
+<text class="sub" x="466" y="246">Python · 1,024 MB · 60 s</text>
+<g class="p3"><text class="tiny" x="676" y="246">running</text></g>
+<text class="label b f-blue end lm-n2" x="671" y="246">2</text>
+<text class="label b f-blue end lm-n5" x="671" y="246">5</text>
+<text class="label b f-blue end lm-n10" x="671" y="246">10</text>
+<text class="label b f-blue end lm-n20" x="671" y="246">20</text>
+<text class="label b f-blue end lm-n30" x="671" y="246">30</text>
+<text class="label b f-blue end lm-n40" x="671" y="246">40</text>
+<g class="p3">
+<rect class="lm-slot" x="330" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="347" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="364" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="381" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="398" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="415" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="432" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="449" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="466" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="483" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="500" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="517" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="534" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="551" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="568" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="585" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="602" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="619" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="636" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="653" y="290" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="330" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="347" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="364" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="381" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="398" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="415" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="432" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="449" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="466" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="483" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="500" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="517" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="534" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="551" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="568" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="585" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="602" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="619" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="636" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="653" y="307" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="330" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="347" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="364" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="381" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="398" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="415" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="432" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="449" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="466" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="483" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="500" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="517" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="534" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="551" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="568" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="585" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="602" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="619" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="636" y="324" width="13" height="13" rx="2.5"/>
+<rect class="lm-slot" x="653" y="324" width="13" height="13" rx="2.5"/>
+</g>
+<rect class="lm-sq" x="330" y="256" width="13" height="13" rx="2.5"/>
+<rect class="lm-sq" x="347" y="256" width="13" height="13" rx="2.5"/>
+<rect class="f-blue lm-q0" x="330" y="256" width="13" height="13" rx="2.5"/>
+<rect class="f-blue lm-q1" x="347" y="256" width="13" height="13" rx="2.5"/>
+<g class="lm-w0"><rect class="lm-sq" x="364" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="381" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="398" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wa0"><rect class="f-amber" x="364" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="381" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="398" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wb0"><rect class="f-blue" x="364" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="381" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="398" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-w1"><rect class="lm-sq" x="415" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="432" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="449" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="466" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="483" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wa1"><rect class="f-amber" x="415" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="432" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="449" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="466" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="483" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wb1"><rect class="f-blue" x="415" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="432" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="449" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="466" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="483" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-w2"><rect class="lm-sq" x="500" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="517" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="534" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="551" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="568" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="585" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="602" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="619" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="636" y="256" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="653" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wa2"><rect class="f-amber" x="500" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="517" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="534" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="551" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="568" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="585" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="602" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="619" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="636" y="256" width="13" height="13" rx="2.5"/><rect class="f-amber" x="653" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wb2"><rect class="f-blue" x="500" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="517" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="534" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="551" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="568" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="585" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="602" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="619" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="636" y="256" width="13" height="13" rx="2.5"/><rect class="f-blue" x="653" y="256" width="13" height="13" rx="2.5"/></g>
+<g class="lm-w3"><rect class="lm-sq" x="330" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="347" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="364" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="381" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="398" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="415" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="432" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="449" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="466" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="483" y="273" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wa3"><rect class="f-amber" x="330" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="347" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="364" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="381" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="398" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="415" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="432" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="449" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="466" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="483" y="273" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wb3"><rect class="f-blue" x="330" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="347" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="364" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="381" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="398" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="415" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="432" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="449" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="466" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="483" y="273" width="13" height="13" rx="2.5"/></g>
+<g class="lm-w4"><rect class="lm-sq" x="500" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="517" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="534" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="551" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="568" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="585" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="602" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="619" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="636" y="273" width="13" height="13" rx="2.5"/><rect class="lm-sq" x="653" y="273" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wa4"><rect class="f-amber" x="500" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="517" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="534" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="551" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="568" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="585" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="602" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="619" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="636" y="273" width="13" height="13" rx="2.5"/><rect class="f-amber" x="653" y="273" width="13" height="13" rx="2.5"/></g>
+<g class="lm-wb4"><rect class="f-blue" x="500" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="517" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="534" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="551" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="568" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="585" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="602" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="619" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="636" y="273" width="13" height="13" rx="2.5"/><rect class="f-blue" x="653" y="273" width="13" height="13" rx="2.5"/></g>
+<text class="tiny sb f-blue lm-chip" x="330" y="356">50 uploads/s × 0.8 s ≈ 40 at once</text>
+<g class="p3"><text class="tiny sb f-amber-ink end" x="666" y="356">reserved concurrency 100</text></g>
+<g class="p4"><text class="tiny" x="330" y="356"><tspan class="mono">batchItemFailures</tspan>: 9 deleted, 1 retried</text></g>
+<rect class="f-amber" x="330" y="366" width="10" height="10" rx="2"/><text class="tiny" x="345" y="375">init (cold start)</text>
+<rect class="f-blue" x="442" y="366" width="10" height="10" rx="2"/><text class="tiny" x="457" y="375">running the handler</text>
+<rect class="lm-sq" x="580" y="366" width="10" height="10" rx="2"/><text class="tiny" x="595" y="375">idle, frozen</text>
+<g class="p12"><text class="tiny" x="330" y="300">One square = one execution environment of make-thumbnail.</text><text class="tiny" x="330" y="314">Lambda adds them as work arrives and removes idle ones later.</text></g>
+<text class="tiny sb f-red mid lm-r1" x="105" y="317">receive 1 of 5</text>
+<text class="tiny sb f-red mid lm-r2" x="105" y="317">receive 2 of 5</text>
+<text class="tiny sb f-red mid lm-r3" x="105" y="317">receive 3 of 5</text>
+<text class="tiny sb f-red mid lm-r4" x="105" y="317">receive 4 of 5</text>
+<text class="tiny sb f-red mid lm-r5" x="105" y="317">receive 5 of 5</text>
+<rect class="none s-red lm-dlq" x="34" y="350" width="142" height="38" rx="10" stroke-width="2"/>
+<g class="lm-onf"><rect class="f-amber-soft s-amber" x="764" y="330" width="162" height="58" rx="10" stroke-width="1.5"/><text class="tiny sb f-amber-ink mid" x="845" y="377">after 2 retries</text></g>
+<!-- notes, one per step -->
+<g class="p1"><rect class="box" x="34" y="398" width="892" height="70" rx="10"/><text class="lm-hd" x="48" y="414">THREE WAYS TO INVOKE A FUNCTION</text><text class="lm-n" x="48" y="430">Synchronous: API Gateway calls Invoke and waits for get-photo’s answer. Asynchronous: S3, SNS or EventBridge hand the event to</text><text class="lm-n" x="48" y="444">Lambda’s internal queue and get 202 at once. Polling: an event source mapping reads thumbnail-jobs and invokes make-thumbnail.</text><text class="lm-n" x="48" y="458">No servers to patch or size: you pay per request plus GB-seconds of run time (memory × duration), and nothing for idle time.</text></g>
+<g class="p2"><rect class="box" x="34" y="398" width="892" height="70" rx="10"/><text class="lm-hd" x="48" y="414">COLD START AND WARM START</text><text class="lm-n" x="48" y="430">An environment runs one request at a time. Request 2 finds env A idle: Lambda thaws it and runs only the handler, a warm start.</text><text class="lm-n" x="48" y="444">Request 3 finds none free: Lambda boots a Firecracker microVM, loads the code, starts the runtime and runs the init code</text><text class="lm-n" x="48" y="458">(SDK clients, config), a cold start that is billed and slower. Idle environments are frozen, then removed: reuse is never promised.</text></g>
+<g class="p3"><rect class="box" x="34" y="398" width="892" height="70" rx="10"/><text class="lm-hd" x="48" y="414">CONCURRENCY = REQUESTS PER SECOND × DURATION</text><text class="lm-n" x="48" y="430">50 uploads a second × 0.8 s each ≈ 40 environments at once. The SQS mapping starts with 5 concurrent invokes and adds up to 300 a minute.</text><text class="lm-n" x="48" y="444">Reserved concurrency 100 caps make-thumbnail and sets 100 aside from the account’s 1,000 per Region. Past a limit: throttled (429).</text><text class="lm-n" x="48" y="458">Provisioned concurrency keeps 2 get-photo environments initialised (billed while on); SnapStart restores Java, Python, .NET from a snapshot.</text></g>
+<g class="p4"><rect class="box" x="34" y="398" width="442" height="70" rx="10"/><text class="lm-hd" x="48" y="414">ONE BAD PHOTO</text><text class="lm-n" x="48" y="430">The handler reports the failed message: 9 are deleted, 1 comes back</text><text class="lm-n" x="48" y="444">after the visibility timeout. After 5 receives SQS moves it to the DLQ.</text><text class="lm-n" x="48" y="458">Delivery is at least once, so the handler must be idempotent.</text></g>
+<g class="p4"><rect class="f-amber-soft s-amber" stroke-width="1.5" x="486" y="398" width="440" height="70" rx="10"/><text class="lm-hd f-amber-ink" x="500" y="414">LIMITS (OCTOBER 2026)</text><text class="lm-n" x="500" y="430">15 min per invoke · memory 128–10,240 MB, CPU in proportion</text><text class="lm-n" x="500" y="444">payload 6 MB sync, 1 MB async · /tmp up to 10,240 MB</text><text class="lm-n" x="500" y="458">Long or steady, busy work is often cheaper in containers.</text></g>
+<!-- tokens: they pass through the Invoke and event source mapping boxes (hidden inside, box lit) -->
+<g class="lm-reqa"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">GET</text></g>
+<circle class="f-teal pkt lm-ddb" r="5"/>
+<g class="lm-resa"><circle class="f-green pkt" r="6"/><text class="tiny b f-green mid" y="-10">200</text></g>
+<g class="lm-reqb"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">GET</text></g>
+<g class="lm-resb"><circle class="f-green pkt" r="6"/><text class="tiny b f-green mid" y="-10">200</text></g>
+<rect class="ev lm-up1" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="ev lm-up2" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="ev lm-bt1" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="ev lm-bt2" x="-7" y="-7" width="14" height="14" rx="3"/>
+<g class="lm-bt4"><rect class="ev" x="-12" y="-8" width="24" height="16" rx="3"/><text class="lm-tk mid" y="3.5">10</text></g>
+<circle class="f-teal pkt lm-th1" r="5"/>
+<circle class="f-teal pkt lm-th2" r="5"/>
+<circle class="f-teal pkt lm-th3" r="5"/>
+<g class="lm-fail"><rect class="f-red pkt" x="-7" y="-7" width="14" height="14" rx="3"/></g>
+<rect class="none s-blue lm-da" x="212" y="153" width="100" height="58" rx="10" stroke-width="2"/>
+<rect class="none s-purple lm-db" x="212" y="256" width="100" height="81" rx="10" stroke-width="2"/>
+</g>
+</svg>

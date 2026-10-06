@@ -1,0 +1,895 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Amazon S3</title>
+<desc id="dg-desc">Amazon S3. Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events. Step 1, Where it sits: S3 is the app's file store: phones upload with presigned URLs, CloudFront serves, events start work. Step 2, Put an object: Signature and expiry checked, bytes stored redundantly across AZs, then 200 OK; a GET sees it. Step 3, Versions and lifecycle: A second PUT adds version 2; a DELETE adds a delete marker. A lifecycle rule moves originals colder. Step 4, Events, access, limits: Event → SQS → thumbnail. An unsigned GET gets 403; CloudFront reads via OAC. Mind the limits.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">AWS SERVICES</text>
+  <text class="title" x="40" y="64">Amazon S3</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Put an object</text>
+  <text class="step on p2" x="262" y="518">2 · Put an object</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Versions and lifecycle</text>
+  <text class="step on p3" x="484" y="518">3 · Versions and lifecycle</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Events, access, limits</text>
+  <text class="step on p4" x="706" y="518">4 · Events, access, limits</text>
+  <text class="caption p1" x="40" y="552">S3 is the app's file store: phones upload with presigned URLs, CloudFront serves, events start work.</text>
+  <text class="caption p2" x="40" y="552">Signature and expiry checked, bytes stored redundantly across AZs, then 200 OK; a GET sees it.</text>
+  <text class="caption p3" x="40" y="552">A second PUT adds version 2; a DELETE adds a delete marker. A lifecycle rule moves originals colder.</text>
+  <text class="caption p4" x="40" y="552">Event → SQS → thumbnail. An unsigned GET gets 403; CloudFront reads via OAC. Mind the limits.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Amazon S3. One photo upload in a photo-sharing app (20 s loop, 1 s = 5%):
+   0-25%   where S3 sits: presigned URL from the API, PUT straight to the bucket, ObjectCreated event
+           -> SQS -> Thumbnailer writes thumbnails/..., CloudFront serves it, Athena reads in place
+   25-50%  the PUT in detail: signature and expiry check, bytes stored in 3 AZs, then 200 OK; a GET sees it
+   50-75%  versions: PUT again (v2), DELETE (delete marker, 404); lifecycle ladder STANDARD -> GLACIER_IR
+   75-100% event path and access: event -> SQS -> thumbnail; unsigned GET -> 403; CloudFront via OAC.
+           The scene resets in the last half-second (19.5 s).
+   Rows are drawn at their step-1 slot and moved with translateY (34 px per slot); keyframes come
+   from a scratch script using scripts/lib/motion.mjs. */
+.diagram .s3-key { font-size: 12px; }
+.diagram .s3-cls { font-size: 10px; font-weight: 600; fill: var(--teal); }
+.diagram .s3-chip { font-size: 10px; fill: var(--teal); }
+.diagram .s3-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .s3-tk { font-size: 9px; font-weight: 700; fill: var(--bg); }
+.diagram .s3-t1req { opacity: 0; animation: s3-t1req var(--T) linear infinite; }
+.diagram .s3-t1url { opacity: 0; animation: s3-t1url var(--T) linear infinite; }
+.diagram .s3-t1put { opacity: 0; animation: s3-t1put var(--T) linear infinite; }
+.diagram .s3-t1ev { opacity: 0; animation: s3-t1ev var(--T) linear infinite; }
+.diagram .s3-t1poll { opacity: 0; animation: s3-t1poll var(--T) linear infinite; }
+.diagram .s3-t1th { opacity: 0; animation: s3-t1th var(--T) linear infinite; }
+.diagram .s3-t1dla { opacity: 0; animation: s3-t1dla var(--T) linear infinite; }
+.diagram .s3-t1dlb { opacity: 0; animation: s3-t1dlb var(--T) linear infinite; }
+.diagram .s3-t1sql { opacity: 0; animation: s3-t1sql var(--T) linear infinite; }
+.diagram .s3-t2put { opacity: 0; animation: s3-t2put var(--T) linear infinite; }
+.diagram .s3-gate { opacity: 0; animation: s3-gate var(--T) linear infinite; }
+.diagram .s3-chk { opacity: 0; animation: s3-chk var(--T) linear infinite; }
+.diagram .s3-d1 { opacity: 0; animation: s3-d1 var(--T) linear infinite; }
+.diagram .s3-d2 { opacity: 0; animation: s3-d2 var(--T) linear infinite; }
+.diagram .s3-d3 { opacity: 0; animation: s3-d3 var(--T) linear infinite; }
+.diagram .s3-ok3 { opacity: 0; animation: s3-ok3 var(--T) linear infinite; }
+.diagram .s3-t2ok { opacity: 0; animation: s3-t2ok var(--T) linear infinite; }
+.diagram .s3-etag { opacity: 0; animation: s3-etag var(--T) linear infinite; }
+.diagram .s3-t2get { opacity: 0; animation: s3-t2get var(--T) linear infinite; }
+.diagram .s3-t2got { opacity: 0; animation: s3-t2got var(--T) linear infinite; }
+.diagram .s3-raw { opacity: 0; animation: s3-raw var(--T) linear infinite; }
+.diagram .s3-t3put { opacity: 0; animation: s3-t3put var(--T) linear infinite; }
+.diagram .s3-t3del { opacity: 0; animation: s3-t3del var(--T) linear infinite; }
+.diagram .s3-t3get { opacity: 0; animation: s3-t3get var(--T) linear infinite; }
+.diagram .s3-t3nf { opacity: 0; animation: s3-t3nf var(--T) linear infinite; }
+.diagram .s3-404 { opacity: 0; animation: s3-404 var(--T) linear infinite; }
+.diagram .s3-vid { opacity: 0; animation: s3-vid var(--T) linear infinite; }
+.diagram .s3-lc { opacity: 0; animation: s3-lc var(--T) linear infinite; }
+.diagram .s3-t4ev { opacity: 0; animation: s3-t4ev var(--T) linear infinite; }
+.diagram .s3-t4poll { opacity: 0; animation: s3-t4poll var(--T) linear infinite; }
+.diagram .s3-evbox { opacity: 0; animation: s3-evbox var(--T) linear infinite; }
+.diagram .s3-t4th { opacity: 0; animation: s3-t4th var(--T) linear infinite; }
+.diagram .s3-t4anon { opacity: 0; animation: s3-t4anon var(--T) linear infinite; }
+.diagram .s3-x403 { opacity: 0; animation: s3-x403 var(--T) linear infinite; }
+.diagram .s3-t4oac { opacity: 0; animation: s3-t4oac var(--T) linear infinite; }
+.diagram .s3-t4dla { opacity: 0; animation: s3-t4dla var(--T) linear infinite; }
+.diagram .s3-t4dlb { opacity: 0; animation: s3-t4dlb var(--T) linear infinite; }
+.diagram .s3-oac { opacity: 0; animation: s3-oac var(--T) linear infinite; }
+.diagram .s3-rv2 { opacity: 0; animation: s3-rv2 var(--T) linear infinite; }
+.diagram .s3-rdm { opacity: 0; animation: s3-rdm var(--T) linear infinite; }
+.diagram .s3-v1cur { opacity: 0; animation: s3-v1cur var(--T) linear infinite; }
+.diagram .s3-v1non { opacity: 0; animation: s3-v1non var(--T) linear infinite; }
+.diagram .s3-v1dim { opacity: 0; animation: s3-v1dim var(--T) linear infinite; }
+.diagram .s3-v2cur { opacity: 0; animation: s3-v2cur var(--T) linear infinite; }
+.diagram .s3-v2non { opacity: 0; animation: s3-v2non var(--T) linear infinite; }
+.diagram .s3-v2dim { opacity: 0; animation: s3-v2dim var(--T) linear infinite; }
+.diagram .s3-dmcur { opacity: 0; animation: s3-dmcur var(--T) linear infinite; }
+.diagram .s3-zv2 { opacity: 0; animation: s3-zv2 var(--T) linear infinite; }
+.diagram .s3-rv1 { animation: s3-rv1 var(--T) linear infinite; }
+.diagram .s3-rth { animation: s3-rth var(--T) linear infinite; }
+.diagram .s3-zv1 { animation: s3-zv1 var(--T) linear infinite; }
+.diagram .s3-zth { animation: s3-zth var(--T) linear infinite; }
+@keyframes s3-t1req {
+  0% { transform: translate(85px, 166px); opacity: 0; }
+  1.5% { transform: translate(85px, 166px); opacity: 0; }
+  1.75% { opacity: 1; }
+  3.5% { transform: translate(85px, 134px); opacity: 1; }
+  3.75% { transform: translate(85px, 134px); opacity: 0; }
+  100% { transform: translate(85px, 134px); opacity: 0; }
+}
+@keyframes s3-t1url {
+  0% { transform: translate(105px, 134px); opacity: 0; }
+  4% { transform: translate(105px, 134px); opacity: 0; }
+  4.25% { opacity: 1; }
+  6% { transform: translate(105px, 166px); opacity: 1; }
+  6.25% { transform: translate(105px, 166px); opacity: 0; }
+  100% { transform: translate(105px, 166px); opacity: 0; }
+}
+@keyframes s3-t1put {
+  0% { transform: translate(166px, 186px); opacity: 0; }
+  7% { transform: translate(166px, 186px); opacity: 0; }
+  7.25% { opacity: 1; }
+  9.5% { transform: translate(300px, 186px); opacity: 1; }
+  9.75% { transform: translate(300px, 186px); opacity: 0; }
+  100% { transform: translate(300px, 186px); opacity: 0; }
+}
+@keyframes s3-t1ev {
+  0% { transform: translate(700px, 186px); opacity: 0; }
+  11% { transform: translate(700px, 186px); opacity: 0; }
+  11.25% { opacity: 1; }
+  13% { transform: translate(796px, 186px); opacity: 1; }
+  13.25% { transform: translate(796px, 186px); opacity: 0; }
+  100% { transform: translate(796px, 186px); opacity: 0; }
+}
+@keyframes s3-t1poll {
+  0% { transform: translate(865px, 206px); opacity: 0; }
+  13.5% { transform: translate(865px, 206px); opacity: 0; }
+  13.75% { opacity: 1; }
+  15.25% { transform: translate(865px, 266px); opacity: 1; }
+  15.5% { transform: translate(865px, 266px); opacity: 0; }
+  100% { transform: translate(865px, 266px); opacity: 0; }
+}
+@keyframes s3-t1th {
+  0% { transform: translate(804px, 288px); opacity: 0; }
+  15.75% { transform: translate(804px, 288px); opacity: 0; }
+  16% { opacity: 1; }
+  17.75% { transform: translate(700px, 288px); opacity: 1; }
+  18% { transform: translate(700px, 288px); opacity: 0; }
+  100% { transform: translate(700px, 288px); opacity: 0; }
+}
+@keyframes s3-t1dla {
+  0% { transform: translate(214px, 288px); opacity: 0; }
+  18.75% { transform: translate(214px, 288px); opacity: 0; }
+  19% { opacity: 1; }
+  20.25% { transform: translate(162px, 288px); opacity: 1; }
+  20.5% { transform: translate(162px, 288px); opacity: 0; }
+  100% { transform: translate(162px, 288px); opacity: 0; }
+}
+@keyframes s3-t1dlb {
+  0% { transform: translate(95px, 266px); opacity: 0; }
+  20.5% { transform: translate(95px, 266px); opacity: 0; }
+  20.75% { opacity: 1; }
+  21.75% { transform: translate(95px, 212px); opacity: 1; }
+  22% { transform: translate(95px, 212px); opacity: 0; }
+  100% { transform: translate(95px, 212px); opacity: 0; }
+}
+@keyframes s3-t1sql {
+  0% { transform: translate(730px, 138px); opacity: 0; }
+  19.25% { transform: translate(730px, 138px); opacity: 0; }
+  19.5% { opacity: 1; }
+  21.25% { transform: translate(798px, 138px); opacity: 1; }
+  21.5% { transform: translate(798px, 138px); opacity: 0; }
+  100% { transform: translate(798px, 138px); opacity: 0; }
+}
+@keyframes s3-t2put {
+  0% { transform: translate(166px, 186px); opacity: 0; }
+  26.5% { transform: translate(166px, 186px); opacity: 0; }
+  26.75% { opacity: 1; }
+  28.25% { transform: translate(204px, 186px); }
+  31.5% { transform: translate(204px, 186px); }
+  32.5% { transform: translate(300px, 186px); opacity: 1; }
+  32.75% { transform: translate(300px, 186px); opacity: 0; }
+  100% { transform: translate(300px, 186px); opacity: 0; }
+}
+@keyframes s3-gate {
+  0% { opacity: 0; }
+  28% { opacity: 0; }
+  29.25% { opacity: 1; }
+  31.5% { opacity: 1; }
+  32.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-chk {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-d1 {
+  0% { transform: translate(300px, 190px); opacity: 0; }
+  32.5% { transform: translate(300px, 190px); opacity: 0; }
+  32.75% { opacity: 1; }
+  33.861% { transform: translate(218px, 190px); }
+  36.5% { transform: translate(218px, 349px); opacity: 1; }
+  36.75% { transform: translate(218px, 349px); opacity: 0; }
+  100% { transform: translate(218px, 349px); opacity: 0; }
+}
+@keyframes s3-d2 {
+  0% { transform: translate(300px, 190px); opacity: 0; }
+  32.5% { transform: translate(300px, 190px); opacity: 0; }
+  32.75% { opacity: 1; }
+  34.136% { transform: translate(410px, 190px); }
+  36.5% { transform: translate(410px, 349px); opacity: 1; }
+  36.75% { transform: translate(410px, 349px); opacity: 0; }
+  100% { transform: translate(410px, 349px); opacity: 0; }
+}
+@keyframes s3-d3 {
+  0% { transform: translate(300px, 190px); opacity: 0; }
+  32.5% { transform: translate(300px, 190px); opacity: 0; }
+  32.75% { opacity: 1; }
+  35.12% { transform: translate(602px, 190px); }
+  36.5% { transform: translate(602px, 349px); opacity: 1; }
+  36.75% { transform: translate(602px, 349px); opacity: 0; }
+  100% { transform: translate(602px, 349px); opacity: 0; }
+}
+@keyframes s3-ok3 {
+  0% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-t2ok {
+  0% { transform: translate(204px, 186px); opacity: 0; }
+  38.25% { transform: translate(204px, 186px); opacity: 0; }
+  38.5% { opacity: 1; }
+  40.25% { transform: translate(166px, 186px); opacity: 1; }
+  40.5% { transform: translate(166px, 186px); opacity: 0; }
+  100% { transform: translate(166px, 186px); opacity: 0; }
+}
+@keyframes s3-etag {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  41.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-t2get {
+  0% { transform: translate(166px, 186px); opacity: 0; }
+  41% { transform: translate(166px, 186px); opacity: 0; }
+  41.25% { opacity: 1; }
+  43% { transform: translate(214px, 186px); opacity: 1; }
+  43.25% { transform: translate(214px, 186px); opacity: 0; }
+  100% { transform: translate(214px, 186px); opacity: 0; }
+}
+@keyframes s3-t2got {
+  0% { transform: translate(214px, 186px); opacity: 0; }
+  43.25% { transform: translate(214px, 186px); opacity: 0; }
+  43.5% { opacity: 1; }
+  45.25% { transform: translate(166px, 186px); opacity: 1; }
+  45.5% { transform: translate(166px, 186px); opacity: 0; }
+  100% { transform: translate(166px, 186px); opacity: 0; }
+}
+@keyframes s3-raw {
+  0% { opacity: 0; }
+  45% { opacity: 0; }
+  46.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-t3put {
+  0% { transform: translate(166px, 186px); opacity: 0; }
+  51.5% { transform: translate(166px, 186px); opacity: 0; }
+  51.75% { opacity: 1; }
+  53.5% { transform: translate(214px, 186px); opacity: 1; }
+  53.75% { transform: translate(214px, 186px); opacity: 0; }
+  100% { transform: translate(214px, 186px); opacity: 0; }
+}
+@keyframes s3-t3del {
+  0% { transform: translate(166px, 186px); opacity: 0; }
+  57% { transform: translate(166px, 186px); opacity: 0; }
+  57.25% { opacity: 1; }
+  59% { transform: translate(214px, 186px); opacity: 1; }
+  59.25% { transform: translate(214px, 186px); opacity: 0; }
+  100% { transform: translate(214px, 186px); opacity: 0; }
+}
+@keyframes s3-t3get {
+  0% { transform: translate(166px, 186px); opacity: 0; }
+  61.75% { transform: translate(166px, 186px); opacity: 0; }
+  62% { opacity: 1; }
+  63.75% { transform: translate(214px, 186px); opacity: 1; }
+  64% { transform: translate(214px, 186px); opacity: 0; }
+  100% { transform: translate(214px, 186px); opacity: 0; }
+}
+@keyframes s3-t3nf {
+  0% { transform: translate(214px, 186px); opacity: 0; }
+  64% { transform: translate(214px, 186px); opacity: 0; }
+  64.25% { opacity: 1; }
+  66% { transform: translate(166px, 186px); }
+  66.75% { transform: translate(166px, 186px); opacity: 1; }
+  67% { transform: translate(166px, 186px); opacity: 0; }
+  100% { transform: translate(166px, 186px); opacity: 0; }
+}
+@keyframes s3-404 {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  67% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-vid {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  68.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-lc {
+  0% { transform: translate(504px, 415px); opacity: 0; }
+  51.5% { transform: translate(504px, 415px); opacity: 0; }
+  51.75% { opacity: 1; }
+  64.5% { transform: translate(504px, 415px); }
+  66.75% { transform: translate(504px, 429px); }
+  73.75% { transform: translate(504px, 429px); opacity: 1; }
+  74% { transform: translate(504px, 429px); opacity: 0; }
+  100% { transform: translate(504px, 429px); opacity: 0; }
+}
+@keyframes s3-t4ev {
+  0% { transform: translate(700px, 186px); opacity: 0; }
+  77.5% { transform: translate(700px, 186px); opacity: 0; }
+  77.75% { opacity: 1; }
+  79.5% { transform: translate(796px, 186px); opacity: 1; }
+  79.75% { transform: translate(796px, 186px); opacity: 0; }
+  100% { transform: translate(796px, 186px); opacity: 0; }
+}
+@keyframes s3-t4poll {
+  0% { transform: translate(865px, 206px); opacity: 0; }
+  80% { transform: translate(865px, 206px); opacity: 0; }
+  80.25% { opacity: 1; }
+  81.75% { transform: translate(865px, 266px); opacity: 1; }
+  82% { transform: translate(865px, 266px); opacity: 0; }
+  100% { transform: translate(865px, 266px); opacity: 0; }
+}
+@keyframes s3-evbox {
+  0% { opacity: 0; }
+  79% { opacity: 0; }
+  80.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-t4th {
+  0% { transform: translate(804px, 288px); opacity: 0; }
+  82.25% { transform: translate(804px, 288px); opacity: 0; }
+  82.5% { opacity: 1; }
+  84.25% { transform: translate(700px, 288px); opacity: 1; }
+  84.5% { transform: translate(700px, 288px); opacity: 0; }
+  100% { transform: translate(700px, 288px); opacity: 0; }
+}
+@keyframes s3-t4anon {
+  0% { transform: translate(166px, 186px); opacity: 0; }
+  85.5% { transform: translate(166px, 186px); opacity: 0; }
+  85.75% { opacity: 1; }
+  87.25% { transform: translate(198px, 186px); }
+  88.75% { transform: translate(198px, 186px); opacity: 1; }
+  89% { transform: translate(198px, 186px); opacity: 0; }
+  100% { transform: translate(198px, 186px); opacity: 0; }
+}
+@keyframes s3-x403 {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-t4oac {
+  0% { transform: translate(162px, 288px); opacity: 0; }
+  89.25% { transform: translate(162px, 288px); opacity: 0; }
+  89.5% { opacity: 1; }
+  90.75% { transform: translate(214px, 288px); opacity: 1; }
+  91% { transform: translate(214px, 288px); opacity: 0; }
+  100% { transform: translate(214px, 288px); opacity: 0; }
+}
+@keyframes s3-t4dla {
+  0% { transform: translate(214px, 288px); opacity: 0; }
+  91% { transform: translate(214px, 288px); opacity: 0; }
+  91.25% { opacity: 1; }
+  92.5% { transform: translate(162px, 288px); opacity: 1; }
+  92.75% { transform: translate(162px, 288px); opacity: 0; }
+  100% { transform: translate(162px, 288px); opacity: 0; }
+}
+@keyframes s3-t4dlb {
+  0% { transform: translate(95px, 266px); opacity: 0; }
+  92.75% { transform: translate(95px, 266px); opacity: 0; }
+  93% { opacity: 1; }
+  94% { transform: translate(95px, 212px); opacity: 1; }
+  94.25% { transform: translate(95px, 212px); opacity: 0; }
+  100% { transform: translate(95px, 212px); opacity: 0; }
+}
+@keyframes s3-oac {
+  0% { opacity: 0; }
+  90.75% { opacity: 0; }
+  92% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes s3-rv1 {
+  0% { transform: translateY(0px); opacity: 0; }
+  10% { transform: translateY(0px); opacity: 0; }
+  11.25% { transform: translateY(0px); opacity: 1; }
+  25% { transform: translateY(0px); opacity: 1; }
+  26.25% { transform: translateY(0px); opacity: 0; }
+  36.75% { transform: translateY(0px); opacity: 0; }
+  38% { transform: translateY(0px); opacity: 1; }
+  53.75% { transform: translateY(0px); opacity: 1; }
+  55.25% { transform: translateY(34px); opacity: 1; }
+  59.25% { transform: translateY(34px); opacity: 1; }
+  60.75% { transform: translateY(68px); opacity: 1; }
+  75% { transform: translateY(68px); opacity: 1; }
+  77% { transform: translateY(0px); opacity: 1; }
+  97.5% { transform: translateY(0px); opacity: 1; }
+  99% { transform: translateY(0px); opacity: 0; }
+  100% { transform: translateY(0px); opacity: 0; }
+}
+@keyframes s3-rv2 {
+  0% { transform: translateY(0px); opacity: 0; }
+  54% { transform: translateY(0px); opacity: 0; }
+  55.25% { transform: translateY(0px); opacity: 1; }
+  59.25% { transform: translateY(0px); opacity: 1; }
+  60.75% { transform: translateY(34px); opacity: 1; }
+  75% { transform: translateY(34px); opacity: 1; }
+  76.5% { transform: translateY(34px); opacity: 0; }
+  100% { transform: translateY(34px); opacity: 0; }
+}
+@keyframes s3-rdm {
+  0% { transform: translateY(0px); opacity: 0; }
+  59.5% { transform: translateY(0px); opacity: 0; }
+  60.75% { transform: translateY(0px); opacity: 1; }
+  75% { transform: translateY(0px); opacity: 1; }
+  76.5% { transform: translateY(0px); opacity: 0; }
+  100% { transform: translateY(0px); opacity: 0; }
+}
+@keyframes s3-rth {
+  0% { transform: translateY(0px); opacity: 0; }
+  18% { transform: translateY(0px); opacity: 0; }
+  19.25% { transform: translateY(0px); opacity: 1; }
+  25% { transform: translateY(0px); opacity: 1; }
+  26.25% { transform: translateY(0px); opacity: 0; }
+  84.5% { transform: translateY(0px); opacity: 0; }
+  85.75% { transform: translateY(0px); opacity: 1; }
+  97.5% { transform: translateY(0px); opacity: 1; }
+  99% { transform: translateY(0px); opacity: 0; }
+  100% { transform: translateY(0px); opacity: 0; }
+}
+@keyframes s3-v1cur {
+  0% { opacity: 0; }
+  50.25% { opacity: 0; }
+  51.5% { opacity: 1; }
+  54.75% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-v1non {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  56% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-v1dim {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  56% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-v2cur {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.25% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-v2non {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-v2dim {
+  0% { opacity: 0; }
+  59.75% { opacity: 0; }
+  61% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-dmcur {
+  0% { opacity: 0; }
+  60.5% { opacity: 0; }
+  61.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-zv1 {
+  0% { opacity: 0; }
+  10.25% { opacity: 0; }
+  11.5% { opacity: 1; }
+  25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-zv2 {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes s3-zth {
+  0% { opacity: 0; }
+  18.25% { opacity: 0; }
+  19.5% { opacity: 1; }
+  25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  84.75% { opacity: 0; }
+  86% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- ===== wires (drawn first; boxes sit on top) ===== -->
+<line class="wire" x1="85" y1="166" x2="85" y2="135" marker-end="url(#ah)"/>
+<line class="wire s-orange" x1="105" y1="134" x2="105" y2="165" marker-end="url(#ah-orange)"/>
+<text class="tiny sb f-orange" x="121" y="154">15 min</text>
+<line class="wire" x1="156" y1="186" x2="195" y2="186" marker-end="url(#ah)"/>
+<line class="wire" x1="196" y1="288" x2="157" y2="288" marker-end="url(#ah)"/>
+<line class="wire" x1="95" y1="266" x2="95" y2="207" marker-end="url(#ah)"/>
+<text class="tiny" x="101" y="240">thumbnails</text>
+<line class="wire" x1="764" y1="186" x2="803" y2="186" marker-end="url(#ah)"/>
+<line class="wire" x1="865" y1="206" x2="865" y2="265" marker-end="url(#ah)"/>
+<text class="tiny" x="871" y="240">polls</text>
+<line class="wire" x1="804" y1="288" x2="765" y2="288" marker-end="url(#ah)"/>
+<line class="wire" x1="764" y1="138" x2="803" y2="138" marker-end="url(#ah)"/>
+
+<!-- ===== neighbours: left (client side) ===== -->
+<rect class="box" x="34" y="96" width="122" height="38" rx="10"/>
+<text class="label mid" x="95" y="112">API</text>
+<text class="tiny mid" x="95" y="127">Lambda: signs URLs</text>
+<rect class="box" x="34" y="166" width="122" height="40" rx="10"/>
+<text class="label mid" x="95" y="182">Phone app</text>
+<text class="tiny mid" x="95" y="198">user 9f3c</text>
+<rect class="box" x="34" y="266" width="122" height="44" rx="10"/>
+<text class="label mid" x="95" y="284">CloudFront</text>
+<text class="tiny mid" x="95" y="300">CDN · reads via OAC</text>
+
+<!-- ===== neighbours: right (back office) ===== -->
+<rect class="box" x="804" y="96" width="122" height="46" rx="10"/>
+<text class="label mid" x="865" y="115">Athena</text>
+<text class="tiny mid" x="865" y="132">queries in place</text>
+<rect class="box" x="804" y="166" width="122" height="40" rx="10"/>
+<text class="label mid" x="865" y="182">SQS queue</text>
+<text class="tiny mid mono" x="865" y="198">thumbnail-jobs</text>
+<rect class="box" x="804" y="266" width="122" height="44" rx="10"/>
+<text class="label mid" x="865" y="284">Thumbnailer</text>
+<text class="tiny mid" x="865" y="300">Lambda function</text>
+
+<!-- ===== the product: Amazon S3 ===== -->
+<rect class="box" x="184" y="96" width="592" height="284" rx="16" stroke-width="2"/>
+<text class="label" x="200" y="117">Amazon S3</text>
+<text class="tiny" x="284" y="117">object storage</text>
+<text class="tiny end" x="760" y="117">Region us-east-1</text>
+
+<!-- bucket -->
+<rect class="f-bg s-line" x="196" y="124" width="568" height="184" rx="12" stroke-width="1.5"/>
+<path class="f-teal-soft s-teal" d="M208 135h16l-2.2 13.5h-11.6z" stroke-width="1.4" stroke-linejoin="round"/>
+<ellipse class="f-bg s-teal" cx="216" cy="135" rx="8" ry="2.4" stroke-width="1.4"/>
+<text class="label mono" x="232" y="148">photos-prod</text>
+<rect class="f-panel s-line" x="346" y="134" width="116" height="18" rx="9" stroke-width="1"/>
+<text class="tiny mid" x="404" y="147">Versioning: Enabled</text>
+<rect class="f-panel s-line" x="468" y="134" width="128" height="18" rx="9" stroke-width="1"/>
+<text class="tiny mid" x="532" y="147">Block Public Access</text>
+<rect class="f-panel s-line" x="602" y="134" width="52" height="18" rx="9" stroke-width="1"/>
+<text class="tiny mid" x="628" y="147">SSE-S3</text>
+<g class="p3"><rect class="f-teal-soft s-teal" x="346" y="134" width="116" height="18" rx="9" stroke-width="1.5"/></g>
+<g class="p4"><rect class="f-orange-soft s-orange" x="468" y="134" width="128" height="18" rx="9" stroke-width="1.5"/><rect class="f-orange-soft s-orange" x="602" y="134" width="52" height="18" rx="9" stroke-width="1.5"/></g>
+<text class="tiny" x="462" y="166">size</text>
+<text class="tiny" x="512" y="166">version ID</text>
+<text class="tiny" x="590" y="166">storage class</text>
+
+<!-- step 2: the request check at the bucket's edge -->
+<g class="p2"><text class="tiny sb f-orange s3-chk" x="216" y="166">✓ signature  ✓ not expired</text></g>
+<g class="p2"><circle class="none s-orange s3-gate" cx="204" cy="186" r="12" stroke-width="2.5"/></g>
+
+<!-- rows: one object version each (drawn at their step-1 slot; keyframes move them) -->
+<g class="s3-rv1">
+  <rect class="box" x="208" y="172" width="544" height="28" rx="7"/>
+  <path class="f-teal-soft s-teal" d="M216 179.5h7l3 3v10.5h-10z" stroke-width="1.2" stroke-linejoin="round"/>
+  <text class="s3-key mono" x="232" y="190">u/9f3c/IMG_0042.jpg</text>
+  <text class="tiny" x="462" y="190">3.2 MB</text>
+  <text class="tiny mono" x="512" y="190"><tspan class="b f-ink">v1</tspan> 3sL4kq…</text>
+  <rect class="f-teal-soft s-teal" x="590" y="178" width="80" height="16" rx="8" stroke-width="1"/>
+  <text class="s3-cls mono mid" x="630" y="190">STANDARD</text>
+  <rect class="f-bg s3-v1dim" x="208" y="172" width="544" height="28" rx="7" fill-opacity="0.6"/>
+  <text class="tiny sb f-green s3-v1cur" x="682" y="190">current</text>
+  <text class="tiny sb s3-v1non" x="682" y="190">noncurrent</text>
+</g>
+<g class="s3-rv2">
+  <rect class="box" x="208" y="172" width="544" height="28" rx="7"/>
+  <path class="f-teal-soft s-teal" d="M216 179.5h7l3 3v10.5h-10z" stroke-width="1.2" stroke-linejoin="round"/>
+  <text class="s3-key mono" x="232" y="190">u/9f3c/IMG_0042.jpg</text>
+  <text class="tiny" x="462" y="190">3.4 MB</text>
+  <text class="tiny mono" x="512" y="190"><tspan class="b f-ink">v2</tspan> Zr8Qm1…</text>
+  <rect class="f-teal-soft s-teal" x="590" y="178" width="80" height="16" rx="8" stroke-width="1"/>
+  <text class="s3-cls mono mid" x="630" y="190">STANDARD</text>
+  <rect class="f-bg s3-v2dim" x="208" y="172" width="544" height="28" rx="7" fill-opacity="0.6"/>
+  <text class="tiny sb f-green s3-v2cur" x="682" y="190">current</text>
+  <text class="tiny sb s3-v2non" x="682" y="190">noncurrent</text>
+</g>
+<g class="s3-rdm">
+  <rect class="box" x="208" y="172" width="544" height="28" rx="7"/>
+  <path class="f-red-soft s-red" d="M216 179.5h7l3 3v10.5h-10z" stroke-width="1.2" stroke-dasharray="2 1.5" stroke-linejoin="round"/>
+  <text class="s3-key mono" x="232" y="190">u/9f3c/IMG_0042.jpg</text>
+  <text class="tiny sb f-red" x="382" y="190">delete marker</text>
+  <text class="tiny" x="462" y="190">—</text>
+  <text class="tiny mono" x="512" y="190"><tspan class="b f-ink">v3</tspan> kX3dp0…</text>
+  <text class="tiny mid" x="630" y="190">—</text>
+  <text class="tiny sb f-green s3-dmcur" x="682" y="190">current</text>
+</g>
+<g class="s3-rth">
+  <rect class="box" x="208" y="274" width="544" height="28" rx="7"/>
+  <path class="f-teal-soft s-teal" d="M216 281.5h7l3 3v10.5h-10z" stroke-width="1.2" stroke-linejoin="round"/>
+  <text class="s3-key mono" x="232" y="292">thumbnails/u/9f3c/IMG_0042.jpg</text>
+  <text class="tiny" x="462" y="292">24 KB</text>
+  <text class="tiny mono" x="512" y="292">Mq7Ty2…</text>
+  <rect class="f-teal-soft s-teal" x="590" y="280" width="80" height="16" rx="8" stroke-width="1"/>
+  <text class="s3-cls mono mid" x="630" y="292">STANDARD</text>
+</g>
+
+<!-- step 2 notes inside the bucket -->
+<g class="p2"><text class="tiny sb f-green s3-etag" x="232" y="224">200 OK  ETag "9b2cf535…"  only after the bytes are stored</text></g>
+<g class="p2"><text class="tiny sb f-green s3-raw" x="232" y="258">GET right after → the new photo (strong read-after-write)</text></g>
+<!-- step 3 notes -->
+<g class="p3"><text class="tiny sb f-red s3-404" x="232" y="292">GET → 404 Not Found</text></g>
+<g class="p3"><text class="tiny sb f-green s3-vid" x="380" y="292">GET ?versionId=Zr8Qm1… → 200 OK: nothing is lost</text></g>
+<!-- step 4 notes -->
+<g class="p4"><g class="s3-x403"><circle class="f-red" cx="204" cy="186" r="9"/><path class="none s-bg" d="M200.5 182.5l7 7m0-7l-7 7" stroke-width="2" stroke-linecap="round"/><text class="tiny sb f-red" x="232" y="224">Unsigned GET → 403 AccessDenied</text></g></g>
+<g class="p4"><text class="tiny sb f-green s3-oac" x="232" y="258">CloudFront's OAC-signed GET → 200 OK</text></g>
+<g class="p4"><g class="s3-evbox">
+  <rect class="f-purple-soft s-purple" x="476" y="208" width="276" height="58" rx="8" stroke-width="1.2"/>
+  <text class="tiny mono sb f-purple" x="488" y="225">s3:ObjectCreated:Put → thumbnail-jobs</text>
+  <text class="tiny mono" x="488" y="241">key u/9f3c/IMG_0042.jpg  size 3.2 MB</text>
+  <text class="tiny" x="488" y="257">filter prefix u/: thumbnails/ won't loop</text>
+</g></g>
+
+<!-- Availability Zones -->
+<rect class="f-bg s-line" x="196" y="318" width="183" height="54" rx="8" stroke-width="1.5"/>
+<rect class="f-bg s-line" x="388" y="318" width="183" height="54" rx="8" stroke-width="1.5"/>
+<rect class="f-bg s-line" x="580" y="318" width="184" height="54" rx="8" stroke-width="1.5"/>
+<text class="tiny sb" x="206" y="334">Availability Zone 1</text>
+<text class="tiny sb" x="398" y="334">Availability Zone 2</text>
+<text class="tiny sb" x="590" y="334">Availability Zone 3</text>
+<g class="p2"><g class="s3-ok3"><text class="tiny sb f-green end" x="371" y="334">✓ stored</text><text class="tiny sb f-green end" x="563" y="334">✓ stored</text><text class="tiny sb f-green end" x="756" y="334">✓ stored</text></g></g>
+<g class="s3-zv1">
+  <rect class="f-teal-soft s-teal" x="206" y="342" width="24" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="218" y="352.5">v1</text>
+  <rect class="f-teal-soft s-teal" x="398" y="342" width="24" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="410" y="352.5">v1</text>
+  <rect class="f-teal-soft s-teal" x="590" y="342" width="24" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="602" y="352.5">v1</text>
+</g>
+<g class="s3-zv2">
+  <rect class="f-teal-soft s-teal" x="234" y="342" width="24" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="246" y="352.5">v2</text>
+  <rect class="f-teal-soft s-teal" x="426" y="342" width="24" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="438" y="352.5">v2</text>
+  <rect class="f-teal-soft s-teal" x="618" y="342" width="24" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="630" y="352.5">v2</text>
+</g>
+<g class="s3-zth">
+  <rect class="f-teal-soft s-teal" x="234" y="342" width="38" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="253" y="352.5">thumb</text>
+  <rect class="f-teal-soft s-teal" x="426" y="342" width="38" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="445" y="352.5">thumb</text>
+  <rect class="f-teal-soft s-teal" x="618" y="342" width="38" height="14" rx="4" stroke-width="1"/><text class="s3-chip mid" x="637" y="352.5">thumb</text>
+</g>
+
+<!-- ===== explanation panels ===== -->
+<rect class="box" x="34" y="388" width="440" height="80" rx="12"/>
+<rect class="box" x="486" y="388" width="440" height="80" rx="12"/>
+<g class="p4"><rect class="f-amber-soft s-amber" x="486" y="388" width="440" height="80" rx="12" stroke-width="1.5"/></g>
+<g class="p1">
+  <text class="s3-hd" x="48" y="404">WHERE S3 SITS</text>
+  <text class="tiny" x="48" y="419">The API signs a 15-minute upload URL and never handles the bytes</text>
+  <text class="tiny" x="48" y="433">The phone PUTs IMG_0042.jpg straight into the bucket</text>
+  <text class="tiny" x="48" y="447">ObjectCreated → SQS → Thumbnailer writes thumbnails/u/9f3c/…</text>
+  <text class="tiny" x="48" y="461">CloudFront serves the thumbnails; Athena queries objects in place</text>
+  <text class="s3-hd" x="500" y="404">ONE OBJECT</text>
+  <text class="tiny mono" x="500" y="419">s3://photos-prod/u/9f3c/IMG_0042.jpg</text>
+  <text class="tiny" x="500" y="433">A bucket lives in one Region; bucket names share a global namespace</text>
+  <text class="tiny" x="500" y="447">An object is a key, its bytes, metadata and a version ID: 0 B to 50 TB</text>
+  <text class="tiny" x="500" y="461">No limit on the number of objects or bytes in a bucket</text>
+</g>
+<g class="p2">
+  <text class="s3-hd" x="48" y="404">PRESIGNED PUT, THEN GET</text>
+  <text class="tiny mono" x="48" y="419">PUT /u/9f3c/IMG_0042.jpg?X-Amz-Expires=900&amp;X-Amz-Signature=…</text>
+  <text class="tiny" x="48" y="433">S3 recomputes the SigV4 signature and checks the expiry time</text>
+  <text class="tiny" x="48" y="447">It stores the bytes redundantly across ≥ 3 AZs, then answers 200 OK</text>
+  <text class="tiny" x="48" y="461">A GET or LIST right after sees the new photo: strong consistency</text>
+  <text class="s3-hd" x="500" y="404">KEYS AND PREFIXES</text>
+  <text class="tiny" x="500" y="419">u/9f3c/IMG_0042.jpg is one key in a flat namespace: no folders</text>
+  <text class="tiny" x="500" y="433">u/ and u/9f3c/ are prefixes that LIST, rules and limits use</text>
+  <text class="tiny" x="500" y="447">From 100 MB, upload in parts: 5 MiB to 5 GiB each, ≤ 10,000 parts</text>
+  <text class="tiny" x="500" y="461">One PUT ≤ 5 GB; one object ≤ 50 TB (since December 2025)</text>
+</g>
+<g class="p3">
+  <text class="s3-hd" x="48" y="404">VERSIONS</text>
+  <text class="tiny" x="48" y="419">A PUT to an existing key adds a version; nothing is overwritten</text>
+  <text class="tiny" x="48" y="433">DELETE adds a delete marker, so a plain GET returns 404</text>
+  <text class="tiny" x="48" y="447">Undo: delete the marker; every version stays readable by versionId</text>
+  <text class="tiny" x="48" y="461">Each version is a whole object, stored and billed in full</text>
+  <text class="s3-hd" x="500" y="404">LIFECYCLE ON u/ · PRICE PER GB-MONTH, US-EAST-1</text>
+  <rect class="f-teal-soft s-teal" x="512" y="409" width="86" height="13" rx="6.5" stroke-width="1"/><text class="s3-chip mono mid" x="555" y="418.5">STANDARD</text>
+  <rect class="f-teal-soft s-teal" x="512" y="423" width="86" height="13" rx="6.5" stroke-width="1"/><text class="s3-chip mono mid" x="555" y="432.5">GLACIER_IR</text>
+  <rect class="f-teal-soft s-teal" x="512" y="437" width="86" height="13" rx="6.5" stroke-width="1"/><text class="s3-chip mono mid" x="555" y="446.5">DEEP_ARCHIVE</text>
+  <text class="tiny mono" x="606" y="419">$0.023</text>
+  <text class="tiny mono" x="606" y="433">$0.004</text>
+  <text class="tiny mono" x="606" y="447">$0.00099</text>
+  <text class="tiny" x="668" y="419">new uploads · no retrieval fee</text>
+  <text class="tiny" x="668" y="433"><tspan class="sb f-blue">after 90 days</tspan> · $0.03/GB read · 90-day min</text>
+  <text class="tiny" x="668" y="447">restore takes hours · 180-day min</text>
+  <text class="tiny" x="500" y="461">Old versions expire 30 days after they stop being current</text>
+  <g class="s3-lc"><circle class="f-blue pkt" r="5"/></g>
+</g>
+<g class="p4">
+  <text class="s3-hd" x="48" y="404">ACCESS IS CLOSED BY DEFAULT</text>
+  <text class="tiny" x="48" y="419">New buckets: Block Public Access on, ACLs off, SSE-S3 encryption</text>
+  <text class="tiny" x="48" y="433">Unsigned GET of the object URL → 403 AccessDenied</text>
+  <text class="tiny" x="48" y="447">Bucket policy: only this CloudFront distribution may GetObject</text>
+  <text class="tiny" x="48" y="461">IAM: API writes u/*; Thumbnailer reads u/* and writes thumbnails/*</text>
+  <text class="s3-hd f-amber-ink" x="500" y="404">LIMITS TO PLAN FOR</text>
+  <text class="tiny" x="500" y="419">≥ 3,500 writes and 5,500 reads per second per prefix</text>
+  <text class="tiny" x="500" y="433">No edits in place: a change is a new PUT of the whole object</text>
+  <text class="tiny" x="500" y="447">Events arrive at least once, unordered, usually within seconds</text>
+  <text class="tiny" x="500" y="461">You pay for GB-months, requests, retrievals and data out</text>
+</g>
+
+<!-- ===== tokens (drawn at 0,0; keyframes place them) ===== -->
+<circle class="f-blue pkt s3-t1req" r="6"/>
+<g class="s3-t1url"><rect class="f-orange pkt" x="-14" y="-8" width="28" height="16" rx="8"/><text class="s3-tk mid" y="3.5">URL</text></g>
+<g class="s3-t1put"><rect class="f-blue pkt" x="-8" y="-7" width="16" height="14" rx="3"/><path class="none s-bg" d="M-5 4l3.5-4 2 2 3-4 2.5 6" stroke-width="1.3" stroke-linejoin="round"/><text class="tiny b f-blue mid" y="-12">PUT</text></g>
+<g class="s3-t1ev"><rect class="f-purple pkt" x="-8" y="-8" width="16" height="16" rx="4"/><text class="tiny b f-purple mid" y="-13">event</text></g>
+<rect class="f-purple pkt s3-t1poll" x="-8" y="-8" width="16" height="16" rx="4"/>
+<g class="s3-t1th"><rect class="f-teal pkt" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny b f-teal mid" y="-12">PUT</text></g>
+<circle class="f-green pkt s3-t1dla" r="6"/>
+<circle class="f-green pkt s3-t1dlb" r="6"/>
+<rect class="f-teal pkt s3-t1sql" x="-7" y="-7" width="14" height="14" rx="3"/>
+
+<g class="s3-t2put"><rect class="f-blue pkt" x="-8" y="-7" width="16" height="14" rx="3"/><path class="none s-bg" d="M-5 4l3.5-4 2 2 3-4 2.5 6" stroke-width="1.3" stroke-linejoin="round"/><text class="tiny b f-blue mid" y="-12">PUT</text></g>
+<rect class="f-teal pkt s3-d1" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="f-teal pkt s3-d2" x="-7" y="-7" width="14" height="14" rx="3"/>
+<rect class="f-teal pkt s3-d3" x="-7" y="-7" width="14" height="14" rx="3"/>
+<circle class="f-green pkt s3-t2ok" r="6"/>
+<g class="s3-t2get"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-11">GET</text></g>
+<circle class="f-green pkt s3-t2got" r="6"/>
+
+<g class="s3-t3put"><rect class="f-blue pkt" x="-8" y="-7" width="16" height="14" rx="3"/><path class="none s-bg" d="M-5 4l3.5-4 2 2 3-4 2.5 6" stroke-width="1.3" stroke-linejoin="round"/><text class="tiny b f-blue mid" y="-12">PUT</text></g>
+<g class="s3-t3del"><circle class="f-red pkt" r="6"/><text class="tiny b f-red mid" y="-11">DELETE</text></g>
+<g class="s3-t3get"><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-11">GET</text></g>
+<circle class="f-red pkt s3-t3nf" r="6"/>
+
+<g class="s3-t4ev"><rect class="f-purple pkt" x="-8" y="-8" width="16" height="16" rx="4"/><text class="tiny b f-purple mid" y="-13">event</text></g>
+<rect class="f-purple pkt s3-t4poll" x="-8" y="-8" width="16" height="16" rx="4"/>
+<g class="s3-t4th"><rect class="f-teal pkt" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny b f-teal mid" y="-12">PUT</text></g>
+<g class="s3-t4anon"><circle class="f-red pkt" r="6"/><text class="tiny b f-red mid" y="-11">GET</text></g>
+<circle class="f-blue pkt s3-t4oac" r="6"/>
+<circle class="f-green pkt s3-t4dla" r="6"/>
+<circle class="f-green pkt s3-t4dlb" r="6"/>
+</g>
+</svg>
