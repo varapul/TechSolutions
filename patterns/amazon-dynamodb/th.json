@@ -1,0 +1,21 @@
+{
+  "summary": "database แบบ key-value และ document ที่เป็น serverless: partition key กระจาย item ไปตาม partition เพื่อให้อ่านได้ในระดับ millisecond หลักเดียว",
+  "steps": [
+    {
+      "title": "DynamoDB อยู่ตรงไหน",
+      "body": "API Gateway ของร้านเรียก Lambda function **orders-api** แล้ว function นี้ก็บันทึกแต่ละ order ลงตาราง **Orders** ด้วย `PutItem` ทุก call เป็น HTTPS request ที่เซ็นแล้ว เลยไม่มี server, version หรือ connection pool ให้ต้องดูแล และในโหมด **on-demand** ก็จ่ายตามจำนวน request ส่วน **DynamoDB Streams** ส่งทุกการเปลี่ยนแปลงไปที่ **order-views** ที่คอยอัปเดต view อื่น ๆ ให้ตรงกัน ตัวตารางเองออกแบบรอบ access pattern ที่รู้ล่วงหน้า"
+    },
+    {
+      "title": "Partition key และ sort key",
+      "body": "partition key `C-17` ถูก hash เพื่อเลือก partition **P2** และในนั้น item ของ C-17 ถูกเก็บเรียงตาม sort key `sk` (`orderDate#orderId`) ทำให้ `2026-10-06#o-981` อยู่ถัดหลัง `2026-10-02#o-967` ส่วน P2 ถูกเก็บไว้บน **3 replica ใน 3 Availability Zone** และการเขียนจะได้ ack เมื่อ 2 replica ในนั้นเก็บมันไว้แล้ว ตัว `Query` ที่หา `C-17` ด้วย `begins_with(sk, \"2026-10\")` อ่านช่วงต่อเนื่องช่วงเดียวใน partition เดียว ส่วน `Scan` อ่านทุก item ในตาราง"
+    },
+    {
+      "title": "Throughput และ hot key",
+      "body": "แต่ละ partition รับได้มากสุด **3,000 read unit และ 1,000 write unit ต่อวินาที** ช่วง flash sale ทุก order ของ guest ถูกบันทึกไว้ใต้ `customerId = GUEST` ทำให้ 2,400 write/s ไป hash ลงที่ P3 แล้ว P3 ก็โดน throttle ระหว่างที่ P1 กับ P2 ว่างอยู่ และตารางโดยรวมก็ยังมีที่เหลือ ส่วน adaptive capacity ย้าย throughput ไปให้ partition ที่ยุ่งได้ แต่ดันให้เกินเพดานนั้นไม่ได้ ทางแก้คือ key ที่มีค่าหลากหลาย (id แยกให้ guest แต่ละคน) หรือ **write sharding** (`GUEST#0` … `GUEST#9`)"
+    },
+    {
+      "title": "Consistency และข้อจำกัด",
+      "body": "การอ่านเป็นแบบ **eventually consistent** เป็นค่าตั้งต้น ส่วน `ConsistentRead=true` ใช้ read unit สองเท่า และ global secondary index ไม่มีตัวเลือกนี้ ตัว **byOrderId** อัปเดตแบบ asynchronous การค้นหาทันทีหลัง `PutItem` เลยยังไม่เจอ `o-982` จนกว่า index จะตามทัน ส่วน conditional write ให้ optimistic locking และ transaction หนึ่งครอบได้ถึง 100 item แต่ item หนึ่งใหญ่ได้ไม่เกิน **400 KB** ส่วน query ต้องเดินตาม key ที่ออกแบบไว้ (ถ้าจะทำ analytics ให้ export ไป S3) และ global table จะตัดสิน write ที่ชนกันแบบ last writer wins เว้นแต่จะเลือก multi-Region strong consistency"
+    }
+  ]
+}

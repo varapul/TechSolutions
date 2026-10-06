@@ -1,0 +1,21 @@
+{
+  "summary": "message queue แบบ managed: consumer เป็นฝ่าย poll, visibility timeout ซ่อน message ที่กำลังทำอยู่ และ message ที่พังซ้ำ ๆ จะไปที่ dead-letter queue",
+  "steps": [
+    {
+      "title": "SQS อยู่ตรงไหน",
+      "body": "Orders API ของ Acme Shop เรียก `SendMessage` ทุกครั้งที่มี order ใหม่ และตอบ **202 Accepted** ทันทีที่ SQS ยืนยันว่ารับ message แล้ว ตอนนั้น SQS เก็บมันไว้ในหลาย Availability Zone เรียบร้อย ส่วน order 8 ตัวที่มาเป็น burst (m-11 ถึง m-18) รออยู่ใน standard queue **orders** แทนที่จะถาโถมใส่ worker ส่วน worker สามตัว long-poll queue นี้อยู่ และแต่ละตัวว่างเมื่อไรก็หยิบ message ถัดไป ทำให้ burst ค่อย ๆ หมดไปตามจังหวะของ worker และไม่มี order ไหนถูกปฏิเสธ"
+    },
+    {
+      "title": "รับ ซ่อน แล้วลบ",
+      "body": "`ReceiveMessage` ของ worker-1 ได้ **m-17** มาพร้อม receipt handle ตัว message ยังอยู่ใน queue แต่ถูกซ่อนจากตัวรับอื่นไว้ตลอด `VisibilityTimeout` **60 s** ทำให้ worker-2 ได้ m-18 ไปแทน จากนั้น worker-1 ก็เรียก `DeleteMessage` พร้อม receipt handle แล้ว m-17 ถึงจะหายไปจริง ๆ ส่วน worker-3 เจอ queue ว่าง แต่ long poll ของมัน (`WaitTimeSeconds` 20) รออยู่แทนที่จะกลับมาทันที แล้วก็คืน m-19 ทันทีที่มันมาถึง"
+    },
+    {
+      "title": "ส่งซ้ำ และ DLQ",
+      "body": "worker-2 crash ไปตอนถือ **m-18** อยู่และไม่ได้ลบมัน พอ 60 s ของมันหมด m-18 ก็กลับมามองเห็นได้อีก แล้ว worker-3 ก็รับไป (receive count 2) นี่คือเหตุผลที่ handler ต้อง idempotent ส่วน **m-20** ไม่มีทาง process สำเร็จ: พอรับแล้วพังครบ 5 ครั้ง redrive policy (`maxReceiveCount` 5) ก็ย้ายมันไปที่ **orders-dlq** ตรงนั้นมี alarm ดูความลึกของ queue คอย page หา on-call engineer แล้วหลังแก้เสร็จ การ redrive (`StartMessageMoveTask`) ก็ส่ง m-20 กลับไปที่ orders"
+    },
+    {
+      "title": "Standard, FIFO และข้อจำกัด",
+      "body": "queue แบบ **standard** รับ call ได้แทบไม่จำกัดต่อวินาที แต่รักษาลำดับ message ได้แค่แบบ best-effort และอาจส่ง message เดียวกันซ้ำสองครั้ง ส่วน **payments.fifo** ส่ง message ของลูกค้าแต่ละคน (หนึ่ง message group ต่อลูกค้าหนึ่งคน) ออกไปตามลำดับ โดยกัก message ที่มาทีหลังของ group ไว้ระหว่างที่ตัวก่อนหน้ายัง in flight และทิ้งการส่งซ้ำที่ใช้ deduplication ID เดิมภายใน 5 นาที มันรับได้ 300 call ต่อวินาทีต่อ API action (3,000 message ถ้าส่งเป็น batch ละ 10) หรือได้ถึง 70,000 ในโหมด high-throughput ที่ US East (N. Virginia), US West (Oregon) และ Europe (Ireland) ข้อจำกัด ณ ตุลาคม 2026 คือ 1 MiB ต่อ message, retention 1 นาทีถึง 14 วัน (ค่าตั้งต้น 4 วัน), visibility timeout ไม่เกิน 12 ชั่วโมง และ message ที่ in flight ได้ประมาณ 120,000 ตัวต่อ queue"
+    }
+  ]
+}

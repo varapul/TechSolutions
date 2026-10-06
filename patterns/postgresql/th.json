@@ -1,0 +1,21 @@
+{
+  "summary": "relational database: ACID transaction ด้วย MVCC มี write-ahead log ไว้ทำ durability และ replication มี SQL และ index ให้เลือกหลายแบบ",
+  "steps": [
+    {
+      "title": "PostgreSQL อยู่ตรงไหน",
+      "body": "database ของ order ใน Acme Shop คือ **system of record** ตัว Orders กับ Catalog เข้าถึงมันผ่าน **PgBouncer** ในโหมด transaction เพราะทุก connection ของ PostgreSQL คือ server process แยกของมันเอง จากนั้น write-ahead log (WAL) ของมันก็ป้อนข้อมูลให้เพื่อนบ้านสามตัว: **standby** แบบ hot ที่ใช้รัน report, **Debezium** ที่อ่าน logical replication slot แล้ว publish ทุกการเปลี่ยนแปลงที่ commit แล้วไปที่ Kafka และ **WAL archive** ใน object storage ที่ทำให้ทำ point-in-time recovery ได้"
+    },
+    {
+      "title": "MVCC: row version",
+      "body": "T1 รัน `UPDATE stock SET qty = qty - 1 WHERE sku = 'MUG-1'` ตัว PostgreSQL ไม่ได้เขียนทับแถวเดิม แต่เพิ่ม **row version** ใหม่ (qty 6, `xmin` 742) แล้วประทับ `xmax` 742 ไว้บนตัวเก่า ทำให้ T2 ที่เป็นงาน export แบบ REPEATABLE READ ที่ snapshot ถูกถ่ายไว้ก่อน T1 commit ยังอ่านได้ 7 อยู่ ส่วน T3 ที่เป็น transaction ใหม่อ่านได้ 6 และไม่มีใครต้องรอ lock เลย พอ T2 จบ ก็ไม่มี snapshot ไหนเห็น version เก่าได้อีก แล้ว **VACUUM** ก็ลบมันทิ้ง"
+    },
+    {
+      "title": "Commit = WAL ลง disk",
+      "body": "การเปลี่ยนแปลงแต่ละครั้งจะถูกเขียนเป็น **WAL record** ลงใน WAL buffer ก่อน แล้ว COMMIT ก็ flush WAL ลง disk ก่อนที่ client จะได้ OK ส่วน page ของ table ยัง dirty อยู่ใน shared buffer จนกว่า background writer หรือ **checkpoint** จะเขียนมันลงไป ถ้า server ล่มก่อนหน้านั้น ขั้น recovery ก็จะ replay WAL ตั้งแต่ checkpoint ล่าสุดแล้วสร้าง page ขึ้นมาใหม่ ส่วน WAL record ชุดเดียวกันนี้ก็ stream ไปที่ standby ด้วย"
+    },
+    {
+      "title": "Replica และข้อจำกัด",
+      "body": "streaming replication เป็นแบบ **asynchronous** โดย default: commit ของ T1 return ก่อนที่ standby จะ replay มันเสร็จ ช่วง replay lag 200 ms นั้น report บน standby เลยยังอ่านได้ qty 7 แต่ถ้าใช้ `synchronous_commit = remote_apply` และระบุชื่อ standby ไว้ใน `synchronous_standby_names` ทุก commit จะรอการ replay นั้นแทน โดยแลกกับ commit latency ที่เพิ่มขึ้น ถ้า primary ล่ม ตัว standby จะถูก promote (โดย Patroni หรือ managed service) แต่ข้อจำกัดก็ยังอยู่: primary ตัวเดียวรับการเขียนทั้งหมด ทุก connection คือหนึ่ง process และ row version ที่ตายแล้วต้องถูก vacuum"
+    }
+  ]
+}

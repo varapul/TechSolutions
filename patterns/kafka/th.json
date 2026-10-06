@@ -1,0 +1,21 @@
+{
+  "summary": "commit log ที่แบ่ง partition และมี replica: producer ต่อ event ท้าย log ส่วน consumer group อ่านตามจังหวะของตัวเอง และ replay ย้อนหลังได้",
+  "steps": [
+    {
+      "title": "Kafka อยู่ตรงไหน",
+      "body": "service Orders publish ทุก event `OrderPlaced` ไปที่ topic **orders** แล้วก็ทำงานต่อเลย โดยไม่รู้ว่าใครเป็นคนอ่าน ตัว **billing**, **search-indexer** และ **analytics-loader** คือ consumer group สามกลุ่ม แต่ละกลุ่มอ่านทุก event ตามจังหวะของตัวเอง การอ่านไม่ได้ลบอะไรออก: topic เก็บ record ไว้ 7 วัน (`retention.ms`) ทำให้ group หนึ่งตามหลังได้ ตามทันได้ หรือเริ่มอ่านใหม่ตั้งแต่ต้นก็ได้"
+    },
+    {
+      "title": "ต่อท้าย log แล้ว replicate",
+      "body": "topic นี้มี 3 partition แต่ละ partition มี 3 replica อยู่บน broker b1, b2 และ b3 ส่วน producer เอา key `C-14` ไป hash แล้วได้ **P1** ทำให้ทุก event ของลูกค้าคนนี้ลงที่ partition เดียวกัน ตามลำดับ ตัว leader ของ P1 บน **b2** ต่อ record ไว้ท้าย log ที่ **offset 42** แล้ว follower บน b1 กับ b3 ก็ fetch มันไป ถ้าใช้ `acks=all` (default ตั้งแต่ Kafka 3.0) producer จะได้ acknowledgement เมื่อ in-sync replica ทุกตัวได้ record นั้นแล้ว"
+    },
+    {
+      "title": "Consumer group",
+      "body": "ภายใน group เดียวกัน แต่ละ partition เป็นของ consumer ตัวเดียวเท่านั้น: billing-1 อ่าน P0 กับ P1 ส่วน billing-2 อ่าน P2 พอ billing-3 เข้ามา **rebalance** ก็ย้าย P1 ไปให้มัน ส่วน billing-4 ไม่ได้อะไรเลย เพราะ 3 partition ทำให้ consumer ใน group หนึ่งมีงานทำได้มากสุดแค่ 3 ตัว แต่ละ group commit offset ของตัวเอง: billing ประมวลผลถึง 42 แล้วและ commit 43 ไว้ ส่วน search-indexer อยู่ที่ 39 ตามหลังอยู่ 4 record แต่ก็ไม่เป็นไร group หนึ่งยัง reset offset ของตัวเองเพื่อ replay ได้ด้วย"
+    },
+    {
+      "title": "Failover และข้อจำกัด",
+      "body": "broker **b2** ล่ม ตัว controller ตั้ง **b1** ที่เป็น in-sync replica ให้เป็น leader ของ P1 และเพราะ b1 กับ b3 ยังครบตาม `min.insync.replicas=2` การเขียนแบบ `acks=all` ก็ทำต่อได้ ข้อจำกัดคือ ลำดับรับประกันแค่ **ภายใน partition เดียว** ตัว **hot key** ส่ง traffic ทั้งหมดของมันไปที่ partition เดียว และ record จะถูกลบหลังพ้นช่วง retention (ที่นี่คือ 7 วัน) หรือถ้าใช้ compaction ก็จะเหลือแค่ค่าล่าสุดของแต่ละ key"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "ตาม request หนึ่งตัวกับ event หนึ่งตัวผ่านระบบทั่ว ๆ ไป: DNS, CDN, load balancer, gateway, service, cache, database, queue และ search",
+  "steps": [
+    {
+      "title": "เปิดดูหน้าสินค้าหนึ่งหน้า",
+      "body": "browser หา **shop.example** ใน DNS แล้วโหลดรูปกับ script จาก edge ของ **CDN** ที่ใกล้ที่สุด ส่วน API call `GET /products/42` จะผ่าน **load balancer** และ **API gateway** ที่คอยเช็ก token กับ rate limit แล้วไปถึง service **Catalog** แล้ว Catalog ก็เจอสินค้า 42 ใน **cache** (Redis) เลยตอบได้โดยไม่ต้อง query **database**"
+    },
+    {
+      "title": "สั่งซื้อหนึ่งครั้ง ใน transaction เดียว",
+      "body": "`POST /orders` วิ่งไปทางเดิมจนถึง service **Orders** แล้ว **database transaction** เดียวก็เขียนทั้ง order 1001 และแถว `OrderPlaced` ลงในตาราง **outbox** พอ commit เสร็จ ลูกค้าก็ได้ **201 Created** ทันที ส่วนระหว่างที่ลูกค้ารอ ก็ไม่มีการเรียกอะไรอื่นเลย"
+    },
+    {
+      "title": "event กระจายออกไป",
+      "body": "**outbox relay** publish `OrderPlaced` ไปที่ **event stream** (topic `orders`) แล้ว consumer group สามกลุ่มก็อ่านมันแยกกันเอง: **Email worker** (Lambda function) ส่งอีเมลยืนยัน ตัว **Search indexer** เพิ่ม order 1001 ลงใน search index ส่วน **analytics loader** เก็บ event ลงใน **data lake** บน S3 ทั้งหมดนี้เกิดหลังจากที่ลูกค้าได้ response ไปแล้ว"
+    },
+    {
+      "title": "ดูแลระบบให้รันได้",
+      "body": "ทุกกล่องส่ง metric, log และ trace ไปที่ **observability** (Prometheus กับ Grafana หรือ CloudWatch) พอ **Search indexer** ล่ม ตัว order 1002–1004 ก็ยังสำเร็จอยู่ดี และ event ของ order พวกนี้ก็รออยู่ใน stream ตัว dashboard จะเห็น **consumer lag** ของ group search ขึ้นไปถึง 3 แล้วผล search ก็จะตามหลังอยู่จนกว่า indexer จะกลับมา ความหน่วงนี้คือราคาของครึ่งที่เป็น asynchronous: **eventual consistency**"
+    }
+  ]
+}

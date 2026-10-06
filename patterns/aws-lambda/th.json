@@ -1,0 +1,21 @@
+{
+  "summary": "Functions as a service: โค้ดรันทีละ event ใน execution environment ที่ AWS ดูแลให้ และ scale out ตาม concurrency",
+  "steps": [
+    {
+      "title": "Lambda อยู่ตรงไหน",
+      "body": "แอปรูปรัน function สองตัวโดยไม่มี server เลยสักตัว: API Gateway เรียก `get-photo` แบบ **synchronous** และรอคำตอบของมัน ส่วน S3 ส่ง event `ObjectCreated` แต่ละตัวไปที่ SQS queue `thumbnail-jobs` แล้ว **event source mapping** ก็ poll queue นั้นและเรียก `make-thumbnail` (Python, 1,024 MB, timeout 60 s) พร้อม batch ละไม่เกิน 10 ส่วนแบบที่สามคือการเรียกแบบ **asynchronous** (S3, SNS หรือ EventBridge เรียก function ตรง ๆ) ที่เอา event ไปไว้ใน queue ภายในของ Lambda ไม่ว่าแบบไหนก็จ่ายต่อ request บวก duration × memory เป็นหน่วย GB-second"
+    },
+    {
+      "title": "Cold start และ warm start",
+      "body": "execution environment หนึ่งตัวรับทีละ request เดียว ส่วน request 2 เจอ env A ว่างอยู่ Lambda เลย thaw มันแล้วรันแค่ handler: นี่คือ **warm start** ส่วน request 3 หาตัวว่างไม่เจอ Lambda เลยสร้าง env B ใน Firecracker microVM ตัวใหม่ โหลดโค้ด start runtime และรัน init code ที่อยู่นอก handler (SDK client, configuration): นี่คือ **cold start** ที่โดนคิดเงินและเพิ่ม latency ส่วน environment ที่ว่างจะถูก freeze และถูกลบทิ้งทีหลัง การใช้ซ้ำเลยน่าจะเกิดขึ้น แต่ไม่มีการสัญญา"
+    },
+    {
+      "title": "Concurrency",
+      "body": "concurrency คือ request ต่อวินาที × duration: อัปโหลด 50 ครั้งต่อวินาที ครั้งละ 0.8 s ทำให้มีประมาณ **40 environment** ทำงานอยู่ตลอด ตัว SQS mapping เริ่มที่ 5 concurrent invoke และเพิ่มได้ถึง 300 ต่อนาที ส่วน **reserved concurrency** 100 จำกัด `make-thumbnail` ไว้ และกันความจุส่วนนั้นไว้ให้ภายใน quota ตั้งต้นของ account ที่ 1,000 ต่อ Region แล้ว invoke ที่เกิน limit ก็จะโดน throttle (429) ส่วน **provisioned concurrency** เก็บ environment ของ `get-photo` 2 ตัวไว้ให้ initialise ล่วงหน้าก่อน request มา และ **SnapStart** (Java, Python, .NET) ก็ restore environment ใหม่จาก snapshot แทน"
+    },
+    {
+      "title": "ตอน fail และข้อจำกัด",
+      "body": "มีไฟล์อัปโหลดอยู่หนึ่งไฟล์ที่เสีย ถ้าเปิด `ReportBatchItemFailures` ไว้ handler จะคืน message ตัวนั้นใน `batchItemFailures`: Lambda ลบอีก 9 ตัว ส่วนตัวที่พังจะกลับมาให้เห็นอีกหลัง visibility timeout 360 s และพอรับครบ 5 ครั้ง redrive policy ของ queue ก็ย้ายมันไปที่ `thumbnail-jobs-dlq` การส่งเป็นแบบ at least once ทำให้ handler ต้อง **idempotent** ส่วนถ้าเป็นการเรียกแบบ asynchronous ก็จะถูก retry สองครั้ง แล้วไปที่ on-failure destination แทน ข้อจำกัดที่ต้องวางแผนไว้ (ตุลาคม 2026) คือ 15 นาทีต่อ invocation, memory 128 ถึง 10,240 MB โดยได้ CPU ตามสัดส่วน, payload 6 MB สำหรับ synchronous และ 1 MB สำหรับ asynchronous และ /tmp ได้ถึง 10,240 MB"
+    }
+  ]
+}

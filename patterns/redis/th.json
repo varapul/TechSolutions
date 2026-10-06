@@ -1,0 +1,21 @@
+{
+  "summary": "server ที่เก็บ data structure ไว้ใน memory: เป็นทั้ง cache, session store, rate limiter, leaderboard และ queue แบบเบา ๆ ใน process เดียว",
+  "steps": [
+    {
+      "title": "Redis อยู่ตรงไหน",
+      "body": "API ของ Acme Shop รันบน app server แบบ **stateless** สามตัวที่ใช้ Redis ตัวเดียวร่วมกัน มัน cache JSON ของสินค้าไว้หน้า PostgreSQL (`product:42`) เก็บทุก session (`session:9f3c`) นับ request ของแต่ละ API key (`ratelimit:key-7:1201`) และเก็บ leaderboard (`top-sellers`) ทุก command ใช้ network round trip แค่รอบเดียว และตอบจาก memory"
+    },
+    {
+      "title": "ทำทีละ command",
+      "body": "INCR, GET และ ZINCRBY มาจาก app server สามตัวพร้อมกัน แล้วต่อคิวกัน: main thread ตัวเดียวรันทุก command ทีละตัวต่อกันไป แต่ละ command เลย atomic โดยไม่ต้องใช้ lock ตัว `INCR ratelimit:key-7:1201` คืนค่า 101 เกิน limit 100 ไปแล้ว ทำให้ app-1 ตอบ 429 ส่วน `GET product:42` เป็น hit และ `ZINCRBY top-sellers 1 mug` ดัน mug ขึ้นไปเป็น 813 ส่วน key ที่มี TTL ก็จะถูกลบเมื่อหมดอายุ"
+    },
+    {
+      "title": "Durability และ failover",
+      "body": "primary ต่อการเขียนทุกครั้งลงท้าย **AOF** ของมัน (ถ้าใช้ `appendfsync everysec` การล่มอาจทำให้การเขียนราว ๆ หนึ่งวินาทีหายไป) สร้าง snapshot แบบ **RDB** ได้จาก child process ที่ fork ออกมา และส่งการเขียนไปที่ replica แบบ **asynchronous** ตัว `SET product:42` ไปถึง replica ทั้งสองตัว แต่ `ZINCRBY` ที่ acknowledge ไปแล้วว่าเป็น 814 ยังอยู่ใน buffer ของ primary ตอนที่ primary ล่ม แล้ว Sentinel สองตัวก็เห็นตรงกันว่ามันล่ม เลย promote replica-1 ที่ mug ยังเป็น 813 อยู่: การเขียนที่ acknowledge ไปแล้วหายไป"
+    },
+    {
+      "title": "Scale out และข้อจำกัด",
+      "body": "**Redis Cluster** แบ่ง keyspace เป็น 16,384 hash slot ด้วย `CRC16(key) mod 16384` กระจายไปบน primary หลายตัวที่มี replica ของตัวเอง ทำให้ `product:42` (slot 12456) ย้ายไปที่ shard C ส่วน `top-sellers` (slot 9501) ไปที่ shard B ถ้า command ใช้หลาย key ทุก key ต้องอยู่ใน slot เดียวกัน ไม่อย่างนั้นจะ fail ด้วย `CROSSSLOT` ส่วน hash tag อย่าง `{user:42}` ช่วยเก็บ key ที่เกี่ยวกันไว้ด้วยกัน memory คือข้อจำกัดที่เลี่ยงไม่ได้: พอถึง `maxmemory` แล้ว `noeviction` ที่เป็น policy default ก็จะปฏิเสธการเขียนใหม่ด้วย OOM error ตัว cache เลยใช้ `allkeys-lru` หรือ policy แบบคล้าย ๆ กันแทน"
+    }
+  ]
+}

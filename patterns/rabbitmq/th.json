@@ -1,0 +1,21 @@
+{
+  "summary": "message broker: exchange route message แต่ละตัวเข้า queue แล้ว consumer ก็ถือมันไว้จนกว่าจะ acknowledge หรือ reject",
+  "steps": [
+    {
+      "title": "RabbitMQ อยู่ตรงไหน",
+      "body": "service **Orders** ของ Acme Shop publish event ทุกครั้งที่มี order และตอบลูกค้าทันทีที่ RabbitMQ ยืนยันว่าได้รับแล้ว มันไม่เคยรออีเมลหรือการจัดส่งเลย RabbitMQ เก็บ message แต่ละตัวไว้จนกว่า worker จะประมวลผลเสร็จ ทำให้ worker ของ email, fulfilment และ audit หยิบงานไปทำตามจังหวะของตัวเอง ส่วน order ที่เข้ามาเป็นชุดใหญ่ ๆ ก็รออยู่ใน queue แทนที่จะทำให้ web tier ช้าลง"
+    },
+    {
+      "title": "Route ตาม binding",
+      "body": "Orders publish ไปที่ **topic exchange** `orders` พร้อม routing key อย่าง `order.created.th` และไม่เคยระบุชื่อ queue เลย ตัว exchange เทียบ key กับ **binding** แต่ละตัวทีละคำ (`*` ตรงกับหนึ่งคำพอดี ส่วน `#` ตรงกับศูนย์คำขึ้นไป) แล้ววางสำเนาไว้ในทุก queue ที่ตรง: `order.created.th` ไปลงที่ email, fulfilment-th และ audit ส่วน `order.cancelled.us` ตรงกับ `#` อย่างเดียว เลยไปลงที่ audit ตัวเดียว"
+    },
+    {
+      "title": "Push, ack แล้ว redeliver",
+      "body": "broker **push** message ไปให้ consumer โดยที่ email worker แต่ละตัวถือ message ที่ยังไม่ acknowledge ได้มากสุด 10 ตัว (`basic.qos` prefetch 10) และ broker จะลบ message ก็ต่อเมื่อ consumer ของมัน ack หลังทำงานเสร็จแล้วเท่านั้น พอ email-2 ล่มตอนที่ถือ message ที่ยังไม่ ack อยู่ 3 ตัว RabbitMQ ก็ requeue มัน แล้ว email-1 ก็ได้รับไปโดยมี `redelivered` ติดมา: delivery เป็นแบบ at least once ตัว consumer เลยต้อง idempotent ส่วน **quorum queue** แต่ละตัวเก็บ replica ไว้บน 3 node และ publisher confirm ที่ Orders ได้จะมาก็ต่อเมื่อ 2 node ในนั้นมี message แล้ว ทำให้ถ้าเสีย rabbit-3 ไป ของที่ confirm แล้วก็ไม่หายสักตัว"
+    },
+    {
+      "title": "Poison message และข้อจำกัด",
+      "body": "order 1042 ทำให้ fulfilment worker fail ทุกครั้ง: worker reject มันแบบ requeue แล้ว quorum queue ก็นับการส่งที่ fail แต่ละครั้งไว้ใน `x-delivery-count` พอตัวนับเกิน **delivery limit** (default 20 ตั้งแต่ RabbitMQ 4.0) ตัว queue ก็ dead-letter message นั้นผ่าน `orders.dlx` ไปลงที่ `orders.dead` ให้คนเข้าไปดูได้ ข้อจำกัด (สีเหลืองอำพัน) คือ message ที่ ack แล้วจะหายไปเลย (ส่วน **stream** เก็บ log ไว้ให้ replay ได้) queue ที่ยาวจะกิน memory ไปเรื่อย ๆ จนถึงจุดที่ memory alarm บล็อก publisher และการมี consumer หลายตัวบวกกับการ redeliver ทำให้ลำดับไม่คงที่"
+    }
+  ]
+}

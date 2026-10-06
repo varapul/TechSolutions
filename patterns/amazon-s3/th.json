@@ -1,0 +1,21 @@
+{
+  "summary": "Object storage: เก็บ object ไว้ใน bucket เรียกด้วย key กระจายเก็บข้าม Availability Zone และมี storage class, versioning กับ event ให้ใช้",
+  "steps": [
+    {
+      "title": "S3 อยู่ตรงไหน",
+      "body": "bucket `photos-prod` เก็บรูปทุกรูปไว้ ตัว API (เป็น Lambda function) เซ็น **presigned PUT URL** ที่หมดอายุใน 15 นาที แล้วมือถือก็อัปโหลด `u/9f3c/IMG_0042.jpg` ตรงไปที่ S3 ทำให้ API ไม่ต้องแตะ byte ของไฟล์เลย แล้ว object ใหม่ก็จะยิง event **ObjectCreated** ที่ไปถึง thumbnail function ผ่าน SQS ส่วน CloudFront เสิร์ฟ thumbnail และ Athena ก็ query object ได้ตรงที่มันอยู่"
+    },
+    {
+      "title": "อัปโหลด object",
+      "body": "URL มี signature แบบ **SigV4** ติดมาด้วย แล้ว S3 ก็จะคำนวณมันใหม่และเช็กเวลาหมดอายุ เก็บ byte ไว้หลายชุด (S3 Standard กระจายไว้อย่างน้อยสาม Availability Zone) แล้วถึงจะตอบ **200 OK** พร้อม ETag ถ้า GET หรือ LIST ทันทีหลังจากนั้นก็จะเห็นรูปใหม่ เพราะ S3 มี **strong read-after-write consistency** มาตั้งแต่ธันวาคม 2020 ส่วนใน S3 เองไม่มี folder จริง ๆ: `u/9f3c/IMG_0042.jpg` คือ key เดียว และ slash แค่จัดกลุ่ม key เป็น prefix ส่วนไฟล์ใหญ่จะอัปโหลดเป็นหลายส่วน (multipart upload)"
+    },
+    {
+      "title": "Version และ lifecycle",
+      "body": "ถ้าเปิด versioning ไว้ การอัปโหลด `IMG_0042.jpg` ซ้ำจะสร้าง version ที่สองและเก็บ version แรกไว้ด้วย ส่วน DELETE จะเพิ่ม **delete marker**: GET ธรรมดาจะได้ 404 แต่ทั้งสอง version ยังอยู่และกู้รูปกลับมาได้ แล้ว **lifecycle rule** บน prefix `u/` ก็ย้ายไฟล์ต้นฉบับไป S3 Glacier Instant Retrieval หลัง 90 วัน และให้ version เก่าหมดอายุ 30 วันหลังจากถูกแทนที่ ยิ่ง access ช้าลงและการอ่านแพงขึ้น ค่าเก็บต่อ GB ก็ยิ่งถูกลง"
+    },
+    {
+      "title": "Event, สิทธิ์ และข้อจำกัด",
+      "body": "event ไปลงที่ SQS แล้ว Thumbnailer ก็เขียน `thumbnails/u/9f3c/IMG_0042.jpg` ส่วน prefix filter `u/` ของ notification กันไม่ให้การเขียนนี้ไปปลุกมันซ้ำ bucket ใหม่จะ block public access ปิด ACL และเข้ารหัสด้วย SSE-S3 เป็นค่าตั้งต้น ทำให้ GET ที่ไม่ได้เซ็นได้ **403** และ bucket policy ก็ให้แค่ CloudFront อ่านได้ผ่าน origin access control ข้อจำกัดที่ต้องวางแผนไว้คือ เขียนได้อย่างน้อย 3,500 ครั้งและอ่าน 5,500 ครั้งต่อวินาทีต่อ prefix, object ต้องแทนที่ทั้งก้อนแทนการแก้บางส่วน และมีค่า request, ค่า retrieval และค่า data out นอกเหนือจากค่าเก็บข้อมูล"
+    }
+  ]
+}
