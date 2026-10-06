@@ -132,8 +132,9 @@ console.log(track('xx-call', go.segs));                              // go.end i
 The site has a Thai version under `/th/`, with a language switch in the top bar. Thai pages are set in Anuphan, a loopless Thai face (SIL Open Font License), self-hosted from `src/site/fonts/`. The Thai text sits next to the English files, and anything not yet translated falls back to English:
 
 ```
-patterns/<slug>/th.json   { "summary": "…", "steps": [ { "title": "…", "body": "…" } ×4 ] }
-i18n/th.json              site strings, category titles and blurbs
+patterns/<slug>/th.json       { "summary": "…", "steps": [ { "title": "…", "body": "…" } ×4 ] }
+patterns/<slug>/README.th.md  the article: the body of README.md, without the generated header and footer
+i18n/th.json                  site strings, category titles and blurbs
 ```
 
 Labels inside the diagrams stay in English: they are mostly code, class names and numbers, which read the same in both languages.
@@ -145,3 +146,18 @@ Labels inside the diagrams stay in English: they are mostly code, class names an
 - **Mark breaks between English words:** when one sentence ends with an English word, number or code span and the next starts with one, the space doesn't show the break and the two read as one phrase ("แล้วคอย retry log เลยไปถึงช้า"). Join them with a short connective instead: "แล้วคอย retry ทำให้ log ไปถึงช้า" (แล้ว…ก็, ทำให้, ส่วน and ตัว work too).
 - **Keep the Markdown exactly:** **bold**, `code` (unchanged inside), and links, whose `../<slug>/` targets stay as they are.
 - Step titles are short headlines (about 30 Thai characters or fewer); the summary is one sentence.
+
+**Articles (`README.th.md`)** follow the English body block for block: the same headings at the same levels, the same lists, tables (same rows and columns) and links, and the code blocks copied unchanged, comments included. Use the step text in `th.json` for the pattern's terms, so the article and the player read alike. The standard section headings are always:
+
+| English | Thai |
+|---|---|
+| The problem | ปัญหา |
+| How it works | ทำงานยังไง |
+| When to use it | ใช้ตอนไหนดี |
+| When not to use it | ตอนไหนไม่ควรใช้ |
+| Trade-offs | ได้อะไร เสียอะไร |
+| Implementation notes | ข้อควรรู้ตอนลงมือทำ |
+| Code | โค้ด |
+| Complexity | Complexity |
+
+When an English article changes, update its `README.th.md` too; `npm run check` warns when their code blocks or headings no longer match.

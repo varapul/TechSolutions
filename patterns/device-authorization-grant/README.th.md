@@ -1,0 +1,53 @@
+## ปัญหา
+
+แอปบน smart TV, เครื่องเกมคอนโซล หรือ command-line tool ต้องเรียก API แทนผู้ใช้ คำตอบปกติคือ authorization code flow ที่ส่งผู้ใช้ไปเปิด browser บนอุปกรณ์เครื่องเดียวกัน แล้ว redirect กลับมาที่แอป แต่วิธีนี้ใช้ไม่ได้ถ้าอุปกรณ์ไม่มี browser ที่ใช้งานได้จริง หรือถ้าคีย์บอร์ดเดียวที่มีคือรีโมต: การพิมพ์อีเมล, password ยาว ๆ และ one-time code ทีละตัวอักษรนั้นทรมานมาก แถมยังต้องยก password ให้อุปกรณ์ด้วย ส่วน CLI ใน SSH session มีคีย์บอร์ดก็จริง แต่เครื่องที่รันมันไม่มี browser สิ่งที่อุปกรณ์พวกนี้มีคือหน้าจอ (หรือวิธีอื่นที่แสดง code สั้น ๆ ได้) กับการเชื่อมต่อออกไปหา internet และผู้ใช้ก็แทบจะมีมือถืออยู่ใกล้มือเสมอ
+
+## ทำงานยังไง
+
+OAuth 2.0 Device Authorization Grant ([RFC 8628](https://www.rfc-editor.org/rfc/rfc8628) ที่มักเรียกกันว่า *device code flow*) แบ่งการเข้าสู่ระบบออกเป็นสองอุปกรณ์: อุปกรณ์ที่อยากได้ token กับอุปกรณ์เครื่องที่สองที่มี browser จริง ๆ ให้ผู้ใช้เข้าสู่ระบบ
+
+1. **Device authorization request** อุปกรณ์ส่ง `client_id` กับ `scope` ที่ต้องการไปที่ *device authorization endpoint* ของ authorization server อุปกรณ์เก็บ client secret ไว้ไม่ได้ (ใครเป็นเจ้าของเครื่องก็ดึงออกมาได้) มันเลยมักเป็น public client และไม่ส่ง secret (RFC 8628 §5.6)
+2. **Device authorization response** server เก็บ request ที่ยัง pending ไว้ แล้วตอบกลับมาด้วย `device_code` (ค่ายาว ๆ แบบสุ่มที่อุปกรณ์เก็บไว้กับตัวเองและไม่เคยแสดงออกมา), `user_code` (สั้น ๆ ให้คนพิมพ์), `verification_uri` (สั้นและพิมพ์ง่าย), `verification_uri_complete` ที่จะมีหรือไม่มีก็ได้ (ที่อยู่เดียวกันแต่มี code ใส่ไว้แล้ว สำหรับ QR code หรือ NFC), `expires_in` (code ทั้งสองตัวใช้ได้นานแค่ไหน) และ `interval` ที่จะมีหรือไม่มีก็ได้ (ช่วงห่างขั้นต่ำระหว่างการ poll แต่ละรอบ **ถ้า server ไม่ส่งมาก็คือ 5 วินาที**)
+3. **User interaction** อุปกรณ์แสดงที่อยู่กับ code ผู้ใช้เปิดที่อยู่นั้นบนมือถือหรือ laptop แล้วเข้าสู่ระบบแบบที่ทำอยู่ทุกวัน (passkey, password, MFA หรือ federated login) กรอก code ดูว่ากำลังอนุญาตอะไร แล้วกดอนุมัติหรือปฏิเสธ ตัวอุปกรณ์ไม่เคยแตะ credential เลย
+4. **Polling** ระหว่างนั้นอุปกรณ์ก็เรียก *token endpoint* ด้วย `grant_type=urn:ietf:params:oauth:grant-type:device_code` และ `device_code` ของตัวเอง โดยรออย่างน้อย `interval` วินาทีก่อนเรียกแต่ละครั้ง ไม่มีอะไร redirect กลับมาที่อุปกรณ์เลย: protocol ถือว่ามือถือไม่มีทางติดต่ออุปกรณ์ได้ การ poll เลยเป็นวิธีที่อุปกรณ์จะรู้ผล จนกว่าจะมีผล ตัว token endpoint จะตอบด้วย error หนึ่งในสี่แบบนี้:
+   - `authorization_pending`: ยังไม่มีใครตัดสิน ให้ poll ใหม่
+   - `slow_down`: ยัง pending อยู่ และอุปกรณ์ poll เร็วเกินไป อุปกรณ์ต้องเพิ่ม interval อีก 5 วินาที ทั้งสำหรับ request นี้และทุกรอบหลังจากนี้
+   - `access_denied`: ผู้ใช้ปฏิเสธ ให้หยุด
+   - `expired_token`: เลยเวลา `expires_in` แล้ว ให้หยุด และเริ่ม flow ใหม่ก็ต่อเมื่อผู้ใช้สั่งเท่านั้น
+
+   error แบบอื่นก็ทำให้หยุด poll เหมือนกัน ถ้าเจอ connection timeout อุปกรณ์ต้อง poll ให้ห่างขึ้น เช่น เพิ่ม interval เป็นสองเท่า
+5. **Tokens** หลังผู้ใช้อนุมัติ การ poll รอบถัดไปจะได้ token response ธรรมดา: access token, refresh token (ส่วนใหญ่จะได้) และ ID token ถ้าอุปกรณ์ขอ scope `openid` มา
+
+server ที่เผยแพร่ OAuth metadata ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)) ประกาศ grant นี้ไว้ในนั้นได้ด้วย: มี `device_authorization_endpoint` และมี URN ของ grant type อยู่ใน `grant_types_supported`
+
+## ใช้ตอนไหนดี
+
+- **มีหน้าจอ แต่ไม่มีคีย์บอร์ดหรือ browser ที่ดี:** smart TV, streaming stick, เครื่องคอนโซล, set-top box, smart display, เครื่องพิมพ์ และ kiosk
+- **command-line tool ใน headless session:** CLI ผ่าน SSH, ใน container หรือบน jump host ที่มีคนนั่งอยู่อีกฝั่ง ตัวอย่างที่คุ้นกันคือ `gh auth login` (การ login ผ่าน browser ของมันจะแสดง one-time device code ให้ไปกรอกที่ github.com) และ `az login --use-device-code`
+- **ไม่ใช่ตอนที่อุปกรณ์มี browser ที่ใช้ได้** ให้ใช้ [Authorization Code + PKCE](../oauth2-authorization-code-pkce/) ที่ให้เข้าสู่ระบบบนอุปกรณ์เครื่องเดียวกัน และเลี่ยงปัญหา phishing ด้านล่างได้ อย่างบน macOS กับ Linux ตัว Azure CLI จะเปิด browser เพื่อเข้าสู่ระบบแบบ authorization code ถ้าทำได้ และถอยมาใช้ device code flow ก็ต่อเมื่อทำไม่ได้เท่านั้น
+- **ไม่ใช่ตอนที่ไม่มีผู้ใช้** การเรียกระหว่าง service กับ service ใช้ [Client Credentials](../oauth2-client-credentials/)
+- **ไม่ใช่สำหรับสิทธิ์เข้าถึงที่มีมูลค่าสูง และป้องกันด้วยวิธีอื่นไม่ได้** best current practice ของ IETF สำหรับ cross-device flow ([RFC 10027](https://www.rfc-editor.org/rfc/rfc10027), BCP 247 ที่ออกเมื่อสิงหาคม 2026) บอกให้ใช้ grant นี้ก็ต่อเมื่อใช้ทางเลือก cross-device ที่แข็งแรงกว่าไม่ได้ ให้เลี่ยงมันสำหรับ resource ที่ sensitive หรือสำคัญต่อธุรกิจ และให้เพิ่มมาตรการลดความเสี่ยงเสมอ เช่น เช็ก proximity หรือใช้อุปกรณ์ที่ลงทะเบียนไว้ก่อน แล้วก็บอกด้วยว่าห้ามใช้ cross-device flow เลยถ้า "อุปกรณ์" ทั้งสองฝั่งเป็นเครื่องเดียวกัน
+
+## ได้อะไร เสียอะไร
+
+- **remote phishing มาพร้อมกับการออกแบบ** ไม่มีอะไรผูกคนที่กดอนุมัติไว้กับหน้าจอที่แสดง code ทำให้ attacker เริ่ม flow บนอุปกรณ์ของตัวเองได้ แล้วส่ง user code ไปหาเหยื่อพร้อมข้ออ้าง ("กรอก code นี้เพื่อรักษาบัญชีของคุณไว้") ถ้าเหยื่อเข้าสู่ระบบแล้วกดอนุมัติ ตัว token ก็จะไปที่อุปกรณ์ของ attacker ส่วน RFC 8628 §5.4 ก็อธิบายการโจมตีนี้ไว้ และมันเกิดขึ้นจริง: ในเดือนกุมภาพันธ์ 2025 Microsoft รายงานแคมเปญของกลุ่มที่ Microsoft ติดตามในชื่อ Storm-2372 ที่ทำมาตั้งแต่สิงหาคม 2024 โดยใช้คำเชิญ Microsoft Teams ปลอมที่เอา device code ของ attacker มาเป็น "meeting ID"
+- **code สั้น ๆ เดาได้** user code สั้นเพื่อให้คนพิมพ์ได้ สิ่งที่กัน brute force ไว้เลยเป็นเวลาหมดอายุกับ rate limit (ดูข้อควรรู้ด้านล่าง)
+- **QR code แลกความปลอดภัยกับความสะดวก** `verification_uri_complete` ช่วยให้ไม่ต้องพิมพ์ แต่ลิงก์ที่มี code อยู่แล้วก็ยิ่งส่งไปหาเหยื่อได้ง่ายขึ้น server ก็ยังควรแสดง code และขอให้ผู้ใช้เช็กว่าตรงกับหน้าจอที่อยู่ตรงหน้า
+- **อุปกรณ์ที่กดอนุมัติไม่ใช่อุปกรณ์ที่ได้ token** device compliance, ตำแหน่ง และ risk signal จาก session บนมือถือบอกอะไรเกี่ยวกับ TV ได้น้อยมาก (RFC 8628 §5.3) ทำให้ policy ที่สร้างบนข้อมูลพวกนี้เลยไม่ได้ปกป้อง TV
+- **คนในห้องเดียวกันอาจกรอกก่อน** ใครก็ตามที่เห็นหน้าจอกรอก code ก่อนเจ้าของได้ แล้วผูกอุปกรณ์เข้ากับบัญชีของตัวเอง (session spying, §5.5)
+- **การ poll กินกำลังของระบบ** อุปกรณ์ทุกเครื่องที่รออยู่จะเรียก token endpoint ทุกไม่กี่วินาที ตัวที่ server ใช้คุมเรื่องนี้คือ `interval` กับ `slow_down`
+- **client พิสูจน์ไม่ได้ว่าตัวเองเป็นใคร** software ตัวไหนก็ส่ง `client_id` ของ public client มาได้ หน้า consent ที่บอกชื่อแอปเลยไม่ได้พิสูจน์ว่าแอปนั้นเป็นของจริง
+
+## ข้อควรรู้ตอนลงมือทำ
+
+- **User code** (RFC 8628 §6.1): RFC แนะนำให้ใช้ 8 ตัวอักษรจากพยัญชนะ 20 ตัว `BCDFGHJKLMNPQRSTVWXZ` (ไม่มีสระ code เลยสะกดเป็นคำไม่ได้) แสดงโดยคั่นด้วยขีดให้อ่านง่ายแบบ `WDJB-MJHT` ได้ 20⁸ แบบ หรือประมาณ 34.5 bit ส่วนที่ที่คนไม่ได้ใช้คีย์บอร์ด A–Z ก็ใช้ตัวเลข 9 หลักได้ (`019-450-730`, 10⁹) ให้แปลง input เป็นตัวพิมพ์ใหญ่ก่อนเทียบ ตัดขีดกับตัวที่อยู่นอก character set ออก และเลี่ยง character set ที่มีตัวหน้าตาคล้ายกัน เช่น 0 กับ O หรือ 1, l กับ I ใส่ rate limit ตอนกรอก code ด้วย: §5.1 คำนวณไว้ว่ากับ code 8 ตัวแบบนี้ rate limit กับอายุของ code รวมกันควรยอมให้เดาได้แค่ราว 5 ครั้ง เพื่อให้โอกาสของ attacker อยู่ราว 1 ใน 2³² อย่าง GitHub ก็รับการส่ง code 50 ครั้งต่อชั่วโมงต่อแอป ส่วน `device_code` ไม่มีใครต้องพิมพ์ เลยทำให้ยาวและสุ่มไปเลย (§5.2)
+- **หน้า consent:** บอกชื่อ client และประเภทของอุปกรณ์ บอกว่า request มาจากไหน บอกผู้ใช้ว่าให้ทำต่อก็ต่อเมื่อตัวเองเป็นคนเริ่มขั้นตอนนี้บนอุปกรณ์ที่อยู่ตรงหน้า และให้ปุ่ม Deny เด่นอย่างน้อยเท่ากับ Allow (RFC 10027 §6.1.14)
+- **การป้องกัน phishing** (RFC 10027): ประเมินความเสี่ยงก่อน ยืนยัน proximity ถ้าทำได้ (network เดียวกัน, geolocation, Bluetooth) ให้ code มีอายุสั้นและใช้ได้ครั้งเดียว ใส่ rate limit แล้วก็จำกัด scope ให้แคบ ให้ token มีอายุสั้น และทำ sender-constrained token
+- **เปิด grant นี้ให้เฉพาะ client ที่ต้องใช้** GitHub ให้แต่ละแอปเปิด device flow เอง ส่วน Google ต้องใช้ client type แยกสำหรับมัน ส่วน Conditional Access ของ Microsoft Entra ID มีเงื่อนไข *authentication flows* ที่ใช้บล็อกมันได้ และ Microsoft ก็แนะนำให้บล็อก device code flow ทุกที่ที่ไม่ต้องใช้
+- **พฤติกรรมของ client:** เริ่ม flow ก็ต่อเมื่อผู้ใช้สั่ง ไม่ใช่ตอนแอปเปิดขึ้นมาหรือหลังจากมีอะไรพัง (§3.1) ทำตาม `interval` กับ `slow_down` ถอยห่างออกไปหลังเจอ timeout และหยุดเมื่อเจอ error แบบอื่น
+- **token บนอุปกรณ์:** เก็บ refresh token ไว้ใน secure storage ของแพลตฟอร์ม เช่น keychain, keystore หรือ credential store ของ OS (`gh` ใช้ credential store ของระบบ และถอยไปใช้ไฟล์ plain text ก็ต่อเมื่อใช้มันไม่ได้เท่านั้น) ส่วน RFC 9700 กำหนดให้ refresh token ของ public client ต้องเป็น sender-constrained หรือต้อง rotate ทุกครั้งที่ใช้: ดู [Refresh Token Rotation](../refresh-token-rotation/) ถ้าอุปกรณ์ต้องรู้ด้วยว่าใครเข้าสู่ระบบ ให้ขอ `openid` แล้ว validate ID token ([OpenID Connect](../openid-connect/)) ให้อุปกรณ์แต่ละเครื่องมี grant ของตัวเอง จะได้ sign out TV เครื่องเดียวได้โดยไม่ต้อง sign out ผู้ใช้ออกจากทุกที่: แอป revoke token ของตัวเองตอน sign out ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)) และผู้ใช้หรือ admin ก็ revoke grant นั้นที่ฝั่ง server ได้ ส่วน [Sessions vs Tokens](../sessions-vs-tokens/) อธิบายว่าการ revoke ไปถึงอะไรได้และไปไม่ถึงอะไร
+- **ความต่างของแต่ละ vendor** (เช็กเมื่อตุลาคม 2026):
+  - *Microsoft Entra ID*: endpoint คือ `/oauth2/v2.0/devicecode` ส่วน code มีอายุ 15 นาทีโดย default แล้วก็ไม่รองรับ `verification_uri_complete` ถ้าผู้ใช้ปฏิเสธจะได้ `authorization_declined` แทน `access_denied` และจะได้ refresh token ก็ต่อเมื่อมี `offline_access` อยู่ใน scope
+  - *Google*: ต้องใช้ OAuth client ประเภท "TVs and Limited Input devices" และยอมให้ใช้แค่ scope ไม่กี่ตัว (`openid`, `email`, `profile`, scope ของ Drive สองตัว และของ YouTube สองตัว) ใน response ที่อยู่ใช้ชื่อว่า `verification_url` (`https://www.google.com/device`) ในเอกสารบอกว่า user code เป็น case-sensitive และต้องแสดงตรงตามที่ได้มา ส่วนคำตอบแบบ pending กับ `slow_down` มาพร้อม HTTP 428 และ 403 เลยต้องอ่าน field `error` แทน status code
+  - *GitHub*: ต้องเปิด device flow ใน settings ของแอป ผู้ใช้กรอก code 8 ตัวที่ `https://github.com/login/device` ภายใน 15 นาที ส่วน `slow_down` เพิ่มทีละ 5 วินาที และไม่ต้องใช้ client secret
+- **ทางเลือก cross-device ที่แข็งแรงกว่า** RFC 10027 จัดให้ FIDO cross-device authentication (มือถือทำหน้าที่เป็น passkey authenticator และพิสูจน์ proximity ผ่าน Bluetooth) เป็นการป้องกันที่ดีที่สุด และบอกว่าใช้คู่กับ authorization code flow และ PKCE เพื่อเข้าสู่ระบบบน TV ได้โดยไม่มีความเสี่ยงของ grant นี้ ถ้าใช้วิธีนั้นไม่ได้ RFC ชี้ไปที่ **CIBA** ([OpenID Connect Client-Initiated Backchannel Authentication Core 1.0](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html) ที่เป็น final specification ของ OpenID Foundation ตั้งแต่กันยายน 2021): อุปกรณ์ระบุตัวผู้ใช้ แล้ว provider ก็ติดต่ออุปกรณ์ที่ผู้ใช้ลงทะเบียนไว้โดยตรง (เช่น push notification) จากนั้นอุปกรณ์ก็รับ token ด้วยการ poll, ping หรือ push เพราะไม่มี code ให้ส่งต่อ CIBA เลย phish ได้ยากกว่า แต่คนที่รู้หรือเดา identifier ของผู้ใช้ได้ก็ยังสั่งให้เกิด request ได้อยู่ดี

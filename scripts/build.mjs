@@ -310,4 +310,5 @@ for (const L of Object.values(LANGS)) {
   writeFileSync(`${OUT}/${L.dir}index.html`, indexPage(L));
 }
 const translated = animated.filter((p) => thText.get(p.slug)).length;
-console.log(`build: dist/ — index + ${animated.length} pattern page(s), ${catalog.patterns.length - animated.length} planned; Thai: ${translated} of ${animated.length} translated`);
+const articles = animated.filter((p) => existsSync(abs(`${p.dir}/README.th.md`))).length;
+console.log(`build: dist/ — index + ${animated.length} pattern page(s), ${catalog.patterns.length - animated.length} planned; Thai: ${translated} of ${animated.length} translated, ${articles} with the article`);

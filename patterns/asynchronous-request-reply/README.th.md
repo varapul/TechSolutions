@@ -1,0 +1,83 @@
+## ปัญหา
+
+request บางตัวเริ่มงานที่ใช้เวลาเป็นนาที: render report, export order ทั้งปี, transcode วิดีโอ, provision environment ถ้าใช้ request กับ response ธรรมดา client ต้องเปิด connection ค้างไว้ตลอดเวลานั้น และทุก hop ระหว่างทางก็มีความเห็นของตัวเองว่า request หนึ่งควรใช้เวลาได้นานแค่ไหน นี่คือตัวอย่างขีดจำกัดที่ประกาศไว้ (เช็กเมื่อเดือนตุลาคม 2026):
+
+- **Amazon API Gateway** ให้ REST API integration อยู่ระหว่าง 50 ms ถึง 29 s โดย default ส่วน regional API กับ private API ขอเพิ่มได้ แต่อาจทำให้ throttle quota ของ account ลดลง ส่วน HTTP API หยุดที่ 30 s
+- **router ของ Heroku** จบ request ที่ response ยังไม่เริ่มภายใน 30 s และขีดจำกัดนี้เปลี่ยนไม่ได้
+- **Google Cloud load balancer** ใช้ backend service timeout 30 s ถ้าไม่ได้ตั้งเป็นค่าอื่น
+- **Cloudflare** รอ origin 125 s โดย default แล้วตอบด้วย error 524
+- **Azure Functions:** function ที่ trigger ด้วย HTTP ต้องตอบภายใน 230 s ไม่ว่า timeout ของตัวเองจะตั้งไว้เท่าไร เพราะ idle timeout ของ Azure Load Balancer ที่อยู่ข้างหน้า
+
+browser, HTTP client library, proxy ขององค์กร และ mobile network ต่างก็เพิ่มขีดจำกัดของตัวเองเข้ามา และตัวที่สั้นที่สุดบนเส้นทางคือตัวที่ชนะ เมื่อมันทำงาน ตัว gateway จะตอบ `504 Gateway Timeout` แต่ server ข้างหลังมักทำงานต่อไป: เอกสารของ Heroku ชี้ว่าแอปพลิเคชันไม่ได้รับแจ้งเรื่อง timeout และยังทำ request นั้นต่อไป แล้วผลลัพธ์ของมันก็ถูกโยนทิ้ง
+
+นั่นเป็นแค่ต้นทุนแรก:
+
+- **ทรัพยากรถูกถือไว้** ทุก request ที่รออยู่กิน connection บนทุก hop และกิน capacity ของ server (memory, CPU และบ่อยครั้งก็ thread หรือ database connection) ตลอดเวลานั้น endpoint ที่ช้าไม่กี่ตัวก็ใช้ pool ที่ request เร็ว ๆ หลายพันตัวใช้ร่วมกันจนหมดได้ และทุกการ deploy ก็ต้องรอมัน หรือไม่ก็ตัดมันทิ้ง
+- **retry ที่ทำงานซ้ำ** timeout ไม่ได้บอก client เลยว่างานเกิดขึ้นแล้วหรือยัง มันก็ retry แล้ว server ก็เริ่ม report เดิมอีกรอบ ขณะที่ copy แรกยังรันอยู่ สำหรับ export นี่คือการเปลือง capacity แต่สำหรับ order หรือ payment มันคือการทำสิ่งนั้นสองครั้ง
+- **ไม่เห็นความคืบหน้าและไม่มีทางออก** client รู้ผลตอนจบ หรือไม่รู้เลย และยกเลิกงานที่ไม่ต้องการแล้วก็ไม่ได้
+
+การขยาย timeout ทุกตัวเป็นสามนาทีไม่ได้แก้ปัญหานี้ ขีดจำกัดบางตัวขยายไม่ได้ แต่ละ hop ก็ไม่เท่ากัน และ connection ที่ถือไว้เป็นนาทีก็ยังขาดอยู่ดีตอนที่มือถือเข้าโหมด sleep หรือ server ถูก redeploy
+
+## ทำงานยังไง
+
+แบ่ง call ยาว ๆ ตัวเดียวออกเป็น call สั้น ๆ ที่เริ่มงาน กับชุดของ call สั้น ๆ ที่ถามว่างานไปถึงไหนแล้ว
+
+1. **Start** `POST /reports` มาถึง API แล้ว API ก็ validate request (request ที่ผิดยังได้ `400` ตอนที่ client ยังฟังอยู่) บันทึก job record ในสถานะ `queued` ใส่ job ลง durable queue แล้วตอบทันทีด้วย **`202 Accepted`** โดย response มี status URL ของ job อยู่ใน `Location` คำใบ้เรื่องการ poll อยู่ใน `Retry-After` และตัว job อยู่ใน body
+2. **Work** worker หยิบ job จาก queue, บันทึก `running` และความคืบหน้าลงใน job store ไปเรื่อย ๆ ระหว่างทำ เขียน report ที่เสร็จแล้วลง object storage แล้วค่อย mark job เป็น `succeeded` หรือ `failed` พร้อมเหตุผล
+3. **Poll** หลังรอตามเวลาที่แนะนำ client ส่ง `GET /jobs/42` ระหว่างที่ job ยังรันอยู่ คำตอบคือ `200` พร้อมสถานะและความคืบหน้าที่อ่านจาก job record ทำให้การ poll ไม่ต้องรองานเลย เมื่อ job สำเร็จแล้ว status resource จะตอบ **`303 See Other`** พร้อม `Location: /reports/42` แล้ว client ก็ไปดึง report จากตรงนั้น
+
+ตอนนี้ทุก request สั้นหมดแล้ว งานยาวไปรันอยู่ใน worker ที่ scale, retry และ deploy ได้ตามจังหวะของตัวเอง
+
+### สัญญา เทียบกับ RFC 9110
+
+| ส่วน | RFC 9110 บอกว่ายังไง | pattern นี้ใช้มันยังไง |
+|---|---|---|
+| [`202 Accepted`](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.3) | request ถูกรับไว้เพื่อ process แล้ว แต่ยังไม่เสร็จ และอาจยังถูกปฏิเสธได้ตอนที่ process จริง ตัว status code นี้จงใจไม่ผูกมัดอะไร และ HTTP ก็ไม่มีทางส่ง status code อีกตัวตอนที่งานจบ ส่วน response body ควรอธิบายสถานะปัจจุบัน และลิงก์ไปที่ (หรือฝัง) status monitor | ส่งเมื่อ job ถูกบันทึกแบบ durable และเข้า queue แล้ว ไม่ใช่ก่อนหน้านั้น ใส่ job พร้อม status URL ไว้ใน body |
+| [`Location`](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.2) | ความหมายขึ้นกับ method และ status code โดย RFC 9110 กำหนดไว้สำหรับ `201 Created` (resource ใหม่) และสำหรับ redirect (ปลายทาง) | บน `202` ความหมายเป็นแค่ธรรมเนียม ไม่ใช่กฎ: pattern ของ Azure และ Durable Functions ใช้ `Location` ส่วน Azure REST API guidelines ใช้ header `Operation-Location` ให้เขียนเอกสารว่าส่งตัวไหน และใส่ลิงก์ซ้ำไว้ใน body ด้วย |
+| [`Retry-After`](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3) | client ควรรอนานแค่ไหนก่อนส่ง request ถัดไป เป็นจำนวนวินาทีหรือเป็น HTTP date | ช่วงเวลาของการ poll ให้ส่งไปพร้อม `202` และพร้อมคำตอบสถานะทุกตัวที่ยังไม่ใช่สถานะสุดท้าย |
+| [`303 See Other`](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.4.4) | redirect ไปที่ resource อื่นที่ทำหน้าที่เป็นคำตอบทางอ้อม client ดึงมันด้วย `GET` (หรือ `HEAD`) ไม่ว่าตอนแรกจะใช้ method อะไร ส่วน `302 Found` ให้ client เปลี่ยน `POST` เป็น `GET` หรือคงไว้ก็ได้ และ `307` คงไว้เสมอ | status resource ที่เสร็จแล้ว redirect ไปที่ผลลัพธ์ คำแนะนำของ Azure แนะนำ `303` ด้วยเหตุผลนี้เลย: client ที่ส่ง method เดิมซ้ำเมื่อเจอ `302` อาจส่ง `POST` อีกรอบ |
+| [`504 Gateway Timeout`](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.6.5) | gateway หรือ proxy ไม่ได้คำตอบจาก server ข้างหลังทันเวลา | สิ่งที่แบบ synchronous ไปชนเข้า |
+
+redirect ไม่ใช่ทางเดียวที่จะจบ ตัว status resource ตอบ `200` พร้อม `"state": "succeeded"` และลิงก์ไปที่ผลลัพธ์ก็ได้ แล้ว client ก็ตามลิงก์นั้นไปเอง แบบนี้สถานะสุดท้ายยังอ่านได้ เรื่องนี้สำคัญเพราะ HTTP client หลายตัว follow `303` ให้อัตโนมัติ แล้วโค้ดที่ poll ก็ไม่เคยเห็น body ของสถานะ เลือกแบบหนึ่ง แล้วเขียนเอกสารไว้
+
+### Status resource
+
+- **สถานะ** `queued` แล้ว `running` แล้วจบที่สถานะสุดท้ายหนึ่งตัวเท่านั้น: `succeeded`, `failed` หรือ `cancelled` สถานะสุดท้ายไม่มีวันเปลี่ยน และทุก job ต้องไปถึงสักตัว เพราะนั่นคือสิ่งที่บอก client ให้หยุด poll ส่วนชื่อสถานะต่างกันไปในแต่ละ platform (ดูข้างล่าง) สิ่งที่สำคัญคือมีชุดสถานะเล็ก ๆ ที่เขียนเอกสารไว้
+- **Field** ID, สถานะ, เวลาที่สร้าง job และเวลาที่ update ล่าสุด, ความคืบหน้าถ้า worker ประเมินได้, ลิงก์ไปที่ผลลัพธ์เมื่อสำเร็จ และ error เมื่อล้มเหลว problem details ของ [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) เป็นรูปแบบที่ดีสำหรับ error ส่วนเวลาที่ update ล่าสุดยังบอก client ได้ด้วยว่า job ที่ช้ายังมีชีวิตอยู่ไหม
+- **job ที่ล้มเหลวก็ยังเป็นการ poll ที่สำเร็จ** ตอบ `200` พร้อม `"state": "failed"` และ error ทำให้ client แยกออกได้ระหว่าง job ที่ล้มเหลวกับ status service ที่ล่ม ตัว status monitor ใน Azure REST API guidelines ก็ทำงานแบบนี้
+- **ห้ามมี job ที่ค้าง** worker ที่ crash จะทิ้ง job ไว้ที่ `running` ตลอดไป เว้นแต่จะมีอะไรสังเกตเห็น ให้ worker refresh เวลาที่ update ล่าสุดไปเรื่อย ๆ รัน sweeper ที่ fail job ที่เงียบนานเกินไปหรือเลย deadline และจำกัดจำนวนครั้งที่ลอง ทุก job จะได้จบที่สถานะสุดท้าย
+- **ใครอ่านได้บ้าง** สถานะและผลลัพธ์ของ job อ่อนไหวเท่ากับ request ที่เริ่มมัน ให้เช็กในทุกการ poll และทุกการดาวน์โหลดว่าผู้เรียกมีสิทธิ์เห็น job นี้ การรู้ URL ไม่นับเป็น permission และควรใช้ ID ที่เดาไม่ได้ เช่น random UUID (`42` ใน diagram มีไว้ให้อ่านง่ายเท่านั้น) OWASP มองว่า identifier แบบสุ่มเป็นการป้องกันอีกชั้น (defence in depth) ที่ไม่มีวันมาแทนการเช็กสิทธิ์ได้ ถ้าการดาวน์โหลดควรข้าม API ของเราไป ให้แจก signed URL อายุสั้นของ object store ไปเลย ส่วน pattern ของ Azure พูดถึง shared access signature สำหรับเรื่องนี้ นี่ก็คือ pattern Valet Key
+- **กัน cache ออกไป** คำตอบเปลี่ยนไปทุกครั้งที่ poll เลยต้องส่ง `Cache-Control: no-store` แล้ว browser หรือ proxy cache ก็จะตอบการ poll ด้วยสถานะเก่าไม่ได้ บอก client ว่า job ถูกเก็บไว้นานแค่ไหนใน body (เช่น field `expiresAt`) และในเอกสาร ส่วน pattern ของ Azure แนะนำ header `Expires` สำหรับเรื่องนี้ แต่ [RFC 9111](https://www.rfc-editor.org/rfc/rfc9111.html) กำหนด `Expires` ไว้เป็นจุดเวลาที่ response ที่เก็บไว้กลายเป็น stale และบอกว่ามันไม่ได้บอกอะไรเลยว่าตัว resource เองจะหายไปเมื่อไร
+
+## ใช้ตอนไหนดี
+
+- งานที่ใช้เวลานานกว่า timeout ที่สั้นที่สุดบนเส้นทางเป็นประจำ หรือเฉียดใกล้มัน: report, export และ import, การ process media, batch inference, provisioning
+- client ที่รับ call เข้ามาไม่ได้ เช่น browser, mobile app และ script ที่อยู่หลัง NAT หรือ firewall การ poll ใช้แค่ request ขาออก
+- เมื่อ client ต้องการเห็นความคืบหน้า ต้องการยกเลิกได้ หรือต้องการผลลัพธ์ที่ยังอ่านได้หลัง disconnect
+- เมื่อควรรับงานไว้ได้แม้ตอนที่ back end ยุ่งหรือกำลัง deploy เพราะ queue จะถืองานไว้จนกว่าจะมี worker ว่าง
+- **ไม่เหมาะ**กับงานที่เสร็จภายใน timeout แบบสบาย ๆ ให้ตอบแบบ synchronous ไปเลย: request เดียวง่ายกว่า เร็วกว่า และ debug ง่ายกว่า ถ้าจะเอาเป็นเกณฑ์: Azure REST API guidelines นับ operation เป็น long-running เมื่อเวลาที่ percentile 99 เกิน 1 s ส่วน AIP-151 ของ Google แนะนำ 10 s เป็นหลักคร่าว ๆ
+- **ไม่เหมาะ**เมื่อผลลัพธ์ควรไปถึง client ระหว่างที่กำลังสร้าง (ให้ stream ด้วย server-sent events หรือ WebSockets) หรือเมื่อ client มี event channel อยู่แล้ว เช่น webhook endpoint หรือ message broker
+
+## ได้อะไร เสียอะไร
+
+- **ชิ้นส่วนที่ขยับได้มากขึ้น** job store, queue, worker, ที่เก็บผลลัพธ์, status endpoint และ job สำหรับเก็บกวาด มาแทน request handler ตัวเดียว
+- **การ poll มีต้นทุนและความหน่วง** client รู้ว่างานจบช้าไปได้ถึงหนึ่งรอบ interval และ client ทุกตัวก็ poll ถ้า `GET` ทุก 5 วินาที job ที่ใช้ 2 นาทีจะกินการ poll ราว 24 ครั้ง และ job แบบนี้ 1,000 ตัวพร้อมกันจะเพิ่ม request 200 ตัวต่อวินาที ให้การ poll แต่ละครั้งถูกเข้าไว้ (lookup key ครั้งเดียว ไม่มี join) และจูน `Retry-After`
+- **สัญญาที่ client ต้องทำตาม** client ต้องจัดการ `202`, หา status URL, ทำตาม `Retry-After`, หยุดเมื่อถึงสถานะสุดท้าย และ follow redirect งานพวกนี้ SDK ของ platform และ integration tool มักทำให้ นี่เป็นเหตุผลที่ดีที่จะทำตามธรรมเนียมที่มีอยู่แล้ว แทนที่จะคิดขึ้นมาเอง
+- **รันแบบ at-least-once** queue ส่ง job ซ้ำเมื่อ worker crash หรือ lease ของมันหมด ทำให้ job เดียวกันอาจเริ่มสองครั้ง แล้ว worker ก็ต้อง idempotent: ดู [Idempotent Consumer](../idempotent-consumer/)
+- **state ที่ต้องเก็บและต้องลบ** job record, ผลลัพธ์ และ idempotency key จะกองพะเนินถ้าไม่ตั้งให้หมดอายุ
+- **ตามยากขึ้น** operation เดียวกินหลาย request และหลาย process ให้ใส่ job ID ไว้ในทุกบรรทัดของ log และทุก trace
+
+## ข้อควรรู้ตอนลงมือทำ
+
+- **ช่วง poll และ backoff** ทำตาม `Retry-After` เมื่อ server ส่งมา แบบนี้ server จะกระจายโหลดได้ และยืดช่วงให้ job ที่ยาวได้ เช่นเป็นสัดส่วนหนึ่งของเวลาที่เหลือโดยประมาณ ถ้าไม่มีคำใบ้ ให้เริ่มสั้น ๆ แล้ว back off (1 s, 2 s, 4 s ไปเรื่อย ๆ จนถึงเพดาน) ใส่ jitter เพื่อให้ client ที่เริ่มพร้อมกันไม่ poll พร้อมกันเป๊ะ และเลิกเมื่อถึง deadline รวม ให้ถือว่า `429` หรือ `503` ที่มี `Retry-After` คือคำขอให้ช้าลง ไม่ใช่ job ที่ล้มเหลว นี่คือคำแนะนำของ [Retry with Backoff & Jitter](../retry-with-backoff/) ที่เอามาใช้กับการ poll และ client ก็ยังต้องมี deadline ของตัวเองสำหรับทั้ง operation เหมือนใน [Timeout & Fallback](../timeout-and-fallback/)
+- **Idempotency สำหรับ request แรก** `POST` ไม่ idempotent และ `202` ของมันก็หายได้เหมือน response ทั่วไป client เลยแยกไม่ออกระหว่าง "ไม่มี job" กับ "สร้าง job แล้ว แต่คำตอบหาย" ให้ client ส่ง header `Idempotency-Key` ที่มีค่าสุ่ม แล้วฝั่ง server ก็เก็บ key ไว้กับ job (ไม่ซ้ำต่อ client) และตอบ request ที่มาซ้ำด้วย `202` ตัวเดิมกับ job เดิม จะได้ไม่มีอะไรเข้า queue สองครั้ง pattern ของ Azure แนะนำแบบนี้เป๊ะ ๆ IETF draft ของ header นี้ (draft-ietf-httpapi-idempotency-key-header) ไปถึง version 07 ในเดือนตุลาคม 2025 แล้วหมดอายุในเดือนเมษายน 2026 โดยไม่ได้เป็น RFC แต่กติกาของมันก็เป็นค่า default ที่ดี ค่าของมันเป็น Structured Fields string และดีที่สุดคือเป็น UUID ส่วน request ซ้ำที่มาถึงหลัง request แรกเสร็จแล้วจะได้ผลลัพธ์แรก request ซ้ำที่มาระหว่างที่ตัวแรกยัง process อยู่จะได้ `409 Conflict` ส่วน key เดิมแต่ body ต่างจะได้ `422` และการไม่ส่ง key ตรงที่บังคับต้องมีจะได้ `400` แล้ว server ก็ประกาศว่าเก็บ key ไว้นานแค่ไหน API ของ Stripe ที่ทำงานแบบนี้อาจทิ้ง key เมื่อมันอายุครบ 24 ชั่วโมง ส่วน Azure REST API guidelines ไปถึงเป้าเดียวกันด้วย header `Operation-Id` ที่ client เลือกเอง และตอบ `409` เมื่อ ID ถูกใช้ซ้ำกับ request อื่น ส่วนภายใน worker แนวคิดเดียวกันนี้ก็กัน message ที่ถูกส่งซ้ำ: [Idempotent Consumer](../idempotent-consumer/)
+- **งานเกิดขึ้นที่ไหน** durable queue ระหว่าง API กับ worker เก็บ job ที่รับไว้แล้วให้ปลอดภัย ขณะที่ worker ยุ่ง, crash หรือถูก redeploy และทำให้เรา scale worker ตาม backlog ได้: ดู [Queue-Based Load Leveling](../queue-based-load-leveling/) และ [Competing Consumers](../competing-consumers/) Web-Queue-Worker คือรูปแบบแอปพลิเคชันที่สร้างบนการแบ่งแบบนี้ มีรายละเอียดสองข้อที่สำคัญ การบันทึก job record กับการใส่ job ลง queue เป็นการเขียนสองครั้ง และถ้าใส่ queue ไม่สำเร็จหลังบันทึกแล้ว job ก็จะค้างที่ `queued` ตลอดไป: ให้เขียนทั้งสองอย่างผ่าน [Transactional Outbox](../transactional-outbox/) หรือให้ sweeper เอา job ที่ queued ค้างนานกลับเข้า queue ใหม่หรือ fail มัน อีกข้อคือเก็บผลลัพธ์ก่อน mark job เป็น `succeeded` สถานะจะได้ไม่ชี้ไปที่ไฟล์ที่ยังไม่มี ส่วน function แบบ [Serverless](../serverless/) ที่ trigger ด้วย queue เป็น worker ที่ดีสำหรับงานสั้น ๆ ภายใต้ขีดจำกัดตายตัว: AWS Lambda function รันได้นานสุด 15 นาที (90 นาทีถ้า trigger ด้วย queue บน Lambda Managed Instances) ส่วน function บน Azure Functions Consumption plan รันได้นานสุด 10 นาที (default 5) งานที่ยาวกว่านั้นต้องมี checkpoint, แบ่งเป็นขั้น, ใช้ orchestrator อย่าง Durable Functions หรือใช้ container
+- **แจ้งเตือนแทนการ poll** ถ้า client รับ call ได้ ตัว [webhook](../webhooks/) ไปที่ URL ที่มันลงทะเบียนไว้ เช่นใน `POST` ก็มาแทนการ poll ได้ ส่วน browser รับ call ไม่ได้ แต่เปิด connection ค้างไว้ได้: [server-sent events](https://html.spec.whatwg.org/multipage/server-sent-events.html) stream การ update สถานะจาก server ไป client ผ่าน HTTP, [WebSockets](https://www.rfc-editor.org/rfc/rfc6455.html) ส่ง message ได้ทั้งสองทาง และ long polling ([RFC 6202](https://www.rfc-editor.org/rfc/rfc6202.html)) ถือการ poll แต่ละครั้งไว้จนกว่าจะมีอะไรเปลี่ยน ไม่ว่ากรณีไหนก็ให้เก็บ status resource ไว้: notification หายได้ และ client ที่ reconnect ต้องมีที่ให้ตามเรื่องที่พลาดไป
+- **การยกเลิก** pattern ของ Azure ยกเลิกด้วย `DELETE` บน status URL แบบเดียวกับใน diagram ส่วน Azure REST API guidelines ทำ cancel เป็น action (`POST` บน URL ของ status monitor ที่ต่อท้ายด้วย `:cancel`) Operations service ของ Google มี `CancelOperation` แบบ best-effort หลังจากนั้น operation จะจบด้วย error `CANCELLED` และมี `DeleteOperation` แยกต่างหาก ที่บอกแค่ว่า client ไม่ต้องการผลลัพธ์แล้ว โดยไม่ได้ยกเลิกอะไร เลือก model หนึ่งแล้วเขียนเอกสารไว้ การยกเลิกเป็นแบบร่วมมือกัน: บันทึกคำขอไว้ ให้ worker เช็กมันระหว่างขั้นแล้วหยุด จากนั้นตั้งสถานะเป็น `cancelled` ตัดสินว่างานที่ทำไปแล้วบางส่วนจะเอายังไง (เก็บไว้ ย้อนกลับ หรือรัน [Compensating Transaction](../compensating-transaction/)) และปฏิเสธการยกเลิก job ที่เสร็จไปแล้ว เช่นด้วย `409 Conflict`
+- **เก็บกวาด** record กับผลลัพธ์กิน storage เลยต้องมี retention period และประกาศไว้ Azure REST API guidelines เก็บ status monitor ไว้ตามช่วงเวลาที่เขียนในเอกสาร อย่างน้อย 24 ชั่วโมงหลัง operation จบ ส่วน AIP-151 แนะนำ 30 วันเป็นหลักคร่าว ๆ สำหรับการให้ operation หมดอายุ ให้ไฟล์ผลลัพธ์หมดอายุด้วย lifecycle rule ของ object store, ลบ idempotency key ตามรอบเวลาเดียวกัน และตอบการ poll ของ job ที่หมดอายุแล้วด้วย `404 Not Found` หรือ `410 Gone` โดย RFC 9110 สงวน `410` ไว้สำหรับ resource ที่หายไปถาวร
+- **platform ต่าง ๆ ทำ model ของ long-running operation ยังไง** (ตัวอย่าง เช็กเมื่อเดือนตุลาคม 2026):
+  - **Azure REST API guidelines** long-running action (`POST`) ตอบ `202` พร้อม header `Operation-Location` ที่มี absolute URL ของ *status monitor* และตอบแบบนี้แม้งานจะเสร็จไปแล้วก็ตาม ส่วน `PUT` ที่สร้าง resource ตอบ `201` พร้อม header เดียวกัน monitor มี `id`, `status` (`NotStarted`, `Running`, `Succeeded`, `Failed` หรือ `Canceled`) มี `error` เมื่อล้มเหลว และมี `result` สำหรับ action ส่วนการ poll จะได้ `200` บวก `retry-after` จนกว่าสถานะจะเป็นสถานะสุดท้าย และ action ควบคุมอย่าง cancel ก็เป็น `POST` request บน monitor
+  - **Google AIP-151** method ที่อาจใช้เวลานานจะคืน `google.longrunning.Operation` ที่เป็น resource ทำงานเหมือน promise: มี `name`, flag `done`, `metadata` สำหรับความคืบหน้า และมี `response` หรือ `error` อย่างใดอย่างหนึ่ง API ไม่ได้คิด interface ของตัวเองขึ้นมา แต่ implement Operations service ที่ใช้ร่วมกัน ด้วย `GetOperation`, `ListOperations`, `CancelOperation`, `DeleteOperation` และ `WaitOperation`
+  - **Azure Durable Functions** orchestration ที่เริ่มผ่าน HTTP ตอบ `202` พร้อม `Location` (status query URL), `Retry-After: 10` และ body ที่มี management URL สำหรับดูสถานะ, ส่ง event, สั่ง terminate และ purge ประวัติ ส่วน status URL จะตอบ `202` ไปเรื่อย ๆ ระหว่างที่ orchestration รันอยู่ และตอบ `200` เมื่อมันเสร็จหรือล้มเหลว ใน .NET ตัว HTTP call ของ orchestrator ทำตาม protocol นี้ได้อัตโนมัติ และ HTTP action ของ Azure Logic Apps ก็เข้าใจมันด้วย
+
+  ทั้งสามต่างกันในรายละเอียด: `Location` หรือ `Operation-Location`, `200` หรือ `202` ระหว่างที่ job รันอยู่, `DELETE` หรือ cancel action ไม่มีตัวไหนผิด เลือกธรรมเนียมหนึ่ง เขียนเอกสารไว้ และใช้ให้เหมือนกันทั่วทุก API ของเรา

@@ -1,0 +1,73 @@
+## ปัญหา
+
+consumer ที่ process message ไม่ได้ก็ทำสิ่งที่สมเหตุสมผล: มันไม่ acknowledge แล้ว broker ก็ส่ง message นั้นมาใหม่ ถ้าเป็นความล้มเหลวแบบ **transient** (database failover, API ที่โดน throttle, deployment ที่ทำอยู่) แบบนี้ถูกต้องเลย เพราะลองใหม่ทีหลังก็น่าจะสำเร็จ แต่ถ้าเป็น **poison message** แบบนี้ผิดเต็ม ๆ poison message ล้มเหลวทุกครั้ง: payload ผิดรูปแบบ มี field หรือค่าที่โค้ดไม่ได้คาดไว้ ชี้ไปที่ record ที่ไม่มีอยู่แล้ว หรือไปเจอ bug ที่ input อื่นไม่เคยไปถึง ส่งมันซ้ำอีกกี่รอบก็ไม่มีอะไรเปลี่ยน
+
+ถ้าส่งซ้ำแบบไม่มีขีดจำกัด message แบบนี้จะทำให้คุณเสียหายได้สองแบบ:
+
+- **ใน queue ที่เรียงลำดับ มันขวาง** ที่ไหนที่ message ถูกส่งตามลำดับเคร่งครัด (FIFO message group, session, partition) message ถัดไปจะยังไม่ถูกส่งออกไปจนกว่าตัวปัจจุบันจะจบ message เสียตัวเดียวก็หยุดทุกอย่างที่อยู่ข้างหลัง นี่คือ queue ใน diagram
+- **ใน queue ที่ไม่เรียงลำดับ มันเผากำลังทิ้ง** message อื่นผ่านไปได้ แต่ตัวเสียก็วนกลับมาเรื่อย ๆ กิน consumer ไปหนึ่งตัวทุกรอบ และทำให้ error log เต็ม มันจะเป็นแบบนี้ไปตลอด หรือจนกว่า retention ของ queue จะหมด แล้วมันก็ถูกลบไปโดยไม่มีใครเคยดูเลย
+
+## ทำงานยังไง
+
+dead-letter queue (DLQ) คือ queue ตัวที่สองที่ผูกไว้กับตัวแรก สำหรับ message ที่ไม่คุ้มจะส่งต่อแล้ว
+
+1. **นับจำนวนการส่ง** broker เก็บตัวนับไว้ในทุก message และเพิ่มค่าทุกครั้งที่ส่ง message นั้น การส่งที่จบโดยไม่มี acknowledgement (handler ล้มเหลว, consumer crash หรือ lock หมดเวลา) จะทิ้ง message ไว้ใน queue ด้วยค่าที่สูงขึ้น broker แต่ละตัวเรียกมันว่า receive count, delivery count หรือจำนวน delivery attempt
+2. **ย้าย message เมื่อถึงขีดจำกัด** policy บน source queue ระบุ dead-letter queue และจำนวนสูงสุดไว้ พอ message ใช้จำนวนการส่งหมดแล้ว broker จะย้ายมันแทนที่จะส่งอีกรอบ แล้ว source queue ก็ทำ message ถัดไปต่อ ใน diagram ขีดจำกัดคือ 3 และ `m-13` ถูกย้ายแทนการส่งครั้งที่สี่
+3. **หรือย้ายทันที** consumer ที่รู้ได้ว่าความล้มเหลวเป็นแบบถาวร (parse payload ไม่ได้ ไม่มี field ที่ต้องมี) ไม่ต้องรอให้ใช้ความพยายามจนหมด มัน dead-letter message เองได้เลย พร้อมบอกเหตุผล
+4. **เก็บหลักฐานไว้** message มาถึงพร้อม payload และ header ที่ไม่ถูกแก้ บวกกับสิ่งที่รู้เกี่ยวกับความล้มเหลว: มาจากไหน ถูกส่งไปกี่ครั้ง และทำไมถึงถูกย้าย
+5. **ตั้ง alarm** ใน flow ปกติไม่มีอะไร consume dead-letter queue ทำให้ depth ของมันควรเป็นศูนย์ alarm ที่ดังตอน depth เกินศูนย์จะบอกคนว่ามี message ที่ต้องตัดสินใจ
+6. **ตัดสินใจ** คนนั้นอ่าน message และ log ของ handler แล้วจะแก้ต้นเหตุแล้ว **redrive** message กลับไปที่ source queue หรือจะ archive หรือทิ้งไปอย่างตั้งใจก็ได้
+
+broker ยัง dead-letter message ที่ไม่เคยมี handler ไหนล้มเหลวด้วย: message ที่หมดอายุ หรือ queue ที่ยาวเกิน length limit ส่วนหนังสือ *Enterprise Integration Patterns* แยกสองกรณีนี้ออกจากกัน **Dead Letter Channel** ของหนังสือคือที่ที่ระบบ messaging เอา message ที่ส่งไม่ได้ไปไว้ ส่วน **Invalid Message Channel** คือที่ที่ผู้รับเอา message ที่มันอ่านไม่รู้เรื่องไปไว้ ทุกวันนี้ dead-letter queue มักทำทั้งสองหน้าที่ นี่เป็นอีกเหตุผลที่ต้องเก็บเหตุผลไว้กับทุก message
+
+## ใช้ตอนไหนดี
+
+- กับทุก queue หรือ subscription ที่ message ของมันคุณยอมเสียไม่ได้: command, order, payment, business event
+- ที่ไหนก็ตามที่ input มาจากนอกการควบคุมของคุณ: ทีมอื่น, partner, webhook หรือ producer เก่าที่ยังส่ง format ของปีที่แล้ว ไม่ช้าก็เร็วจะมีสักตัวส่งอะไรที่ consumer ไม่ได้คาดไว้
+- ที่ที่ message ที่ค้างอยู่ตัวเดียวต้องไม่หยุดตัวอื่น และยอมเสียตำแหน่งในลำดับของ message นั้นได้
+- หลัง consumer ที่ platform รันให้คุณ (function, connector, stream processor) เพราะถ้าไม่มี DLQ พวกนี้จะหยุดที่ record เสีย หรือ retry ไปสักพักแล้วทิ้งมัน ดู [Serverless](../serverless/)
+
+**อย่า**ใช้:
+
+- **กับข้อมูลที่ทิ้งได้** ค่า metric, cache invalidation และ presence update ล้าสมัยภายในไม่กี่วินาที นับความล้มเหลวไว้แล้วทิ้ง message ไปเลย การพักไว้ก็แค่สร้างกองที่ไม่มีใครอ่าน
+- **ที่ที่ลำดับต้องไม่พังเด็ดขาด** ถ้า message แต่ละตัวต่อยอดจากตัวก่อนหน้า (รายการใน ledger, [change stream](../change-data-capture/) ที่ apply ลง replica, ลำดับของการแก้ไข) การข้ามไปตัวเดียวจะทำให้ทุกอย่างหลังจากนั้นเสียหาย ให้หยุด consumer แล้ว alert และจัดการ message ที่ค้างอยู่เหมือนเป็น incident
+- **แทน retry** dead-letter queue มีไว้สำหรับความล้มเหลวที่ retry แก้ไม่ได้ ถ้าความล้มเหลวแบบ transient ไปถึงมันได้ แปลว่า retry policy ผิด
+
+## ได้อะไร เสียอะไร
+
+- **มันแค่ย้ายปัญหา** message ที่พักไว้ก็ยังเป็น order ที่ไม่ได้ถูก process ถ้าไม่มี alarm ไม่มีเจ้าของ และไม่มี deadline ตัว dead-letter queue ก็คือที่ที่ message ไปเพื่อถูกลืม
+- **ต้องยอมเสียลำดับ** message ที่พักไว้จะถูก handle ช้ากว่าตัวที่อยู่ข้างหลัง หรือไม่ถูก handle เลย ใน diagram order 13 ถูกบันทึกหลัง order 16
+- **Redrive ทำให้เกิดตัวซ้ำ** handler อาจทำงานไปบางส่วนแล้วก่อนจะล้มเหลว และ operator ก็อาจ redrive message เดียวกันสองครั้ง consumer ทุกตัวที่อยู่หน้า dead-letter queue เลยต้อง idempotent
+- **outage ทำให้มันท่วมได้** ระหว่างที่ dependency ล่ม message *ทุกตัว* จะล้มเหลวครบทุกครั้งที่ลองและถูก dead-letter ทั้งที่ไม่มีตัวไหนผิดเลย คุณจะเหลือ message ดี ๆ หลายพันตัวอยู่ผิด queue และต้องวางแผน replay ส่วนระหว่าง outage การชะลอดีกว่าการพัก: ให้ back off หรือหยุด consume จนกว่า dependency จะกลับมา และให้ [circuit breaker](../circuit-breaker/) เป็นตัวตัดสินเรื่องนี้ได้
+- **broker ไม่รู้ว่าทำไม** message ที่ถูกย้ายเพราะจำนวนครั้งไม่มี error ติดมาด้วย เหตุผลต้องมาจาก consumer
+- **มันคือสำเนาที่สองของข้อมูลคุณ** ที่เก็บไว้นานกว่า และบ่อยครั้งมีกฎการเข้าถึงที่หละหลวมกว่าตัวแรก
+
+## ข้อควรรู้ตอนลงมือทำ
+
+- **Transient หรือถาวร** แยกประเภทความล้มเหลวใน consumer ตัวที่เป็น transient (timeout, throttling, connection error, lock conflict) ให้ใช้ [retry with backoff](../retry-with-backoff/) และ dead-letter message ก็ต่อเมื่อ retry หมดแล้วเท่านั้น ส่วนความล้มเหลวที่พรุ่งนี้ก็ยังเหมือนเดิม (payload ที่ parse หรือ validate ไม่ผ่าน, message type ที่ไม่รู้จัก, business rule ที่ปฏิเสธมัน) ให้ส่งไป dead-letter queue ทันทีพร้อมแนบเหตุผล broker บางตัวมี operation สำหรับเรื่องนี้: dead-letter call แบบ explicit ใน Azure Service Bus หรือใน RabbitMQ คือการ reject แบบไม่ requeue บน queue ที่มี dead-letter exchange ส่วนที่อื่น consumer ต้อง publish message ไปที่ dead-letter queue เองแล้วค่อย acknowledge ตัวต้นฉบับ ตามลำดับนี้ เพื่อให้ crash ระหว่างทางแค่ทำ message ซ้ำ ไม่ได้ทำมันหาย
+- **การเลือกขีดจำกัด** ขีดจำกัดคูณด้วยเวลารอระหว่างการส่งแต่ละครั้ง คือเวลาที่ poison message ขวาง queue ที่เรียงลำดับ หรือเผากำลังทิ้งใน queue ที่ไม่เรียงลำดับ ถ้าตั้งต่ำไป สะดุดธรรมดา ๆ ก็ทำให้ message ดี ๆ ถูกพักได้: ถ้าขีดจำกัดเป็น 1 รับไม่ผ่านครั้งเดียวก็พอแล้ว ตัวนับยังเพิ่มขึ้นทุกครั้งที่การส่งไม่ถูก acknowledge ทันเวลา รวมถึงตอนที่ consumer crash, ถูก scale in หรือแค่ช้ากว่า lock หรือ visibility timeout ของมัน เลยควรตั้ง timeout นั้นไว้สูงกว่าเวลา process ที่ช้าที่สุดของคุณ diagram ใช้ 3 เพื่อให้ animation สั้น ส่วน AWS แนะนำอย่างน้อย 5 เมื่อ Lambda อ่านจาก SQS และ default ของแต่ละ vendor อยู่ระหว่าง 5 ถึง 20:
+
+  | Broker | Setting | Default |
+  |---|---|---|
+  | Amazon SQS | `maxReceiveCount` ใน redrive policy ของ source queue | 10 |
+  | Azure Service Bus | maximum delivery count (`MaxDeliveryCount`) ของ queue หรือ subscription | 10 |
+  | RabbitMQ, quorum queues | `delivery-limit` | 20 ตั้งแต่ RabbitMQ 4.0 |
+  | Google Cloud Pub/Sub | maximum delivery attempts ของ subscription | 5 (ตั้งได้ 5 ถึง 100) |
+  | Apache Kafka, share groups | `group.share.delivery.count.limit` | 5 |
+
+- **ควรบันทึกอะไรไปกับ message** อย่าแตะ payload และ header เดิม เพื่อให้ redrive message ได้ตรงตามที่มันเป็น แล้วเพิ่มสิ่งเหล่านี้เป็น header หรือ attribute: source queue หรือ topic (ถ้าเป็น log ก็รวม partition และ offset ด้วย), delivery count, เวลาที่ล้มเหลวครั้งแรกและเวลาที่ถูก dead-letter, ประเภทและข้อความของ error, ชื่อและเวอร์ชันของ consumer และ correlation ID หรือ trace ID ตัว broker จะเพิ่มสิ่งที่มันรู้เข้าไปเอง อย่าง RabbitMQ ก็บันทึกการ dead-letter แต่ละครั้งไว้ใน header `x-death` ของ message: queue, เหตุผล และจำนวนครั้ง ตัว Pub/Sub เพิ่ม attribute ที่ระบุ source subscription และ delivery count ส่วน Service Bus ใส่ dead-letter reason และ description ไม่มีตัวไหนรู้ exception ของคุณถ้า consumer ไม่ส่งให้ เลยอย่างน้อยที่สุดก็ให้ log error ไว้คู่กับ message ID
+- **ลำดับ** ใน queue ที่เรียงลำดับ ทางเลือกต้องชัดเจน: จะขวาง group ไว้จนกว่า message จะถูกแก้ หรือจะพัก message ไว้แล้วให้ group ไปต่อแบบผิดลำดับ การพักเหมาะกับ group ที่ message ไม่ได้พึ่งกัน เช่น order คนละตัวที่บังเอิญอยู่ partition เดียวกัน การขวางเหมาะกับ group ที่ message แต่ละตัวต่อยอดจากตัวก่อนหน้า ทางสายกลางคือพัก message ที่ล้มเหลวไว้ แล้วพักทุก message หลังจากนั้นที่ key เดียวกันด้วยจนกว่าตัวแรกจะได้รับการแก้ แบบนี้รักษาลำดับภายใน key ไว้ได้ แต่ต้องแลกด้วยการติดตามว่า key ไหนถูกขวางอยู่
+- **Retention และอายุ** ให้ dead-letter queue มี retention นานกว่า source queue และตั้ง deadline ให้ตัวเองว่าต้องเคลียร์มันให้หมด เช่น dead letter ทุกตัวต้องถูก redrive, archive หรือทิ้งภายในหนึ่งสัปดาห์ ใน SQS standard queue นาฬิกาจะไม่เริ่มใหม่ตอน message ถูกย้าย ทำให้ message ที่อยู่ใน source queue มาแล้วหนึ่งวันจะเหลือเวลาใน dead-letter queue น้อยลงหนึ่งวัน ส่วนใน Service Bus กลับกัน message ที่ถูก dead-letter จะไม่มีวันหมดอายุ และอยู่ไปจนกว่าจะมีคนเอาออก
+- **Alert ทั้ง depth และอายุ** ให้ alarm ดังเมื่อ depth เกินศูนย์ (หรือเกินตัวเลขเล็ก ๆ ถ้ามี dead letter โผล่มาบ้างเป็นเรื่องปกติ) และเมื่อ message ที่เก่าที่สุดเก่ากว่า deadline ของคุณ ใช้ metric ที่นับสิ่งที่*อยู่ใน* queue ถ้าเป็น SQS ก็คือ `ApproximateNumberOfMessagesVisible` เพราะ `NumberOfMessagesSent` ไม่นับ message ที่ redrive policy ย้ายมา ส่วน Azure Monitor มี `DeadletteredMessages` และ Pub/Sub มี `subscription/dead_letter_message_count` สำหรับ message ที่ถูกส่งต่อมาจาก subscription ส่วน alarm ให้ส่งไปที่ทีมที่เป็นเจ้าของ consumer และทำกราฟ dead letter แยกตามประเภท error: คลื่นใหญ่ที่มาทีเดียวด้วย error เดียวคือ deployment หรือ outage ส่วนที่หยดมาเรื่อย ๆ ด้วย error หลายแบบคือ input เสีย
+- **หนึ่งตัวต่อหนึ่ง source** ให้ source queue หรือ subscription แต่ละตัวมี dead-letter queue ของตัวเอง แบบนี้เจ้าของ, alarm และปลายทางของ redrive ก็จะชัดเจนเสมอ
+- **Redrive อย่างปลอดภัย** แก้ก่อน: redrive ก่อนแก้ก็แค่ส่ง message ให้วนรอบเดิมอีกครั้ง เริ่มจาก message ตัวเดียว แล้วค่อย replay ที่เหลือด้วยอัตราที่จำกัด เพื่อไม่ให้แย่งกำลังจาก traffic จริง ตัว redrive ของ SQS รับค่าจำนวน message สูงสุดต่อวินาทีได้ ส่วน consumer ต้อง [idempotent](../idempotent-consumer/) และตัดตัวซ้ำด้วย ID ที่อยู่ข้างใน message เพราะ ID ของ broker เองอาจไม่รอด: SQS ให้ message ID ใหม่กับทุก message ที่ถูก redrive ส่วนตอน redrive ให้ส่ง message กลับไปที่ queue ที่ล้มเหลว ไม่ใช่ topic ที่ป้อนให้ทุก subscriber ไม่อย่างนั้น subscriber ที่ปกติดีจะได้มันเป็นรอบที่สอง และต้องหยุดลูป: นับจำนวนการ redrive ไว้ใน header แล้วยอมแพ้หลังหนึ่งหรือสองครั้ง
+- **ขั้นตรงกลาง: retry topic และ delay queue** ระหว่าง *retry ตอนนี้* กับ *dead* ยังมีที่ว่างให้ *retry ทีหลัง โดยไม่ขวาง* consumer จะ publish message ที่ล้มเหลวซ้ำไปที่ retry queue พร้อม delay (10 วินาที แล้ว 1 นาที แล้ว 10 นาที) จากนั้น acknowledge ตัวต้นฉบับแล้วไปต่อ ส่วน message ที่ล้มเหลวในขั้นสุดท้ายจะไปที่ dead-letter queue ตัว Uber อธิบายการจัดแบบนี้สำหรับ Kafka โดยมีหนึ่ง topic ต่อหนึ่ง delay ส่วนใน SQS ใช้ visibility timeout ราย message ได้นานถึง 12 ชั่วโมง ทำให้ได้ delay คล้าย ๆ กัน และใน RabbitMQ ก็ใช้ queue รอที่ message หมดอายุแล้วไหลเข้า dead-letter exchange ที่ route มันกลับไปที่ work queue ได้เหมือนกัน แบบเดียวกับ dead-letter queue เอง วิธีนี้ทำให้ message ที่ถูก retry เสียตำแหน่งในลำดับไป
+- **Security** dead-letter queue เก็บข้อมูลส่วนบุคคลหรือข้อมูลการเงินแบบเดียวกับ source ของมัน เก็บไว้นานกว่า และมักมีคนอ่านมากกว่า ให้มันมี encryption และกฎการเข้าถึงแบบเดียวกัน จำกัดว่าใครอ่านได้และใคร redrive ได้ (redrive คือการ replay command) และรวมมันไว้ด้วยตอนลบหรือ export ข้อมูลของใครสักคน อย่าใส่ secret หรือ payload ทั้งก้อนไว้ใน error description และ log ส่วนใน SQS ตัว redrive allow policy บน dead-letter queue จำกัดได้ว่า source queue ไหนใช้มันได้
+- **Broker แต่ละตัวทำยังไง** ตัวอย่างที่ตรวจสอบเมื่อตุลาคม 2026:
+  - **Amazon SQS** redrive policy ของ source queue ระบุ dead-letter queue (`deadLetterTargetArn`) และ `maxReceiveCount` ตัว dead-letter queue เป็น queue ธรรมดาประเภทเดียวกัน (FIFO คู่กับ FIFO, standard คู่กับ standard) ใน account และ Region เดียวกัน การ *redrive* ที่เริ่มจาก console หรือด้วย `StartMessageMoveTask` จะย้าย message กลับไปที่ source queue หรือไปที่ queue อื่นประเภทเดียวกัน
+  - **Azure Service Bus** ทุก queue และทุก topic subscription มี dead-letter subqueue ในตัว (`<queue>/$deadletterqueue`) โดย message จะไปที่นั่นเมื่อ delivery count เกินขีดจำกัด เมื่อมันหมดอายุและเปิดการ dead-letter message ที่หมดอายุไว้ หรือเมื่อผู้รับ dead-letter มันพร้อม reason และ description
+  - **RabbitMQ** policy จะให้ queue มี dead-letter exchange ที่ route dead letter ไปที่ queue ไหนก็ได้ที่คุณ bind ไว้กับมัน message จะถูก dead-letter เมื่อ consumer reject มันโดยไม่ requeue เมื่อมันหมดอายุ เมื่อ queue ยาวเกิน length limit หรือเมื่อเกิน delivery limit ของ quorum queue ถ้า quorum queue ไม่มี dead-letter exchange มันจะ*ทิ้ง* message เมื่อถึงขีดจำกัดนั้น การ dead-letter เป็นแบบ at-most-once โดย default และ quorum queue สลับเป็น at-least-once ได้
+  - **Google Cloud Pub/Sub** subscription ระบุ dead-letter topic และจำนวน delivery attempt สูงสุด โดย Pub/Sub ใช้ค่านี้แบบ best-effort ทำให้ตัวนับเป็นค่าประมาณ ตัว dead-letter topic ต้องมี subscription ของตัวเอง ไม่อย่างนั้น message ที่ส่งต่อมาจะหาย และ service account ของ Pub/Sub ต้องมีสิทธิ์ publish ไปที่มัน ถ้าเปิด message ordering ไว้ ลำดับจะไม่ได้รับประกันสำหรับ message ที่ถูกส่งต่อ
+  - **Apache Kafka** ไม่มี dead-letter queue ฝั่ง broker สำหรับ consumer group ธรรมดา: consumer หรือ framework ของมันต้อง publish record ที่ล้มเหลวไปที่ dead-letter topic แล้ว commit ข้ามมันไป ส่วน Kafka Connect ทำแบบนี้ให้ sink connector (`errors.tolerance=all` คู่กับ `errors.deadletterqueue.topic.name`) และตั้งแต่ Kafka 4.2 exception handler แบบ default ของ Kafka Streams ก็ทำให้เมื่อตั้ง `errors.dead.letter.queue.topic.name` ไว้ ส่วน share group (*Queues for Kafka* ที่พร้อมใช้ใน production ตั้งแต่ 4.2) นับ delivery attempt และหยุดส่ง record เมื่อถึงขีดจำกัด แต่ใน Kafka 4.3 ก็ยังไม่มี dead-letter topic: KIP-1191 ที่เพิ่มมันเข้ามาได้รับการ accept แล้วแต่ยังไม่ release
+  - **Serverless consumer** เมื่อ function อ่านจาก queue ตัว dead-letter queue เป็นของ *queue*: ถ้า SQS เป็น event source ของ AWS Lambda function ตัวที่พัก message ไว้ก็คือ redrive policy ของ source queue สำหรับ asynchronous invocation ตัว Lambda จะ retry เองสองครั้ง แล้วส่ง event ไปที่ on-failure destination หรือ dead-letter queue ถ้าตั้งไว้ และทิ้งไปถ้าไม่ได้ตั้ง ส่วน Azure Functions ให้ message ใน Storage queue ลองได้ห้าครั้ง แล้วย้ายมันไปที่ *poison queue* ชื่อ `<queue>-poison`
+- **ซ้อมไว้** ใส่ poison message เข้าไปใน test environment แล้วดูมันเกิดขึ้นครบทุกขั้น: message ถูกพัก, alarm ดัง, เครื่องมือแสดงเหตุผล และ redrive หลังแก้แล้วก็ผ่านไปได้ ถ้า dead-letter queue ไม่เคยถูกลองใช้จริง มันมักไม่มีทั้ง alarm และ runbook

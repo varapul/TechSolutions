@@ -150,9 +150,19 @@ for (const p of patterns.filter((x) => x.animated && !x.metaError && inScope(x.s
   // README.th.md, when present, is the Thai article body (no generated blocks).
   const md = `patterns/${p.slug}/README.th.md`;
   if (existsSync(abs(md))) {
-    for (const l of readText(md).matchAll(/\]\(\.\.\/([a-z0-9-]+)\/?(?:#[^)]*)?\)/g)) {
+    const th = readText(md);
+    for (const l of th.matchAll(/\]\(\.\.\/([a-z0-9-]+)\/?(?:#[^)]*)?\)/g)) {
       if (!bySlug.get(l[1])?.animated) err(md, `links to ../${l[1]}/, which has no page yet`);
     }
+    if (/<!-- (?:BEGIN|END) GENERATED/.test(th)) err(md, 'holds only the article body, without the generated blocks');
+    // The translation follows the English block for block: code is copied unchanged, headings match.
+    const en = readmeBody(readText(`${p.dir}/README.md`));
+    const FENCE = /^([ \t]*)```[^\n]*\n[\s\S]*?^\1```/gm; // also fences indented inside lists
+    const fences = (s) => [...s.matchAll(FENCE)].map((m) => m[0]);
+    const levels = (s) => (s.replace(FENCE, '').match(/^#{1,6}(?= )/gm) ?? []).join();
+    const [a, b] = [fences(th), fences(en)];
+    if (a.length !== b.length || a.some((c, i) => c !== b[i])) warn(md, 'code blocks differ from README.md (copy the code over unchanged)');
+    if (levels(th) !== levels(en)) warn(md, 'headings differ from README.md in number or level');
   }
   const f = `patterns/${p.slug}/th.json`;
   if (!existsSync(abs(f))) continue;
