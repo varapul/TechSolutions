@@ -1,21 +1,21 @@
 {
-  "summary": "หน่วย deploy เดียวที่ประกอบจาก module ซึ่งมีขอบเขตเข้มงวด และคุยกันผ่าน interface ที่ประกาศไว้ชัดเจน",
+  "summary": "deploy เป็นก้อนเดียว ข้างในประกอบจาก module ที่แบ่งขอบเขตกันเข้มงวด และคุยกันผ่าน interface ที่ประกาศไว้ชัดเจน",
   "steps": [
     {
-      "title": "หน่วยเดียว แต่ module ชัดเจน",
-      "body": "ทั้งแอปพลิเคชันถูก build, release และรันเป็น **หน่วยเดียว** ข้างในนั้น แต่ละ module (Orders, Catalog, Shipping, Payments) เป็นเจ้าของ business capability หนึ่งอย่าง พร้อมโค้ดและ table ของตัวเอง เมื่อ Orders ต้องการอะไรจาก Catalog ก็เรียก public API ของ Catalog ซึ่งเป็นแค่การเรียกแบบ in-process ธรรมดา: ไม่มี network hop และไม่มี serialisation"
+      "title": "ก้อนเดียว แต่แบ่ง module ชัด",
+      "body": "ทั้งแอปพลิเคชัน build, release และรันเป็น **ก้อนเดียว** ข้างในนั้นแต่ละ module (Orders, Catalog, Shipping, Payments) เป็นเจ้าของ business capability หนึ่งอย่าง พร้อมโค้ดและ table ของตัวเอง เวลา Orders ต้องใช้อะไรจาก Catalog ก็แค่เรียก public API ของ Catalog เป็นการเรียกแบบ in-process ธรรมดา ๆ: ไม่มี network hop และไม่มี serialisation"
     },
     {
-      "title": "บังคับขอบเขตอย่างจริงจัง",
-      "body": "มีการลองใช้ทางลัดสองทาง: โค้ดใน Orders ล้วงเข้าไปใช้ส่วน internal ของ Catalog และ query ใน Orders ไป join table ของ Catalog ในเมื่ออยู่ใน codebase เดียวและฐานข้อมูลเดียว ทั้งสองทางก็ใช้งานได้เฉย ๆ จึงต้องตรวจขอบเขตตอน **build**: ทั้งสองทางถูกรายงานว่าเป็น violation และ build ล้มเหลว ส่วนการเรียกผ่าน public API ของ Catalog ผ่านการตรวจ ถ้าไม่มีการตรวจนี้ module จะค่อย ๆ เสื่อมลงทีละทางลัดที่สะดวก จนกลายเป็นก้อนที่พันกันยุ่งเหยิง"
+      "title": "บังคับขอบเขตกันจริง ๆ",
+      "body": "มีคนลองใช้ทางลัดสองทาง: โค้ดใน Orders ล้วงเข้าไปใช้ส่วน internal ของ Catalog และ query ใน Orders ไป join table ของ Catalog ในเมื่ออยู่ใน codebase เดียวและฐานข้อมูลเดียว ทั้งสองทางก็ใช้ได้เฉย ๆ เราเลยต้องเช็กขอบเขตกันตอน **build**: ตัวเช็กรายงานทั้งสองทางว่าเป็น violation และ build ก็ไม่ผ่าน ส่วนการเรียกผ่าน public API ของ Catalog ผ่านการเช็กไปได้ ถ้าไม่มีการเช็กนี้ module จะค่อย ๆ เสื่อมไปทีละทางลัดที่สะดวก จนกลายเป็นก้อนที่พันกันยุ่ง"
     },
     {
-      "title": "interface และ event",
-      "body": "module ทำงานร่วมกันด้วยสองรูปแบบเดียวกับที่ service ใช้ Orders **ถาม** Catalog ผ่าน API ของ Catalog แล้วรอคำตอบ จากนั้นจึง **ประกาศ** `OrderPlaced` เป็น event แบบ in-process โดย Shipping และ Payments ซึ่ง subscribe ไว้ก็ตอบสนอง และ Orders ไม่รู้ว่ามีใครฟังอยู่บ้าง ระหว่างกลางไม่มีทั้ง network และ broker"
+      "title": "คุยกันผ่าน interface และ event",
+      "body": "module ทำงานด้วยกันสองแบบ แบบเดียวกับที่ service ใช้กัน Orders **ถาม** Catalog ผ่าน API ของ Catalog แล้วรอคำตอบ จากนั้นก็ **ประกาศ** `OrderPlaced` ออกไปเป็น event แบบ in-process แล้ว Shipping กับ Payments ที่ subscribe ไว้ก็รับไปจัดการต่อ โดยที่ Orders ไม่รู้เลยว่าใครฟังอยู่บ้าง ตรงกลางไม่มีทั้ง network และ broker"
     },
     {
-      "title": "แยกออกเมื่อมีเหตุผลเท่านั้น",
-      "body": "ตอนนี้ Payments ต้อง scale และ release ได้ด้วยตัวเอง เพราะขอบเขตของมันสะอาดอยู่แล้ว จึงย้ายออกไปได้: API กลายเป็น network API, schema กลายเป็นฐานข้อมูลของตัวเอง และการเรียกไปหามันตอนนี้ต้องข้าม network อีกสาม module ยังอยู่ด้วยกันใน deployment เดียว module ส่วนใหญ่ไม่เคยต้องทำขั้นนี้: การแยกออกเป็นคำตอบของความต้องการที่เป็นรูปธรรม ไม่ใช่เป้าหมายในตัวเอง"
+      "title": "จะแยกออกต้องมีเหตุผล",
+      "body": "ตอนนี้ Payments ต้อง scale และ release ได้เอง ขอบเขตของมันสะอาดอยู่แล้ว เลยย้ายออกไปได้: API กลายเป็น network API, schema กลายเป็นฐานข้อมูลของตัวเอง และการเรียกไปหามันก็ต้องข้าม network แล้ว อีกสาม module ยังอยู่ด้วยกันใน deployment เดียว module ส่วนใหญ่ไม่เคยต้องมาถึงขั้นนี้: การแยกออกมีไว้ตอบโจทย์ที่จับต้องได้ ไม่ใช่เป้าหมายในตัวมันเอง"
     }
   ]
 }

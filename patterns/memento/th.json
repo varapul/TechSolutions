@@ -1,21 +1,21 @@
 {
-  "summary": "เก็บ state ของ object ไว้ใน snapshot ที่มีแค่ object นั้นอ่านได้ เพื่อให้กู้คืนภายหลังได้โดยไม่ทำลาย encapsulation",
+  "summary": "เก็บ state ของ object ไว้ใน snapshot ที่มีแค่ตัวมันเองอ่านได้ จะได้กู้คืนทีหลังได้โดยไม่ทำลาย encapsulation",
   "steps": [
     {
-      "title": "undo ต้องใช้ state ที่เป็น private",
-      "body": "`History` ต้องจำว่าภาพเป็นอย่างไรก่อนการแก้แต่ละครั้ง แต่ `ImageEditor` เก็บ `#brightness`, `#blur` และ `#pixels` ไว้เป็น private ถ้าทำให้เป็น public History ก็คัดลอกได้ แต่โค้ดไหนก็เขียนค่าลงไปได้เช่นกัน (`editor.blur = -3`) และ caller ทุกตัวจะผูกติดกับวิธีที่ editor เก็บ state ของมัน การ undo ด้วย inverse operation ก็ใช้ไม่ได้: blur เฉลี่ยค่าของ pixel ข้างเคียง และภาพที่ต่างกันจำนวนมากก็ blur ออกมาได้ผลเดียวกัน"
+      "title": "undo ต้องใช้ state ที่ private",
+      "body": "`History` ต้องจำว่าภาพหน้าตาเป็นยังไงก่อนแก้แต่ละครั้ง แต่ `ImageEditor` เก็บ `#brightness`, `#blur` และ `#pixels` ไว้เป็น private ถ้าเปลี่ยนเป็น public ตัว History จะคัดลอกได้ก็จริง แต่โค้ดไหนก็จะเขียนค่าลงไปได้ด้วย (`editor.blur = -3`) แถม caller ทุกตัวยังผูกติดกับวิธีที่ editor เก็บ state ของมัน จะ undo ด้วย inverse operation ก็ใช้ไม่ได้เหมือนกัน: blur เอาค่าของ pixel ข้าง ๆ มาเฉลี่ยกัน และภาพที่ต่างกันมากมาย blur แล้วได้ผลเดียวกัน"
     },
     {
       "title": "snapshot ที่ปิดผนึกไว้",
-      "body": "ก่อนแก้ไข แอปจะเรียก `history.backup()` ซึ่งขอ snapshot จาก `editor.save()` ตัว editor (ซึ่งเป็น *Originator*) จะคัดลอก field ของตัวเองลงใน `EditorSnapshot` ตัวใหม่ (ตัว *Memento*) ที่มีแค่ `ImageEditor` เท่านั้นที่เปิดได้ History (ตัว *Caretaker*) วาง snapshot ซ้อนไว้ใน stack โดยมองเห็นแค่ label และตอน undo ก็ส่งคืนให้ `editor.restore(snap)` ซึ่งจะเปิดผนึกแล้วคัดลอกค่ากลับคืน"
+      "body": "ก่อนแก้ แอปจะเรียก `history.backup()` ตัวนี้ก็ไปขอ snapshot จาก `editor.save()` แล้ว editor (ตัว *Originator*) ก็คัดลอก field ของตัวเองลงใน `EditorSnapshot` ตัวใหม่ (ตัว *Memento*) ที่มีแค่ `ImageEditor` เท่านั้นที่เปิดได้ History (ตัว *Caretaker*) วาง snapshot ซ้อนไว้ใน stack โดยเห็นแค่ label อย่างเดียว พอ undo ก็ส่งคืนให้ `editor.restore(snap)` ตัวนี้จะเปิดผนึกแล้วคัดลอกค่ากลับคืน"
     },
     {
-      "title": "แก้ไข เก็บ snapshot และกู้คืน",
-      "body": "History บันทึก state (brightness 0, blur 0) แล้ว *Brightness +20* ก็ทำงาน จากนั้นบันทึกอีกครั้ง (brightness 20, blur 0) แล้ว *Blur 3* ก็ทำงาน undo ครั้งแรกจะ pop snapshot ล่าสุดออกมาและคืนค่า blur 0 โดย brightness ยังเป็น 20 ส่วนครั้งที่สองคืนค่า brightness 0 การ restore แต่ละครั้งคัดลอก pixel ที่บันทึกไว้กลับมา ภาพจึงกลับมาเหมือนเดิมทุกประการ แม้ blur จะไม่มี inverse ก็ตาม"
+      "title": "แก้ เก็บ snapshot แล้วกู้คืน",
+      "body": "History เก็บ state ไว้ (brightness 0, blur 0) แล้ว *Brightness +20* ก็ทำงาน จากนั้นเก็บอีกรอบ (brightness 20, blur 0) แล้ว *Blur 3* ก็ทำงาน undo ครั้งแรกจะ pop snapshot ล่าสุดออกมาแล้วคืนค่า blur 0 โดย brightness ยังเป็น 20 อยู่ ครั้งที่สองก็คืนค่า brightness 0 การ restore แต่ละครั้งคัดลอก pixel ที่เก็บไว้กลับมา ภาพเลยกลับมาเหมือนเดิมทุกอย่าง ทั้งที่ blur ไม่มี inverse"
     },
     {
-      "title": "ต้นทุน และแพตเทิร์นใกล้เคียง",
-      "body": "snapshot เต็มของภาพ RGBA 12 megapixel มีขนาด 48 MB การ undo สิบขั้นจึงต้องเก็บ 480 MB ทางแก้ที่ editor ใช้คือจำกัดความยาวของ history บันทึกเฉพาะ tile ที่ถูกแก้ หรือแชร์ข้อมูลที่ไม่เปลี่ยนระหว่าง snapshot (copy-on-write, immutable state) ส่วน [Command](../command/) undo ด้วยการรัน inverse operation แทน และ command ก็เก็บ memento ไว้เพื่อ undo ตัวเองได้ แนวคิดนี้ยังปรากฏใน state object ของ `history.pushState()`, time travel ของ Redux DevTools, snapshot ของ database และ VM รวมถึง snapshot ที่ช่วยให้ [Event Sourcing](../event-sourcing/) ไม่ต้อง replay ทุก event"
+      "title": "ต้นทุน กับแพตเทิร์นใกล้เคียง",
+      "body": "snapshot เต็ม ๆ ของภาพ RGBA 12 megapixel มีขนาด 48 MB ถ้า undo ได้สิบขั้นก็ต้องเก็บ 480 MB โปรแกรม editor ก็เลยจำกัดความยาวของ history เก็บแค่ tile ที่การแก้ไปแตะ หรือแชร์ข้อมูลที่ไม่เปลี่ยนระหว่าง snapshot (copy-on-write, immutable state) ส่วน [Command](../command/) จะ undo ด้วยการรัน inverse operation แทน และ command ก็เก็บ memento ไว้ undo ตัวเองได้ แนวคิดนี้ยังเจอได้ใน state object ของ `history.pushState()`, time travel ของ Redux DevTools, snapshot ของ database และ VM รวมถึง snapshot ที่ช่วยให้ [Event Sourcing](../event-sourcing/) ไม่ต้อง replay ทุก event"
     }
   ]
 }

@@ -1,21 +1,21 @@
 {
-  "summary": "รับ ประมวลผล และ export trace, metric และ log ผ่าน collector ตัวเดียวที่ไม่ผูกกับ vendor ใด",
+  "summary": "รับ ประมวลผล และ export trace, metric และ log ผ่าน collector ตัวเดียวที่ไม่ผูกกับ vendor เจ้าไหน",
   "steps": [
     {
       "title": "รับเข้าด้วย protocol เดียว",
-      "body": "แต่ละ service ถูก instrument ด้วย OpenTelemetry API และ SDK และ export **trace, metric และ log** ของตัวเองผ่าน **OTLP** (gRPC ที่ port 4317, HTTP ที่ 4318) โค้ดของแอปพลิเคชันไม่เคย import agent หรือ client library ของ backend ใดเลย ใน Collector มี receiver `otlp` ตัวเดียวที่รับ signal ทั้งสามแบบ แล้วส่งแต่ละแบบเข้า **pipeline** ของตัวเอง"
+      "body": "แต่ละ service ใช้ OpenTelemetry API และ SDK ทำ instrumentation แล้ว export **trace, metric และ log** ของตัวเองผ่าน **OTLP** (gRPC ที่ port 4317, HTTP ที่ 4318) โค้ดของแอปไม่เคย import agent หรือ client library ของ backend ไหนเลย ใน Collector มี receiver `otlp` ตัวเดียวรับ signal ครบทั้งสามแบบ แล้วส่งแต่ละแบบเข้า **pipeline** ของมันเอง"
     },
     {
       "title": "ประมวลผลระหว่างทาง",
-      "body": "แต่ละ pipeline รัน processor ตามลำดับ โดยมี **memory limiter** อยู่ตัวแรก ในที่นี้ processor จะเพิ่ม resource attribute (`k8s.pod.name`, `deployment.environment.name`) ไว้ข้าง `service.name` ที่ SDK ตั้งให้ จากนั้น **tail-sample** trace (เก็บทุก trace ที่มี error บวกกับ 25% ของที่เหลือ) ลบ attribute ที่อ่อนไหว (`user.email`) และ **batch** ส่วนที่เหลือ tail sampling ตัดสินจาก trace ทั้งเส้น span ทุกตัวของ trace หนึ่งจึงต้องไปถึง Collector instance ตัวเดียวกัน"
+      "body": "แต่ละ pipeline รัน processor ไปตามลำดับ โดยให้ **memory limiter** อยู่ตัวแรก ในที่นี้ processor จะเติม resource attribute (`k8s.pod.name`, `deployment.environment.name`) ไว้ข้าง ๆ `service.name` ที่ SDK ใส่มาให้ แล้ว **tail-sample** trace (เก็บทุก trace ที่มี error บวกกับ 25% ของที่เหลือ) ลบ attribute ที่อ่อนไหว (`user.email`) ทิ้ง และ **batch** ของที่เหลือ tail sampling ตัดสินจาก trace ทั้งเส้น span ทุกตัวของ trace เดียวกันเลยต้องไปถึง Collector instance ตัวเดียวกัน"
     },
     {
       "title": "fan out ไปหลาย backend",
-      "body": "exporter ส่ง signal แต่ละแบบไปยัง backend ของมัน และ pipeline หนึ่งระบุ exporter ได้หลายตัว: ระหว่าง migration pipeline ของ trace ส่งข้อมูลให้ทั้ง tracing backend ปัจจุบันและ **new vendor** ไปพร้อมกัน แต่ละฝั่งผ่าน exporter และ queue ของตัวเอง การเพิ่ม เปลี่ยน หรือถอด backend เป็นแค่การแก้ configuration ของ Collector จึงไม่ต้อง rebuild หรือ redeploy service ใดเลย"
+      "body": "exporter ส่ง signal แต่ละแบบไปที่ backend ของมัน และ pipeline หนึ่งจะใส่ exporter ไว้หลายตัวก็ได้: ระหว่างที่ทำ migration อยู่ pipeline ของ trace ก็ส่งข้อมูลให้ทั้ง tracing backend ตัวปัจจุบันและ **new vendor** ไปพร้อมกัน แต่ละฝั่งผ่าน exporter กับ queue ของตัวเอง จะเพิ่ม เปลี่ยน หรือถอด backend ก็แค่แก้ configuration ของ Collector ไม่ต้อง rebuild หรือ redeploy service ไหนเลย"
     },
     {
-      "title": "ไม่ล่มเมื่อเจอแรงกดดัน",
-      "body": "log store หยุดตอบ exporter ของมันจึงพัก batch ไว้ใน **sending queue** และ **retry ด้วย exponential backoff** เมื่อ memory ถึงขีดจำกัด **memory limiter** จะปฏิเสธข้อมูลใหม่ในทุก pipeline แทนที่จะปล่อยให้ process ตาย: receiver ตอบกลับด้วย error ที่ retry ได้ (gRPC `UNAVAILABLE`, HTTP 503) ข้อมูลที่ถูกปฏิเสธจึงยังอยู่กับผู้ส่ง ซึ่งจะ retry และจะเสียข้อมูลนั้นไปก็ต่อเมื่อ buffer ของตัวเองล้น หรือ retry จนครบจำนวนแล้ว เมื่อระบบใหญ่ขึ้น pipeline เดียวกันนี้จะถูกแบ่งเป็นสอง tier: **agent** ที่อยู่ข้าง workload ส่งต่อไปยัง pool ของ Collector ที่เป็น **gateway** ซึ่งมี load balancer กระจายโหลดอยู่ด้านหน้า"
+      "title": "เจอแรงกดดันก็ยังไม่ล่ม",
+      "body": "log store หยุดตอบ ทำให้ exporter ของมันต้องพัก batch ไว้ใน **sending queue** แล้ว **retry ด้วย exponential backoff** พอ memory ถึงขีดจำกัด **memory limiter** ก็ปฏิเสธข้อมูลใหม่ในทุก pipeline แทนที่จะปล่อยให้ process ตาย: receiver ตอบกลับด้วย error ที่ retry ได้ (gRPC `UNAVAILABLE`, HTTP 503) ข้อมูลที่โดนปฏิเสธเลยยังอยู่กับฝั่งผู้ส่ง ฝั่งผู้ส่งจะ retry และจะเสียข้อมูลไปก็ต่อเมื่อ buffer ของตัวเองล้น หรือ retry จนครบจำนวนครั้งแล้ว พอระบบใหญ่ขึ้น ก็แบ่ง pipeline เดียวกันนี้เป็นสอง tier: **agent** ที่อยู่ข้าง ๆ workload ส่งต่อไปที่ pool ของ Collector ที่เป็น **gateway** โดยมี load balancer กระจายโหลดให้"
     }
   ]
 }

@@ -1,21 +1,21 @@
 {
-  "summary": "API ตรวจ signature และ claim ของ token เองในเครื่อง โดยใช้ public key ของ issuer ที่ cache ไว้ (JWKS)",
+  "summary": "API ตรวจ signature และ claim ของ token เองในเครื่อง ด้วย public key ของ issuer ที่ cache ไว้ (JWKS)",
   "steps": [
     {
       "title": "ดึง key มาครั้งเดียว",
-      "body": "API ตั้งค่าไว้ให้เชื่อ issuer เพียงรายเดียวคือ `https://idp.example` ตอนเริ่มทำงาน (หรือเมื่อ request แรกเข้ามา) API อ่าน metadata document ของ issuer นั้น ซึ่งคือ `/.well-known/oauth-authorization-server` (RFC 8414) หรือ `/.well-known/openid-configuration` ของ OpenID Connect แล้วตาม `jwks_uri` ไปดึง **JWKS** มา cache ไว้: นั่นคือ public key ของ issuer ซึ่งแต่ละตัวมี key ID (`kid`) private key ที่ใช้ sign ไม่เคยออกจาก issuer ดังนั้น API ที่ตรวจ token ได้ก็ยังสร้าง token เองไม่ได้"
+      "body": "API ตั้งค่าให้เชื่อ issuer แค่เจ้าเดียวคือ `https://idp.example` แล้วตอนเริ่มทำงาน (หรือตอน request แรกเข้ามา) API จะอ่าน metadata document ของ issuer นั้น คือ `/.well-known/oauth-authorization-server` (RFC 8414) หรือ `/.well-known/openid-configuration` ของ OpenID Connect แล้วตาม `jwks_uri` ไปดึง **JWKS** มา cache ไว้: ก็คือ public key ของ issuer ที่แต่ละตัวมี key ID (`kid`) ส่วน private key ที่ใช้ sign ไม่เคยออกจาก issuer ทำให้ API ที่ตรวจ token ได้ก็ยังสร้าง token เองไม่ได้"
     },
     {
       "title": "ตรวจเองในเครื่อง",
-      "body": "request เข้ามาพร้อม `Authorization: Bearer eyJ…` API ตรวจ header ก่อน: `typ` ต้องเป็น `at+jwt` และ `alg` ต้องอยู่ใน allowlist ของ API เอง (ห้ามเป็น `none` และห้ามปล่อยให้ token เลือกเองว่าจะใช้ RSA หรือ HMAC) จากนั้นเลือก key ใน cache ที่ `kid` ตรงกัน แล้วตรวจ signature หลังจากนั้นเท่านั้นจึงเชื่อ claim: `iss` ต้องตรงกับ issuer ที่ตั้งค่าไว้ทุกตัวอักษร `aud` ต้องมี API นี้อยู่ `exp` ต้องเป็นเวลาในอนาคต (เผื่อ clock skew ไว้เล็กน้อย) และ `scope` เป็นตัวตัดสินว่า request นี้ทำได้หรือไม่ การตรวจทุกข้อใช้ key ใน cache จึงไม่ต้องเรียก issuer เลย และ API ตอบ `200`"
+      "body": "request เข้ามาพร้อม `Authorization: Bearer eyJ…` API ตรวจ header ก่อน: `typ` ต้องเป็น `at+jwt` และ `alg` ต้องอยู่ใน allowlist ของ API เอง (ห้ามเป็น `none` และห้ามปล่อยให้ token เลือกเองว่าจะใช้ RSA หรือ HMAC) จากนั้นหยิบ key ใน cache ที่ `kid` ตรงกันมาตรวจ signature ผ่านขั้นนี้แล้วถึงจะเชื่อ claim: `iss` ต้องตรงกับ issuer ที่ตั้งค่าไว้ทุกตัวอักษร `aud` ต้องมี API นี้อยู่ `exp` ต้องยังมาไม่ถึง (เผื่อ clock skew ไว้นิดหน่อย) และ `scope` เป็นตัวตัดสินว่า request นี้ทำได้ไหม ทุกข้อตรวจกับ key ใน cache เลยไม่ต้องเรียก issuer สักครั้ง แล้ว API ก็ตอบ `200`"
     },
     {
-      "title": "ปฏิเสธ token ที่ไม่ผ่าน",
-      "body": "token เสียสามตัวเข้ามาตามลำดับ: ตัวแรก `exp` ผ่านไปแล้ว ตัวที่สองถูกแก้ payload หลัง sign (signature จึงไม่ตรงอีกต่อไป) และตัวที่สามออกให้ audience อื่น (`aud: billing-api`) ทั้งสามตัวได้ **401** พร้อม `WWW-Authenticate: Bearer error=\"invalid_token\"` ส่วน token ตัวที่สี่ถูกต้องทุกอย่าง แต่มีแค่ `orders:read` ขณะที่ request ต้องใช้ `orders:write`: กรณีนี้คือ **403** พร้อม `error=\"insufficient_scope\"` เพราะ token ไม่มีปัญหา เพียงแต่ให้สิทธิ์ไม่พอ"
+      "title": "token ไม่ผ่านก็ตีกลับ",
+      "body": "token เสียสามตัวเข้ามาทีละตัว: ตัวแรก `exp` ผ่านไปแล้ว ตัวที่สองโดนแก้ payload หลัง sign (signature เลยไม่ตรงแล้ว) ตัวที่สามออกให้ audience อื่น (`aud: billing-api`) ทั้งสามตัวได้ **401** พร้อม `WWW-Authenticate: Bearer error=\"invalid_token\"` ส่วน token ตัวที่สี่ถูกต้องทุกอย่าง แต่มีแค่ `orders:read` ขณะที่ request ต้องใช้ `orders:write`: แบบนี้ได้ **403** พร้อม `error=\"insufficient_scope\"` เพราะ token ไม่มีปัญหาอะไร แค่ให้สิทธิ์ไม่พอ"
     },
     {
-      "title": "หมุนเวียน key",
-      "body": "issuer เริ่ม sign ด้วย key ใหม่ `k3` token ถัดไปมี `kid` ที่ไม่อยู่ใน cache ของ API ดังนั้น API จึงดึง JWKS ใหม่ เจอ `k3` และตรวจ token ได้ การดึงใหม่นี้มี rate limit (ดึงหนึ่งครั้งแล้วเว้นช่วง cooldown) token ที่ใส่ค่า `kid` แต่งขึ้นเองจึงทำให้ API ยิง request ถล่ม issuer ไม่ได้ key เก่ายังเผยแพร่อยู่จนกว่า token ที่ key เหล่านั้น sign ไว้จะหมดอายุ ราคาที่ต้องจ่ายของการตรวจในเครื่องคือ token ยังใช้ได้จนถึง `exp` แม้จะถูก revoke ไปเมื่อนาทีก่อน ดังนั้นควรให้ access token มีอายุสั้น หรือใช้ token introspection ในจุดที่ต้อง revoke ได้ทันที"
+      "title": "สลับไปใช้ key ใหม่",
+      "body": "issuer เริ่ม sign ด้วย key ใหม่ `k3` token ตัวถัดไปมี `kid` ที่ API ไม่มีใน cache ก็เลยต้องดึง JWKS มาใหม่ เจอ `k3` แล้วตรวจ token ได้ การดึงใหม่นี้มี rate limit (ดึงหนึ่งครั้งแล้วพัก cooldown) token ที่แต่ง `kid` ขึ้นมาเองเลยหลอกให้ API ยิง request ถล่ม issuer ไม่ได้ key เก่ายัง publish อยู่จนกว่า token ที่ key พวกนั้น sign ไว้จะหมดอายุ สิ่งที่ต้องแลกกับการตรวจในเครื่องคือ token ยังใช้ได้ไปจนถึง `exp` ถึงจะโดน revoke ไปเมื่อนาทีก่อนก็ตาม เพราะฉะนั้นให้ access token อายุสั้นเข้าไว้ หรือใช้ token introspection ในจุดที่ต้อง revoke ได้ทันที"
     }
   ]
 }

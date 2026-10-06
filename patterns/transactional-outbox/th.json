@@ -3,19 +3,19 @@
   "steps": [
     {
       "title": "ช่องโหว่ของ dual write",
-      "body": "Order Service commit order 1042 ลง database ของตัวเอง แล้วจึง publish *OrderPlaced* ไปที่ broker: เป็นการเขียนสองครั้งลงสองระบบ และไม่มี transaction ไหนครอบทั้งสองได้ มัน crash ระหว่างสองจังหวะนั้น order จึงมีอยู่ แต่ไม่มี service อื่นได้รู้เรื่องเลย สลับลำดับก็พังเหมือนกัน: ถ้า publish ก่อน หรือ publish จากในขณะที่ transaction ยังเปิดอยู่ แล้วเกิด rollback ขึ้น consumer จะทำงานตาม order ที่ไม่มีอยู่จริง"
+      "body": "Order Service commit order 1042 ลง database ของตัวเอง แล้วค่อย publish *OrderPlaced* ไปที่ broker: เป็นการเขียนสองครั้งลงสองระบบ และไม่มี transaction ไหนครอบทั้งสองได้ มัน crash ระหว่างสองจังหวะนี้ order เลยมีอยู่จริง แต่ service อื่นไม่เคยรู้เรื่องเลย สลับลำดับก็พังเหมือนกัน: ถ้า publish ก่อน หรือ publish จากใน transaction ที่ยังเปิดอยู่ แล้วเกิด rollback ขึ้นมา consumer ก็จะทำงานตาม order ที่ไม่มีอยู่จริง"
     },
     {
       "title": "local transaction เดียว",
-      "body": "service ไม่เรียก broker แต่ insert event เป็นแถวหนึ่งในตาราง **outbox** ใน database เดียวกัน ภายใน local transaction เดียวกับ order ทั้งสองแถวจะมองเห็นได้พร้อมกันตอน commit หรือไม่ปรากฏเลยทั้งคู่ถ้า transaction ถูก rollback event จึงถูกบันทึกก็ต่อเมื่อ order ถูกบันทึก และไม่ต้องใช้ distributed transaction เลย"
+      "body": "service ไม่เรียก broker แต่ insert event เป็นแถวหนึ่งในตาราง **outbox** ใน database เดียวกัน และใน local transaction เดียวกับ order พอ commit ทั้งสองแถวก็มองเห็นได้พร้อมกัน แต่ถ้า transaction rollback ก็ไม่มีแถวไหนโผล่มาสักแถว ผลก็คือ event จะถูกบันทึกก็ต่อเมื่อ order ถูกบันทึก และไม่ต้องใช้ distributed transaction เลย"
     },
     {
       "title": "Relay: ส่งแบบ at-least-once",
-      "body": "**message relay** ที่แยกออกมาอีกตัวจะอ่านแถวที่ยังไม่ได้ส่ง โดย poll ตาราง หรือ tail log ของ database ด้วย change data capture (CDC) เช่น Debezium มัน publish แต่ละ event ก่อน แล้วจึงบันทึกว่าส่งแล้ว ส่วน CDC connector จะบันทึกตำแหน่งใน log แทน ถ้ามัน crash หลัง publish แต่ก่อนบันทึก เมื่อ restart มันจะ publish event เดิมซ้ำอีกครั้ง การส่งจึงเป็นแบบ **at-least-once**: ไม่มีอะไรหาย แต่ event หนึ่งอาจมาถึงสองครั้ง"
+      "body": "มี **message relay** อีกตัวแยกออกมา คอยอ่านแถวที่ยังไม่ได้ส่ง จะ poll ตาราง หรือ tail log ของ database ด้วย change data capture (CDC) อย่าง Debezium ก็ได้ มัน publish แต่ละ event ก่อน แล้วค่อยบันทึกว่าส่งแล้ว ส่วน CDC connector จะบันทึกตำแหน่งใน log แทน ถ้ามัน crash หลัง publish แต่ก่อนจะได้บันทึก พอ restart มันก็จะ publish event เดิมซ้ำอีกรอบ การส่งเลยเป็นแบบ **at-least-once**: ไม่มีอะไรหาย แต่ event หนึ่งอาจมาถึงสองครั้ง"
     },
     {
       "title": "consumer แบบ idempotent",
-      "body": "ทุก event มี ID ที่ไม่ซ้ำกัน (`a7f3`) consumer แต่ละตัวบันทึก ID ที่ประมวลผลไปแล้ว ซึ่งควรทำใน transaction เดียวกับการเปลี่ยนแปลงของตัวเอง และข้าม event ที่เคยเห็นแล้ว event ที่ซ้ำจึงไม่มีผลอะไร order ID เป็น message key ดังนั้น event ของ order เดียวกันจะอยู่ใน partition เดียวกัน และมาถึงตามลำดับที่ publish"
+      "body": "ทุก event มี ID ที่ไม่ซ้ำกัน (`a7f3`) consumer แต่ละตัวบันทึก ID ที่ประมวลผลไปแล้วไว้ ถ้าให้ดีก็บันทึกใน transaction เดียวกับการเปลี่ยนแปลงของตัวเอง แล้วข้าม event ที่เคยเห็นแล้ว event ที่ซ้ำมาก็เลยไม่มีผลอะไร และเพราะ order ID เป็น message key ทุก event ของ order เดียวกันก็เลยอยู่ใน partition เดียวกัน และมาถึงตามลำดับที่ publish"
     }
   ]
 }

@@ -1,21 +1,21 @@
 {
-  "summary": "message ด่วนได้รับการประมวลผลก่อน message ทั่วไป",
+  "summary": "ประมวลผล message ด่วนก่อน message ทั่วไป",
   "steps": [
     {
       "title": "มาก่อนได้ก่อน",
-      "body": "งาน import ตอนกลางคืนใส่ **งาน re-index 500 งาน** ไว้ใน queue เดียวที่มี แล้วอีเมล password reset ก็เข้ามาต่อท้ายงานเหล่านั้น worker สี่ตัวทำได้ตัวละ 2.5 งานต่อวินาที รวมเป็น 10 อีเมลจึงต้องรอ 500 ÷ 10 = **50 s** ขณะที่ผู้ใช้นั่งจ้องหน้าจออยู่ ใน queue เดียว ทุก message มีฐานะเท่ากันหมด ไม่ว่าจะมีไว้เพื่ออะไร"
+      "body": "งาน import ตอนกลางคืนใส่ **งาน re-index 500 งาน** ไว้ใน queue เดียวที่มี แล้วอีเมล password reset ก็มาต่อท้ายงานพวกนี้ worker สี่ตัวทำได้ตัวละ 2.5 งานต่อวินาที รวมเป็น 10 ทำให้อีเมลต้องรอ 500 ÷ 10 = **50 s** ระหว่างที่ผู้ใช้นั่งจ้องหน้าจออยู่ ใน queue เดียว ทุก message มีฐานะเท่ากันหมด ไม่ว่าจะมีไว้ทำอะไร"
     },
     {
       "title": "แยก queue ตาม priority",
-      "body": "producer ติดป้ายให้แต่ละ message แล้วส่งไปที่ queue **high** หรือ **low** (หรือ publish ไปที่ topic เดียวที่ subscription แต่ละตัว filter ตาม attribute ที่บอก priority) worker จะเช็ก queue high ก่อนเสมอ อีเมล password reset จึงเจอ queue high ว่างเปล่า ถูกส่งไปยัง worker ตัวถัดไปที่ว่าง และส่งออกไปได้ราว 0.5 s หลังจากเข้ามา ส่วนงาน import ก็ทำต่อไปใน queue low"
+      "body": "producer ติดป้ายให้แต่ละ message แล้วส่งไปที่ queue **high** หรือ **low** (หรือ publish ไปที่ topic เดียว แล้วให้แต่ละ subscription filter ตาม attribute ที่บอก priority) worker เช็ก queue high ก่อนเสมอ อีเมล password reset เลยเจอ queue high ว่างอยู่ ได้ไปที่ worker ตัวถัดไปที่ว่าง และส่งออกไปได้ราว 0.5 s หลังจากเข้ามา ส่วนงาน import ก็ทำต่อไปใน queue low"
     },
     {
-      "title": "Starvation และการกันกำลังไว้",
-      "body": "flash sale ส่ง order confirmation ด่วนเข้ามา 12 รายการต่อวินาที มากกว่ากำลังของ pool ที่ทำได้ 10 เมื่อ poll queue high ก่อนเสมอ queue high ก็ไม่เคยว่าง และ queue low ไม่ได้อะไรเลย: ไม่นาน message ที่เก่าที่สุดในนั้นก็อายุถึง **10 นาที** ให้ **กันกำลังไว้** สำหรับ queue low (worker 4 รับเฉพาะงาน low หรือให้ pool ดึง high กับ low ในอัตรา 3 : 1) high จะได้ 7.5 งานต่อวินาที และ low ได้ 2.5 แล้ว scale แต่ละ pool ตาม queue ของตัวเอง: pool ของ high ขยายเป็น worker หกตัว ได้ 15 งานต่อวินาที"
+      "title": "Starvation แล้วกันกำลังไว้",
+      "body": "flash sale ส่ง order confirmation ด่วนเข้ามา 12 รายการต่อวินาที มากกว่า 10 ที่ pool ทำได้ พอ poll queue high ก่อนเสมอ queue high ก็ไม่เคยว่าง และ queue low ไม่ได้อะไรเลย: ไม่นาน message ที่เก่าที่สุดในนั้นก็อายุ **10 นาที** แล้ว ทางแก้คือ **กันกำลังไว้** ให้ queue low (worker 4 รับแค่งาน low หรือให้ pool ดึง high กับ low ในอัตรา 3 : 1) high เลยได้ 7.5 งานต่อวินาที และ low ได้ 2.5 แล้ว scale แต่ละ pool ตาม queue ของตัวเอง: pool ของ high ขยายเป็น worker หกตัว ได้ 15 งานต่อวินาที"
     },
     {
       "title": "รู้ข้อจำกัด",
-      "body": "RabbitMQ เรียงตาม priority ภายใน queue เดียวได้ (ทั้ง classic queue และ quorum queue) ส่วน Amazon SQS, Azure Service Bus, Google Cloud Pub/Sub และ Kafka ต้องแยก queue, subscription หรือ topic ตามแต่ละระดับ ทั้งนี้ priority มีผลแค่ว่า message ไหนจะถูกหยิบไปทำต่อ: งาน low-priority ที่ยาวของ worker 1 ยังครอง worker ตัวนั้นไว้ จึงควรแบ่งงานยาวเป็นงานสั้น ๆ และต้องกำหนดว่าใครส่งงานด่วนได้บ้าง: ถ้า producer ทุกตัวติดป้ายว่าด่วนหมด ก็ไม่มีอะไรด่วนจริงสักอย่าง"
+      "body": "RabbitMQ เรียงตาม priority ใน queue เดียวได้ (ทั้ง classic queue และ quorum queue) ส่วน Amazon SQS, Azure Service Bus, Google Cloud Pub/Sub และ Kafka ต้องแยก queue, subscription หรือ topic ตามแต่ละระดับ ตัว priority เองมีผลแค่ว่า message ไหนจะได้หยิบไปทำเป็นตัวถัดไป: งาน low-priority ยาว ๆ ของ worker 1 ก็ยังครอง worker ตัวนั้นอยู่ เลยควรแบ่งงานยาวให้สั้นลง และต้องกำหนดว่าใครส่งงานด่วนได้บ้าง: ถ้า producer ทุกตัวติดป้ายว่าด่วนหมด ก็ไม่มีอะไรด่วนจริงสักอย่าง"
     }
   ]
 }

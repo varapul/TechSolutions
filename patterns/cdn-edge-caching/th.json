@@ -1,21 +1,21 @@
 {
-  "summary": "ให้บริการ static content จาก edge location ที่อยู่ใกล้ผู้ใช้ มีเพียง cache miss เท่านั้นที่วิ่งไปถึง origin",
+  "summary": "ส่ง static content จาก edge location ที่อยู่ใกล้ผู้ใช้ มีแค่ cache miss ที่วิ่งไปถึง origin",
   "steps": [
     {
-      "title": "request แรก: เป็น miss",
-      "body": "ผู้ใช้ใน Bangkok ขอไฟล์ `/app.9f3c.js` request ไปตกที่ **edge location** ที่ใกล้ที่สุด ซึ่งมีหน้าเว็บอยู่แล้วแต่ยังไม่มีสำเนาของ script นี้: เป็น **MISS** edge จึงดึงไฟล์จาก origin ที่อยู่อีกทวีป (ช่วงที่ช้า ในที่นี้ราว 230 ms) เก็บไว้นานเท่าที่ header `Cache-Control` ของ origin อนุญาต แล้วส่งต่อให้ผู้ใช้"
+      "title": "request แรกยัง miss",
+      "body": "ผู้ใช้ใน Bangkok ขอไฟล์ `/app.9f3c.js` request ไปตกที่ **edge location** ที่ใกล้ที่สุด edge นี้มีหน้าเว็บอยู่แล้ว แต่ยังไม่มีสำเนาของ script ตัวนี้: เป็น **MISS** edge เลยไปดึงไฟล์มาจาก origin ที่อยู่อีกทวีป (เป็นช่วงที่ช้า ในที่นี้ราว 230 ms) เก็บไว้ได้นานเท่าที่ header `Cache-Control` ของ origin ยอม แล้วส่งต่อให้ผู้ใช้"
     },
     {
       "title": "HIT ที่ edge ใกล้ผู้ใช้",
-      "body": "ผู้ใช้ใน Bangkok คนถัด ๆ ไปได้สำเนาจาก edge ภายในราว 15 ms: เป็น **HIT** ที่ส่งมาพร้อม header `Age` ซึ่งบอกว่าสำเนานี้มาจาก origin นานเท่าไรแล้ว origin ไม่เห็น request เหล่านี้เลยสักตัว ส่วน Frankfurt และ São Paulo ต่างก็ miss ใน request แรกของตัวเอง เพราะ **edge location แต่ละแห่งเติม cache ของตัวเองแยกกัน**"
+      "body": "ผู้ใช้ใน Bangkok คนถัด ๆ มาได้สำเนาจาก edge ในราว 15 ms: เป็น **HIT** ที่แนบ header `Age` มาด้วย บอกว่าสำเนานี้มาจาก origin นานแค่ไหนแล้ว origin ไม่เห็น request พวกนี้เลยสักตัว ส่วน Frankfurt กับ São Paulo ต่างก็ miss ใน request แรกของตัวเอง เพราะ **edge location แต่ละที่เติม cache ของตัวเองแยกกัน**"
     },
     {
-      "title": "หมดอายุและ revalidate",
-      "body": "`/index.html` ถูก cache ไว้ด้วย `max-age=600` เมื่ออายุเกินค่านั้น สำเนาจะ **stale** และ edge ต้องตรวจสอบก่อนใช้อีกครั้ง: edge ส่ง **conditional request** โดยใส่ `ETag` ของสำเนาไว้ใน `If-None-Match` หน้านี้ไม่ได้เปลี่ยน origin จึงตอบ **304 Not Modified** ที่มีแต่ header ไม่มี body และสำเนาเดิมก็ใช้ได้ต่ออีก 600 s ผู้ใช้ที่ทำให้เกิดการตรวจสอบนี้ยังต้องรอ origin อยู่ดี แต่ถ้าใช้ `stale-while-revalidate` edge จะตอบจากสำเนาที่ stale ทันที แล้ว refresh อยู่เบื้องหลัง"
+      "title": "หมดอายุแล้ว revalidate",
+      "body": "`/index.html` ถูก cache ไว้ด้วย `max-age=600` พออายุเกินค่านั้น สำเนาก็ **stale** และ edge ต้องเช็กก่อนจะใช้อีกครั้ง: edge ส่ง **conditional request** โดยใส่ `ETag` ของสำเนาไว้ใน `If-None-Match` หน้านี้ยังเหมือนเดิม origin เลยตอบ **304 Not Modified** มาแค่ header ไม่มี body สำเนาเดิมก็ใช้ต่อได้อีก 600 s ผู้ใช้คนที่ทำให้เกิดการเช็กนี้ยังต้องรอ origin อยู่ดี แต่ถ้าใช้ `stale-while-revalidate` edge จะตอบจากสำเนาที่ stale ไปก่อนทันที แล้วค่อย refresh อยู่เบื้องหลัง"
     },
     {
-      "title": "เมื่อ content เปลี่ยน",
-      "body": "build ใหม่ถูกปล่อยออกไป และตอนนี้หน้าเว็บโหลด `/app.a71b.js` **URL ใหม่คือ cache key ใหม่**: request แรกของไฟล์นี้แค่ miss แล้วเติม cache ไม่ต้อง invalidate อะไรเลย นี่คือเหตุผลที่ไฟล์ที่มี fingerprint ในชื่อ cache ได้นานถึงหนึ่งปีและติด `immutable` ได้ ส่วน `/index.html` ยังใช้ URL เดิม การ deploy จึงต้อง **purge** ไฟล์นี้ออกจากทุก edge และ request ถัดไปจะเป็น miss ที่ดึงหน้าใหม่เข้ามา การ purge ล้างเฉพาะสำเนาบน CDN ไม่ได้ล้างสำเนาที่อยู่ใน browser แล้ว"
+      "title": "พอ content เปลี่ยน",
+      "body": "ปล่อย build ใหม่ออกไป ตอนนี้หน้าเว็บโหลด `/app.a71b.js` **URL ใหม่ก็คือ cache key ใหม่**: request แรกของไฟล์นี้ก็แค่ miss แล้วเติม cache ไม่ต้อง invalidate อะไรเลย ไฟล์ที่มี fingerprint ในชื่อเลย cache ได้นานหนึ่งปีและติด `immutable` ได้ ส่วน `/index.html` ยังใช้ URL เดิม ตอน deploy เลยต้อง **purge** ไฟล์นี้ออกจากทุก edge แล้ว request ถัดไปก็จะ miss และดึงหน้าใหม่เข้ามา การ purge ล้างแค่สำเนาบน CDN ไม่ได้ล้างสำเนาที่อยู่ใน browser อยู่แล้ว"
     }
   ]
 }

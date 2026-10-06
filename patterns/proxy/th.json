@@ -1,21 +1,21 @@
 {
-  "summary": "ทำหน้าที่แทน object อื่นด้วย interface เดียวกันเพื่อควบคุมการเข้าถึง object นั้น: lazy loading, caching, ตรวจสิทธิ์การเข้าถึง และ remoting",
+  "summary": "เป็นตัวแทนของ object อื่นด้วย interface เดียวกัน เพื่อคุมการเข้าถึง object นั้น: lazy loading, caching, เช็กสิทธิ์ และ remoting",
   "steps": [
     {
-      "title": "โหลดทุกอย่างไว้ล่วงหน้า",
-      "body": "`GalleryPage` เติม `photos: Photo[]` ด้วย `new FullPhoto(name)` ครบทั้ง 20 thumbnail และ constructor ของ `FullPhoto` แต่ละตัวก็อ่านไฟล์ขนาดเต็ม 12 MB ของตัวเอง หน้าเว็บจึงถือ **20 × 12 MB = 240 MB** และแสดงผลได้หลังโหลดตัวสุดท้ายเสร็จเท่านั้น ทั้งที่ผู้ใช้เปิดภาพแค่ภาพเดียวคือ #7: 228 MB ในนั้นไม่เคยถูกแสดงเลย"
+      "title": "โหลดทุกอย่างรอไว้ก่อน",
+      "body": "`GalleryPage` เติม `photos: Photo[]` ด้วย `new FullPhoto(name)` ครบทั้ง 20 thumbnail แล้ว constructor ของ `FullPhoto` แต่ละตัวก็อ่านไฟล์ขนาดเต็มของตัวเอง ไฟล์ละ 12 MB หน้าเว็บเลยถือ **20 × 12 MB = 240 MB** ไว้ และกว่าจะแสดงผลได้ก็ต้องรอโหลดตัวสุดท้ายเสร็จ ทั้งที่ผู้ใช้เปิดแค่ภาพเดียวคือ #7: 228 MB ในนั้นไม่เคยได้แสดงเลย"
     },
     {
       "title": "ตัวแทนที่ใช้ interface เดียวกัน",
-      "body": "`PhotoProxy` (ตัว *Proxy*) implement interface `Photo` (ตัว *Subject*) ตัวเดียวกับ `FullPhoto` (ตัว *RealSubject*) แต่เก็บไว้แค่ชื่อไฟล์และ reference `real` ที่ยังว่างอยู่ การสร้าง proxy 20 ตัวอ่านข้อมูล **0 MB** หน้าเว็บจึงแสดงผลได้ทันที `GalleryPage` (ตัว *Client*) ยังถือ `Photo[]` และเรียก `display()` เหมือนเดิม: เปลี่ยนแค่บรรทัดที่สร้างภาพเท่านั้น"
+      "body": "`PhotoProxy` (ตัว *Proxy*) implement interface `Photo` (ตัว *Subject*) ตัวเดียวกับ `FullPhoto` (ตัว *RealSubject*) แต่เก็บไว้แค่ชื่อไฟล์กับ reference `real` ที่ยังว่างอยู่ สร้าง proxy 20 ตัวก็อ่านข้อมูล **0 MB** หน้าเว็บเลยแสดงผลได้ทันที `GalleryPage` (ตัว *Client*) ยังถือ `Photo[]` และเรียก `display()` เหมือนเดิม: ที่เปลี่ยนก็มีแค่บรรทัดที่สร้างภาพ"
     },
     {
-      "title": "โหลดเมื่อใช้ครั้งแรก",
-      "body": "ผู้ใช้เปิด #7 `PhotoProxy.display()` พบว่า `real` ยังว่าง จึงสร้าง `FullPhoto('IMG_0007.jpg')` ซึ่งอ่านไฟล์ 12 MB ของมัน แล้วส่งต่อ `display()` ไปให้ ผลลัพธ์เดินทางกลับไปที่หน้าเว็บ การเปิดครั้งที่สองพบว่า `real` มีค่าแล้วก็ส่งต่อได้ทันที หน้าเว็บจึงอ่านข้อมูลแค่ **12 MB ครั้งเดียว** แทนที่จะอ่าน 240 MB ไว้ล่วงหน้า"
+      "title": "โหลดตอนใช้ครั้งแรก",
+      "body": "ผู้ใช้เปิด #7 แล้ว `PhotoProxy.display()` เห็นว่า `real` ยังว่าง ก็เลยสร้าง `FullPhoto('IMG_0007.jpg')` ขึ้นมา ตัวนี้อ่านไฟล์ 12 MB ของมัน แล้ว proxy ก็ส่งต่อ `display()` ไปให้ ผลลัพธ์ก็ย้อนกลับไปที่หน้าเว็บ พอเปิดครั้งที่สอง `real` มีค่าแล้วก็ส่งต่อได้ทันที หน้าเว็บเลยอ่านแค่ **12 MB ครั้งเดียว** แทนที่จะอ่าน 240 MB ไว้ล่วงหน้า"
     },
     {
       "title": "proxy แบบอื่น โครงสร้างเดียวกัน",
-      "body": "โครงสร้างเดียวกันนี้ยังใช้ควบคุมการเข้าถึงด้วยเหตุผลอื่นได้อีก เช่น `ProtectedPhoto` ซึ่งเป็น *protection proxy* จะตรวจว่าผู้ใช้ที่ sign in อยู่เป็นเจ้าของภาพส่วนตัวนั้นหรือไม่ และปฏิเสธ bob ก่อนที่จะส่งต่ออะไร ส่วน *remote proxy* เช่น gRPC client stub ส่งการเรียกแต่ละครั้งผ่าน network และ *caching proxy* ตอบการเรียกซ้ำได้เอง `Proxy` ของ JavaScript, `java.lang.reflect.Proxy` ของ Java (ที่อยู่เบื้องหลัง proxy แบบอิง interface ของ Spring AOP) และ lazy-loading proxy ของ Hibernate สร้าง proxy ให้อัตโนมัติ และในระดับ network แนวคิดนี้กลายเป็น [ambassador](../ambassador/), [API gateway](../api-gateway/), [CDN](../cdn-edge-caching/) หรือ sidecar ของ [service mesh](../service-mesh/)"
+      "body": "โครงสร้างเดียวกันนี้ใช้คุมการเข้าถึงด้วยเหตุผลอื่นได้อีก `ProtectedPhoto` ที่เป็น *protection proxy* จะเช็กว่าผู้ใช้ที่ sign in อยู่เป็นเจ้าของภาพส่วนตัวนั้นหรือเปล่า แล้วปฏิเสธ bob ตั้งแต่ก่อนจะส่งต่ออะไรไป ส่วน *remote proxy* อย่าง gRPC client stub ก็ส่งการเรียกแต่ละครั้งผ่าน network และ *caching proxy* ก็ตอบการเรียกซ้ำได้เอง `Proxy` ของ JavaScript, `java.lang.reflect.Proxy` ของ Java (ที่อยู่เบื้องหลัง proxy แบบอิง interface ของ Spring AOP) และ lazy-loading proxy ของ Hibernate สร้าง proxy พวกนี้ให้เองเลย และพอขยายไปถึงระดับ network แนวคิดนี้ก็กลายเป็น [ambassador](../ambassador/), [API gateway](../api-gateway/), [CDN](../cdn-edge-caching/) หรือ sidecar ของ [service mesh](../service-mesh/)"
     }
   ]
 }

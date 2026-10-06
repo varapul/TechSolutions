@@ -1,21 +1,21 @@
 {
-  "summary": "SSO ในองค์กร: identity provider ส่ง assertion ที่ sign แล้วไปให้แอปผ่าน browser ด้วย POST",
+  "summary": "SSO ในองค์กร: identity provider POST assertion ที่ sign แล้วไปให้แอปผ่าน browser",
   "steps": [
     {
       "title": "SP ส่ง AuthnRequest",
-      "body": "Ana เปิด Expense app ซึ่งยังไม่มี session ของเธอ แอปสร้าง `<AuthnRequest>` ที่มี `ID` ใหม่ (`id-7f3a` ซึ่งแอปจำไว้) และใส่ entity ID ของตัวเองเป็น `<Issuer>` แล้วตอบกลับด้วยการ redirect ไปที่ SSO URL ของ IdP ที่ได้จาก metadata **HTTP-Redirect binding** ส่ง request ที่ deflate และ encode เป็น base64 แล้วไว้ใน query parameter `SAMLRequest` คู่กับ `RelayState` สั้น ๆ ส่วน IdP ตรวจว่า request มาจาก service provider ที่รู้จัก และระบุ ACS URL ที่ลงทะเบียนไว้สำหรับ SP นั้น"
+      "body": "Ana เปิด Expense app ที่ยังไม่มี session ของเธอ แอปสร้าง `<AuthnRequest>` ที่มี `ID` ใหม่ (`id-7f3a` แอปจำค่านี้ไว้) ใส่ entity ID ของตัวเองเป็น `<Issuer>` แล้วตอบกลับเป็น redirect ไปที่ SSO URL ของ IdP ที่ได้จาก metadata แล้ว **HTTP-Redirect binding** ก็ใส่ request ที่ deflate แล้ว encode เป็น base64 ไว้ใน query parameter `SAMLRequest` คู่กับ `RelayState` สั้น ๆ ฝั่ง IdP ก็ตรวจว่า request มาจาก service provider ที่รู้จัก และระบุ ACS URL ที่ลงทะเบียนไว้ให้ SP นั้นจริง"
     },
     {
       "title": "IdP ส่ง assertion กลับมา",
-      "body": "IdP ยืนยันตัวตน Ana (password แล้วตามด้วย second factor) และเริ่ม SSO session ของตัวเอง จากนั้นตอบกลับด้วยหน้า HTML เล็ก ๆ ที่มี form ซึ่ง browser จะ submit ให้เอง: **HTTP-POST binding** นำ `SAMLResponse` ที่ encode เป็น base64 และ `RelayState` ไปที่ ACS URL ข้างในคือ assertion ที่ sign ด้วย key ของ IdP ซึ่งบอกว่าใครเข้าสู่ระบบ (`NameID`) สำหรับแอปไหน (`Audience`, `Recipient`) เมื่อไร (`NotBefore`, `NotOnOrAfter`) ตอบ request ไหน (`InResponseTo`) และมี attribute อะไรบ้าง assertion เดินทางผ่าน browser ส่วน server ทั้งสองฝั่งไม่เคยเรียกหากันเลย"
+      "body": "IdP ยืนยันตัวตน Ana (password แล้วตามด้วย second factor) และเริ่ม SSO session ของตัวเอง จากนั้นตอบกลับเป็นหน้า HTML เล็ก ๆ ที่มี form ให้ browser submit เอง: **HTTP-POST binding** พา `SAMLResponse` ที่ encode เป็น base64 กับ `RelayState` ไปที่ ACS URL ข้างในคือ assertion ที่ sign ด้วย key ของ IdP บอกว่าใครเข้าสู่ระบบ (`NameID`) สำหรับแอปไหน (`Audience`, `Recipient`) เมื่อไร (`NotBefore`, `NotOnOrAfter`) ตอบ request ไหน (`InResponseTo`) และมี attribute อะไรบ้าง assertion วิ่งผ่าน browser ส่วน server สองฝั่งไม่เคยเรียกหากันเลย"
     },
     {
-      "title": "ตรวจสอบ map แล้วจึง SSO",
-      "body": "Expense ตรวจ signature ด้วย certificate จาก metadata ของ IdP จากนั้นตรวจ `Issuer` ตรวจว่า `Audience` เป็น entity ID ของตัวเอง และ `Recipient` เป็น ACS URL ของตัวเอง ตรวจช่วงเวลา ตรวจว่า `InResponseTo` คือ request ที่ตัวเองส่งไป และตรวจว่าไม่เคยเห็น assertion ที่มี `ID` นี้มาก่อน แล้ว map `NameID` เข้ากับผู้ใช้ของตัวเอง map attribute `groups` เป็น role และตั้ง session cookie ของตัวเอง เมื่อ Ana เปิด Travel, IdP เจอ SSO session ของเธอ จึงส่ง assertion ชุดใหม่ที่ออกให้ Travel โดยเฉพาะไปให้โดยไม่ถาม password: นี่คือ **single sign-on**"
+      "title": "ตรวจ map แล้วก็ SSO",
+      "body": "Expense ตรวจ signature ด้วย certificate จาก metadata ของ IdP แล้วตรวจ `Issuer` ดูว่า `Audience` เป็น entity ID ของตัวเอง และ `Recipient` เป็น ACS URL ของตัวเอง ดูช่วงเวลา ดูว่า `InResponseTo` คือ request ที่ตัวเองส่งไป และไม่เคยเห็น assertion ที่มี `ID` นี้มาก่อน จากนั้นก็ map `NameID` เข้ากับผู้ใช้ของตัวเอง map attribute `groups` เป็น role แล้วตั้ง session cookie ของตัวเอง พอ Ana เปิด Travel ฝั่ง IdP ก็เจอ SSO session ของเธอ เลยส่ง assertion ชุดใหม่สำหรับ Travel ไปให้ โดยไม่ต้องถาม password: นี่คือ **single sign-on**"
     },
     {
-      "title": "IdP-initiated และความเสี่ยง",
-      "body": "อีกวันหนึ่ง เมื่อ session ของแอปหมดอายุไปแล้ว Ana เริ่มจาก portal ของ IdP และคลิก tile ของ Expense IdP ส่ง assertion ที่ไม่มีใครขอมา: ไม่มี `InResponseTo` Expense จึงเสียการตรวจที่ผูก response เข้ากับ request จาก browser นี้ไป และต้องพึ่ง replay cache กับอายุที่สั้นแทน นี่คือเหตุผลที่บางแอปปฏิเสธหรือจำกัดการเข้าสู่ระบบแบบ IdP-initiated มีอีกสองเรื่องที่ต้องระวัง: **signature wrapping** (ให้ทำงานกับ assertion ที่ signature ครอบคลุมเท่านั้น ผ่าน library ที่ยังมีคนดูแล) และ **certificate rollover** (SP ที่ยังไม่ได้โหลด signing certificate ใหม่ของ IdP จะปฏิเสธการเข้าสู่ระบบทุกครั้ง)"
+      "title": "IdP-initiated กับความเสี่ยง",
+      "body": "อีกวันหนึ่ง session ของแอปหมดอายุไปแล้ว Ana เริ่มจาก portal ของ IdP แล้วคลิก tile ของ Expense จากนั้นฝั่ง IdP ก็ส่ง assertion ที่ไม่มีใครขอมา: ไม่มี `InResponseTo` Expense เลยขาดการตรวจที่ผูก response เข้ากับ request จาก browser นี้ และต้องพึ่ง replay cache กับอายุที่สั้นแทน บางแอปถึงไม่รับหรือจำกัดการเข้าสู่ระบบแบบ IdP-initiated ก็เพราะเรื่องนี้ ยังมีอีกสองเรื่องที่ต้องระวัง: **signature wrapping** (ใช้เฉพาะ assertion ที่ signature ครอบคลุม และทำผ่าน library ที่ยังมีคนดูแล) และ **certificate rollover** (SP ที่ยังไม่ได้โหลด signing certificate ใหม่ของ IdP จะปฏิเสธการเข้าสู่ระบบทุกครั้ง)"
     }
   ]
 }

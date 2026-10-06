@@ -1,21 +1,21 @@
 {
-  "summary": "เปิด liveness check และ readiness check ไว้ให้ load balancer และระบบ monitor คอย probe",
+  "summary": "เปิด liveness check กับ readiness check ไว้ให้ load balancer และระบบ monitor คอย probe",
   "steps": [
     {
       "title": "สามคำถาม",
-      "body": "Instance หนึ่งเปิด endpoint เล็ก ๆ ไว้สามตัว แต่ละตัวตอบคำถามหนึ่งข้อให้ผู้เรียกหนึ่งราย ระหว่างที่กำลัง boot (โหลด configuration, warm cache) **startup** check จะตอบว่า *not yet* และกันอีกสองตัวไว้ก่อน การเริ่มต้นที่ช้าจึงไม่ถูกเข้าใจผิดว่าค้าง เมื่อผ่านแล้ว **liveness** (`/livez`) จะถามแค่ว่า process ยังทำงานคืบหน้าได้อยู่หรือไม่ ส่วน **readiness** (`/readyz`) ถามว่า instance นี้รับ request ได้ตอนนี้เลยหรือไม่ load balancer จะส่ง traffic มาก็ต่อเมื่อ readiness ผ่านแล้วเท่านั้น"
+      "body": "Instance หนึ่งเปิด endpoint เล็ก ๆ ไว้สามตัว แต่ละตัวตอบคำถามข้อเดียวให้ผู้เรียกรายเดียว ตอนที่ยัง boot อยู่ (โหลด configuration, warm cache) **startup** check จะตอบว่า *not yet* และกันอีกสองตัวไว้ก่อน เริ่มช้าก็จะได้ไม่ถูกเข้าใจผิดว่าค้าง พอผ่านแล้ว **liveness** (`/livez`) ถามแค่ว่า process ยังทำงานคืบหน้าได้อยู่ไหม ส่วน **readiness** (`/readyz`) ถามว่า instance นี้รับ request ได้เลยตอนนี้ไหม load balancer จะส่ง traffic มาก็ต่อเมื่อ readiness ผ่านแล้ว"
     },
     {
       "title": "ไม่ ready: ไม่รับ traffic",
-      "body": "Instance A เสีย connection ไปยัง database (หรืออาจเป็นเพราะรับงานจนเต็มกำลังก็ได้เหมือนกัน) `/readyz` ตอบ **503** load balancer จึงเอา A **ออกจาก rotation** และให้ B กับ C รับ traffic แทน `/livez` ยังตอบ 200 orchestrator จึงปล่อย process ไว้ตามเดิม เมื่อ pool เชื่อมต่อได้อีกครั้ง readiness ก็ผ่านและ traffic ก็กลับมา โดยไม่ต้อง restart และไม่ต้องเริ่มจาก cold cache"
+      "body": "Instance A หลุด connection ไปยัง database (หรือจะเป็นเพราะรับงานจนเต็มกำลังก็ได้เหมือนกัน) `/readyz` ตอบ **503** load balancer เลยเอา A **ออกจาก rotation** ให้ B กับ C รับ traffic ไปแทน แต่ `/livez` ยังตอบ 200 orchestrator เลยปล่อย process ไว้อย่างนั้น พอ pool ต่อกลับมาได้ readiness ก็ผ่าน แล้ว traffic ก็กลับมา ไม่ต้อง restart และไม่ต้องเริ่มจาก cold cache"
     },
     {
       "title": "ไม่ alive: restart",
-      "body": "Process ติด deadlock: ยังรันอยู่แต่ทำงานคืบหน้าต่อไม่ได้แล้ว `/livez` จึงเลิกตอบ หลังจาก **probe ไม่ได้คำตอบสามครั้งติดกัน** (เป็น threshold ตัวอย่าง) orchestrator จะ **restart** instance นั้น ซึ่งจะ boot ใหม่ ผ่าน startup check แล้วกลับเข้ามารับงาน ทั้งนี้ liveness ต้องไม่ตรวจ dependency: การ restart instance ไม่ได้ซ่อม database และ liveness check ที่ตรวจ database ด้วยจะทำให้ทุก instance ที่ยังปกติดีถูก restart พร้อมกันหมด"
+      "body": "Process ติด deadlock: ยังรันอยู่ แต่ทำงานคืบหน้าต่อไม่ได้แล้ว `/livez` เลยเลิกตอบ หลัง **probe ไม่ได้คำตอบสามครั้งติดกัน** (threshold นี้แค่ยกตัวอย่าง) orchestrator ก็ **restart** instance นั้น มัน boot ใหม่ ผ่าน startup check แล้วกลับเข้ามารับงาน ส่วน liveness ต้องไม่ไปดู dependency: restart instance ไม่ได้ช่วยซ่อม database และถ้า liveness check ไปตรวจ database ด้วย ก็จะทำให้ instance ที่ปกติดีทุกตัวโดน restart พร้อมกันหมด"
     },
     {
-      "title": "อย่าล้มพร้อมกันทั้งหมด",
-      "body": "Database ที่ทุก instance ใช้ร่วมกันเกิด **brownout** ถ้า `/readyz` ของทุกตัวตรวจ database นั้นด้วย A, B และ C จะล้มเหลวในวินาทีเดียวกัน และ load balancer ก็ไม่มีที่ให้ส่ง traffic ไป: ปัญหาเพียงบางส่วนกลายเป็นการล่มทั้งระบบ ให้ check แบบ **shallow** สำหรับ dependency ที่ใช้ร่วมกัน (หรือใช้ balancer ที่ **fail open** เมื่อทุก target ดูไม่ healthy) และปล่อยให้ instance ให้บริการส่วนที่ยังทำได้ต่อไป ส่วนตัวที่ส่ง alert คือ **external monitor** ซึ่ง probe public endpoint จากภายนอก"
+      "title": "อย่าล้มพร้อมกันหมด",
+      "body": "Database ที่ทุก instance ใช้ร่วมกันเกิด **brownout** ถ้า `/readyz` ของทุกตัวตรวจ database นี้ด้วย ทั้ง A, B และ C ก็จะ fail ในวินาทีเดียวกัน แล้ว load balancer ก็ไม่เหลือที่ให้ส่ง traffic ไป: ปัญหาแค่บางส่วนกลายเป็นล่มทั้งระบบ สำหรับ dependency ที่ใช้ร่วมกัน ให้ check แบบ **shallow** ไว้ (หรือใช้ balancer ที่ **fail open** ตอนที่ทุก target ดูไม่ healthy) แล้วปล่อยให้ instance ทำงานส่วนที่ยังทำได้ต่อไป ตัวที่ส่ง alert คือ **external monitor** ที่คอย probe public endpoint จากข้างนอก"
     }
   ]
 }

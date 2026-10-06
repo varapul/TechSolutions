@@ -1,21 +1,21 @@
 {
-  "summary": "ห่อ interface ที่เข้ากันไม่ได้ เพื่อให้โค้ดเดิมใช้งานได้โดยไม่ต้องแก้: วิธีแก้คลาสสิกสำหรับ API ของ third-party หรือระบบ legacy",
+  "summary": "ห่อ interface ที่เข้ากันไม่ได้ ให้โค้ดเดิมใช้ได้เลยโดยไม่ต้องแก้: ทางแก้คลาสสิกเวลาเจอ API ของ third-party หรือระบบ legacy",
   "steps": [
     {
-      "title": "interface ที่เข้ากันไม่ได้",
-      "body": "Checkout ตัดเงินจากบัตรผ่าน interface `PaymentGateway` ของตัวเอง: `charge(1250, 'EUR')` รับยอดเงินเป็นจำนวนเต็มในหน่วยย่อย (minor unit ในที่นี้คือเซนต์) และคืน `Receipt` ส่วน SDK ของผู้ให้บริการรายใหม่ที่เพิ่งทำสัญญา คือ `LegacyPay` ต้องการ `makePayment({amount: '12.50', curr: 'EUR'})` ซึ่งเป็น string ทศนิยมในหน่วยหลัก (major unit) ภายใต้ชื่อ field ที่ต่างออกไป และตอบกลับเป็น `{status: 'OK', ref: 'PX-77'}` แทนที่จะเป็น `Receipt` เมื่อ `LegacyPay` ไม่ใช่ `PaymentGateway` Checkout จึงใช้มันตรง ๆ ไม่ได้"
+      "title": "interface ไม่ตรงกัน",
+      "body": "Checkout ตัดเงินจากบัตรผ่าน interface `PaymentGateway` ของตัวเอง: `charge(1250, 'EUR')` รับยอดเงินเป็นจำนวนเต็มในหน่วยย่อย (minor unit ตรงนี้คือเซนต์) แล้วคืน `Receipt` แต่ SDK ของ provider เจ้าใหม่ที่เพิ่งเซ็นสัญญากันไป คือ `LegacyPay` อยากได้ `makePayment({amount: '12.50', curr: 'EUR'})` ที่ส่งยอดเป็น string ทศนิยมในหน่วยหลัก (major unit) และใช้ชื่อ field คนละแบบ แล้วยังตอบกลับเป็น `{status: 'OK', ref: 'PX-77'}` แทนที่จะเป็น `Receipt` ในเมื่อ `LegacyPay` ไม่ใช่ `PaymentGateway` Checkout ก็เลยใช้มันตรง ๆ ไม่ได้"
     },
     {
       "title": "ห่อด้วย adapter",
-      "body": "`LegacyPayAdapter` implement `PaymentGateway` และถือ `LegacyPay` ไว้ข้างใน `charge(1250, 'EUR')` ของ adapter เรียก `makePayment({amount: '12.50', curr: 'EUR'})` แล้วแปลง `{status: 'OK', ref: 'PX-77'}` เป็น `Receipt {id: 'PX-77', amountMinor: 1250, currency: 'EUR'}` ทั้ง Checkout และ SDK ไม่ต้องเปลี่ยนเลย: adapter คือโค้ดใหม่เพียงส่วนเดียว"
+      "body": "`LegacyPayAdapter` implement `PaymentGateway` และถือ `LegacyPay` ไว้ข้างใน พอเรียก `charge(1250, 'EUR')` ของ adapter มันก็ไปเรียก `makePayment({amount: '12.50', curr: 'EUR'})` แล้วแปลง `{status: 'OK', ref: 'PX-77'}` เป็น `Receipt {id: 'PX-77', amountMinor: 1250, currency: 'EUR'}` ทั้ง Checkout และ SDK ไม่ต้องแก้เลย: โค้ดใหม่มีแค่ adapter ตัวเดียว"
     },
     {
-      "title": "แปลงหน่วยเงินและ error",
-      "body": "แต่ละสกุลเงินมีจำนวนตำแหน่งทศนิยมไม่เท่ากัน (*minor units* ตาม ISO 4217): 1250 คือ `'1250'` ในสกุลเยน, `'12.50'` ในสกุลยูโร และ `'1.250'` ในสกุลดีนาร์บาห์เรน adapter จึงเก็บตาราง exponent ไว้ ความล้มเหลวก็ถูกแปลงด้วย: ในที่นี้ `charge(1250, 'BHD')` ถูกปฏิเสธ และ `{status: 'DECLINED', code: '51'}` จะไปถึง Checkout ในรูปของ `PaymentDeclined` ซึ่งเป็น error ของ domain เอง รหัสของผู้ให้บริการจึงไม่รั่วเข้าไปในโค้ดของ checkout เลย"
+      "title": "แปลงทั้งหน่วยเงินและ error",
+      "body": "แต่ละสกุลเงินมีจำนวนตำแหน่งทศนิยมไม่เท่ากัน (*minor units* ตาม ISO 4217): 1250 คือ `'1250'` ในสกุลเยน, `'12.50'` ในสกุลยูโร และ `'1.250'` ในสกุลดีนาร์บาห์เรน adapter เลยเก็บตาราง exponent ไว้ด้วย ส่วน error ก็แปลงเหมือนกัน: ตรงนี้ `charge(1250, 'BHD')` โดนปฏิเสธ แล้ว `{status: 'DECLINED', code: '51'}` ก็มาถึง Checkout เป็น `PaymentDeclined` error ของ domain เอง รหัสของ provider เลยไม่รั่วเข้าไปในโค้ดของ checkout เลย"
     },
     {
-      "title": "สลับผู้ให้บริการได้อิสระ",
-      "body": "ผู้ให้บริการรายใหม่หมายถึง adapter เพิ่มอีกหนึ่งตัว ในที่นี้คือ `AcmePayAdapter` และโค้ด wiring ตอนเริ่มทำงานเป็นตัวตัดสินว่า Checkout จะได้ตัวไหน โดยโค้ดของ Checkout ไม่เปลี่ยนเลย adapter ตัวนี้ *ถือ* SDK ไว้ (object adapter) ส่วน class adapter จะ *สืบทอด* จาก SDK แทน Facade, Decorator และ Proxy ก็ห่อ object เหมือนกัน แต่ Facade ครอบ subsystem ด้วย interface ที่เรียบง่ายกว่า ส่วน Decorator หรือ Proxy คง interface เดิมไว้เพื่อเพิ่มพฤติกรรมหรือควบคุมการเข้าถึง และในระดับทั้งระบบ แนวคิดเดียวกันนี้คือ anti-corruption layer"
+      "title": "สลับ provider ได้ตามใจ",
+      "body": "provider เจ้าใหม่ก็แค่ adapter เพิ่มอีกตัว ตรงนี้คือ `AcmePayAdapter` แล้วโค้ด wiring ตอนเริ่มทำงานก็จะเลือกเองว่า Checkout ได้ตัวไหน โค้ดของ Checkout ไม่ต้องเปลี่ยนเลย adapter ตัวนี้ *ถือ* SDK ไว้ (object adapter) ส่วน class adapter จะ *สืบทอด* จาก SDK แทนที่จะถือมันไว้ Facade, Decorator และ Proxy ก็ห่อ object เหมือนกัน แต่ Facade เอา interface ที่ง่ายกว่ามาครอบ subsystem ส่วน Decorator หรือ Proxy คง interface เดิมไว้ เพื่อเพิ่มพฤติกรรมหรือคุมการเข้าถึง ถ้ามองในระดับทั้งระบบ แนวคิดเดียวกันนี้ก็คือ anti-corruption layer"
     }
   ]
 }

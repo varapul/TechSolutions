@@ -1,21 +1,21 @@
 {
-  "summary": "แทนที่ instance ทีละชุด โดยที่ service ยังให้บริการอยู่ตลอด",
+  "summary": "เปลี่ยน instance ทีละชุด โดยที่ service ยังทำงานอยู่ตลอด",
   "steps": [
     {
       "title": "เพิ่ม instance ใหม่ในช่อง surge",
-      "body": "Service รัน instance `v1` สี่ตัว และ load balancer กระจาย request ไปให้ทั้งหมด เมื่อ revision ใหม่มาถึง controller จะเริ่ม instance `v2` หนึ่งตัวใน **surge** slot ซึ่งเป็น instance ส่วนเกินตัวเดียวที่ *max surge 1* อนุญาต จนกว่า **readiness check** ของมันจะผ่าน มันจะยังไม่อยู่ใน rotation และไม่ได้รับ traffic"
+      "body": "Service รัน instance `v1` สี่ตัว และ load balancer กระจาย request ให้ทุกตัว พอมี revision ใหม่เข้ามา controller ก็เริ่ม instance `v2` หนึ่งตัวใน **surge** slot นี่คือ instance ส่วนเกินตัวเดียวที่ *max surge 1* ยอมให้มีได้ จนกว่า **readiness check** ของมันจะผ่าน มันก็ยังไม่อยู่ใน rotation และยังไม่ได้ traffic"
     },
     {
       "title": "สลับทีละตัว",
-      "body": "เมื่อ instance ใหม่พร้อม มันจะเข้าร่วม load balancer และหลังจากนั้นเท่านั้น controller จึงจะ **drain** instance เก่าหนึ่งตัว: ไม่รับ request ใหม่ ปล่อยตัวที่กำลังทำอยู่ให้จบ แล้วจึงถอดออก จากนั้น `v2` ตัวถัดไปก็เริ่ม ด้วย *max unavailable 0* service จะไม่มี instance ที่พร้อมน้อยกว่าสี่ตัวเลย และด้วย *max surge 1* ก็จะไม่มีเกินห้าตัวรวมกัน ระหว่างนี้ `v1` และ `v2` ตอบผู้ใช้ไปพร้อม ๆ กัน ทั้งสองเวอร์ชันจึงต้องเข้ากันได้"
+      "body": "พอ instance ใหม่พร้อม มันก็เข้าไปอยู่หลัง load balancer และหลังจากนั้นเท่านั้น controller ถึงจะ **drain** instance เก่าหนึ่งตัว: ไม่รับ request ใหม่ ปล่อยตัวที่ทำอยู่ให้จบ แล้วค่อยถอดออก จากนั้น `v2` ตัวถัดไปก็เริ่ม พอตั้ง *max unavailable 0* service จะมี instance ที่พร้อมไม่ต่ำกว่าสี่ตัวเสมอ และพอตั้ง *max surge 1* ก็จะมีรวมกันไม่เกินห้าตัว ระหว่างนี้ `v1` กับ `v2` ตอบผู้ใช้ไปพร้อม ๆ กัน สองเวอร์ชันนี้เลยต้องเข้ากันได้"
     },
     {
       "title": "Instance เสียตัวเดียวทำให้ค้าง",
-      "body": "การสลับครั้งที่สามผ่านไปได้ แต่ instance `v2` ตัวที่สี่ไม่ผ่าน readiness check เลย ในที่นี้เป็นเพราะ configuration ของ zone ที่มันไปลงผิด มันจึงไม่ได้รับ traffic ส่วน surge slot ก็ยังถูกใช้อยู่ และ `v1` ตัวสุดท้ายจะถอดออกไม่ได้ถ้ายังไม่มีตัวแทนที่พร้อม controller จึงทำอะไรไม่ได้: **rollout** ค้างอยู่ ขณะที่ instance ที่พร้อมสี่ตัวยังให้บริการต่อ เมื่อเลย progress deadline controller จะรายงานว่าค้าง และต้องมีใครสักคน (หรือ policy อัตโนมัติ) **rollback** ไปยัง revision ก่อนหน้า หรือ **fix forward**"
+      "body": "สลับครั้งที่สามผ่านไปได้ แต่ instance `v2` ตัวที่สี่ไม่ผ่าน readiness check สักที ในตัวอย่างนี้เป็นเพราะ configuration ของ zone ที่มันไปลงนั้นผิด มันเลยไม่ได้ traffic ส่วน surge slot ก็ยังไม่ว่าง และจะถอด `v1` ตัวสุดท้ายออกไม่ได้ถ้ายังไม่มีตัวแทนที่พร้อม controller เลยทำอะไรต่อไม่ได้: **rollout** ค้าง ส่วน instance ที่พร้อมสี่ตัวก็ยังทำงานต่อ พอเลย progress deadline ตัว controller ก็รายงานว่าค้าง แล้วต้องมีใครสักคน (หรือ policy อัตโนมัติ) **rollback** ไป revision ก่อนหน้า หรือ **fix forward**"
     },
     {
-      "title": "แก้แล้วทำให้จบ",
-      "body": "Configuration ถูกแก้ แล้ว instance ก็ restart ด้วยค่านั้นและผ่าน check จากนั้น controller ก็ทำต่อจากจุดที่หยุดไว้: `v1` ตัวสุดท้าย drain แล้วออกไป ส่วน instance `v2` สี่ตัวให้บริการ และ surge slot ก็ว่าง (ถ้าการแก้ต้อง build ใหม่ นั่นจะเป็น revision ที่สาม: controller จะแทนที่ทุก instance อีกรอบ รวมถึง `v2` สามตัวที่ปกติดีด้วย) revision ก่อนหน้ายังถูกเก็บไว้ การ rollback จึงเป็นแค่คำสั่งเดียว แม้ว่ามันจะรันเป็น rolling update อีกรอบ ไม่ใช่การสลับทีเดียว"
+      "title": "แก้ แล้วไปต่อให้จบ",
+      "body": "แก้ configuration แล้ว instance ก็ restart ด้วยค่าใหม่และผ่าน check จากนั้น controller ก็ทำต่อจากจุดที่หยุดไว้: `v1` ตัวสุดท้าย drain แล้วออกไป instance `v2` สี่ตัวรับ traffic อยู่ และ surge slot ก็ว่าง (ถ้าการแก้ต้อง build ใหม่ นั่นจะนับเป็น revision ที่สาม: controller จะเปลี่ยนทุก instance อีกรอบ รวมถึง `v2` สามตัวที่ปกติดีด้วย) revision ก่อนหน้ายังเก็บไว้อยู่ จะ rollback ก็แค่คำสั่งเดียว แต่มันจะรันเป็น rolling update อีกรอบ ไม่ใช่สลับทีเดียว"
     }
   ]
 }

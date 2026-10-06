@@ -1,21 +1,21 @@
 {
-  "summary": "สร้าง object ที่เกี่ยวข้องกันเป็นตระกูลผ่าน interface เดียว เพื่อให้สลับทั้งตระกูลได้โดยไม่ต้องแตะโค้ดของ client เลย",
+  "summary": "สร้าง object ที่เกี่ยวข้องกันเป็นตระกูลผ่าน interface เดียว จะสลับทั้งตระกูลเมื่อไรก็ไม่ต้องแตะโค้ดของ client เลย",
   "steps": [
     {
-      "title": "hard-code ไว้และปนกันได้",
-      "body": "`ReceiptService` เรียก `new S3BlobStore()` และ `new SqsQueue()` เองทั้งใน `issue()`, `reissue()` และที่อื่น ๆ ที่ต้องใช้ พอย้ายไป Azure ได้ครึ่งทาง `issue()` ส่งไปที่ `ServiceBusQueue` แล้ว แต่ยังเก็บ PDF ไว้ใน S3: กลายเป็นตระกูลปนกันที่ไม่มีอะไรในโค้ดป้องกันไว้ และการเรียก `new` ที่เหลืออีกสามจุดก็หมายถึงต้องตามแก้อีกจุดละครั้ง"
+      "title": "hard-code ไว้ แถมปนกันได้",
+      "body": "`ReceiptService` เรียก `new S3BlobStore()` กับ `new SqsQueue()` เองหมด ทั้งใน `issue()`, ใน `reissue()` และที่อื่น ๆ ที่ต้องใช้ พอย้ายไป Azure ได้ครึ่งทาง `issue()` ส่งไปที่ `ServiceBusQueue` แล้ว แต่ยังเก็บ PDF ไว้ใน S3 อยู่: กลายเป็นตระกูลปนกัน และไม่มีอะไรในโค้ดกันไว้เลย ส่วน `new` อีกสามจุดที่เหลือก็ต้องตามแก้ทีละจุด"
     },
     {
-      "title": "หนึ่ง factory ต่อหนึ่งตระกูล",
-      "body": "`ReceiptService` (ตัว *Client*) ได้รับ `InfraFactory` (ตัว *AbstractFactory*) ตอนเริ่มทำงาน แล้วเรียก `createBlobStore()` และ `createQueue()` จากมัน จึงรู้จักแค่ interface `BlobStore` และ `Queue` (ตัว *AbstractProducts*) ส่วน *ConcreteFactory* แต่ละตัวจะสร้าง *ConcreteProducts* ของตระกูลตัวเอง: `AwsFactory` สร้าง `S3BlobStore` และ `SqsQueue` ทุกอย่างที่ service ถืออยู่จึงมาจากตระกูลเดียวกัน"
+      "title": "หนึ่งตระกูล หนึ่ง factory",
+      "body": "`ReceiptService` (ตัว *Client*) ได้ `InfraFactory` (ตัว *AbstractFactory*) มาตอนเริ่มทำงาน แล้วเรียก `createBlobStore()` กับ `createQueue()` จากตัวนี้ มันเลยรู้จักแค่ interface `BlobStore` กับ `Queue` (ตัว *AbstractProducts*) ส่วน *ConcreteFactory* แต่ละตัวก็สร้าง *ConcreteProducts* ของตระกูลตัวเอง: `AwsFactory` สร้าง `S3BlobStore` กับ `SqsQueue` แบบนี้อะไรที่ service ถืออยู่ก็มาจากตระกูลเดียวกันหมด"
     },
     {
-      "title": "สลับทั้งตระกูล",
-      "body": "`issue(1001)` เก็บ `receipts/1001.pdf` ด้วย `put()` แล้วส่ง `{receiptId: 1001}` ด้วย `send()` เมื่อตั้ง `INFRA=aws` factory ที่ได้คือ `AwsFactory` จึงเป็นการ put ลง S3 และ send ไปที่ SQS ถ้าเป็น `azure` โค้ดเดิมจะเขียนลง Blob Storage และ Service Bus แทน ส่วน test ก็ตั้งเป็น `memory` แล้วรันได้โดยไม่ต้องพึ่ง cloud ใด ๆ ตลอดทั้งหมดนี้ `ReceiptService` ไม่เปลี่ยนเลย"
+      "title": "สลับทีเดียวทั้งตระกูล",
+      "body": "`issue(1001)` เก็บ `receipts/1001.pdf` ด้วย `put()` แล้วส่ง `{receiptId: 1001}` ด้วย `send()` ถ้าตั้ง `INFRA=aws` factory ที่ได้ก็คือ `AwsFactory` ก็เลยเป็นการ put ลง S3 กับ send ไปที่ SQS ถ้าเป็น `azure` โค้ดเดิมก็เขียนลง Blob Storage กับ Service Bus แทน ส่วน test ก็แค่ตั้งเป็น `memory` แล้วรันได้โดยไม่ต้องพึ่ง cloud เลย ตลอดทั้งหมดนี้ `ReceiptService` ไม่เปลี่ยนสักครั้ง"
     },
     {
       "title": "เพิ่มตระกูล ไม่ใช่เพิ่ม product",
-      "body": "Google Cloud เป็นแค่อีกหนึ่งแถว คือ `GcpFactory` ที่มี `GcsBlobStore` และ `PubSubQueue` บวกค่า `INFRA` อีกหนึ่งค่า โดยไม่มี class เดิมตัวไหนต้องเปลี่ยน แต่ product ชนิดใหม่กลับตรงกันข้าม: `createCache()` ทำให้ interface `InfraFactory` เปลี่ยน จึงต้องแก้ทุก factory ตามไปด้วย ซึ่งเป็นต้นทุนที่รู้กันดีของแพตเทิร์นนี้ `DbProviderFactory` ของ ADO.NET, `DocumentBuilderFactory.newInstance()` ของ Java และ look and feel ของ Swing ล้วนใช้แพตเทิร์นนี้ ส่วนในระดับทั้งระบบ ports and adapters ก็ทำหน้าที่เดียวกัน แต่มีความเสี่ยงที่ port ซึ่งเป็นกลางต่อทุก cloud จะหดเหลือแค่ความสามารถที่ทุก cloud มีร่วมกัน (lowest common denominator)"
+      "body": "Google Cloud ก็เป็นแค่อีกหนึ่งแถว คือ `GcpFactory` ที่มี `GcsBlobStore` กับ `PubSubQueue` บวกค่า `INFRA` อีกหนึ่งค่า และไม่มี class เดิมตัวไหนต้องเปลี่ยน แต่ถ้าเป็น product ชนิดใหม่จะกลับกัน: `createCache()` ทำให้ interface `InfraFactory` เปลี่ยน เลยต้องแก้ทุก factory ตามไปด้วย นี่คือต้นทุนที่รู้กันดีของแพตเทิร์นนี้ `DbProviderFactory` ของ ADO.NET, `DocumentBuilderFactory.newInstance()` ของ Java และ look and feel ของ Swing ก็ใช้แพตเทิร์นนี้ทั้งนั้น ส่วนในระดับทั้งระบบ ports and adapters ก็ทำหน้าที่เดียวกัน แต่ก็เสี่ยงที่ port ที่เป็นกลางกับทุก cloud จะหดเหลือแค่สิ่งที่ทุก cloud ทำได้เหมือนกัน (lowest common denominator)"
     }
   ]
 }

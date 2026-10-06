@@ -1,21 +1,21 @@
 {
-  "summary": "ทั้ง client และ server ต่างแสดง certificate ของตัวเอง ทุก connection จึงยืนยันตัวตนทั้งสองทาง",
+  "summary": "ทั้ง client และ server ยื่น certificate ของตัวเอง ทุก connection เลยยืนยันตัวตนได้ทั้งสองทาง",
   "steps": [
     {
-      "title": "TLS แบบทางเดียว",
-      "body": "ใน TLS ปกติ มีแค่ server ที่แสดง certificate โดยส่ง `Certificate` และ signature ใน `CertificateVerify` ซึ่งพิสูจน์ว่าถือ private key ที่คู่กันอยู่ แล้ว client ก็ตรวจ chain เทียบกับ trust store ของตัวเอง ช่องทางนี้เข้ารหัสแล้ว และ client รู้ว่า server คือใคร แต่ server ไม่รู้อะไรเกี่ยวกับผู้เรียกเลย: ที่ layer นี้ client เป็นนิรนาม"
+      "title": "TLS ทางเดียว",
+      "body": "TLS ปกติจะมีแค่ server ที่ยื่น certificate โดยส่ง `Certificate` กับ signature ใน `CertificateVerify` เพื่อพิสูจน์ว่าถือ private key ที่คู่กันอยู่จริง แล้ว client ก็ตรวจ chain กับ trust store ของตัวเอง ช่องทางนี้เข้ารหัสแล้ว และ client รู้ว่า server เป็นใคร แต่ server ไม่รู้อะไรเกี่ยวกับคนที่เรียกมาเลย: ที่ layer นี้ client ไม่ได้บอกเลยว่าตัวเองเป็นใคร"
     },
     {
       "title": "ยืนยันตัวตนทั้งสองฝั่ง",
-      "body": "เมื่อใช้ mutual TLS server จะเพิ่ม `CertificateRequest` เข้าไปในชุด message ที่ส่งรอบนั้น client ตอบด้วย `Certificate` ของตัวเอง และ `CertificateVerify` ที่ sign ด้วย private key ของตัวเอง ซึ่งพิสูจน์ว่าถือ key นั้นจริง server ตรวจ chain ไปจนถึง CA ที่เชื่อถือ ตรวจช่วงวันที่ใช้ได้ และสถานะการ revoke แล้วอ่าน identity ของผู้เรียกจาก subject alternative name (ในที่นี้คือ `spiffe://example.org/orders`)"
+      "body": "พอเป็น mutual TLS ฝั่ง server จะเพิ่ม `CertificateRequest` เข้าไปในชุด message ที่ส่งรอบนั้น client ตอบกลับด้วย `Certificate` ของตัวเอง กับ `CertificateVerify` ที่ sign ด้วย private key ของตัวเอง เป็นการพิสูจน์ว่าถือ key นั้นจริง server ตรวจ chain ไปจนถึง CA ที่เชื่อถือ ตรวจวันที่ใช้ได้ และสถานะ revoke แล้วอ่าน identity ของคนที่เรียกมาจาก subject alternative name (ในตัวอย่างนี้คือ `spiffe://example.org/orders`)"
     },
     {
-      "title": "ถูกปฏิเสธตั้งแต่ handshake",
-      "body": "client อีกสามตัวลองเชื่อมต่อทีละตัว: ตัวแรกไม่มี certificate ตัวที่สองแสดง certificate ที่หมดอายุไปหลายชั่วโมงแล้ว ตัวที่สามแสดง certificate ที่ออกโดย CA ที่ server ไม่เชื่อถือ handshake แต่ละครั้งจบด้วย TLS alert (`certificate_required`, `certificate_expired`, `unknown_ca`) และ connection ถูกปิดก่อนจะมีการอ่าน request ของแอปพลิเคชันใด ๆ"
+      "title": "โดนตีกลับตั้งแต่ handshake",
+      "body": "client อีกสามตัวลองต่อเข้ามาทีละตัว: ตัวแรกไม่มี certificate ตัวที่สองยื่น certificate ที่หมดอายุไปหลายชั่วโมงแล้ว ตัวที่สามยื่น certificate ที่ออกโดย CA ที่ server ไม่เชื่อถือ handshake แต่ละรอบจบด้วย TLS alert (`certificate_required`, `certificate_expired`, `unknown_ca`) แล้ว connection ก็ถูกปิด ก่อนที่ server จะได้อ่าน request ของแอปสักตัว"
     },
     {
-      "title": "อายุสั้น หมุนเวียนอัตโนมัติ",
-      "body": "certificate ออกให้ใช้ได้เป็นชั่วโมงหรือเป็นวัน และ issuer อัตโนมัติจะออกใบใหม่มาแทนล่วงหน้าก่อนหมดอายุพอสมควร จึงไม่มีใครต้องต่ออายุอะไรด้วยมือ และ key ที่ถูกขโมยไปก็ใช้การไม่ได้ในเวลาไม่นาน mutual TLS ตอบได้แค่ว่า **ใครเป็นคนเรียก**: ยังต้องมี authorization policy ตัดสินว่า identity นั้นทำอะไรได้บ้าง"
+      "title": "อายุสั้น เปลี่ยนใบใหม่อัตโนมัติ",
+      "body": "certificate มีอายุแค่หลักชั่วโมงหรือหลักวัน และมี issuer อัตโนมัติคอยออกใบใหม่มาแทนล่วงหน้าก่อนหมดอายุพอสมควร เลยไม่มีใครต้องต่ออายุอะไรเองด้วยมือ และ key ที่โดนขโมยไปก็ใช้ได้อีกไม่นาน mutual TLS ตอบได้แค่ว่า **ใครเป็นคนเรียก**: ยังต้องมี authorization policy มาตัดสินว่า identity นั้นทำอะไรได้บ้าง"
     }
   ]
 }

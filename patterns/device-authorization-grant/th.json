@@ -1,21 +1,21 @@
 {
-  "summary": "เข้าสู่ระบบบน TV หรือ CLI ด้วยการอนุมัติ code สั้น ๆ บนมือถือ",
+  "summary": "เข้าสู่ระบบบน TV หรือ CLI โดยกดอนุมัติ code สั้น ๆ บนมือถือ",
   "steps": [
     {
       "title": "ขอ code",
-      "body": "TV app เป็น public client จึงส่งแค่ `client_id` และ `scope` ที่ต้องการไปที่ **device authorization endpoint** server เก็บ request ที่ยัง pending ไว้ แล้วตอบกลับด้วย `device_code` ที่ยาวและสุ่มซึ่ง TV เก็บไว้กับตัวเอง, `user_code` สั้น ๆ (WDJB-MJHT), `verification_uri`, `verification_uri_complete` สำหรับ QR code ซึ่งจะมีหรือไม่ก็ได้, `expires_in` (ในที่นี้ 900 s) และ `interval` สำหรับการ poll (5 s) จากนั้น TV บอกผู้ใช้ว่าต้องไปที่ไหนและกรอก code อะไร"
+      "body": "TV app เป็น public client เลยส่งแค่ `client_id` กับ `scope` ที่ต้องการไปที่ **device authorization endpoint** แล้วฝั่ง server ก็เก็บ request ที่ยัง pending ไว้ แล้วตอบกลับมาด้วย `device_code` ยาว ๆ แบบสุ่มที่ TV เก็บไว้กับตัวเอง, `user_code` สั้น ๆ (WDJB-MJHT), `verification_uri`, `verification_uri_complete` สำหรับทำ QR code (จะมีหรือไม่มีก็ได้), `expires_in` (ในตัวอย่างนี้ 900 s) และ `interval` สำหรับการ poll (5 s) แล้ว TV ก็บอกผู้ใช้ว่าต้องไปที่ไหน และกรอก code อะไร"
     },
     {
-      "title": "อนุมัติบนมือถือ",
-      "body": "ผู้ใช้เปิด example.com/device บนมือถือแล้วกรอก WDJB-MJHT (ถ้าสแกน QR code ซึ่งมี `verification_uri_complete` อยู่ก็ไม่ต้องพิมพ์) จากนั้นเข้าสู่ระบบตามปกติ รวมถึง MFA หน้า consent ระบุชื่อแอปและอุปกรณ์ และบอกผู้ใช้ให้อนุญาตเฉพาะเมื่อตัวเองเป็นคนเริ่มขั้นตอนนี้บน TV ที่อยู่ตรงหน้า ผู้ใช้กด **Allow** แล้ว request ก็ถูกทำเครื่องหมายว่า approved ทั้ง password และ second factor ส่งไปที่ authorization server เท่านั้น ไม่เคยไปถึง TV"
+      "title": "กดอนุมัติบนมือถือ",
+      "body": "ผู้ใช้เปิด example.com/device บนมือถือแล้วกรอก WDJB-MJHT (ถ้าสแกน QR code ที่มี `verification_uri_complete` อยู่ก็ไม่ต้องพิมพ์) จากนั้นก็เข้าสู่ระบบตามปกติ รวมถึง MFA ด้วย หน้า consent บอกชื่อแอปและอุปกรณ์ และบอกผู้ใช้ว่าให้อนุญาตก็ต่อเมื่อตัวเองเป็นคนเริ่มขั้นตอนนี้บน TV ที่อยู่ตรงหน้าเท่านั้น ผู้ใช้กด **Allow** แล้ว request ก็เปลี่ยนสถานะเป็น approved ทั้ง password และ second factor ไปถึงแค่ authorization server ไม่เคยไปถึง TV"
     },
     {
-      "title": "TV poll รอผล",
-      "body": "ตั้งแต่แรก TV จะ poll **token endpoint** ด้วย `grant_type=urn:ietf:params:oauth:grant-type:device_code` และ `device_code` ของตัวเอง โดยเว้น `interval` วินาทีระหว่างแต่ละครั้ง ระหว่างที่ request ยัง pending คำตอบจะเป็น `authorization_pending` ถ้า poll เร็วเกินไปจะได้ `slow_down` และ TV ต้องเพิ่ม interval อีก 5 s ไปตลอด poll ครั้งแรกหลังผู้ใช้อนุมัติจะได้ access token และ refresh token แล้ว TV ก็แสดง library ของผู้ใช้"
+      "title": "TV คอย poll รอผล",
+      "body": "TV เริ่ม poll **token endpoint** ตั้งแต่แรก ด้วย `grant_type=urn:ietf:params:oauth:grant-type:device_code` และ `device_code` ของตัวเอง โดยเว้น `interval` วินาทีระหว่างแต่ละรอบ ระหว่างที่ request ยัง pending คำตอบจะเป็น `authorization_pending` ถ้า poll มาเร็วเกินไปจะได้ `slow_down` แล้ว TV ต้องเพิ่ม interval อีก 5 s ไปตลอด ส่วน poll รอบแรกหลังผู้ใช้อนุมัติจะได้ access token กับ refresh token แล้ว TV ก็แสดง library ของผู้ใช้"
     },
     {
-      "title": "ทางจบแบบอื่น และ phishing",
-      "body": "ถ้าผู้ใช้กด Deny การ poll ครั้งถัดไปจะได้ `access_denied` ถ้าไม่มีใครอนุมัติภายใน `expires_in` จะได้ `expired_token` และ TV จะขอ code ใหม่ก็ต่อเมื่อผู้ใช้สั่งเท่านั้น ความเสี่ยงที่ flow นี้เพิ่มเข้ามาคือ **remote phishing**: attacker เริ่ม flow บนอุปกรณ์ของตัวเอง แล้วส่ง code ไปหาเหยื่อพร้อมข้ออ้างบางอย่าง ถ้าเหยื่อกดอนุมัติ อุปกรณ์ของ attacker ก็จะได้ token ไป วิธีป้องกัน: หน้า consent ที่ระบุแอปและอุปกรณ์พร้อมคำเตือน อายุที่สั้น rate limit การกรอก code และเปิดใช้ grant นี้เฉพาะกับ client ที่จำเป็นต้องใช้"
+      "title": "ทางจบแบบอื่น กับ phishing",
+      "body": "ถ้าผู้ใช้กด Deny การ poll รอบถัดไปจะได้ `access_denied` ถ้าไม่มีใครอนุมัติภายใน `expires_in` จะได้ `expired_token` และ TV จะขอ code ใหม่ก็ต่อเมื่อผู้ใช้สั่งเท่านั้น ความเสี่ยงที่ flow นี้เพิ่มเข้ามาคือ **remote phishing**: attacker เริ่ม flow บนอุปกรณ์ของตัวเอง แล้วส่ง code ไปหาเหยื่อพร้อมข้ออ้างสักอย่าง ถ้าเหยื่อกดอนุมัติ อุปกรณ์ของ attacker ก็ได้ token ไปเลย วิธีป้องกัน: หน้า consent ที่บอกชื่อแอปและอุปกรณ์พร้อมคำเตือน ตั้งเวลาหมดอายุให้สั้น ใส่ rate limit ตอนกรอก code และเปิด grant นี้ให้เฉพาะ client ที่ต้องใช้จริง ๆ"
     }
   ]
 }

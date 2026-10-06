@@ -129,7 +129,7 @@ console.log(track('xx-call', go.segs));                              // go.end i
 
 ## Thai translation
 
-The site has a Thai version under `/th/`, with a language switch in the top bar. The Thai text sits next to the English files, and anything not yet translated falls back to English:
+The site has a Thai version under `/th/`, with a language switch in the top bar. Thai pages are set in Anuphan, a loopless Thai face (SIL Open Font License), self-hosted from `src/site/fonts/`. The Thai text sits next to the English files, and anything not yet translated falls back to English:
 
 ```
 patterns/<slug>/th.json   { "summary": "…", "steps": [ { "title": "…", "body": "…" } ×4 ] }
@@ -140,7 +140,8 @@ Labels inside the diagrams stay in English: they are mostly code, class names an
 
 - **Translate the meaning, not the words.** Write the way a senior Thai engineer would explain the idea to a colleague, keeping every fact, number and name of the English, in the same order.
 - **Keep in English:** pattern names (Circuit Breaker, Saga), products and services, protocols and standards (OAuth 2.0, HTTP, TLS), code, identifiers, values shown in the diagram, HTTP status codes, units, and the technical terms Thai engineers use in English (service, API, client, server, request, response, cache, queue, message, event, token, deploy, rollback, latency, timeout, retry, replica, shard, node, cluster, endpoint, payload, schema, interface, class, object). Don't transliterate them into Thai script.
-- **Neutral register:** no ครับ or ค่ะ, no slang.
+- **Friendly, not formal (เป็นกันเอง):** write the way you'd explain it to a teammate. Use everyday words and short sentences in the active voice: ทำ rather than ดำเนินการ, ถ้า rather than ในกรณีที่, แต่ rather than อย่างไรก็ตาม, ต้อง rather than จำเป็นต้อง, ใช้…ได้ rather than สามารถ…ได้, ยังไง rather than อย่างไร, เพราะ rather than เนื่องจาก. Split long sentences instead of chaining clauses with ซึ่ง. Light particles such as ก็, เลย, แค่ and เอง are welcome where they sound natural; leave out ครับ and ค่ะ (they mark the speaker's gender), slang and jokes.
 - **Thai punctuation:** no full stop at the end of a sentence; separate sentences and clauses with a space. Keep colons, parentheses, arrows and signs such as × where they carry meaning.
+- **Mark breaks between English words:** when one sentence ends with an English word, number or code span and the next starts with one, the space doesn't show the break and the two read as one phrase ("แล้วคอย retry log เลยไปถึงช้า"). Join them with a short connective instead: "แล้วคอย retry ทำให้ log ไปถึงช้า" (แล้ว…ก็, ทำให้, ส่วน and ตัว work too).
 - **Keep the Markdown exactly:** **bold**, `code` (unchanged inside), and links, whose `../<slug>/` targets stay as they are.
 - Step titles are short headlines (about 30 Thai characters or fewer); the summary is one sentence.

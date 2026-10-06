@@ -1,21 +1,21 @@
 {
-  "summary": "ให้ identity provider ภายนอกเป็นผู้ยืนยันตัวตนผู้ใช้ ส่วนแอปพลิเคชันเชื่อถือ token ที่ provider ออกให้",
+  "summary": "ให้ identity provider ภายนอกเป็นคนยืนยันตัวตนผู้ใช้ ส่วนแอปเชื่อ token ที่ provider ออกให้",
   "steps": [
     {
       "title": "ทุกแอปมีบัญชีของตัวเอง",
-      "body": "ถ้าไม่มี federation แอปพลิเคชันก็ต้องเป็น identity store ของตัวเอง: เก็บ username และ password hash ของผู้ใช้ทุกคน และจัดการการ reset password กับการตั้งค่า multi-factor เอง พนักงานของ partner จึงต้องมีบัญชีเพิ่มอีกหนึ่งชุด เมื่อ Bo ลาออกจากบริษัท partner ก็ไม่มีใครบอกแอปพลิเคชัน บัญชีของเขาที่นี่จึงยัง active อยู่: กลายเป็น **orphaned account** ที่ password เก่าของเขายังเปิดได้"
+      "body": "ถ้าไม่มี federation แอปก็ต้องเป็น identity store เอง: เก็บ username กับ password hash ของผู้ใช้ทุกคน และจัดการ reset password กับตั้งค่า multi-factor เองหมด พนักงานของ partner เลยต้องมีบัญชีเพิ่มอีกชุด พอ Bo ลาออกจากบริษัท partner ก็ไม่มีใครบอกแอป บัญชีของเขาที่นี่เลยยัง active อยู่: กลายเป็น **orphaned account** ที่ password เก่าของเขายังเปิดได้"
     },
     {
-      "title": "เชื่อถือ identity provider",
-      "body": "แอปพลิเคชันกลายเป็น **relying party**: ส่งผู้ใช้แต่ละคนไปที่ **identity provider** ต้นสังกัดของเขา (OpenID Connect หรือ SAML) ตรวจ token หรือ assertion ที่ sign มาซึ่งส่งกลับมา ด้วย key ที่ provider เผยแพร่ไว้ ตรวจ issuer และ audience แล้วจึงเริ่ม session ของตัวเอง แอปไม่เคยเห็น password เลย: กฎของ password, multi-factor authentication และการกู้คืนบัญชีเป็นหน้าที่ของ provider ความเชื่อถือแต่ละคู่ตั้งค่าครั้งเดียวด้วยการแลกเปลี่ยน metadata (issuer, endpoint, signing key)"
+      "title": "ไว้ใจ identity provider",
+      "body": "แอปกลายเป็น **relying party**: ส่งผู้ใช้แต่ละคนไปที่ **identity provider** ต้นสังกัดของเขา (OpenID Connect หรือ SAML) พอได้ token หรือ assertion ที่ sign แล้วกลับมา แอปก็ตรวจกับ key ที่ provider publish ไว้ ตรวจ issuer และ audience ผ่านหมดแล้วถึงจะเริ่ม session ของตัวเอง แอปไม่เคยเห็น password เลย: กฎของ password, multi-factor authentication และการกู้บัญชีเป็นเรื่องของ provider ส่วน trust แต่ละคู่ก็ตั้งค่าแค่ครั้งเดียว ด้วยการแลก metadata กัน (issuer, endpoint, signing key)"
     },
     {
       "title": "broker เดียว หลาย provider",
-      "body": "แทนที่จะตั้งความเชื่อถือกับ provider ทีละราย แอปพลิเคชันเชื่อถือ **federation broker** เพียงตัวเดียว แล้ว broker เป็นฝ่ายเชื่อถือ provider ของบริษัท ของ partner และ social provider **Home realm discovery** เลือก provider ที่ถูกต้องให้ ในที่นี้ดูจาก domain ของ email: ใครที่อยู่ `partner.example` จะถูกส่งไปที่ provider ของ partner broker map claim ของแต่ละ provider ให้เป็น claim ของแอปพลิเคชันเอง (group `Logistics-Admins` ของ partner กลายเป็น role `shipment-admin`) แอปพลิเคชันจึงเห็นแค่ issuer เดียวและ claim รูปแบบเดียว"
+      "body": "แทนที่จะตั้ง trust กับ provider ทีละเจ้า แอปไว้ใจ **federation broker** แค่ตัวเดียว แล้วให้ broker ไปไว้ใจ provider ของบริษัท ของ partner และ social provider อีกที **Home realm discovery** เลือก provider ที่ถูกตัวให้ ในตัวอย่างนี้ดูจาก domain ของ email: ใครอยู่ `partner.example` ก็ไปที่ provider ของ partner ส่วน broker ก็ map claim ของแต่ละ provider ให้เป็น claim ของแอปเอง (group `Logistics-Admins` ของ partner กลายเป็น role `shipment-admin`) แอปเลยเห็นแค่ issuer เดียวและ claim รูปแบบเดียว"
     },
     {
       "title": "ปิดบัญชีที่ต้นทาง",
-      "body": "partner ปิดบัญชี Bo ใน directory ของตัวเอง การเข้าสู่ระบบครั้งถัดไปของเขาจึงล้มเหลวที่ provider ของ partner ส่วน session ที่มีอยู่จะจบเมื่อ token หมดอายุ หรือเมื่อ provider ส่งสัญญาณ logout และถ้าใช้ provisioning แบบ **SCIM** profile ในแอปพลิเคชันก็จะถูกลบไปด้วย ตัวความเชื่อถือเองก็ต้องดูแล: เมื่อ provider หมุนเวียน signing key ใหม่ broker ต้องดึง key ใหม่จาก metadata ไม่อย่างนั้นการเข้าสู่ระบบผ่าน provider นั้นจะล้มเหลวทุกครั้ง"
+      "body": "partner ปิดบัญชี Bo ใน directory ของตัวเอง พอเขาเข้าสู่ระบบครั้งถัดไปก็จะไม่ผ่านที่ provider ของ partner ส่วน session ที่มีอยู่แล้วจะจบเมื่อ token หมดอายุ หรือเมื่อ provider ส่งสัญญาณ logout มา และถ้าใช้ provisioning แบบ **SCIM** ตัว profile ที่เก็บไว้ในแอปก็จะโดนลบไปด้วย ตัว trust เองก็ต้องดูแล: พอ provider rotate signing key ใหม่ broker ต้องดึง key ใหม่จาก metadata มาใช้ ไม่อย่างนั้นการเข้าสู่ระบบผ่าน provider นั้นจะไม่ผ่านทุกครั้ง"
     }
   ]
 }

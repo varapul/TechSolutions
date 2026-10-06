@@ -1,21 +1,21 @@
 {
-  "summary": "จำ ID ของ message ที่ประมวลผลแล้ว เพื่อให้ message ที่ถูกส่งซ้ำไม่มีผลเพิ่ม",
+  "summary": "จำ ID ของ message ที่ประมวลผลไปแล้ว message ที่ส่งซ้ำมาจะได้ไม่มีผลเพิ่ม",
   "steps": [
     {
-      "title": "ทำไม message ซ้ำถึงมาได้",
-      "body": "broker จะลบ message ก็ต่อเมื่อ consumer acknowledge แล้วเท่านั้น Payments handle `m-7f3` (charge $40) และ commit แต่ acknowledgement หายไป (crash หรือ timeout ก่อนจะถึง broker) broker จึงส่ง `m-7f3` มาอีกครั้ง: การส่งเป็นแบบ **at-least-once** ไม่มีอะไรบอก handler ว่าเคยเห็น message นี้มาก่อน ลูกค้าจึงถูกตัดเงินสองครั้ง: $80 แทนที่จะเป็น $40"
+      "title": "message ซ้ำมาจากไหน",
+      "body": "broker จะลบ message ก็ต่อเมื่อ consumer acknowledge แล้วเท่านั้น Payments handle `m-7f3` (charge $40) แล้ว commit แต่ acknowledgement หายไป (crash หรือ timeout ก่อนไปถึง broker) broker เลยส่ง `m-7f3` มาอีกรอบ: การส่งเป็นแบบ **at-least-once** ไม่มีอะไรบอก handler ว่าเคยเห็น message นี้มาก่อน ลูกค้าเลยโดนตัดเงินสองครั้ง: $80 แทนที่จะเป็น $40"
     },
     {
       "title": "บันทึก ID ไปพร้อมกับงาน",
-      "body": "handler เปิด transaction แล้ว insert `m-7f3` ลงใน `processed_messages` (ตารางที่มี column unique เพียง column เดียวคือ `message_id`) ตัดเงิน แล้ว commit หลังจากนั้นจึงค่อย acknowledge ตัว marker กับการตัดเงินถูกบันทึกพร้อมกันหรือไม่ถูกบันทึกเลยทั้งคู่: ถ้าบันทึกแยกกัน crash ที่เกิดระหว่างการเขียนสองครั้งจะทำให้การตัดเงินถูกข้ามไปตลอดกาล หรือไม่ก็ถูกทำซ้ำ ส่วน acknowledgement ไม่ได้เป็นส่วนหนึ่งของ transaction จึงยังหายได้ อย่างที่เกิดในตัวอย่างนี้"
+      "body": "handler เปิด transaction แล้ว insert `m-7f3` ลงใน `processed_messages` (ตารางที่มี column unique แค่ column เดียวคือ `message_id`) ตัดเงิน แล้ว commit จากนั้นค่อย acknowledge ตัว marker กับการตัดเงินจะบันทึกไปด้วยกัน หรือไม่ก็ไม่บันทึกเลยทั้งคู่: ถ้าบันทึกแยกกัน แล้ว crash ระหว่างการเขียนสองครั้งนั้น ก็จะข้ามการตัดเงินไปแบบถาวร หรือไม่ก็ตัดเงินซ้ำ ส่วน acknowledgement ไม่ได้อยู่ใน transaction เลยยังหายได้ อย่างที่เกิดในตัวอย่างนี้"
     },
     {
-      "title": "ส่งซ้ำก็ไม่เปลี่ยนอะไร",
-      "body": "เมื่อ acknowledgement หายไป broker ก็ส่ง `m-7f3` มาอีกครั้ง คราวนี้การ insert ชน unique key ซึ่งบอก handler ว่างานนี้ commit ไปแล้ว: มันข้ามการตัดเงินและแค่ acknowledge ยอดรวมจึงยังอยู่ที่ $40 กรณีที่ consumer สองตัวแย่งกันทำ message เดียวกันก็จบแบบเดียวกัน: database ยอมให้ insert เพียงตัวเดียวชนะ อีกตัวจะได้ error duplicate key แล้วข้ามไป"
+      "title": "ส่งซ้ำมาก็ไม่เปลี่ยนอะไร",
+      "body": "พอ acknowledgement หาย broker ก็ส่ง `m-7f3` มาอีกรอบ คราวนี้ insert ชน unique key ตัว handler ก็รู้เลยว่างานนี้ commit ไปแล้ว: มันข้ามการตัดเงิน แล้วแค่ acknowledge ทำให้ยอดรวมยังอยู่ที่ $40 ถ้า consumer สองตัวแย่งกันทำ message เดียวกัน ก็จบแบบเดียวกัน: database ยอมให้ insert ชนะได้แค่ตัวเดียว อีกตัวจะได้ error duplicate key แล้วข้ามไป"
     },
     {
-      "title": "นอกเหนือจาก database ของเราเอง",
-      "body": "handler ยังเรียก payment provider ด้วย และไม่มี local transaction ไหนครอบ call นั้นได้: ถ้า response หาย หรือ handler crash ก่อน commit ก็จะเกิด call ซ้ำ handler จึงส่ง message ID ไปเป็น **idempotency key** แล้ว provider ก็รู้ว่าเป็นการเรียกซ้ำและคืนผลของ call แรกแทนที่จะตัดเงินอีกครั้ง ถ้าทำได้ ให้เลือก operation ที่ idempotent อยู่แล้วโดยธรรมชาติ (set ค่า, upsert) มากกว่าแบบที่ไม่ใช่ (บวก $40) และให้ ID ที่เก็บไว้หมดอายุเมื่อ broker ไม่มีทางส่ง message นั้นซ้ำได้อีกแล้ว"
+      "title": "นอก database ของเราเอง",
+      "body": "handler ยังเรียก payment provider ด้วย และไม่มี local transaction ไหนครอบ call นั้นได้: ถ้า response หาย หรือ handler crash ก่อน commit ก็จะเรียกซ้ำอีกครั้ง handler เลยส่ง message ID ไปเป็น **idempotency key** แล้ว provider ก็รู้ว่าเป็นการเรียกซ้ำ และคืนผลของ call แรกให้ แทนที่จะตัดเงินอีกรอบ ถ้าทำได้ ให้เลือก operation ที่ idempotent อยู่แล้วโดยธรรมชาติ (set ค่า, upsert) มากกว่าแบบที่ไม่ใช่ (บวก $40) และตั้งให้ ID ที่เก็บไว้หมดอายุเมื่อ broker ส่ง message นั้นซ้ำไม่ได้อีกแล้ว"
     }
   ]
 }

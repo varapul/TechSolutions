@@ -1,21 +1,21 @@
 {
-  "summary": "แต่ละ service เป็นเจ้าของข้อมูลของตัวเอง service อื่นต้องผ่าน API หรือ event ของมัน ไม่เข้าตารางโดยตรง",
+  "summary": "แต่ละ service เป็นเจ้าของข้อมูลของตัวเอง service อื่นต้องผ่าน API หรือ event ของมัน ไม่แตะตารางของมันเลย",
   "steps": [
     {
       "title": "database เดียวที่ใช้ร่วมกัน",
-      "body": "Orders, Customers และ Payments อ่านและเขียนตารางชุดเดียวกันหมด Payments เปลี่ยนชื่อ column แล้ว query ของ Orders ก็พัง report หนัก ๆ ที่ Customers รันทำให้การเขียนของ Orders ช้าลง และเพราะไม่มีใครรู้ว่า service ไหนใช้ตารางไหน จึงไม่มีใครเปลี่ยนตารางไหนได้อย่างปลอดภัย service เหล่านี้เป็นอิสระต่อกันแค่ในนาม"
+      "body": "Orders, Customers และ Payments อ่านและเขียนตารางชุดเดียวกันหมด Payments เปลี่ยนชื่อ column แล้ว query ของ Orders ก็พัง report หนัก ๆ ที่ Customers รันก็ทำให้การเขียนของ Orders ช้าลง และเพราะไม่มีใครรู้ว่า service ไหนใช้ตารางไหน เลยไม่มีใครแก้ตารางไหนได้อย่างปลอดภัย service พวกนี้เป็นอิสระต่อกันแค่ในนาม"
     },
     {
-      "title": "แต่ละ service มีข้อมูลของตัวเอง",
-      "body": "ทุก service ได้ **private store** ที่มีแค่ตัวเองเข้าถึงได้: service อื่นไม่มี credential ของมัน จึงต้องถามผ่าน API หรือฟัง event ของมัน เส้นสีแดงคือการเข้าถึงตารางโดยตรงที่กำลังถูกตัดออก *Private* หมายถึงความเป็นเจ้าของ ไม่ใช่ hardware: schema ที่มี credential ของตัวเอง, database ของตัวเอง หรือ server ของตัวเอง ล้วนนับได้ทั้งนั้น และแต่ละ service เลือกชนิดของ store ที่เหมาะกับตัวเองได้ (**polyglot persistence**: ในที่นี้ Customers ใช้ document store)"
+      "title": "แต่ละ service เป็นเจ้าของข้อมูลเอง",
+      "body": "ทุก service ได้ **private store** ที่มีแค่ตัวเองเข้าถึงได้: service อื่นไม่มี credential ของมัน เลยต้องถามผ่าน API หรือฟัง event ของมัน เส้นสีแดงคือการเข้าถึงตารางตรง ๆ ที่กำลังตัดทิ้ง *Private* หมายถึงความเป็นเจ้าของ ไม่ใช่ hardware: จะเป็น schema ที่มี credential ของตัวเอง, database ของตัวเอง หรือ server ของตัวเองก็นับได้ทั้งนั้น และแต่ละ service ก็เลือกชนิดของ store ที่เหมาะกับตัวเองได้ (**polyglot persistence**: ในที่นี้ Customers ใช้ document store)"
     },
     {
       "title": "query ข้าม service",
-      "body": "หน้าจอ order ต้องใช้ชื่อ customer และสถานะการชำระเงิน แต่ไม่มี join ไหนข้ามสอง database ได้ **API composition**: Orders เรียก Customers และ Payments แล้ว join คำตอบเอง ง่าย แต่หน้าจอต้องรอ call ที่ช้าที่สุด และ service ที่ช้าหรือล้มเหลวก็จะถ่วงหน้าจอไว้ **Local read model**: Orders เก็บสำเนาแบบ read-only ของ field ของ customer ไม่กี่ตัวที่ต้องใช้ ซึ่ง update จาก event ของ Customers เร็วและเป็นอิสระ แต่เป็น eventually consistent"
+      "body": "หน้าจอ order ต้องใช้ชื่อ customer กับสถานะการจ่ายเงิน แต่ไม่มี join ไหนข้ามสอง database ได้ **API composition**: Orders เรียก Customers กับ Payments แล้ว join คำตอบเอง วิธีนี้ง่าย แต่หน้าจอต้องรอ call ที่ช้าที่สุด และ service ที่ช้าหรือล้มเหลวก็ถ่วงหน้าจอไว้ด้วย **Local read model**: Orders เก็บสำเนาแบบ read-only ของ field ของ customer ไม่กี่ตัวที่ต้องใช้ แล้ว update จาก event ของ Customers วิธีนี้เร็วและเป็นอิสระ แต่เป็น eventually consistent"
     },
     {
       "title": "transaction ข้าม service",
-      "body": "การสั่ง order ต้องตัดเงินจากบัตรด้วย และไม่มี transaction ไหนครอบทั้งสาม store ได้ แต่ละ service commit แบบ local และบันทึก event ของตัวเองไว้ใน commit เดียวกัน ([transactional outbox](../transactional-outbox/)) แล้ว saga ก็พา business transaction ส่งต่อจาก service หนึ่งไปอีก service หนึ่ง ในที่นี้ใช้ [choreography](../saga-choreography/) หรือจะใช้ [orchestrator](../saga-orchestration/) ก็ได้ บัตรถูกปฏิเสธ Orders จึงรัน **compensating transaction** และยกเลิก order"
+      "body": "การสั่ง order ต้องตัดเงินจากบัตรด้วย แต่ไม่มี transaction ไหนครอบทั้งสาม store ได้ แต่ละ service commit แบบ local และบันทึก event ของตัวเองไว้ใน commit เดียวกัน ([transactional outbox](../transactional-outbox/)) แล้ว saga ก็พา business transaction ต่อจาก service หนึ่งไปอีก service หนึ่ง ในที่นี้ใช้ [choreography](../saga-choreography/) หรือจะใช้ [orchestrator](../saga-orchestration/) ก็ได้ บัตรโดนปฏิเสธ Orders เลยรัน **compensating transaction** แล้วยกเลิก order"
     }
   ]
 }

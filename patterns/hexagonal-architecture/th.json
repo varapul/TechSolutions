@@ -1,21 +1,21 @@
 {
-  "summary": "domain logic อยู่ที่ core ส่วน UI, ฐานข้อมูล และ queue เสียบเข้ามาผ่าน port และ adapter",
+  "summary": "domain logic อยู่ตรง core ส่วน UI, ฐานข้อมูล และ queue ก็เสียบเข้ามาผ่าน port กับ adapter",
   "steps": [
     {
       "title": "เข้ามาผ่าน adapter",
-      "body": "HTTP `POST /orders` มาถึง **REST controller** ซึ่งเป็น driving adapter ตัวนี้ parse request แล้วแปลงเป็นการเรียกธรรมดาบน port `PlaceOrder` จากนั้น core ตรวจ business rule กับ object ของตัวเอง: core ไม่รู้อะไรเลยเกี่ยวกับ HTTP, JSON หรือ web framework"
+      "body": "HTTP `POST /orders` มาถึง **REST controller** ตัวนี้เป็น driving adapter มัน parse request แล้วแปลงเป็นการเรียกธรรมดา ๆ บน port `PlaceOrder` จากนั้น core ก็เช็ก business rule กับ object ของตัวเอง: core ไม่รู้อะไรเลยเรื่อง HTTP, JSON หรือ web framework"
     },
     {
       "title": "ออกไปผ่าน driven port",
-      "body": "เพื่อทำงานให้เสร็จ core เรียก `OrderRepository`, `PaymentGateway` และ `EventPublisher` **driven port** เหล่านี้คือ interface ที่ core เป็นเจ้าของ เขียนด้วยภาษาของ core เอง ส่วน adapter ของ SQL, payment และ broker เป็นตัว implement และคุยกับฐานข้อมูล, provider และ broker ตัวจริง การเรียกไหลออกไปข้างนอก แต่ dependency ระดับ source code ทุกตัวชี้เข้าข้างใน: adapter พึ่งพา core และไม่มีทางกลับกัน"
+      "body": "จะทำงานให้จบ core ก็เรียก `OrderRepository`, `PaymentGateway` และ `EventPublisher` **driven port** พวกนี้คือ interface ที่ core เป็นเจ้าของ เขียนด้วยภาษาของ core เอง adapter ของ SQL, payment และ broker เป็นตัว implement และคุยกับฐานข้อมูล, provider และ broker ตัวจริง การเรียกไหลออกไปข้างนอก แต่ dependency ระดับ source code ทุกตัวชี้เข้าข้างใน: adapter พึ่ง core แต่ไม่มีทางกลับกัน"
     },
     {
       "title": "สลับและเพิ่ม adapter",
-      "body": "ถอด SQL adapter ออก แล้วใส่ adapter ของ document store เข้าไปแทนที่หลัง port `OrderRepository` ตัวเดิม และเสียบ driving adapter ตัวที่สองคือ message consumer ไว้ข้าง REST controller: ตัวนี้รับ order จาก queue แล้วเรียก port `PlaceOrder` ตัวเดียวกัน การเปลี่ยนทั้งสองอย่างเกิดขึ้นข้างนอก ส่วน hexagon และ port ของมันยังเหมือนเดิมทุกประการ"
+      "body": "ถอด SQL adapter ออก แล้วเอา adapter ของ document store มาใส่แทนหลัง port `OrderRepository` ตัวเดิม จากนั้นเสียบ driving adapter ตัวที่สอง คือ message consumer ไว้ข้าง ๆ REST controller: ตัวนี้รับ order มาจาก queue แล้วเรียก port `PlaceOrder` ตัวเดียวกัน ทั้งสองอย่างเปลี่ยนแค่ข้างนอก ส่วน hexagon กับ port ของมันยังเหมือนเดิมทุกอย่าง"
     },
     {
-      "title": "ทดสอบ core แบบแยกเดี่ยว",
-      "body": "ถอด adapter ของ production ออก **test driver** เรียก driving port โดยตรง และมี **in-memory fake** อยู่หลัง driven port ทำให้ business rule รันเสร็จในระดับมิลลิวินาที โดยไม่ต้องมี network, ฐานข้อมูล หรือ framework ส่วน adapter ตัวจริงแต่ละตัวมี integration test ของตัวเองที่รันกับเทคโนโลยีจริง และ core ที่ผ่านการทดสอบก็คือ core ตัวเดียวกับที่ขึ้น production"
+      "title": "ทดสอบ core แยกเดี่ยว ๆ",
+      "body": "ถอด adapter ของ production ออกให้หมด **test driver** เรียก driving port ตรง ๆ และมี **in-memory fake** อยู่หลัง driven port ทำให้ business rule รันเสร็จในระดับมิลลิวินาที ไม่ต้องมี network, ฐานข้อมูล หรือ framework เลย ส่วน adapter ตัวจริงแต่ละตัวก็มี integration test ของตัวเองที่รันกับเทคโนโลยีจริง และ core ที่ทดสอบก็คือ core ตัวเดียวกับที่ปล่อยขึ้น production"
     }
   ]
 }

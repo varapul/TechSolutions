@@ -1,21 +1,21 @@
 {
-  "summary": "ID token ที่วางอยู่บน OAuth 2.0 บอกแอปว่าใครเป็นคนเข้าสู่ระบบ",
+  "summary": "ID token ที่เพิ่มเข้ามาบน OAuth 2.0 คอยบอกแอปว่าใครเป็นคนเข้าสู่ระบบ",
   "steps": [
     {
       "title": "เข้าสู่ระบบ Shop",
-      "body": "Ana คลิก *Sign in* แล้ว Shop ก็ redirect browser ของเธอไปที่ authorization endpoint ของ provider พร้อม `response_type=code`, `scope=openid profile email` (บวก `orders:read` สำหรับ API ของตัวเอง) และ `nonce` ใหม่ที่เดาไม่ได้ซึ่ง Shop จำไว้ provider แสดงฟอร์ม login ตรวจ password ของเธอ และเริ่ม **SSO session** ของตัวเอง ซึ่งเก็บอยู่ใน cookie บน domain ของ provider จากนั้น redirect เธอกลับมาที่ Shop พร้อม authorization code"
+      "body": "Ana คลิก *Sign in* แล้ว Shop ก็ redirect browser ของเธอไปที่ authorization endpoint ของ provider พร้อม `response_type=code`, `scope=openid profile email` (บวก `orders:read` สำหรับ API ของตัวเอง) และ `nonce` ใหม่ที่เดาไม่ได้ (Shop จำค่านี้ไว้) provider เปิดฟอร์ม login ขึ้นมา ตรวจ password ของเธอ แล้วเริ่ม **SSO session** ของตัวเอง เก็บไว้ใน cookie บน domain ของ provider จากนั้นก็ redirect เธอกลับมาที่ Shop พร้อม authorization code"
     },
     {
-      "title": "ตรวจสอบ ID token",
-      "body": "Shop แลก code เป็น token ผ่าน back channel แล้วตรวจดู **ID token**: JWT ที่ provider sign ไว้ ซึ่งบอกว่าใครเข้าสู่ระบบ สำหรับแอปไหน และใช้ได้ถึงเมื่อไร Shop ตรวจ signature ด้วย key ใน JWKS ที่ `kid` ตรงกัน (Shop หา URL ของ JWKS เจอใน `/.well-known/openid-configuration`) จากนั้นตรวจ `iss` เทียบกับ issuer ที่ได้จาก discovery ตรวจ `aud` เทียบกับ `client_id` ของตัวเอง ตรวจ `exp` และตรวจว่า `nonce` เป็นค่าที่ตัวเองส่งไป แล้วจึงเริ่ม session ของตัวเองโดยใช้ `sub` (คู่กับ `iss`) เป็น key ห้ามใช้ `email` เพราะเปลี่ยนได้"
+      "title": "ตรวจ ID token",
+      "body": "Shop แลก code เป็น token ผ่าน back channel แล้วเปิดดู **ID token**: JWT ที่ provider sign มา บอกว่าใครเข้าสู่ระบบ สำหรับแอปไหน และใช้ได้ถึงเมื่อไร Shop ตรวจ signature ด้วย key ใน JWKS ที่ `kid` ตรงกัน (Shop เจอ URL ของ JWKS ใน `/.well-known/openid-configuration`) แล้วเทียบ `iss` กับ issuer ที่ได้จาก discovery เทียบ `aud` กับ `client_id` ของตัวเอง ดู `exp` และดูว่า `nonce` เป็นค่าที่ตัวเองส่งไป จากนั้นก็เริ่ม session ของตัวเองโดยใช้ `sub` (คู่กับ `iss`) เป็น key ห้ามใช้ `email` เพราะ email เปลี่ยนได้"
     },
     {
       "title": "Single sign-on ข้ามแอป",
-      "body": "ต่อมา Ana เปิด Support ซึ่ง redirect เธอไปที่ provider เดิมพร้อม `client_id` ของตัวเองและ `nonce` ใหม่ browser ของเธอส่ง session cookie ของ provider ไปด้วย provider จึงข้ามฟอร์ม login และคืน code ให้ทันที (ถ้า Support ต้องได้ consent ก็ยังต้องขอ และถ้ามี `prompt=login` หรือ `max_age` เกินกำหนด ก็ยังต้องยืนยันตัวตนใหม่) Support ตรวจสอบ **ID token ของตัวเอง** ซึ่งมี `aud` เป็น `support` แล้วเริ่ม session แยกของตัวเอง ถ้า provider ใช้ public subject identifier ค่า `sub` ของ Support จะตรงกับของ Shop แต่ถ้าใช้ pairwise identifier แต่ละแอปจะได้ค่าที่ต่างกัน"
+      "body": "ต่อมา Ana เปิด Support แล้ว Support ก็ redirect เธอไปที่ provider เดิม พร้อม `client_id` ของตัวเองและ `nonce` ใหม่ browser ของเธอแนบ session cookie ของ provider ไปด้วย provider เลยข้ามฟอร์ม login แล้วคืน code ให้ทันที (แต่ถ้า Support ต้องได้ consent ก็ยังต้องขอ และถ้ามี `prompt=login` หรือ `max_age` เกินกำหนดก็ยังต้องยืนยันตัวตนใหม่) Support ตรวจ **ID token ของตัวเอง** ที่มี `aud` เป็น `support` แล้วเริ่ม session แยกของตัวเอง ถ้า provider ใช้ public subject identifier ค่า `sub` ของ Support จะตรงกับของ Shop แต่ถ้าใช้ pairwise identifier แต่ละแอปจะได้ค่าไม่เหมือนกัน"
     },
     {
       "title": "ID token กับ access token",
-      "body": "token สองตัวที่ Shop ถืออยู่มีหน้าที่ต่างกัน ID token ส่งถึง Shop (`aud=shop`) และมีไว้บอก Shop เท่านั้นว่าใครเข้าสู่ระบบ จึงอยู่ที่ Shop ไม่ไปไหน ส่วนการเรียก Orders API จะแนบ **access token** ที่ออกให้ API นั้น (`aud=orders-api`, scope `orders:read`) API ที่ตรวจ `aud` จะปฏิเสธ ID token ดังนั้นอย่าใช้ ID token เป็น bearer token เด็ดขาด"
+      "body": "token สองตัวที่ Shop ถืออยู่ทำคนละหน้าที่ ID token ส่งถึง Shop (`aud=shop`) และมีไว้บอก Shop อย่างเดียวว่าใครเข้าสู่ระบบ เลยอยู่ที่ Shop ไม่ไปไหน ส่วนตอนเรียก Orders API จะแนบ **access token** ที่ออกให้ API นั้น (`aud=orders-api`, scope `orders:read`) API ที่ตรวจ `aud` จะไม่รับ ID token เพราะฉะนั้นอย่าเอา ID token ไปใช้เป็น bearer token เด็ดขาด"
     }
   ]
 }

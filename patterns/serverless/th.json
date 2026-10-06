@@ -1,21 +1,21 @@
 {
-  "summary": "function เริ่มทำงานเมื่อมี event เข้ามา scale out เองโดยอัตโนมัติ และ scale to zero เมื่อไม่มีงาน",
+  "summary": "function เริ่มทำงานทุกครั้งที่มี event เข้ามา scale out ได้เอง และ scale to zero ตอนไม่มีงาน",
   "steps": [
     {
       "title": "event ปลุก function ให้ทำงาน",
-      "body": "เมื่อไม่มี traffic จะมี **0 instances** และไม่มีการคิดค่า compute เมื่อมี event เข้ามา platform จะสร้าง execution environment ขึ้นมา นี่คือ **cold start**: ดึงโค้ด เริ่ม runtime และรันโค้ด initialisation ของคุณ จากนั้นจึงรัน handler และส่งผลลัพธ์กลับ โดยคุณจ่ายค่า request และค่าเวลาที่โค้ดรัน"
+      "body": "ตอนไม่มี traffic ก็มี **0 instances** และไม่เสียค่า compute เลย พอมี event เข้ามา platform จะสร้าง execution environment ขึ้นมา ขั้นนี้คือ **cold start**: ดึงโค้ด เปิด runtime และรันโค้ด initialisation ของคุณ แล้วค่อยรัน handler และส่งผลลัพธ์กลับไป คุณจ่ายค่า request กับค่าเวลาที่โค้ดรัน"
     },
     {
-      "title": "ใช้ตัวที่ warm ซ้ำ แล้ว scale out",
-      "body": "event ถัดไปเจอ instance นั้นที่ยัง **warm** อยู่ จึงเข้า handler ได้ทันที เมื่อมี 6 event เข้ามาพร้อมกัน platform จะเริ่ม instance เพิ่มแบบขนาน: ในโมเดลดั้งเดิม หนึ่ง instance รับได้ทีละหนึ่ง request ดังนั้น 6 event ที่มาพร้อมกันจึงต้องใช้ 6 instance การ scale จะหยุดที่ **concurrency limit** และ invocation ที่เกินจากนั้นจะถูก throttle"
+      "title": "ใช้ตัว warm ซ้ำ แล้ว scale out",
+      "body": "event ถัดมาเจอ instance ตัวนั้นที่ยัง **warm** อยู่ ก็เข้า handler ได้ทันที พอมี 6 event เข้ามาพร้อมกัน platform ก็เปิด instance เพิ่มแบบขนาน: ในโมเดลดั้งเดิม instance หนึ่งตัวรับได้ทีละ request เดียว 6 event ที่มาพร้อมกันเลยต้องใช้ 6 instance การ scale จะไปหยุดที่ **concurrency limit** และ invocation ที่เกินจากนั้นก็จะโดน throttle"
     },
     {
-      "title": "state อยู่ข้างนอก",
-      "body": "instance เป็นของชั่วคราว: memory และ local disk อาจหายไประหว่าง invocation สิ่งที่ควรเก็บไว้จึงต้องไปอยู่ในฐานข้อมูล, object storage หรือ queue สำหรับ source แบบ asynchronous platform จะ **retry** invocation ที่ล้มเหลว แล้วส่ง event ต่อไปที่ **dead-letter queue** หรือ failure destination และเพราะ retry เหล่านี้ event เดียวกันจึงอาจถูกส่งมามากกว่าหนึ่งครั้ง handler จึงต้องเป็น **idempotent**"
+      "title": "เก็บ state ไว้ข้างนอก",
+      "body": "instance อยู่แค่ชั่วคราว: memory กับ local disk อาจอยู่ไม่รอดไปถึง invocation ถัดไป อะไรที่ควรเก็บไว้เลยต้องไปอยู่ในฐานข้อมูล, object storage หรือ queue ส่วนถ้า source เป็นแบบ asynchronous ฝั่ง platform จะ **retry** invocation ที่ล้มเหลว แล้วส่ง event ต่อไปที่ **dead-letter queue** หรือ failure destination พอมี retry แบบนี้ event เดียวกันก็อาจมาถึงมากกว่าหนึ่งครั้ง handler เลยต้องเป็น **idempotent**"
     },
     {
       "title": "scale ลงจนเหลือศูนย์",
-      "body": "เมื่อ traffic หยุด instance ที่ว่างจะยัง warm อยู่สักพัก แล้วจึงถูกเรียกคืน: กลับไปเป็น **0 instances** และไม่มีค่า compute สิ่งที่ต้องแลกคือ event ถัดไปต้องเจอ cold start อีกครั้ง การจอง instance ไว้ล่วงหน้า (minimum instances, provisioned concurrency) ช่วยตัดความหน่วงนี้ได้ แต่ต้องเสียค่าใช้จ่าย"
+      "body": "พอ traffic หยุด instance ที่ว่างก็ยัง warm อยู่สักพัก แล้ว platform ก็เก็บคืนไป: กลับมาเป็น **0 instances** และไม่มีค่า compute ส่วนที่ต้องแลกคือ event ถัดไปต้องเจอ cold start อีกรอบ ถ้าจอง instance ไว้ล่วงหน้า (minimum instances, provisioned concurrency) ก็ตัดความหน่วงตรงนี้ได้ แต่ต้องจ่ายเงินเพิ่ม"
     }
   ]
 }

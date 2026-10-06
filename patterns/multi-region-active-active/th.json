@@ -1,21 +1,21 @@
 {
-  "summary": "ให้บริการผู้ใช้จากหลาย region พร้อมกัน และย้าย traffic ออกจาก region ที่ล่ม",
+  "summary": "ให้บริการผู้ใช้จากหลาย region พร้อมกัน ถ้า region ไหนล่มก็ย้าย traffic ออกไป",
   "steps": [
     {
-      "title": "ทั้งสอง region ให้บริการ",
-      "body": "**global load balancer** (anycast หรือ DNS ที่ route ตาม latency) ส่งผู้ใช้ใน Europe ไปที่ Region A และผู้ใช้ใน Americas ไปที่ Region B ซึ่งเป็น region ที่ latency ต่ำที่สุดของแต่ละกลุ่ม ทั้งสอง region เป็น **active**: แต่ละ region รัน stack ครบชุดและรับ traffic จริง และ load balancer ก็ health check ทั้งสอง region อยู่ตลอดเวลา"
+      "title": "ทั้งสอง region ให้บริการจริง",
+      "body": "**global load balancer** (anycast หรือ DNS ที่ route ตาม latency) ส่งผู้ใช้ฝั่ง Europe ไปที่ Region A และฝั่ง Americas ไปที่ Region B แต่ละฝั่งก็ได้ region ที่ latency ต่ำสุดของตัวเอง ทั้งสอง region เป็น **active**: แต่ละ region รัน stack ครบชุดและรับ traffic จริง และ load balancer ก็คอย health check ทั้งสอง region อยู่ตลอด"
     },
     {
       "title": "replicate ข้อมูล",
-      "body": "แต่ละ region มีสำเนาข้อมูลที่เขียนได้ การเขียนจะ **commit ใน region ของตัวเอง** และผู้ใช้ได้คำตอบทันที จากนั้นการเปลี่ยนแปลงจึงถูกส่งไปยังอีก region แบบ **asynchronous** ซึ่งปกติใช้เวลาไม่ถึงหนึ่งวินาที (เรียกว่า **replication lag**) การอ่านใช้สำเนาใน region ของตัวเอง จึงไม่มี request ไหนต้องรอ round trip ข้าม region"
+      "body": "แต่ละ region มีสำเนาข้อมูลที่เขียนได้ การเขียนจะ **commit ใน region ของตัวเอง** แล้วผู้ใช้ก็ได้คำตอบทันที จากนั้นการเปลี่ยนแปลงก็ค่อยส่งต่อไปอีก region แบบ **asynchronous** ปกติก็ไม่เกินหนึ่งวินาที (เรียกว่า **replication lag**) การอ่านก็ใช้สำเนาใน region ตัวเอง เลยไม่มี request ไหนต้องรอ round trip ข้าม region"
     },
     {
       "title": "Region B ล่ม",
-      "body": "Region B เกิด outage ผู้ใช้ใน Americas เจอ error จนกว่า load balancer จะรู้ตัว: หลังจาก probe ล้มเหลวติดกันไม่กี่ครั้ง load balancer จะทำเครื่องหมายว่า B **unhealthy** และหยุดส่ง traffic ไปที่นั่น การเขียนที่ B commit ไปแล้วแต่ยังไม่ได้ replicate จะหายไป หรือค้างอยู่จนกว่า B จะกลับมา ดังนั้น replication lag ก็คือ **RPO** ที่แท้จริงของคุณ"
+      "body": "Region B เจอ outage ผู้ใช้ฝั่ง Americas เห็น error ไปจนกว่า load balancer จะรู้ตัว: พอ probe ล้มเหลวติดกันไม่กี่ครั้ง load balancer ก็ mark ว่า B **unhealthy** แล้วหยุดส่ง traffic ไปที่นั่น การเขียนที่ B commit ไปแล้วแต่ยังไม่ได้ replicate ก็หายไป หรือไม่ก็ค้างอยู่จนกว่า B จะกลับมา replication lag ก็เลยเป็น **RPO** จริง ๆ ของคุณ"
     },
     {
       "title": "failover ไปอีก region",
-      "body": "ตอนนี้ load balancer ส่งผู้ใช้ใน Americas ไปที่ Region A request ของพวกเขาต้องเดินทางไกลขึ้น (ราว 110 ms แทนที่จะเป็น 20 ms) แต่ก็ยังได้รับบริการ โหลดของ Region A เพิ่มเป็นสองเท่า จึงต้องมี **headroom** เผื่อไว้ หรือไม่ก็ต้อง **scale out** เมื่อ B กลับมา ก็ต้องไล่ replicate ให้ทันก่อน แล้ว traffic จึงค่อย fail back กลับไป"
+      "body": "ตอนนี้ load balancer ส่งผู้ใช้ฝั่ง Americas ไปที่ Region A แทน request ต้องเดินทางไกลขึ้น (ราว 110 ms แทนที่จะเป็น 20 ms) แต่ก็ยังได้คำตอบ โหลดของ Region A เพิ่มเป็นสองเท่า เลยต้องมี **headroom** เผื่อไว้ ไม่ก็ต้อง **scale out** พอ B กลับมา ก็ต้องไล่ replicate ให้ทันก่อน แล้ว traffic ค่อย fail back กลับไป"
     }
   ]
 }

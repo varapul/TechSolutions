@@ -1,21 +1,21 @@
 {
-  "summary": "Backup & restore, pilot light, warm standby และ active-active: แลกต้นทุนกับ RTO และ RPO",
+  "summary": "Backup & restore, pilot light, warm standby และ active-active: เลือกว่าจะยอมจ่ายแค่ไหนเพื่อแลกกับ RTO และ RPO",
   "steps": [
     {
       "title": "Backup and restore",
-      "body": "มีแค่ **backup** เท่านั้นที่ถูกคัดลอกไปยัง recovery region และไม่มีอะไรรันอยู่ที่นั่นเลย หลังเกิดภัยพิบัติ workload ต้องถูกสร้างขึ้นใหม่จากศูนย์: provision infrastructure จากโค้ด restore ข้อมูลจาก backup ล่าสุด deploy แอปพลิเคชัน แล้วจึง redirect ผู้ใช้ **RPO** (ทุกอย่างนับตั้งแต่ backup ครั้งล่าสุด) และ **RTO** วัดกันเป็นชั่วโมงทั้งคู่ และต้นทุนประจำต่ำที่สุดในสี่แบบ"
+      "body": "ที่ recovery region มีแค่ **backup** ที่คัดลอกไปเก็บไว้ ไม่มีอะไรรันอยู่ที่นั่นเลย พอเกิดภัยพิบัติ ก็ต้องสร้าง workload ขึ้นมาใหม่จากศูนย์: provision infrastructure จากโค้ด restore ข้อมูลจาก backup ล่าสุด deploy แอปพลิเคชัน แล้วค่อย redirect ผู้ใช้ **RPO** (ทุกอย่างนับจาก backup ครั้งล่าสุด) และ **RTO** วัดกันเป็นชั่วโมงทั้งคู่ ส่วนต้นทุนประจำก็ต่ำที่สุดในสี่แบบ"
     },
     {
       "title": "Pilot light",
-      "body": "ข้อมูลถูก replicate อย่างต่อเนื่องไปยัง **live database** ใน recovery region และ infrastructure หลักก็เตรียมไว้แล้ว แต่ไม่มี application server รันอยู่ที่นั่น มีเพียง image และ template ที่พร้อมใช้ การกู้คืนคือการเริ่มและ scale app tier, promote ฐานข้อมูล แล้ว redirect ผู้ใช้ RPO ลดลงเหลือเท่ากับ replication lag (ไม่กี่นาทีหรือน้อยกว่า) และ RTO ลดลงเหลือหลักสิบนาที"
+      "body": "replicate ข้อมูลไปที่ **live database** ใน recovery region อยู่ตลอด infrastructure หลักก็วางไว้แล้ว แต่ยังไม่มี application server รันอยู่ที่นั่น มีแค่ image กับ template ที่พร้อมใช้ ตอนกู้คืนก็เปิดและ scale app tier, promote ฐานข้อมูล แล้ว redirect ผู้ใช้ RPO ลดลงเหลือเท่ากับ replication lag (ไม่กี่นาทีหรือน้อยกว่านั้น) และ RTO เหลือหลักสิบนาที"
     },
     {
       "title": "Warm standby",
-      "body": "สำเนาของ workload ที่ **ย่อขนาดลงแต่ครบถ้วน** รันอยู่ใน recovery region ตลอดเวลา และรับ test traffic ได้ การกู้คืนคือการ scale fleet ให้เต็มขนาด promote ฐานข้อมูล และย้าย traffic มา RTO จึงลดลงเหลือระดับนาที ส่วน RPO ยังเท่ากับ replication lag: สิ่งที่คุณจ่ายเพิ่มในขั้นนี้ซื้อเวลา ไม่ได้ซื้อข้อมูล"
+      "body": "มีสำเนาของ workload ที่ **ย่อขนาดลงแต่ครบทุกส่วน** รันอยู่ใน recovery region ตลอดเวลา และรับ test traffic ได้ด้วย ตอนกู้คืนก็ scale fleet ให้เต็มขนาด promote ฐานข้อมูล แล้วย้าย traffic มา RTO เลยลดลงเหลือระดับนาที ส่วน RPO ยังเท่ากับ replication lag: เงินที่จ่ายเพิ่มในขั้นนี้ซื้อเวลา ไม่ได้ซื้อข้อมูล"
     },
     {
       "title": "Multi-site active/active",
-      "body": "ทั้งสอง region รันเต็มขนาดและ **ให้บริการผู้ใช้ตลอดเวลา** จึงไม่มีอะไรต้องสร้างใหม่หรือ promote: เมื่อ region หนึ่งล่ม traffic ของ region นั้นก็ย้ายไปอีก region และ RTO ใกล้ศูนย์ RPO ขึ้นอยู่กับวิธี replicate ข้อมูล (เท่ากับ lag ถ้าเป็นแบบ asynchronous และเป็นศูนย์ได้ก็ต่อเมื่อเป็นแบบ synchronous เท่านั้น) ต้นทุนและความซับซ้อนสูงที่สุดในสี่แบบ"
+      "body": "ทั้งสอง region รันเต็มขนาดและ **ให้บริการผู้ใช้อยู่ตลอดเวลา** เลยไม่มีอะไรต้องสร้างใหม่หรือ promote: ถ้า region หนึ่งล่ม traffic ของมันก็ย้ายไปอีก region และ RTO แทบเป็นศูนย์ RPO ขึ้นอยู่กับว่า replicate ข้อมูลแบบไหน (เท่ากับ lag ถ้าเป็นแบบ asynchronous และเป็นศูนย์ได้ก็ต่อเมื่อเป็นแบบ synchronous เท่านั้น) ส่วนต้นทุนและความซับซ้อนก็สูงที่สุดในสี่แบบ"
     }
   ]
 }

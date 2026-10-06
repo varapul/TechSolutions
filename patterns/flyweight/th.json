@@ -1,21 +1,21 @@
 {
-  "summary": "แชร์ส่วนที่เหมือนกันและไม่เปลี่ยนแปลงของ object ที่คล้ายกันจำนวนมาก แล้วเก็บไว้ในแต่ละตัวแค่ส่วนที่ต่างกัน เพื่อลดการใช้ memory",
+  "summary": "แชร์ส่วนที่เหมือนกันและเป็น immutable ของ object ที่คล้าย ๆ กันจำนวนมาก แล้วให้แต่ละตัวเก็บแค่ส่วนที่ต่าง จะได้ประหยัด memory",
   "steps": [
     {
       "title": "Tree ทุกตัวเก็บทุกอย่างไว้เอง",
-      "body": "แผนที่วาดต้นไม้ริมถนน 100,000 ต้นจาก 5 สายพันธุ์ และ marker แต่ละตัวคือ object `Tree` เต็มรูปแบบ: มี `x` และ `y` ของตัวเอง บวกชื่อและสีของสายพันธุ์ และ icon ขนาด 2 KB ที่คัดลอกมาใหม่ทุกครั้ง ถ้าคิด icon ที่ 2,048 bytes และตำแหน่งกับ reference อีก 24 bytes จะได้ 100,000 × 2,072 bytes ≈ **207.2 MB** และ 98.8% ของทั้งหมดคือ icon ห้าแบบเดิมที่ถูกคัดลอกซ้ำ"
+      "body": "แผนที่วาดต้นไม้ริมถนน 100,000 ต้นจาก 5 สายพันธุ์ และ marker แต่ละตัวก็เป็น object `Tree` เต็ม ๆ: มี `x` กับ `y` ของตัวเอง บวกชื่อกับสีของสายพันธุ์ และ icon ขนาด 2 KB ที่คัดลอกมาใหม่ทุกตัว คิด icon ที่ 2,048 bytes กับตำแหน่งและ reference อีก 24 bytes ก็จะได้ 100,000 × 2,072 bytes ≈ **207.2 MB** และ 98.8% ในนั้นก็คือ icon ห้าแบบเดิมที่คัดลอกซ้ำไปซ้ำมา"
     },
     {
       "title": "แยกส่วนที่แชร์ออกจากส่วนเฉพาะตัว",
-      "body": "สิ่งที่เหมือนกันใน oak ทุกต้น (ชื่อ สี และ icon) คือ state แบบ **intrinsic**: ย้ายไปอยู่ใน `TreeType` ที่ immutable ซึ่งก็คือ *Flyweight* ส่วนสิ่งที่ต่างกันไปในแต่ละ marker คือ `x` และ `y` เป็น state แบบ **extrinsic** และอยู่ใน `Tree` แต่ละตัว (ตัว *Context*) คู่กับ reference ไปยัง type ของมัน `TreeFactory` (ตัว *FlyweightFactory*) เก็บ map จากสายพันธุ์ไปยัง `TreeType` คืนตัวที่มีอยู่แล้ว และสร้างแต่ละ type แค่ครั้งเดียว"
+      "body": "อะไรที่ oak ทุกต้นมีเหมือนกัน (ชื่อ สี icon) คือ state แบบ **intrinsic**: ย้ายไปไว้ใน `TreeType` ที่เป็น immutable (ตัว *Flyweight*) ส่วนอะไรที่ต่างกันไปในแต่ละ marker อย่าง `x` กับ `y` คือ state แบบ **extrinsic** และยังอยู่ใน `Tree` แต่ละตัว (ตัว *Context*) คู่กับ reference ไปที่ type ของมัน `TreeFactory` (ตัว *FlyweightFactory*) เก็บ map จากสายพันธุ์ไปหา `TreeType` ไว้ ถ้ามีอยู่แล้วก็คืนตัวเดิม และสร้างแต่ละ type แค่ครั้งเดียว"
     },
     {
       "title": "ปลูก 100,000 ต้น สร้างแค่ 5",
-      "body": "ตอนปลูกจะเรียก `factory.get(species)` สำหรับ marker ทุกตัว ครั้งแรกที่เจอ oak จะ miss factory จึงสร้าง `TreeType` ของ Oak แล้วเก็บไว้ oak ต้นที่สองได้ object ตัวเดิมกลับไป และเมื่อครบทั้งห้าสายพันธุ์แล้ว map ก็หยุดโต: 99,995 จาก 100,000 ครั้งคืน type ที่มีอยู่แล้ว ตอนวาดจะส่ง extrinsic state เข้าไปแบบ `type.draw(canvas, x, y)` และ memory ลดลงเหลือ 5 × 2,048 + 100,000 × 24 bytes ≈ **2.41 MB** น้อยลง 86 เท่า"
+      "body": "ตอนปลูกจะเรียก `factory.get(species)` ให้ marker ทุกตัว oak ต้นแรกจะ miss ทำให้ factory สร้าง `TreeType` ของ Oak แล้วเก็บไว้ oak ต้นที่สองได้ object ตัวเดิมกลับไป พอครบทั้งห้าสายพันธุ์แล้ว map ก็หยุดโต: 99,995 จาก 100,000 ครั้งได้ type ที่มีอยู่แล้วกลับไป ตอนวาดก็ส่ง extrinsic state เข้าไปแบบ `type.draw(canvas, x, y)` แล้ว memory ก็ลดเหลือ 5 × 2,048 + 100,000 × 24 bytes ≈ **2.41 MB** น้อยลงถึง 86 เท่า"
     },
     {
-      "title": "กฎ และที่ที่แพตเทิร์นนี้แฝงอยู่",
-      "body": "oak ทุกต้นแชร์ object ตัวเดียวกัน `oak.colour = 'red'` จึงเปลี่ยนสี oak ทุกต้นบนแผนที่: flyweight จึงต้องเป็น immutable ควรเปรียบเทียบ flyweight ด้วยค่า เว้นแต่ factory จะรับประกันว่ามี object เดียวต่อหนึ่งค่า และควรให้ factory มี policy สำหรับ type ที่ไม่มีใครใช้แล้ว เช่น eviction หรือ weak reference การแชร์แบบเดียวกันนี้อยู่เบื้องหลัง cache ของ `Integer.valueOf()` และ `String.intern()` ใน Java, `sys.intern()` ของ Python, glyph object หนึ่งตัวต่อหนึ่งตัวอักษรในการจัดวางข้อความ, การวาดแบบ instanced บน GPU เช่น `drawArraysInstanced()` ของ WebGL และ image layer ที่ container บน host เดียวกันใช้ร่วมกัน"
+      "title": "กฎ กับที่ที่มันซ่อนอยู่",
+      "body": "oak ทุกต้นแชร์ object ตัวเดียวกัน `oak.colour = 'red'` เลยเปลี่ยนสี oak ทุกต้นบนแผนที่: flyweight ต้องเป็น immutable ถ้า factory ไม่ได้รับประกันว่ามี object เดียวต่อหนึ่งค่า ก็ให้เปรียบเทียบ flyweight ด้วยค่า และควรให้ factory มี policy สำหรับ type ที่ไม่มีใครใช้แล้ว เช่น eviction หรือ weak reference การแชร์แบบเดียวกันนี้อยู่เบื้องหลัง cache ของ `Integer.valueOf()` และ `String.intern()` ใน Java, `sys.intern()` ของ Python, glyph object หนึ่งตัวต่อหนึ่งตัวอักษรในการจัดวางข้อความ, การวาดแบบ instanced บน GPU เช่น `drawArraysInstanced()` ของ WebGL และ image layer ที่ container บน host เดียวกันใช้ร่วมกัน"
     }
   ]
 }

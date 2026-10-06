@@ -1,21 +1,21 @@
 {
-  "summary": "ห้าม patch server บนเครื่องเดิม: ให้ bake image ใหม่แล้วแทนที่ server ไปเลย",
+  "summary": "ไม่ patch server บนเครื่องเดิมเลย: bake image ใหม่ แล้วเอาเครื่องใหม่มาแทน",
   "steps": [
     {
-      "title": "Server ค่อย ๆ ต่างกันไป",
-      "body": "Server สามเครื่องเริ่มต้นเหมือนกันทุกอย่าง แต่การแก้ไขที่พิมพ์ลง terminal มาหลายเดือน กับ script ที่หยุดไปกลางทาง ทำให้ทั้งสามต่างกันไป: web-1 ได้ library รุ่นใหม่กว่า ส่วน web-2 ยังใช้ timeout ที่เพิ่มไว้ระหว่าง incident และ web-3 ตกหล่น patch ไปตัวหนึ่ง ตอนนี้มี bug ที่โผล่เฉพาะบน web-3 และไม่มีใครสร้าง web-3 ขึ้นมาใหม่ให้เหมือนที่เป็นอยู่ได้ทุกอย่าง"
+      "title": "Server ค่อย ๆ เพี้ยนไปคนละทาง",
+      "body": "Server สามเครื่องเริ่มต้นมาเหมือนกันทุกอย่าง แต่พิมพ์แก้กันใน terminal มาหลายเดือน บวกกับ script ที่หยุดไปกลางทาง ทำให้ทั้งสามเครื่องไม่เหมือนกันแล้ว: web-1 ได้ library รุ่นใหม่กว่า ส่วน web-2 ยังใช้ timeout ที่เพิ่มไว้ตอนเกิด incident และ web-3 ก็ตก patch ไปตัวหนึ่ง ตอนนี้มี bug ที่โผล่แค่บน web-3 และไม่มีใครสร้าง web-3 ขึ้นมาใหม่ให้เหมือนที่เป็นอยู่ทุกอย่างได้"
     },
     {
       "title": "Bake ครั้งเดียว launch ทุกเครื่อง",
-      "body": "Pipeline เปลี่ยนโค้ดให้เป็น machine image ที่มีเวอร์ชันกำกับ โดย bake package ของระบบปฏิบัติการ, runtime, แอปพลิเคชัน และ configuration ตั้งต้นเข้าไปด้วย จากนั้น image ถูกทดสอบครั้งเดียวแล้วเก็บไว้ใน registry เป็น **v42** และทุก server ก็ launch จาก image นี้ ทั้งสามเครื่องจึงเหมือนกันทุกอย่าง และจะเพิ่มอีกเครื่องเมื่อไรก็ได้ เช่น ด้วย [autoscaling](../autoscaling/)"
+      "body": "Pipeline แปลงโค้ดเป็น machine image ที่มีเวอร์ชันกำกับ โดย bake package ของ OS, runtime, แอปพลิเคชัน และ configuration ตั้งต้นเข้าไปด้วย จากนั้นก็ทดสอบ image นี้ครั้งเดียว แล้วเก็บไว้ใน registry เป็น **v42** ทุก server ก็ launch จาก image นี้ ทั้งสามเครื่องเลยเหมือนกันทุกอย่าง และจะเพิ่มเครื่องอีกเมื่อไรก็ได้ เช่น ด้วย [autoscaling](../autoscaling/)"
     },
     {
-      "title": "จะเปลี่ยนก็ต้องแทนที่",
-      "body": "มี security patch ออกมา ไม่มีใคร login เข้าไปลง patch: pipeline bake **v43** แล้ว server ที่ launch จาก v43 ก็เข้าไปแทนตัวที่เป็น v42 ด้วย [rolling update](../rolling-update/) หรือ [การสลับแบบ blue-green](../blue-green-deployment/) การ rollback คือการ launch v42 ขึ้นมาใหม่ และสิทธิ์ login ถูกถอดออก หรือเก็บไว้เฉพาะกรณีฉุกเฉินที่มีการ audit เท่านั้น drift จึงแอบกลับเข้ามาไม่ได้"
+      "title": "จะเปลี่ยนอะไร ก็ต้องเปลี่ยนเครื่อง",
+      "body": "มี security patch ออกมา ไม่มีใคร login เข้าไปลง patch: pipeline bake **v43** แล้ว server ที่ launch จาก v43 ก็เข้าไปแทนเครื่อง v42 ด้วย [rolling update](../rolling-update/) หรือ [การสลับแบบ blue-green](../blue-green-deployment/) จะ rollback ก็คือ launch v42 ขึ้นมาอีกครั้ง ส่วนสิทธิ์ login ก็ถอดออก หรือเก็บไว้ใช้แค่ตอนฉุกเฉินที่มีการ audit เท่านั้น drift เลยแอบกลับเข้ามาไม่ได้"
     },
     {
       "title": "เก็บ state ไว้ข้างนอก",
-      "body": "การแทนที่ server ต้องไม่ทำให้อะไรหาย ดังนั้นสิ่งที่สำคัญต้องไม่อยู่บน server นั้นเพียงที่เดียว ข้อมูลอยู่ใน database และ storage ภายนอก server ส่วนการตั้งค่าและ secret ของแต่ละ environment ถูกดึงมาจาก external configuration store ตอนที่ server เริ่มทำงาน และ log ก็ออกจาก server ไปทันทีที่ถูกเขียน ([centralized logging](../centralized-logging/)) ในที่นี้ web-3 ถูกแทนที่ โดยที่ข้อมูล การตั้งค่า และ log ยังอยู่ที่เดิมครบ"
+      "body": "เปลี่ยน server แล้วต้องไม่มีอะไรหาย ของสำคัญเลยต้องไม่อยู่บน server เครื่องนั้นที่เดียว ข้อมูลอยู่ใน database และ storage ข้างนอก server การตั้งค่ากับ secret ของแต่ละ environment ก็ดึงมาจาก external configuration store ตอน server เริ่มทำงาน ส่วน log ก็ออกจาก server ไปทันทีที่เขียน ([centralized logging](../centralized-logging/)) ในตัวอย่างนี้ web-3 ถูกเปลี่ยนเครื่อง แต่ข้อมูล การตั้งค่า และ log ก็ยังอยู่ที่เดิม"
     }
   ]
 }

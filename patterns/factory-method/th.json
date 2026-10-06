@@ -1,21 +1,21 @@
 {
-  "summary": "ให้ subclass เป็นผู้ตัดสินว่าจะสร้าง class ไหน: base class เขียนโค้ดโดยอิง interface และเรียก method สร้าง object ที่ override ได้",
+  "summary": "ให้ subclass เลือกเองว่าจะสร้าง class ไหน: base class เขียนโค้ดผ่าน interface แล้วเรียก method สร้าง object ที่ override ได้",
   "steps": [
     {
       "title": "new อยู่ใน send()",
-      "body": "`Notifier.send(msg, kind)` เลือกว่าจะสร้าง channel ไหนด้วย if/else ตามค่า `kind` และเรียก `new` กับ concrete class แต่ละตัวเอง Notifier จึงขึ้นกับ `EmailChannel` และ `SmsChannel` โดยตรง และการเพิ่ม push ก็หมายถึงต้องเปิด `send()` มาแก้อีกรอบ เพิ่ม branch แล้ว test method ที่ caller ทุกตัวใช้อยู่ซ้ำอีกครั้ง"
+      "body": "`Notifier.send(msg, kind)` ใช้ if/else ดูค่า `kind` เพื่อเลือกว่าจะสร้าง channel ไหน แล้วเรียก `new` กับ concrete class แต่ละตัวเอง Notifier เลยผูกกับ `EmailChannel` และ `SmsChannel` โดยตรง จะเพิ่ม push ก็ต้องเปิด `send()` มาแก้อีก เพิ่ม branch แล้ว test method ที่ caller ทุกตัวใช้อยู่ซ้ำอีกรอบ"
     },
     {
-      "title": "ยกให้ createChannel() ตัดสิน",
-      "body": "`send()` ขอ channel จาก `this.createChannel()` และใช้มันผ่าน interface `Channel` เท่านั้น `createChannel()` คือ **factory method**: `Notifier` (ตัว *Creator*) เป็นผู้ประกาศ method นี้ และ *ConcreteCreator* แต่ละตัว override เพื่อคืน *ConcreteProduct* ของตัวเอง ผลคือได้ class hierarchy สองชุดที่ขนานกัน และเขียน `send()` เพียงครั้งเดียว"
+      "title": "ให้ createChannel() เลือกแทน",
+      "body": "`send()` ขอ channel จาก `this.createChannel()` แล้วใช้มันผ่าน interface `Channel` อย่างเดียว `createChannel()` ก็คือ **factory method**: `Notifier` (ตัว *Creator*) ประกาศ method นี้ไว้ แล้ว *ConcreteCreator* แต่ละตัวก็ override ให้คืน *ConcreteProduct* ของตัวเอง ผลคือได้ class hierarchy สองชุดที่ขนานกัน และเขียน `send()` แค่ครั้งเดียวพอ"
     },
     {
-      "title": "หนึ่งการเรียกตอน runtime",
-      "body": "client เรียก `send('Your code is 4721')` บน `SmsNotifier` จากนั้น `send()` ที่สืบทอดมาจะทำงาน โดย `this.createChannel()` ถูก dispatch ไปที่ `SmsNotifier` ซึ่งคืน `SmsChannel` ตัวใหม่ แล้ว `send()` จึงเรียก `deliver(msg)` บน channel นั้นผ่าน interface `Channel` ผลลัพธ์ `SMS sent: Your code is 4721` ก็ส่งกลับไปถึง client"
+      "title": "เรียกหนึ่งครั้งตอน runtime",
+      "body": "client เรียก `send('Your code is 4721')` บน `SmsNotifier` แล้ว `send()` ที่สืบทอดมาก็ทำงาน `this.createChannel()` ถูก dispatch ไปที่ `SmsNotifier` และได้ `SmsChannel` ตัวใหม่กลับมา จากนั้น `send()` ก็เรียก `deliver(msg)` บน channel นั้นผ่าน interface `Channel` แล้วผลลัพธ์ `SMS sent: Your code is 4721` ก็ส่งกลับไปถึง client"
     },
     {
-      "title": "เพิ่ม channel โดยไม่แก้ของเดิม",
-      "body": "จะเพิ่ม push ก็แค่ต้องมี `PushChannel` และ `PushNotifier` ที่สร้างมัน โดยไม่มี class เดิมตัวไหนต้องเปลี่ยน: `send()` ไม่ถูกแตะเลย `Collection.iterator()` ของ Java ก็ทำงานแบบเดียวกัน โดย collection class แต่ละตัวสร้าง iterator ของตัวเอง สิ่งที่ต้องแลกคือต้องมี creator subclass หนึ่งตัวต่อ product ทุกชนิด หลายภาษาจึงส่ง factory function เข้าไปแทน"
+      "title": "channel ใหม่ ไม่ต้องแก้ของเดิม",
+      "body": "จะเพิ่ม push ก็แค่มี `PushChannel` กับ `PushNotifier` ที่สร้างมัน ไม่มี class เดิมตัวไหนต้องเปลี่ยน: `send()` ไม่ต้องแตะเลย `Collection.iterator()` ของ Java ก็ทำงานแบบเดียวกัน คือ collection class แต่ละตัวสร้าง iterator ของตัวเอง ราคาที่ต้องจ่ายคือต้องมี creator subclass หนึ่งตัวต่อ product ทุกชนิด หลายภาษาเลยส่ง factory function เข้าไปแทน"
     }
   ]
 }

@@ -2,20 +2,20 @@
   "summary": "ย้าย TLS termination, authentication และ compression ออกจากทุก service ไปไว้ที่ gateway",
   "steps": [
     {
-      "title": "งานพื้นฐานซ้ำในทุก service",
-      "body": "ถ้าไม่มี gateway ทุก service ก็ต้องเป็น edge ของตัวเอง Orders (Java), Catalog (Go) และ Search (Python) ต่างถือ TLS certificate และ configuration ของตัวเอง ทั้งยังต้องตรวจ token, compress response และทำ access logging: งานสี่อย่างเดิม ๆ ถูกสร้างสามรอบ ด้วย library สามตัวและ configuration สามชุด certificate จะหมดอายุในสามวัน และแต่ละทีมต้องต่ออายุของตัวเอง สองทีมทำแล้ว อีกทีมยังไม่ทำ"
+      "title": "งานพื้นฐานซ้ำกันทุก service",
+      "body": "ถ้าไม่มี gateway ทุก service ก็ต้องเป็น edge ของตัวเอง Orders (Java), Catalog (Go) และ Search (Python) ต่างถือ TLS certificate พร้อม configuration ของตัวเอง แถมยังต้องตรวจ token, compress response และทำ access logging เอง: งานสี่อย่างเดิม ๆ สร้างซ้ำกันสามรอบ ด้วย library สามตัวและ configuration สามชุด certificate จะหมดอายุในอีกสามวัน และแต่ละทีมต้องต่ออายุของตัวเอง สองทีมทำแล้ว อีกทีมยังไม่ได้ทำ"
     },
     {
       "title": "ย้ายไปไว้ที่ gateway",
-      "body": "งานที่ใช้ร่วมกันย้ายออกจาก service ไปอยู่ใน gateway ที่ตั้งอยู่ข้างหน้า: ป้ายในภาพเลื่อนข้ามไป และแต่ละชุดที่มีสามอันรวมกันเหลืออันเดียว service เก็บไว้แค่ business logic ของตัวเอง ตอนนี้มี certificate ให้ต่ออายุแค่ใบเดียว authentication configuration ชุดเดียว compression setting ค่าเดียว และ log format แบบเดียว รวมถึงมีจุดเดียวที่ต้อง patch เมื่อเจอช่องโหว่"
+      "body": "งานที่ทุก service ทำเหมือนกันย้ายออกจาก service ไปอยู่ใน gateway ที่ตั้งอยู่ข้างหน้า: ป้ายในภาพเลื่อนข้ามไป และแต่ละชุดสามอันก็รวมเหลืออันเดียว service เหลือแค่ business logic ของตัวเอง ตอนนี้มี certificate ให้ต่ออายุแค่ใบเดียว authentication configuration ชุดเดียว compression setting ค่าเดียว log format แบบเดียว และมีจุดเดียวที่ต้อง patch เวลาเจอช่องโหว่"
     },
     {
       "title": "หนึ่ง request ที่ edge",
-      "body": "client เชื่อมต่อผ่าน HTTPS และ gateway ทำงานฝั่ง edge ให้ครั้งเดียว: terminate TLS ตรวจ token และตอบ token ที่ไม่ผ่านด้วย **401 Unauthorized** ก่อนที่ service ใดจะเห็น request ส่วน request ที่ผ่านจะถูกส่งต่อไปที่ Orders พร้อมแนบ identity ที่ตรวจแล้ว (ในที่นี้คือ header `X-User-Id`) ผ่าน connection ของ gateway เอง ซึ่ง ณ จุดนี้ยังเป็น plain HTTP อยู่ gateway เขียน access log หนึ่งบรรทัดต่อหนึ่ง request และ compress response ระหว่างทางกลับไปหา client"
+      "body": "client ต่อเข้ามาผ่าน HTTPS แล้ว gateway ก็ทำงานฝั่ง edge ให้ครั้งเดียว: terminate TLS ตรวจ token และตอบ token ที่ไม่ผ่านด้วย **401 Unauthorized** ก่อนที่ service ไหนจะได้เห็น request ส่วน request ที่ผ่านก็ไปต่อที่ Orders พร้อมแนบ identity ที่ตรวจแล้ว (ในตัวอย่างนี้คือ header `X-User-Id`) ผ่าน connection ของ gateway เอง ตรงนี้ connection นั้นยังเป็น plain HTTP อยู่ gateway เขียน access log หนึ่งบรรทัดต่อหนึ่ง request และ compress response ระหว่างทางกลับไปหา client"
     },
     {
       "title": "ข้อจำกัดที่ควรรู้",
-      "body": "มีสามอย่างที่ไม่ย้าย **business rule และ authorisation แบบละเอียด** ยังอยู่ใน service: gateway รู้ว่า *ใคร* เป็นคนเรียก แต่มีแค่ Orders ที่ตัดสินได้ว่าผู้เรียกคนนี้ยกเลิก order นี้ได้หรือไม่ **hop ที่อยู่หลัง gateway ต้องมีการป้องกันของตัวเอง**: service รับ connection จาก gateway เท่านั้น การเรียกที่อ้อม gateway จึงถูกปฏิเสธ และ gateway เปิด connection TLS (หรือ mutual TLS) ใหม่ไปยังแต่ละ service แทนที่จะส่งต่อเป็น plain HTTP และเพราะตอนนี้ทุก request ต้องผ่าน gateway **gateway จึงรันเป็นหลาย instance สำรองกัน** (ในที่นี้สามตัว)"
+      "body": "มีสามอย่างที่ไม่ย้ายไปไหน **business rule และ authorisation แบบละเอียด** ยังอยู่ใน service: gateway รู้ว่า *ใคร* เป็นคนเรียก แต่มีแค่ Orders ที่ตัดสินได้ว่าคนที่เรียกมาคนนี้ยกเลิก order นี้ได้ไหม **hop ที่อยู่หลัง gateway ต้องมีการป้องกันของตัวเอง**: service รับ connection จาก gateway เท่านั้น การเรียกที่อ้อม gateway เลยโดนปฏิเสธ และ gateway เปิด connection TLS (หรือ mutual TLS) ใหม่ไปที่แต่ละ service แทนที่จะส่งต่อเป็น plain HTTP และเพราะตอนนี้ทุก request ต้องผ่าน gateway **gateway เลยรันเป็นหลาย instance ที่สำรองกัน** (ในตัวอย่างนี้สามตัว)"
     }
   ]
 }

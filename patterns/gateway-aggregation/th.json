@@ -1,21 +1,21 @@
 {
-  "summary": "กระจาย request เดียวจาก client ออกไปหลาย service แล้วรวมคำตอบเป็น response เดียว",
+  "summary": "กระจาย request เดียวจาก client ออกไปหลาย service แล้วรวมคำตอบกลับมาเป็น response เดียว",
   "steps": [
     {
-      "title": "client ที่คุยไปมาหลายรอบ",
-      "body": "การวาดหน้า product หนึ่งหน้า แอปเรียก Product แล้วเรียก Reviews แล้วเรียก Inventory ผ่าน mobile network ที่ทุก round trip ใช้เวลาประมาณ 150 ms หน้าจะสมบูรณ์หลังผ่านไป (150 + 40) + (150 + 80) + (150 + 30) = **600 ms** แอปต้องรู้จัก endpoint สามตัว และทุก service ต้องเข้าถึงได้จาก internet"
+      "title": "client ที่คุยหลายรอบ",
+      "body": "จะวาดหน้า product หนึ่งหน้า แอปต้องเรียก Product แล้วเรียก Reviews แล้วเรียก Inventory ผ่าน mobile network ที่ทุก round trip กินเวลาประมาณ 150 ms รวมแล้วกว่าหน้าจะครบก็ (150 + 40) + (150 + 80) + (150 + 30) = **600 ms** แอปต้องรู้จัก endpoint สามตัว และทุก service ต้องเข้าถึงได้จาก internet"
     },
     {
       "title": "request เดียว กระจายออกไป",
-      "body": "แอปส่ง request เดียวคือ `GET /product-page/42` ไปที่ aggregation endpoint บน gateway จากนั้น gateway เรียก service ทั้งสามตัว **แบบขนาน** ผ่าน network ใน data centre รอจนครบทั้งสามตัว แล้วรวมคำตอบเป็น response เดียว: 150 + 5 + 80 = ประมาณ **235 ms** ซึ่งถูกกำหนดโดย service ที่ช้าที่สุด service ต่าง ๆ ไม่จำเป็นต้องมี public endpoint อีกต่อไป"
+      "body": "แอปส่ง request เดียวคือ `GET /product-page/42` ไปที่ aggregation endpoint บน gateway แล้ว gateway ก็เรียกทั้งสาม service **พร้อมกัน** ผ่าน network ใน data centre รอให้ครบทั้งสามตัว แล้วรวมคำตอบเป็น response เดียว: 150 + 5 + 80 = ประมาณ **235 ms** เวลาขึ้นอยู่กับ service ที่ช้าที่สุด แล้ว service ก็ไม่ต้องมี public endpoint อีกต่อไป"
     },
     {
-      "title": "ล้มเหลวบางส่วน",
-      "body": "Reviews หยุดตอบ การเรียกภายในแต่ละตัวมี timeout ของตัวเองภายใต้ deadline 200 ms หลังผ่านไป 100 ms gateway จึงเลิกรอ Reviews แล้วคืน **200 OK** พร้อมข้อมูล product และจำนวนสต็อก โดยทำเครื่องหมายส่วน reviews ว่า *unavailable* ใช้เวลาประมาณ 250 ms ส่วน Product เป็น **required**: ถ้า Product ล้ม request ทั้งหมดก็ล้ม ดูเพิ่มที่ [Timeout & Fallback](../timeout-and-fallback/)"
+      "title": "พังไปบางส่วน",
+      "body": "Reviews หยุดตอบ การเรียกภายในแต่ละตัวมี timeout ของตัวเอง อยู่ใน deadline รวม 200 ms พอผ่านไป 100 ms gateway เลยเลิกรอ Reviews แล้วคืน **200 OK** พร้อมข้อมูล product กับจำนวนสต็อก โดยแปะป้ายส่วน reviews ว่า *unavailable* ใช้เวลาประมาณ 250 ms ส่วน Product เป็น **required**: ถ้า Product พัง request ทั้งหมดก็พังตาม ดูเพิ่มที่ [Timeout & Fallback](../timeout-and-fallback/)"
     },
     {
       "title": "ข้อจำกัดที่ควรรู้",
-      "body": "aggregator มีหน้าที่แค่เรียก รวม และปรับรูปข้อมูล: ราคา กฎ และการตัดสินใจยังอยู่ใน service ทุกหน้าตอนนี้พึ่งพา aggregator และทุก service ที่ aggregator เรียก จึงควรรันหลาย instance และเฝ้าดูทุกการเรียก การเรียกที่ต้องใช้ผลจากการเรียกอื่นจะรันต่อกันทีละตัว และเวลาก็บวกกัน (150 + 45 + 85 = 280 ms) ส่วนข้อมูลที่ไม่ค่อยเปลี่ยนอย่างรายละเอียด product ก็ [cache](../cache-aside/) ไว้ได้"
+      "body": "aggregator มีหน้าที่แค่เรียก รวม และจัดรูปข้อมูล: ราคา กฎ และการตัดสินใจยังอยู่ใน service ตอนนี้ทุกหน้าต้องพึ่ง aggregator และทุก service ที่ aggregator เรียก เพราะฉะนั้นควรรันหลาย instance และคอยดูทุกการเรียก การเรียกที่ต้องรอผลจากการเรียกอื่นจะรันต่อกันทีละตัว เวลาก็บวกกันไป (150 + 45 + 85 = 280 ms) ส่วนข้อมูลที่ไม่ค่อยเปลี่ยนอย่างรายละเอียด product ก็ [cache](../cache-aside/) ไว้ได้"
     }
   ]
 }

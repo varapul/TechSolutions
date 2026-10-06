@@ -1,21 +1,21 @@
 {
-  "summary": "Bronze, silver, gold: ข้อมูลดิบถูกขัดเกลาทีละชั้นภายใน lakehouse",
+  "summary": "Bronze, silver, gold: ค่อย ๆ ขัดเกลาข้อมูลดิบทีละชั้นใน lakehouse",
   "steps": [
     {
-      "title": "Bronze: เก็บตามที่ได้รับมา",
-      "body": "change event จาก orders database, clickstream และไฟล์ CSV รายวันของ partner ถูก **append ลงไปโดยไม่แก้ไข** ในตาราง bronze พร้อม ingestion metadata (source, load time, batch ID) วันนี้มี order record 1,000 รายการ **รวม duplicate 12 รายการและ record ที่ผิดรูปแบบ 3 รายการ**: bronze ไม่แก้อะไรและไม่ทิ้งอะไรเลย จึงเป็นประวัติที่ครบถ้วนและ replay ได้ของทุกอย่างที่ source ส่งมา"
+      "title": "Bronze: เก็บตามที่ได้มา",
+      "body": "change event จาก orders database, clickstream และไฟล์ CSV รายวันของ partner จะ **append ลงไปแบบไม่แก้ไข** ในตาราง bronze พร้อม ingestion metadata (source, load time, batch ID) วันนี้มี order record 1,000 รายการ **รวม duplicate 12 รายการและ record ที่ผิดรูปแบบ 3 รายการ**: bronze ไม่แก้และไม่ทิ้งอะไรสักอย่าง มันเลยเป็นประวัติที่ครบถ้วนและ replay ได้ของทุกอย่างที่ source ส่งมา"
     },
     {
       "title": "Silver: ทำความสะอาดและจัดรูป",
-      "body": "silver job อ่าน **เฉพาะ record ใหม่ใน bronze** parse และกำหนด type ให้ field ต่าง ๆ ลบ duplicate 12 รายการโดยดูจาก order ID แปลงชื่อประเทศเป็น ISO code และแปลงยอดเงินเป็นสกุลเดียว แล้ว join ข้อมูล customer ส่วน record ที่ผิดรูปแบบ 3 รายการถูกย้ายไปที่ **quarantine table** พร้อมเหตุผล silver จึงมี **record ที่ผ่านการตรวจสอบ 985 รายการ** (1,000 − 12 − 3): เป็นมุมมองระดับ record ที่เชื่อถือได้และใช้ร่วมกันได้หลายงาน"
+      "body": "silver job อ่าน **แค่ record ใหม่ใน bronze** parse และใส่ type ให้ field ต่าง ๆ ลบ duplicate 12 รายการโดยดูจาก order ID แปลงชื่อประเทศเป็น ISO code และแปลงยอดเงินเป็นสกุลเดียว แล้ว join ข้อมูล customer ส่วน record ที่ผิดรูปแบบ 3 รายการย้ายไปอยู่ที่ **quarantine table** พร้อมเหตุผล silver เลยมี **record ที่ผ่านการตรวจแล้ว 985 รายการ** (1,000 − 12 − 3): เป็นมุมมองระดับ record ที่เชื่อถือได้ และหลายงานใช้ร่วมกัน"
     },
     {
       "title": "Gold: จัดรูปให้พร้อมใช้",
-      "body": "gold job aggregate และ model ข้อมูล silver ให้เป็น **ตารางระดับธุรกิจ** สำหรับผู้ใช้แต่ละกลุ่ม: daily revenue ตาม region สำหรับ BI dashboard, ตาราง customer features สำหรับ ML model และ product summary (จาก clickstream) สำหรับ data API ตาราง gold ตั้งชื่อด้วยศัพท์ธุรกิจ ปรับให้อ่านได้เร็ว และกำกับสิทธิ์แยกตามกลุ่มผู้ใช้"
+      "body": "gold job aggregate และ model ข้อมูล silver ให้เป็น **ตารางระดับธุรกิจ** สำหรับผู้ใช้แต่ละกลุ่ม: daily revenue ตาม region สำหรับ BI dashboard, ตาราง customer features สำหรับ ML model และ product summary (จาก clickstream) สำหรับ data API ตาราง gold ตั้งชื่อด้วยคำทางธุรกิจ ปรับให้อ่านได้เร็ว และมี governance แยกตามกลุ่มผู้ใช้"
     },
     {
       "title": "แก้แล้ว replay",
-      "body": "พบ bug ในการแปลงสกุลเงิน silver job ถูกแก้แล้ว **replay จาก bronze** ซึ่งยังเก็บ raw record ไว้ครบทุกรายการ **Lineage** แสดงว่ามีแค่เส้นทางของ orders ที่ได้รับผลกระทบ (ตาราง gold สองตาราง dashboard และ model) และ **time travel** ของ table format ช่วยให้ทีมเปรียบเทียบเวอร์ชันเก่ากับใหม่ได้ ในการทำงานประจำวัน ทุก hop ประมวลผลเฉพาะข้อมูลใหม่ ด้วย streaming หรือ incremental merge"
+      "body": "เจอ bug ในการแปลงสกุลเงิน แก้ silver job แล้ว **replay จาก bronze** ที่ยังเก็บ raw record ไว้ครบทุกรายการ **Lineage** บอกว่ามีแค่เส้นทางของ orders ที่ได้รับผลกระทบ (ตาราง gold สองตาราง, dashboard และ model) และ **time travel** ของ table format ก็ช่วยให้ทีมเทียบเวอร์ชันเก่ากับใหม่ได้ ส่วนงานปกติในแต่ละวัน ทุก hop ประมวลผลแค่ข้อมูลใหม่ ด้วย streaming หรือ incremental merge"
     }
   ]
 }

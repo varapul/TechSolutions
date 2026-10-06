@@ -1,21 +1,21 @@
 {
-  "summary": "รันความสามารถเสริม (proxy, logging, config) เป็น process แยกที่อยู่ข้างแอป",
+  "summary": "แยกงานเสริม (proxy, logging, config) ไปรันเป็น process ต่างหากข้าง ๆ แอป",
   "steps": [
     {
       "title": "หน่วยเดียว สอง process",
-      "body": "**sidecar** คือตัวช่วยที่รันอยู่ข้างแอปพลิเคชันภายใน deployment unit เดียวกัน: pod ใน Kubernetes หรือ task หรือ host ใน platform อื่น ทั้งสองตัวถูก deploy, start, scale และ stop ไปพร้อมกัน และใช้ network ของ pod ร่วมกัน (จึงคุยกันผ่าน `localhost`) รวมถึง volume ที่ mount ไว้ให้ทั้งคู่ แต่แต่ละตัวก็เป็น container แยกที่มี image, ภาษา และ resource limit ของตัวเอง โค้ดของแอปพลิเคชันเองไม่มี logic ของตัวช่วยอยู่เลย"
+      "body": "**sidecar** คือตัวช่วยที่รันอยู่ข้างแอปใน deployment unit เดียวกัน: pod ใน Kubernetes หรือ task หรือ host บน platform อื่น ทั้งคู่ deploy, start, scale และ stop ไปพร้อมกัน ใช้ network ของ pod ร่วมกัน (เลยคุยกันผ่าน `localhost`) และใช้ volume ที่ mount ไว้ให้ทั้งคู่ร่วมกันได้ แต่แต่ละตัวก็เป็น container แยกที่มี image, ภาษา และ resource limit ของตัวเอง โค้ดของแอปเองไม่มี logic ของตัวช่วยอยู่เลย"
     },
     {
       "title": "สามงานคลาสสิก",
-      "body": "มีสามงานที่เจอซ้ำแล้วซ้ำอีก sidecar แบบ **proxy** รับส่งการเรียกขาออกและขาเข้าของแอปพลิเคชัน พร้อมเพิ่ม TLS และ retry **log shipper** คอย tail ไฟล์ที่แอปพลิเคชันเขียน แล้วส่งแต่ละบรรทัดไปที่ log store **config agent** ดึง secret และ setting มา และดูแลไฟล์บน shared volume ให้เป็นปัจจุบันอยู่เสมอ แอปพลิเคชันแค่อ่านไฟล์นั้น"
+      "body": "มีสามงานที่เจอซ้ำแล้วซ้ำอีก sidecar แบบ **proxy** รับส่งการเรียกทั้งขาออกและขาเข้าของแอป แล้วเติม TLS กับ retry ให้ ส่วน **log shipper** คอย tail ไฟล์ที่แอปเขียน แล้วส่งแต่ละบรรทัดไปที่ log store ส่วน **config agent** ดึง secret กับ setting มา แล้วคอยทำให้ไฟล์บน shared volume เป็นปัจจุบันอยู่เสมอ แอปแค่อ่านไฟล์นั้นก็พอ"
     },
     {
-      "title": "อัปเดตและนำกลับมาใช้ซ้ำ",
-      "body": "ทีม platform ปล่อย proxy image version ใหม่ แล้วทยอย roll out ทีละ pod แต่ละ pod restart พร้อม sidecar ตัวใหม่ แต่ไม่มี image ของแอปพลิเคชันตัวไหนต้อง build ใหม่ image เดียวกันนี้รันอยู่ข้าง service ที่เขียนด้วย Java, Go และ Python: implementation เดียวใช้ได้ทุกภาษา ขณะที่ถ้าทำเป็น library จะต้องมีหนึ่งชุดต่อหนึ่งภาษา และต้อง build ทุก service ใหม่ทุกครั้งที่มีการแก้ไข"
+      "title": "อัปเดตและใช้ซ้ำ",
+      "body": "ทีม platform ปล่อย proxy image version ใหม่ แล้วทยอย roll out ทีละ pod แต่ละ pod restart พร้อม sidecar ตัวใหม่ แต่ไม่ต้อง build image ของแอปใหม่เลยสักตัว image เดียวกันนี้รันอยู่ข้าง service ที่เขียนด้วย Java, Go และ Python: implementation เดียวใช้ได้ทุกภาษา ถ้าทำเป็น library จะต้องมีหนึ่งชุดต่อหนึ่งภาษา และต้อง build ทุก service ใหม่ทุกครั้งที่แก้อะไร"
     },
     {
       "title": "ราคาที่ต้องจ่าย",
-      "body": "ทุก pod ต้องรัน container เพิ่ม CPU และ memory ของ container เหล่านั้นจึงคูณด้วยจำนวน pod (ตัวเลขในแอนิเมชันเป็นตัวอย่าง) และทุกการเรียกที่ผ่าน proxy ก็เพิ่มขึ้นอีกหนึ่ง hop ลำดับก็สำคัญด้วย: sidecar ต้องรันอยู่ก่อนแอปพลิเคชันเริ่ม และต้องอยู่นานกว่าแอปพลิเคชันตอน shutdown native sidecar container ของ Kubernetes (stable ตั้งแต่ v1.33) ให้ลำดับแบบนั้นพอดี ทางเลือกอื่นแทน sidecar คือ library, agent หนึ่งตัวต่อ node หรือ feature ของ platform"
+      "body": "ตอนนี้ทุก pod ต้องรัน container เพิ่ม ทำให้ CPU กับ memory ของ container พวกนี้คูณด้วยจำนวน pod (ตัวเลขในแอนิเมชันเป็นแค่ตัวอย่าง) และทุกการเรียกที่ผ่าน proxy ก็เพิ่มอีกหนึ่ง hop ลำดับก็สำคัญด้วย: sidecar ต้องรันอยู่ก่อนแอปเริ่ม และต้องอยู่นานกว่าแอปตอน shutdown ส่วน native sidecar container ของ Kubernetes (stable ตั้งแต่ v1.33) ก็ให้ลำดับแบบนี้พอดี ทางเลือกอื่นแทน sidecar ก็มี library, agent หนึ่งตัวต่อ node หรือ feature ของ platform"
     }
   ]
 }

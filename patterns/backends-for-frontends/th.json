@@ -1,21 +1,21 @@
 {
-  "summary": "backend เฉพาะสำหรับ client แต่ละประเภท ออกแบบให้ตรงกับสิ่งที่ UI นั้นต้องการพอดี",
+  "summary": "backend แยกเฉพาะสำหรับ client แต่ละประเภท ทำมาให้ตรงกับที่ UI นั้นต้องใช้พอดี",
   "steps": [
     {
-      "title": "API เดียวสำหรับทุก client",
-      "body": "ทั้ง web และ mobile เรียก **general-purpose API** ตัวเดียวกัน ซึ่งมักดูแลโดยทีม API แยกต่างหาก และมี endpoint ที่สะท้อน service ข้างหลังแบบตรงตัว การสร้างหน้า product หนึ่งหน้า web app ต้องทำ **round trip สามรอบ** ต่อกัน ส่วน mobile app ต้อง download product resource ขนาด **200 KB** ผ่าน network ที่ช้าเพื่อแสดง field เพียงไม่กี่ตัว ทุกการเปลี่ยนแปลงที่ client ฝั่งหนึ่งต้องการต้องผ่านทีมนั้น และต้องตรวจว่าไม่กระทบ client อีกฝั่ง"
+      "title": "API เดียวใช้กับทุก client",
+      "body": "ทั้ง web และ mobile เรียก **general-purpose API** ตัวเดียวกัน ที่มักมีทีม API แยกดูแลอยู่ และมี endpoint ที่หน้าตาตาม service ข้างหลังแบบตรงตัว จะสร้างหน้า product หนึ่งหน้า web app ต้องทำ **round trip สามรอบ** ต่อกัน ส่วน mobile app ต้อง download product resource ขนาด **200 KB** ผ่าน network ช้า ๆ เพื่อเอามาแสดงแค่ไม่กี่ field อยากเปลี่ยนอะไรให้ client ฝั่งไหนก็ต้องผ่านทีมนั้น แล้วต้องตรวจด้วยว่าไม่กระทบ client อีกฝั่ง"
     },
     {
       "title": "backend แยกตามประสบการณ์ใช้งาน",
-      "body": "เปลี่ยนมาใช้ **backend หนึ่งตัวต่อหนึ่งประสบการณ์ผู้ใช้**: Web BFF และ Mobile BFF แต่ละตัวเป็นของทีมที่สร้าง frontend นั้น ทีมจึงปรับ API ของตัวเองตามหน้าจอที่เปลี่ยนไป และตัดสินใจเองว่าจะ ship เมื่อไร: ทีม web ปล่อยแอปกับ BFF พร้อมกัน และทีม mobile แก้ BFF ของตัวเองได้โดยไม่ต้องรอ release ผ่าน app store"
+      "body": "เปลี่ยนมาใช้ **backend หนึ่งตัวต่อหนึ่งประสบการณ์ผู้ใช้**: Web BFF กับ Mobile BFF แต่ละตัวเป็นของทีมที่ทำ frontend นั้น ทีมเลยปรับ API ของตัวเองตามหน้าจอที่เปลี่ยนไปได้ และเลือกเองว่าจะ ship เมื่อไร: ทีม web ปล่อยแอปกับ BFF ไปพร้อมกัน ส่วนทีม mobile ก็แก้ BFF ของตัวเองได้โดยไม่ต้องรอ release ผ่าน app store"
     },
     {
-      "title": "ปรับ response ให้พอดี",
-      "body": "การเรียก **Mobile BFF** ครั้งเดียวกระจายออกไปที่ Catalog, Reviews และ Users พร้อมกัน BFF รวมคำตอบเข้าด้วยกัน ตัด field ที่หน้าจอไม่ได้แสดงทิ้ง และชี้รูปไปที่ version ขนาดสำหรับมือถือ แอปจึงได้ **12 KB ใน round trip เดียว** ส่วน **Web BFF** เรียกทั้งสี่ service แล้วคืน page model ที่ละเอียดกว่า ใน round trip เดียวเช่นกัน การเรียกที่เพิ่มขึ้นตอนนี้วิ่งอยู่ใน data centre ใกล้กับ service แทนที่จะวิ่งผ่าน network ของผู้ใช้"
+      "title": "จัด response ให้พอดี",
+      "body": "เรียก **Mobile BFF** ครั้งเดียว BFF ก็กระจายไปเรียก Catalog, Reviews และ Users พร้อมกัน แล้วรวมคำตอบเข้าด้วยกัน ตัด field ที่หน้าจอไม่ได้แสดงทิ้ง และชี้รูปไปที่ version ขนาดสำหรับมือถือ แอปเลยได้ **12 KB ใน round trip เดียว** ส่วน **Web BFF** เรียกทั้งสี่ service แล้วคืน page model ที่ละเอียดกว่า ใน round trip เดียวเหมือนกัน การเรียกที่เพิ่มขึ้นตอนนี้วิ่งอยู่ใน data centre ใกล้ ๆ service แทนที่จะวิ่งผ่าน network ของผู้ใช้"
     },
     {
       "title": "ไม่มี token ใน browser",
-      "body": "**Web BFF** รัน authorization code flow (พร้อม PKCE) ในฐานะ **confidential client** เก็บ access token และ refresh token ไว้ฝั่ง server และให้ browser แค่ session cookie แบบ `HttpOnly`, `Secure`, `SameSite=Strict` ทุกการเรียก BFF จะแลก cookie เป็น access token แล้วส่ง request ต่อ script ที่ถูก inject เข้ามาในหน้าเว็บจึงหา token ไปขโมยไม่เจอ RFC 10017 แนะนำสถาปัตยกรรมนี้อย่างยิ่งสำหรับแอปธุรกิจ แอปที่มีความอ่อนไหวสูง และแอปที่จัดการข้อมูลส่วนบุคคล"
+      "body": "**Web BFF** รัน authorization code flow (พร้อม PKCE) แบบ **confidential client** เก็บ access token กับ refresh token ไว้ฝั่ง server แล้วให้ browser แค่ session cookie แบบ `HttpOnly`, `Secure`, `SameSite=Strict` พอมีการเรียกเข้ามาแต่ละครั้ง BFF ก็แลก cookie เป็น access token แล้วส่ง request ต่อ ทำให้ script ที่โดน inject เข้ามาในหน้าเว็บหา token ไปขโมยไม่เจอ RFC 10017 แนะนำสถาปัตยกรรมนี้อย่างยิ่งสำหรับแอปธุรกิจ แอปที่อ่อนไหว และแอปที่จัดการข้อมูลส่วนบุคคล"
     }
   ]
 }

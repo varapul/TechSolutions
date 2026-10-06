@@ -1,21 +1,21 @@
 {
-  "summary": "รับประกันว่ามี instance เดียวพร้อมจุดเข้าถึงแบบ global และเหตุผลที่การ inject instance เดียวที่ใช้ร่วมกันมักตอบโจทย์นี้ได้ดีกว่า",
+  "summary": "ให้มีแค่ instance เดียวแน่นอน พร้อมทางเข้าแบบ global และทำไมการ inject instance เดียวที่ใช้ร่วมกันถึงมักตอบโจทย์นี้ได้ดีกว่า",
   "steps": [
     {
-      "title": "ได้ pool สามชุดโดยไม่ตั้งใจ",
-      "body": "OrdersRepo, UsersRepo และ ReportsJob ต่างเรียก `new ConnectionPool()` เอง process เดียวจึงมี pool สามชุด ชุดละ 10 connection: รวม 30 ทั้งที่วางแผนไว้ว่าจะมี pool เดียวขนาด 10 แต่ละ pool ยังเก็บ state ของตัวเองด้วย (connection ไหนว่างอยู่ และ cache อะไรไว้บ้าง) ทั้งสามชุดจึงค่อย ๆ ไม่ตรงกัน แทนที่จะใช้มุมมองเดียวกัน"
+      "title": "เผลอมี pool สามชุด",
+      "body": "OrdersRepo, UsersRepo และ ReportsJob ต่างคนต่างเรียก `new ConnectionPool()` เอง process เดียวเลยมี pool สามชุด ชุดละ 10 connection: รวมเป็น 30 ทั้งที่ตั้งใจไว้ว่าจะมี pool เดียวขนาด 10 แต่ละ pool ยังเก็บ state ของตัวเองด้วย (connection ไหนว่างอยู่ และ cache อะไรไว้บ้าง) สามชุดนี้เลยค่อย ๆ ไม่ตรงกัน แทนที่จะเห็นภาพเดียวกัน"
     },
     {
       "title": "instance เดียว ทางเข้าเดียว",
-      "body": "**Singleton** ทำให้ constructor เป็น private เพื่อไม่ให้ caller ตัวไหนสร้าง pool เองได้ และมี static `getInstance()` เป็นทางเข้าทางเดียว การเรียกครั้งแรกจะสร้าง pool แล้วเก็บไว้ใน static field ส่วนการเรียกครั้งต่อ ๆ ไปจะคืน object ตัวเดิมเสมอ จึงได้ `a === b && b === c` และ database เห็น pool เดียวขนาด 10"
+      "body": "**Singleton** ทำให้ constructor เป็น private ไม่มี caller ตัวไหนสร้าง pool เองได้ แล้วเปิด static `getInstance()` ไว้เป็นทางเข้าทางเดียว การเรียกครั้งแรกจะสร้าง pool แล้วเก็บไว้ใน static field ส่วนครั้งต่อ ๆ ไปก็คืน object ตัวเดิมทุกครั้ง เลยได้ `a === b && b === c` และ database ก็เห็น pool เดียวขนาด 10"
     },
     {
       "title": "กับดักของ async",
-      "body": "ใน JavaScript การเปิด pool เป็นงานแบบ asynchronous ถ้า `getInstance()` await connection ก่อนแล้วค่อยเก็บค่า เมื่อมี request สองตัวเข้ามาพร้อมกัน ทั้งคู่จะเจอ field ว่างและเปิด pool สองชุด (20 connection) แต่ถ้าเก็บ **promise** ของการสร้างไว้ก่อน caller ตัวที่สองก็จะ await promise ตัวเดียวกันนั้น runtime แบบ multithread มี race นี้ในรูปแบบดั้งเดิม ซึ่งโค้ด Java เลี่ยงได้ด้วย eager initialization, holder class หรือ enum"
+      "body": "ใน JavaScript การเปิด pool เป็นงาน asynchronous ถ้า `getInstance()` await connection ก่อนแล้วค่อยเก็บค่า พอมี request สองตัวเข้ามาพร้อมกัน ทั้งคู่ก็จะเจอ field ว่าง แล้วเปิด pool สองชุด (20 connection) แต่ถ้าเก็บ **promise** ของการสร้างไว้ก่อน แล้ว caller ตัวที่สองก็จะ await promise ตัวเดียวกัน runtime แบบ multithread ก็มี race นี้ในแบบคลาสสิก ฝั่ง Java เลี่ยงได้ด้วย eager initialization, holder class หรือ enum"
     },
     {
-      "title": "ต้นทุน และทางเลือกอื่น",
-      "body": "singleton คือ global state: มันซ่อน dependency ไว้ พา state จาก test หนึ่งติดไปยัง test ถัดไป และมีตัวเดียวแค่ภายใน process เดียวเท่านั้น 4 replica จึงยังเปิด 4 pool รวม 40 connection โดยทั่วไปจะดีกว่าถ้าสร้าง pool เดียวตอนเริ่มทำงานแล้วส่งเข้าไป (*singleton lifetime* ของ DI container ทำแบบนี้) หรือ export จาก module การมี instance ที่ active อยู่ตัวเดียวทั้ง cluster เป็นอีกปัญหาหนึ่ง: [leader election](../leader-election/)"
+      "title": "ต้นทุน กับทางเลือกอื่น",
+      "body": "singleton ก็คือ global state: มันซ่อน dependency ไว้ พา state จาก test หนึ่งติดไปถึง test ถัดไป และมีตัวเดียวแค่ใน process เดียว 4 replica เลยยังเปิด 4 pool รวม 40 connection อยู่ดี ส่วนใหญ่แล้วสร้าง pool เดียวตอนเริ่มทำงานแล้วส่งเข้าไปจะดีกว่า (*singleton lifetime* ของ DI container ก็ทำแบบนี้) หรือจะ export จาก module ก็ได้ ส่วนการมี instance ที่ active อยู่ตัวเดียวทั้ง cluster เป็นอีกปัญหาหนึ่ง: [leader election](../leader-election/)"
     }
   ]
 }

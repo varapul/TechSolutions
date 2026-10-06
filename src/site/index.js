@@ -9,7 +9,11 @@
 
   function apply() {
     const words = input.value.toLowerCase().split(/\s+/).filter(Boolean);
-    for (const el of entries) el.hidden = !words.every((w) => el.dataset.search.includes(w));
+    // Thai pages glue some words with a word joiner (U+2060); ignore it when matching.
+    for (const el of entries) {
+      const text = el.dataset.search.replace(/\u2060/g, '');
+      el.hidden = !words.every((w) => text.includes(w));
+    }
     let any = false;
     for (const s of sections) {
       const cards = s.querySelectorAll('.card:not([hidden])').length;

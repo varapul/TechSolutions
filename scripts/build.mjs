@@ -24,6 +24,8 @@ mkdirSync(`${OUT}/assets`, { recursive: true });
 mkdirSync(`${OUT}/diagrams`, { recursive: true });
 mkdirSync(`${OUT}/th`, { recursive: true });
 for (const f of ['site.css', 'player.js', 'index.js', 'favicon.svg']) copyFileSync(abs('src/site', f), `${OUT}/assets/${f}`);
+mkdirSync(`${OUT}/assets/fonts`, { recursive: true });
+for (const f of ['anuphan-thai.woff2', 'anuphan-latin.woff2', 'OFL.txt']) copyFileSync(abs('src/site/fonts', f), `${OUT}/assets/fonts/${f}`);
 writeFileSync(`${OUT}/.nojekyll`, '');
 
 // ---------------------------------------------------------------------------
@@ -120,7 +122,7 @@ function layout({ L, page, title, description, body, scripts = [] }) {
     ? Object.values(LANGS).map((lang) => `<link rel="alternate" hreflang="${lang.code}" href="${esc(abs_(lang, page))}">`).join('\n')
     : '';
   const strings = Object.fromEntries(JS_KEYS.map((k) => [k, L.ui[k]]));
-  return `<!doctype html>
+  const page_ = `<!doctype html>
 <html lang="${L.code}">
 <head>
 <meta charset="utf-8">
@@ -144,6 +146,8 @@ ${scripts.map((s) => `<script src="${L.root}assets/${s}" defer></script>`).join(
 </body>
 </html>
 `;
+  // Browsers' Thai dictionaries split the casual ยังไง into ยัง / ไง at a line end; a word joiner keeps it whole.
+  return L.code === 'th' ? page_.replaceAll('ยังไง', 'ยัง\u2060ไง') : page_;
 }
 
 // README prose links to sibling patterns as ../<slug>/ (right on GitHub); on the site that page is <slug>.html.

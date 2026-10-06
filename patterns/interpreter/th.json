@@ -1,21 +1,21 @@
 {
-  "summary": "แทน grammar ของภาษาเล็ก ๆ ด้วย class และประเมินประโยคหนึ่ง ๆ ด้วยการเดินไปตาม syntax tree ของมัน",
+  "summary": "เขียน grammar ของภาษาเล็ก ๆ เป็น class แล้ว evaluate ประโยคด้วยการเดินไปตาม syntax tree ของมัน",
   "steps": [
     {
       "title": "กฎฝังตายอยู่ในโค้ด",
-      "body": "เงื่อนไข targeting ของ flag `new-checkout` เขียนเป็น `if` ซ้อนกันอยู่ใน `FlagService.isEnabled()`: ต้องเป็นประเทศไทย และต้องใช้ plan pro หรือมีมากกว่าสิบ seat เมื่อฝ่าย Marketing ขอให้เพิ่มมาเลเซียและทีมที่มีมากกว่าห้า seat นักพัฒนาต้องแก้โค้ด และการเปลี่ยนแปลงต้องผ่าน review, CI และ deploy เหมือนการ release ทั่วไป เมื่อฝ่าย Sales ขอกฎเฉพาะสำหรับ Acme ก็ไม่มีที่ให้ใส่: `if` ชุดเดียวกันรันกับลูกค้าทุกราย"
+      "body": "targeting ของ flag `new-checkout` เขียนเป็น `if` ซ้อนกันอยู่ใน `FlagService.isEnabled()`: ต้องเป็นประเทศไทย และต้องเป็น plan pro หรือมีมากกว่าสิบ seat พอฝ่าย Marketing ขอเพิ่มมาเลเซียกับทีมที่มีเกินห้า seat ก็ต้องให้นักพัฒนาแก้โค้ด แล้วการแก้นี้ก็ต้องผ่าน review, CI และ deploy เหมือน release ทั่วไป พอฝ่าย Sales ขอกฎเฉพาะของ Acme ก็ไม่มีที่ให้ใส่: `if` ชุดเดียวกันรันกับลูกค้าทุกราย"
     },
     {
-      "title": "grammar ในรูป class",
-      "body": "กฎกลายเป็นข้อความในภาษาเล็ก ๆ คือ `country = 'TH' and (plan = 'pro' or seats > 10)` และโครงสร้างแต่ละแบบใน grammar ของมันกลายเป็น class ที่ implement **Expr** (ตัว *AbstractExpression*): การเปรียบเทียบ **Equals** และ **GreaterThan** เป็น *TerminalExpressions* ส่วน **And** และ **Or** ซึ่งถือ expression อื่นไว้เป็น *NonterminalExpressions* ขณะที่วงเล็บมีไว้จัดกลุ่มเท่านั้น จึงไม่ต้องมี class การ parse เป็นอีกขั้นหนึ่งที่แยกออกมา: ตอนบันทึกกฎ parser จะแปลงข้อความเป็น tree ของ object เหล่านี้ครั้งเดียว โดยเริ่มสร้างจาก leaf ก่อน และ **FlagService** (ตัว *Client*) เก็บ root ของ tree ไว้ attribute ของแต่ละ account กลายเป็น **Context** ที่ใช้ประเมิน tree"
+      "title": "เขียน grammar เป็น class",
+      "body": "กฎกลายเป็นข้อความในภาษาเล็ก ๆ คือ `country = 'TH' and (plan = 'pro' or seats > 10)` และโครงสร้างแต่ละแบบใน grammar ก็กลายเป็น class ที่ implement **Expr** (ตัว *AbstractExpression*): ตัวเปรียบเทียบ **Equals** กับ **GreaterThan** เป็น *TerminalExpressions* ส่วน **And** กับ **Or** ที่ถือ expression อื่นไว้ ก็เป็น *NonterminalExpressions* วงเล็บมีไว้จัดกลุ่มอย่างเดียว เลยไม่ต้องมี class ของตัวเอง การ parse เป็นอีกขั้นที่แยกออกมา: ตอนบันทึกกฎนั้น parser จะแปลงข้อความเป็น tree ของ object พวกนี้ครั้งเดียว โดยสร้างจาก leaf ขึ้นมาก่อน แล้ว **FlagService** (ตัว *Client*) ก็เก็บ root ของ tree ไว้ attribute ของแต่ละ account ก็กลายเป็น **Context** ที่เอาไว้ evaluate tree"
     },
     {
-      "title": "ประเมินกับ context",
-      "body": "FlagService เรียก `rule.interpret(ctx)` ด้วย attribute ของ account #1 (TH, plan free, 12 seat) **And** ถามลูกทางซ้ายก่อน: `Equals(country, 'TH')` คืน true ตัว And จึงไปถาม **Or** ซึ่ง `Equals(plan, 'pro')` ของมันคืน false และ `GreaterThan(seats, 10)` คืน true ทำให้ Or และ And คืน **true** ตามลำดับ account #2 มี 5 seat ดังนั้น GreaterThan, Or และ And คืน **false** ส่วน account #3 (JP) นั้น Equals ตัวแรกก็ได้ false แล้ว And จึงคืน **false** โดยไม่ถาม Or เลย"
+      "title": "evaluate กับ context",
+      "body": "FlagService เรียก `rule.interpret(ctx)` ด้วย attribute ของ account #1 (TH, plan free, 12 seat) ตัว **And** ถามลูกทางซ้ายก่อน: `Equals(country, 'TH')` คืน true ตัว And ก็ไปถาม **Or** ต่อ ใน Or นั้น `Equals(plan, 'pro')` คืน false แต่ `GreaterThan(seats, 10)` คืน true ผลคือ Or แล้วก็ And คืน **true** ส่วน account #2 มี 5 seat ทั้ง GreaterThan, Or และ And ก็คืน **false** หมด สำหรับ account #3 (JP) แค่ Equals ตัวแรกก็ได้ false แล้ว And ก็คืน **false** โดยไม่ต้องถาม Or เลย"
     },
     {
-      "title": "เหมาะกับภาษาเล็ก ๆ เท่านั้น",
-      "body": "ตอนนี้การเปลี่ยนกฎเป็นแค่การแก้ข้อความที่มีผลทันทีโดยไม่ต้อง deploy และลูกค้าแต่ละรายก็มีกฎของตัวเองได้ แพตเทิร์นนี้เหมาะกับ grammar ที่เล็กและนิ่ง: โครงสร้างใหม่แต่ละแบบหมายถึง class เพิ่มอีกตัวบวกกับการแก้ parser ภาษาที่ใหญ่กว่านี้ต้องใช้ parser จริงจังและมัก compile เป็น closure หรือ bytecode ส่วนกฎที่ผู้ใช้เขียนเองต้องไม่ถูกส่งเข้า `eval()` เด็ดขาด ต้องผ่าน interpreter ที่จำกัดความลึกของการซ้อน ขนาด และเวลารันเท่านั้น targeting ของ feature flag ([Feature Flags](../feature-flags/)), ภาษา policy อย่าง Rego ของ OPA ([Policy-Based Authorization](../policy-based-authorization/)), CEL ใน Kubernetes และ Envoy, regex engine และ clause `WHERE` ของ SQL ก็เป็น interpreter เช่นกัน tree ที่ได้คือ [Composite](../composite/) และ operation อื่น ๆ บน tree นี้ก็เหมาะกับ [Visitor](../visitor/)"
+      "title": "ใช้กับภาษาเล็ก ๆ เท่านั้น",
+      "body": "ตอนนี้จะเปลี่ยนกฎก็แค่แก้ข้อความ แล้วมีผลทันทีโดยไม่ต้อง deploy และลูกค้าแต่ละรายก็มีกฎของตัวเองได้ แพตเทิร์นนี้เหมาะกับ grammar ที่เล็กและนิ่ง: โครงสร้างใหม่แต่ละแบบคือ class เพิ่มอีกตัวบวกการแก้ parser ถ้าเป็นภาษาที่ใหญ่กว่านี้ก็ต้องใช้ parser ตัวจริง และมัก compile เป็น closure หรือ bytecode ส่วนกฎที่ผู้ใช้เขียนเองห้ามส่งเข้า `eval()` เด็ดขาด ต้องผ่าน interpreter ที่จำกัดความลึกของการซ้อน ขนาด และเวลารันเท่านั้น targeting ของ feature flag ([Feature Flags](../feature-flags/)), ภาษา policy อย่าง Rego ของ OPA ([Policy-Based Authorization](../policy-based-authorization/)), CEL ใน Kubernetes และ Envoy, regex engine และ clause `WHERE` ของ SQL ก็เป็น interpreter เหมือนกัน tree ที่ได้ก็คือ [Composite](../composite/) และ operation อื่น ๆ บน tree นี้ก็เข้ากับ [Visitor](../visitor/)"
     }
   ]
 }

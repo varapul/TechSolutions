@@ -1,21 +1,21 @@
 {
-  "summary": "แยก write model (command) ออกจาก read model (query) ให้แต่ละฝั่งถูกปรับให้เหมาะกับงานของตัวเอง",
+  "summary": "แยก write model (command) ออกจาก read model (query) แต่ละฝั่งจะได้ปรับให้เหมาะกับงานของตัวเอง",
   "steps": [
     {
       "title": "command เปลี่ยน state",
-      "body": "client ส่ง **command** ซึ่งเป็นงานทางธุรกิจอย่าง `PlaceOrder` ไม่ใช่การ update แบบกว้าง ๆ command handler ตรวจกฎทางธุรกิจกับ **write model** ซึ่งเป็นตารางแบบ normalised ที่เป็น source of truth แล้ว commit การเปลี่ยนแปลงใน transaction เดียว client ได้รับการตอบรับ: ในที่นี้คือ `201 Created`"
+      "body": "client ส่ง **command** มา เป็นงานทางธุรกิจอย่าง `PlaceOrder` ไม่ใช่ update ทั่ว ๆ ไป command handler เช็กกฎทางธุรกิจกับ **write model** คือตารางแบบ normalised ที่เป็น source of truth แล้ว commit การเปลี่ยนแปลงใน transaction เดียว client ก็ได้การตอบรับกลับไป: ในที่นี้คือ `201 Created`"
     },
     {
-      "title": "Project ไปยัง read model",
-      "body": "commit นั้นถูก publish ออกไปเป็น **change event** (`OrderPlaced`, change #7) ผ่าน transactional outbox หรือ change data capture **projector** consume มันแล้ว update **read model** ทุกตัว: ตาราง summary ที่มีแถวสำเร็จรูปหนึ่งแถวต่อ order และ search index ที่ใช้ keyword เป็น key จากนั้นจึงบันทึก checkpoint ไว้ เพื่อให้ทำต่อจากจุดที่ค้างไว้ได้"
+      "title": "Project ลง read model",
+      "body": "commit นั้นถูก publish ออกไปเป็น **change event** (`OrderPlaced`, change #7) ผ่าน transactional outbox หรือ change data capture ส่วน **projector** ก็ consume มันแล้ว update **read model** ทุกตัว: ตาราง summary ที่มีแถวพร้อมใช้หนึ่งแถวต่อ order และ search index ที่ใช้ keyword เป็น key จากนั้นก็บันทึก checkpoint ไว้ จะได้ทำต่อจากจุดที่ค้างไว้ได้"
     },
     {
       "title": "query อ่านจากฝั่ง read",
-      "body": "query ไม่เคยเปลี่ยน state ดังนั้น query handler แค่อ่าน view ที่ตรงกับหน้าจอ: `SELECT * FROM order_summary WHERE customer_id = 7` ตารางเดียวและไม่มี join โดยปกติการอ่านมีมากกว่าการเขียนหลายเท่า ฝั่ง read จึง scale แยกได้เอง ในที่นี้เป็น **สาม replica** ขณะที่ฝั่ง write ยังเล็กและ consistent"
+      "body": "query ไม่เคยเปลี่ยน state ตัว query handler เลยแค่อ่าน view ที่ตรงกับหน้าจอ: `SELECT * FROM order_summary WHERE customer_id = 7` ตารางเดียว ไม่มี join เลย ปกติการอ่านจะเยอะกว่าการเขียนหลายเท่า ฝั่ง read เลย scale แยกได้เอง ในที่นี้เป็น **สาม replica** ส่วนฝั่ง write ก็ยังเล็กและ consistent"
     },
     {
       "title": "Eventual consistency",
-      "body": "การเขียน commit ทันที แต่ read model ถูก update แบบ asynchronous ดังนั้น query ที่ส่งมาทันทีหลัง command อาจได้ **ข้อมูลที่ stale** ในที่นี้คือ `placed` แทนที่จะเป็น `cancelled` จนกว่า projector จะตามทัน ให้ซ่อน lag ในจุดที่สำคัญ: คืน state ใหม่ไปใน response ของ command ส่ง **version token** ไปเพื่อให้การอ่านรอจนถึง change #8 หรือ update UI แบบ optimistic"
+      "body": "การเขียน commit ทันที แต่ read model จะ update ตามมาแบบ asynchronous ถ้ามี query ส่งมาทันทีหลัง command ก็อาจได้ **ข้อมูลที่ stale** ในที่นี้คือ `placed` แทนที่จะเป็น `cancelled` จนกว่า projector จะตามทัน ตรงไหนที่สำคัญก็ซ่อน lag ไว้: คืน state ใหม่ไปใน response ของ command, ส่ง **version token** ไปให้การอ่านรอจนถึง change #8 หรือ update UI แบบ optimistic"
     }
   ]
 }

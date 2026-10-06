@@ -1,21 +1,21 @@
 {
-  "summary": "subgraph จากหลาย service ประกอบกันเป็น graph เดียว และ router วางแผนแต่ละ query ให้กระจายไปยัง subgraph เหล่านั้น",
+  "summary": "subgraph จากหลาย service รวมกันเป็น graph เดียว แล้ว router ก็วางแผนว่าแต่ละ query จะไปถาม subgraph ไหนบ้าง",
   "steps": [
     {
       "title": "graph เดียว หลายทีม",
-      "body": "แต่ละทีมเป็นเจ้าของ **subgraph** หนึ่งตัว และ publish schema จาก build ของตัวเอง `Product` เป็น **entity**: `@key(fields: \"id\")` ทำให้ Reviews เพิ่ม `reviews` และ Inventory เพิ่ม `inStock` เข้าไปใน type ที่ Products เป็นผู้กำหนดได้ **Composition** รวม schema ทั้งสามเป็น **supergraph schema** เดียวให้ router ใช้ เมื่อ Inventory กำหนด `price` ขึ้นมาด้วย เป็น `String` ขณะที่ Products กำหนดเป็น `Float!` composition จะล้มเหลวใน build ของ Inventory และไม่มีอะไรถูก deploy"
+      "body": "แต่ละทีมเป็นเจ้าของ **subgraph** ของตัวเอง และ publish schema จาก build ของตัวเอง `Product` เป็น **entity**: `@key(fields: \"id\")` ทำให้ Reviews เพิ่ม `reviews` และ Inventory เพิ่ม `inStock` เข้าไปใน type ที่ Products กำหนดไว้ได้ **Composition** รวม schema ทั้งสามเป็น **supergraph schema** เดียวให้ router ใช้ พอ Inventory ไปกำหนด `price` ด้วย เป็น `String` ขณะที่ Products กำหนดไว้เป็น `Float!` composition ก็พังใน build ของ Inventory และไม่มีอะไรได้ deploy ออกไป"
     },
     {
       "title": "router วางแผนแต่ละ query",
-      "body": "mobile app ส่ง `query { product(id: 42) { name price reviews { rating } inStock } }` ไปที่ endpoint เดียวของ router **query planner** แยก query ตามความเป็นเจ้าของ field: Products resolve `product(id: 42)` และคืน `name`, `price` กับ key `id` จากนั้นจึงถาม Reviews และ Inventory **แบบขนาน** ผ่าน field `_entities` ของแต่ละตัว เพื่อขอ `reviews` และ `inStock` ของ `Product` 42 router รวมผลทั้งสามเป็น response เดียวที่มีรูปร่างตรงกับ query ทุกประการ"
+      "body": "mobile app ส่ง `query { product(id: 42) { name price reviews { rating } inStock } }` ไปที่ endpoint เดียวของ router แล้ว **query planner** ก็แบ่ง query ตามว่าใครเป็นเจ้าของ field ไหน: Products resolve `product(id: 42)` แล้วคืน `name`, `price` กับ key `id` จากนั้นค่อยถาม Reviews และ Inventory **พร้อมกัน** ผ่าน field `_entities` ของแต่ละตัว เพื่อขอ `reviews` และ `inStock` ของ `Product` 42 router รวมผลทั้งสามเป็น response เดียวที่หน้าตาตรงกับ query ทุกอย่าง"
     },
     {
       "title": "ตรวจก่อน ship",
-      "body": "ทีม Reviews ลบ `Review.rating` ออก build ของทีมรัน **schema check**: การเปลี่ยนแปลงนี้ยัง compose ได้ แต่ registry เอาไปเทียบกับ operation ที่ client ส่งมาจริงในช่วง 7 วันที่ผ่านมา แล้วพบว่า query ของ mobile app ยังอ่าน `rating` อยู่ จึง **block การเปลี่ยนแปลงนี้เพราะเป็น breaking change** ถ้าเพิ่ม field `stars` แทนจะผ่าน Reviews จึง ship v13 ได้ตามกำหนดของตัวเอง และ router โหลด supergraph ใหม่ ส่วน Products และ Inventory ไม่ต้อง redeploy"
+      "body": "ทีม Reviews ลบ `Review.rating` ออก build ของทีมรัน **schema check**: การเปลี่ยนนี้ยัง compose ได้ แต่ registry เอาไปเทียบกับ operation ที่ client ส่งมาจริงในช่วง 7 วันที่ผ่านมา แล้วเจอว่า query ของ mobile app ยังอ่าน `rating` อยู่ เลย **block การเปลี่ยนนี้เพราะเป็น breaking change** ถ้าเปลี่ยนไปเพิ่ม field `stars` แทน ก็ผ่าน check ได้ ทีม Reviews เลย ship v13 ได้ตามจังหวะของตัวเอง แล้ว router ก็โหลด supergraph ใหม่ ส่วน Products กับ Inventory ไม่ต้อง redeploy"
     },
     {
       "title": "ต้นทุนที่ควรรู้",
-      "body": "การ fetch entity ที่ต้องรอ key จะรันตามลำดับ แต่ละรอบจึงเพิ่ม latency และ subgraph ที่โหลด entity ทีละตัวจะเรียก database หนึ่งครั้งต่อหนึ่ง key ถ้าไม่ batch รวมกัน client เป็นคนเขียน query เอง จึงต้องจำกัดความลึกและต้นทุนของ query หรืออนุญาตเฉพาะ operation ที่ persist ไว้และเชื่อถือได้ (ดู [Rate Limiting](../rate-limiting/)) router ตรวจ scope ได้ แต่ subgraph แต่ละตัวก็ยังต้อง authorise การเข้าถึงเอง router อยู่บนเส้นทางของทุก request: ต้อง scale ต้อง monitor และ [trace](../distributed-tracing/) แต่ละ query ข้าม subgraph ต่าง ๆ เมื่อ Inventory ล้ม client ก็ยังได้ `name`, `price` และ `reviews` โดยมี `inStock: null` และรายการหนึ่งใน `errors`"
+      "body": "การ fetch entity ที่ต้องรอ key จะรันต่อกันทีละรอบ แต่ละรอบเลยเพิ่ม latency และ subgraph ที่โหลด entity ทีละตัวจะเรียก database หนึ่งครั้งต่อหนึ่ง key ถ้าไม่ batch รวมกัน client เป็นคนเขียน query เอง เพราะฉะนั้นต้องจำกัดความลึกกับต้นทุนของ query หรือยอมรับแค่ operation ที่ persist ไว้และเชื่อถือได้ (ดู [Rate Limiting](../rate-limiting/)) router ตรวจ scope ได้ก็จริง แต่ subgraph แต่ละตัวก็ยังต้อง authorise การเข้าถึงเอง router อยู่บนเส้นทางของทุก request: ต้อง scale ต้อง monitor และ [trace](../distributed-tracing/) แต่ละ query ข้าม subgraph ต่าง ๆ ถ้า Inventory ล่ม client ก็ยังได้ `name`, `price` และ `reviews` โดยมี `inStock: null` กับรายการหนึ่งใน `errors`"
     }
   ]
 }

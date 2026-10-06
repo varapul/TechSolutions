@@ -1,21 +1,21 @@
 {
-  "summary": "ให้ subsystem ที่ซับซ้อนมีทางเข้าที่เรียบง่ายเพียงทางเดียว เพื่อให้ caller เรียกครั้งเดียว แทนที่จะต้องประสานงานหลาย class เอง",
+  "summary": "ให้ subsystem ที่ซับซ้อนมีทางเข้าง่าย ๆ แค่ทางเดียว caller จะได้เรียกครั้งเดียว ไม่ต้องคอยประสานงานหลาย class เอง",
   "steps": [
     {
-      "title": "caller ทุกตัวต้องประสานเอง",
-      "body": "ProfilePhotoController และ ProductImageController ต่างเรียก **MimeSniffer**, **Resizer**, **Optimizer**, **ObjectStore** และ **CdnPurger** เองตามลำดับที่ถูกต้องและด้วย option ที่ถูกต้อง ลำดับขั้นตอนและรายการขนาดภาพถูกคัดลอกไว้ทั้งสองที่ ขนาดใหม่ 2,000 px หรือ path ใหม่บน CDN จึงต้องแก้แบบเดียวกันในสองที่ และ caller ใหม่ทุกตัวก็เพิ่มที่ต้องแก้อีกหนึ่งที่"
+      "title": "caller ทุกตัวต้องประสานงานเอง",
+      "body": "ProfilePhotoController กับ ProductImageController ต่างคนต่างเรียก **MimeSniffer**, **Resizer**, **Optimizer**, **ObjectStore** และ **CdnPurger** เอง ทั้งเรียงลำดับให้ถูกและใส่ option ให้ถูก ลำดับขั้นตอนกับรายการขนาดภาพก็ซ้ำกันอยู่ทั้งสองที่ จะเพิ่มขนาดใหม่ 2,000 px หรือ path ใหม่บน CDN เลยต้องแก้แบบเดียวกันสองที่ และ caller ใหม่ทุกตัวก็เพิ่มที่ต้องแก้ไปอีกที่"
     },
     {
       "title": "ทางเข้าเดียว",
-      "body": "**ImageUploader** คือ facade: method เดียวของมันคือ `upload(file)` เป็นเจ้าของทั้งลำดับขั้นตอนและขนาดภาพ ตอนนี้ controller ทั้งสองเรียกแค่ method นี้ ขนาดใหม่จึงแก้แค่ที่เดียว class ทั้งห้ายังเหมือนเดิมและยังเป็น public: caller ส่วนน้อยที่ต้องใช้แค่ตัวใดตัวหนึ่ง ในที่นี้คือ CdnAdminTool ที่สั่ง purge path ด้วยมือ ก็ยังเรียกมันตรง ๆ ได้ (เส้นประ)"
+      "body": "**ImageUploader** คือ facade: มีอยู่ method เดียวคือ `upload(file)` ที่ดูแลทั้งลำดับขั้นตอนและขนาดภาพ ตอนนี้ controller ทั้งสองเรียกแค่ method นี้ จะเพิ่มขนาดใหม่ก็แก้แค่ที่เดียว class ทั้งห้ายังเหมือนเดิมและยังเป็น public อยู่: caller ส่วนน้อยที่ต้องใช้แค่ตัวใดตัวหนึ่ง ในตัวอย่างนี้คือ CdnAdminTool ที่ purge path ด้วยมือ ก็ยังเรียกตรง ๆ ได้ (เส้นประ)"
     },
     {
-      "title": "เรียกครั้งเดียว เบื้องหลัง 11 ครั้ง",
-      "body": "ProfilePhotoController เรียก `upload('cat.jpg')` ครั้งเดียว เบื้องหลัง facade จะตรวจชนิดไฟล์ได้เป็น `image/jpeg` ย่อภาพเป็น 150, 600 และ 1,200 px บีบอัดและจัดเก็บทีละขนาด แล้ว purge `/img/cat/*`: **เรียก subsystem 11 ครั้ง** ต่อการเรียก facade หนึ่งครั้ง จากนั้น URL ทั้งสามก็ส่งกลับมาที่ controller"
+      "title": "เรียก 1 ครั้ง ข้างหลังมีอีก 11",
+      "body": "ProfilePhotoController เรียก `upload('cat.jpg')` ครั้งเดียว เบื้องหลัง facade ก็ตรวจเจอว่าเป็น `image/jpeg` ย่อภาพเป็น 150, 600 และ 1,200 px บีบอัดแล้วเก็บทีละขนาด แล้วก็ purge `/img/cat/*`: **เรียก subsystem 11 ครั้ง** ต่อการเรียก facade ครั้งเดียว จากนั้น URL ทั้งสามก็ส่งกลับมาที่ controller"
     },
     {
       "title": "facade คืออะไร และไม่ใช่อะไร",
-      "body": "facade นิยาม interface ใหม่ที่เรียบง่ายกว่าและไม่เพิ่ม feature ของตัวเอง: ต่างจาก **Decorator** ที่คง interface ของ object ไว้แล้วเพิ่มพฤติกรรม และ **Adapter** ที่ทำให้ interface ที่มีอยู่แล้วเข้ากับ interface ที่ client คาดหวัง ควรทำให้ facade บาง คือทำแค่ประสานงาน ไม่ใส่ business rule ไม่อย่างนั้นมันจะโตจนกลายเป็น god object แนวคิดเดียวกันนี้ปรากฏใน SLF4J (Simple Logging Facade for Java) และระหว่าง service ในรูปของ API gateway, gateway aggregation หรือ backend แยกสำหรับแต่ละ frontend"
+      "body": "facade กำหนด interface ใหม่ที่ง่ายกว่า และไม่เพิ่ม feature อะไรของตัวเอง: ต่างจาก **Decorator** ที่คง interface ของ object ไว้แล้วเพิ่มพฤติกรรม และ **Adapter** ที่ทำให้ interface ที่มีอยู่แล้วเข้ากับ interface ที่ client คาดไว้ facade ควรบางเข้าไว้ ทำแค่ประสานงาน ไม่ใส่ business rule ไม่อย่างนั้นมันจะโตจนกลายเป็น god object แนวคิดเดียวกันนี้เจอได้ใน SLF4J (Simple Logging Facade for Java) และระหว่าง service ก็คือ API gateway, gateway aggregation หรือ backend แยกให้แต่ละ frontend"
     }
   ]
 }

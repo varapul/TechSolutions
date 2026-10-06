@@ -1,21 +1,21 @@
 {
-  "summary": "ส่งการโต้ตอบระหว่าง object ทั้งหมดผ่าน mediator ตัวเดียว เพื่อให้ dependency แบบ many-to-many กลายเป็น one-to-many",
+  "summary": "ให้ object คุยกันผ่าน mediator ตัวเดียว dependency แบบ many-to-many ก็จะเหลือแค่ one-to-many",
   "steps": [
     {
       "title": "ทุกตัวคุยกับทุกตัว",
-      "body": "ถ้าไม่มี mediator เหล่า widget จะเรียกกันเองโดยตรง: เมื่อประเทศเปลี่ยน `CountrySelect` เรียก `postcode.setFormat()`, `shipping.reload()` และ `pay.disable()` ส่วน `PostcodeField` เรียก `pay.enable()` เมื่อรหัสไปรษณีย์ถูกต้อง และ `ShippingOptions` ปิดปุ่ม Pay ระหว่างที่ reload เมื่อต่อถึงกันหมด widget สี่ตัวจะถือรวมกัน 4 × 3 = **12 reference** และกฎของ Pay ก็กระจายอยู่ถึงสาม class ส่วน widget ตัวที่ห้าอย่าง checkbox ห่อของขวัญ (gift wrap) ทำให้กลายเป็น 5 × 4 = 20 และต้องเพิ่ม field ให้ทั้งสี่ class"
+      "body": "ถ้าไม่มี mediator พวก widget ก็เรียกกันเองตรง ๆ: พอประเทศเปลี่ยน `CountrySelect` ก็เรียก `postcode.setFormat()`, `shipping.reload()` และ `pay.disable()` ส่วน `PostcodeField` เรียก `pay.enable()` พอรหัสไปรษณีย์ถูกต้อง และ `ShippingOptions` ก็ปิดปุ่ม Pay ระหว่าง reload พอต่อถึงกันหมด widget สี่ตัวก็ถือรวมกัน 4 × 3 = **12 reference** แล้วกฎของ Pay ก็กระจายอยู่ในสาม class ถ้ามี widget ตัวที่ห้าอย่าง checkbox ห่อของขวัญ (gift wrap) ก็จะกลายเป็น 5 × 4 = 20 และต้องเพิ่ม field ให้ทั้งสี่ class"
     },
     {
       "title": "คุยผ่าน mediator",
-      "body": "ตอนนี้ widget แต่ละตัว (ตัว *Colleague*) ถือ reference เดียวคือไปยัง interface `Mediator` และแค่รายงานว่าเกิดอะไรขึ้น: `mediator.notify(this, 'changed')` ส่วน `CheckoutMediator` (ตัว *ConcreteMediator*) ถือ widget ทั้งสี่ตัวและกฎทั้งหมด แล้วเรียก widget ตัวที่เกี่ยวข้อง mesh ยุบลงเหลือเป็นรูปดาว: 12 reference เหลือ 4 (ถ้ามี 10 widget จาก 90 เหลือ 10) และ checkbox ห่อของขวัญตอนนี้ใช้แค่ reference เดียวกับกฎใหม่หนึ่งข้อใน `CheckoutMediator` โดยไม่ต้องแก้ widget ตัวอื่นเลย"
+      "body": "ตอนนี้ widget แต่ละตัว (ตัว *Colleague*) ถือ reference แค่ตัวเดียว คือไปที่ interface `Mediator` แล้วก็แค่รายงานว่าเกิดอะไรขึ้น: `mediator.notify(this, 'changed')` ส่วน `CheckoutMediator` (ตัว *ConcreteMediator*) ถือ widget ทั้งสี่ตัวกับกฎทั้งหมดไว้ แล้วเรียกตัวที่เกี่ยวข้อง mesh ก็ยุบเหลือเป็นรูปดาว: 12 reference เหลือ 4 (ถ้ามี 10 widget ก็จาก 90 เหลือ 10) และ checkbox ห่อของขวัญตอนนี้ก็ใช้แค่ reference เดียวและกฎใหม่หนึ่งข้อใน `CheckoutMediator` โดยไม่ต้องแก้ widget ตัวอื่นเลย"
     },
     {
       "title": "เปลี่ยนครั้งเดียว ประสานให้ครบ",
-      "body": "ผู้ใช้เลือก **Thailand**: `CountrySelect` แจ้ง mediator แล้วกฎเรื่องประเทศของ mediator ก็เรียก `postcode.setFormat('5 digits')`, `shipping.reload('TH')` และ `pay.disable()` ตามลำดับนี้ ผู้ใช้พิมพ์ **10110**: `PostcodeField` แจ้งเข้ามา แล้ว mediator ก็ตรวจค่ากับรูปแบบ 5 หลักก่อนเรียก `pay.enable()` notification วิ่งเข้า (สีม่วง) และการเรียกวิ่งออก (สีน้ำเงิน) โดยไม่มี widget ไหนเรียก widget อื่นเลย"
+      "body": "ผู้ใช้เลือก **Thailand**: `CountrySelect` แจ้ง mediator แล้วกฎเรื่องประเทศของ mediator ก็เรียก `postcode.setFormat('5 digits')`, `shipping.reload('TH')` และ `pay.disable()` ตามลำดับ ผู้ใช้พิมพ์ **10110**: `PostcodeField` แจ้งเข้ามา แล้ว mediator ก็เช็กค่ากับรูปแบบ 5 หลักแล้วเรียก `pay.enable()` notification วิ่งเข้า (สีม่วง) การเรียกวิ่งออก (สีน้ำเงิน) ไม่มี widget ไหนเรียก widget อื่นเลย"
     },
     {
-      "title": "ต้นทุน และแพตเทิร์นใกล้เคียง",
-      "body": "mediator รวม logic ของการโต้ตอบไว้ที่เดียว กฎใหม่ทุกข้อจึงไปลงที่ `CheckoutMediator` และมันอาจโตจนกลายเป็น god object: ควรแยกตามเรื่อง (ที่อยู่ การชำระเงิน) และให้ widget ไม่ต้องมี logic ต่างจาก [Observer](../observer/) ที่ listener แต่ละตัวตัดสินใจเอง ตรงที่ mediator เป็นเจ้าของกฎ แม้จะมักสร้างอยู่บน notification ก็ตาม และต่างจาก [Facade](../facade/) ที่ subsystem ไม่รู้ด้วยซ้ำว่ามี facade อยู่ ตรงที่ colleague รู้จักและเรียก mediator ของตัวเอง ในระดับทั้งระบบ [saga orchestrator](../saga-orchestration/) ประสานงาน service แบบเดียวกับที่ mediator ประสาน widget, [choreography](../saga-choreography/) คือแบบ mesh และ [hub-and-spoke network](../hub-spoke-network/) ก็แทน full mesh ของ peering ด้วย hub เดียว"
+      "title": "ต้นทุน กับแพตเทิร์นใกล้เคียง",
+      "body": "mediator รวม logic ของการโต้ตอบไว้ที่เดียว กฎใหม่ทุกข้อเลยไปลงที่ `CheckoutMediator` และมันอาจโตจนกลายเป็น god object: ให้แยกตามเรื่อง (ที่อยู่ การชำระเงิน) และให้ widget ไม่ต้องมี logic อะไร ถ้าเป็น [Observer](../observer/) จะให้ listener แต่ละตัวตัดสินใจเอง แต่ mediator เป็นเจ้าของกฎเอง ถึงจะมักสร้างอยู่บน notification ก็ตาม ส่วน [Facade](../facade/) นั้น subsystem ไม่รู้ด้วยซ้ำว่ามี facade อยู่ แต่ colleague รู้จักและเรียก mediator ของตัวเอง ส่วนในระดับทั้งระบบ [saga orchestrator](../saga-orchestration/) ประสานงาน service แบบเดียวกับที่ mediator ประสาน widget, [choreography](../saga-choreography/) ก็คือแบบ mesh และ [hub-and-spoke network](../hub-spoke-network/) ก็เอา hub เดียวมาแทน full mesh ของ peering"
     }
   ]
 }

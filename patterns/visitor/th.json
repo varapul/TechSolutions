@@ -1,21 +1,21 @@
 {
-  "summary": "เพิ่ม operation ใหม่ให้ชุด class ที่นิ่งแล้วโดยไม่ต้องแก้ class เหล่านั้น: แต่ละ operation คือ visitor ที่ทุก element รับ (accept) เข้ามา",
+  "summary": "เพิ่ม operation ใหม่ให้ชุด class ที่นิ่งแล้วได้โดยไม่ต้องแก้ class พวกนั้น: แต่ละ operation คือ visitor ที่ทุก element รับ (accept) เข้ามา",
   "steps": [
     {
       "title": "แก้เก้าที่ หน้าที่ปนกัน",
-      "body": "operation แต่ละตัวบน invoice ถูกเขียนเป็น method ใน line ทุกชนิด: `total()`, `toCsv()` แล้วตามด้วย `tax()` ต้องเข้าไปอยู่ใน **ProductLine**, **ServiceLine** และ **ShippingLine** สาม operation จึงต้องแก้ 3 × 3 = **9 ครั้ง** และ line class ทุกตัวก็ลงเอยด้วยการปนกันระหว่างการคิดราคา การจัดรูปแบบ CSV และกฎภาษี อีกทางหนึ่งคือปล่อย class ไว้เหมือนเดิมแล้วเขียน function หนึ่งตัวต่อหนึ่ง operation ที่เช็ก `instanceof` ของแต่ละ line ซึ่งทำให้การเช็ก type สามแบบเดิมซ้ำอยู่ในทุก function"
+      "body": "operation แต่ละตัวบน invoice เขียนเป็น method ไว้ใน line ทุกชนิด: `total()`, `toCsv()` แล้วก็ `tax()` ต้องเข้าไปอยู่ใน **ProductLine**, **ServiceLine** และ **ShippingLine** สาม operation เลยต้องแก้ 3 × 3 = **9 ครั้ง** และ line class ทุกตัวก็ลงเอยด้วยการปนกันทั้งเรื่องคิดราคา จัดรูปแบบ CSV และกฎภาษี อีกทางหนึ่งคือปล่อย class ไว้เหมือนเดิม แล้วเขียน function หนึ่งตัวต่อหนึ่ง operation ที่เช็ก `instanceof` ของแต่ละ line แต่แบบนี้การเช็ก type สามแบบเดิมก็จะซ้ำอยู่ในทุก function"
     },
     {
-      "title": "operation ในรูป visitor",
-      "body": "line class ทุกตัวได้ method เพิ่มมาหนึ่งตัวคือ `accept(v)` ซึ่งเรียก method ของ visitor ที่ตรงกับชนิดของตัวเอง: `ProductLine` เรียก `v.visitProduct(this)` ส่วน **InvoiceVisitor** (ตัว *Visitor*) ประกาศ method หนึ่งตัวต่อ line หนึ่งชนิด และแต่ละ operation กลายเป็น class หนึ่งตัว (ตัว *ConcreteVisitor*) ที่ถือกฎของตัวเองสำหรับทุกชนิด: **TotalVisitor** คิดราคาแต่ละชนิดในแบบของมัน และ **CsvVisitor** เขียนหนึ่ง row ต่อหนึ่ง line ฝั่ง `Invoice` (ตัว *ObjectStructure*) จะไล่ไปตาม line ของตัวเองแล้วส่ง visitor ให้ทีละตัว ส่วนภาษีจะกลับมาในขั้นที่ 4 ในรูป visitor ของตัวเอง"
+      "title": "ทำ operation ให้เป็น visitor",
+      "body": "line class ทุกตัวได้ method เพิ่มมาตัวเดียวคือ `accept(v)` ที่เรียก method ของ visitor ให้ตรงกับชนิดของตัวเอง: `ProductLine` ก็เรียก `v.visitProduct(this)` ฝั่ง **InvoiceVisitor** (ตัว *Visitor*) จะประกาศ method หนึ่งตัวต่อ line หนึ่งชนิด และแต่ละ operation ก็กลายเป็น class หนึ่งตัว (ตัว *ConcreteVisitor*) ที่มีกฎของตัวเองครบทุกชนิด: **TotalVisitor** คิดราคาแต่ละชนิดในแบบของมัน ส่วน **CsvVisitor** เขียน line ละหนึ่ง row แล้ว `Invoice` (ตัว *ObjectStructure*) ก็จะไล่ไปตาม line ของตัวเอง แล้วส่ง visitor ให้ทีละตัว ส่วนภาษีจะกลับมาในขั้นที่ 4 ในรูป visitor ของตัวเอง"
     },
     {
       "title": "double dispatch",
-      "body": "`invoice.accept(totalVisitor)` เรียก `line.accept(v)` บนทุก line และ line ก็เรียกกลับมาที่ `v.visitProduct(this)`, `v.visitService(this)` หรือ `v.visitShipping(this)` นี่คือ **double dispatch**: การเรียกครั้งแรกถูกตัดสินด้วย class ของ line ซึ่งเป็นตัวเลือก method และครั้งที่สองถูกตัดสินด้วย class ของ visitor ซึ่งเป็นตัวเลือกโค้ดที่จะรัน ผลรวมค่อย ๆ สะสมอยู่ใน visitor คือ 24.00 + 60.00 + 4.50 = **EUR 88.50** และการไล่แบบเดียวกันด้วย `CsvVisitor` ก็จะรัน method ของมันแทน แล้วเขียน `product,Mug,24.00` กับอีกสอง row"
+      "body": "`invoice.accept(totalVisitor)` เรียก `line.accept(v)` บนทุก line แล้ว line ก็เรียกกลับมาที่ `v.visitProduct(this)`, `v.visitService(this)` หรือ `v.visitShipping(this)` แบบนี้เรียกว่า **double dispatch**: การเรียกครั้งแรกให้ class ของ line เป็นคนเลือก method ส่วนครั้งที่สองให้ class ของ visitor เป็นคนเลือกโค้ด ผลรวมค่อย ๆ สะสมอยู่ใน visitor: 24.00 + 60.00 + 4.50 = **EUR 88.50** ถ้าไล่แบบเดียวกันด้วย `CsvVisitor` ก็จะรัน method ของมันแทน แล้วเขียน `product,Mug,24.00` กับอีกสอง row"
     },
     {
       "title": "เพิ่ม operation ไม่ใช่เพิ่มชนิด",
-      "body": "**TaxVisitor** (ภาษีสมมติ 20 % กับสินค้าและบริการ และไม่คิดกับค่าส่ง) เป็น class ใหม่หนึ่งตัวที่คืน **EUR 16.80** โดยไม่มี line class ตัวไหนเปลี่ยน แต่ line ชนิดใหม่กลับตรงกันข้าม: **DiscountLine** ต้องเพิ่ม `visitDiscount()` ใน `InvoiceVisitor` จึงต้องเพิ่มในทุก visitor ด้วย เป็น trade-off แบบเดียวกับ [Abstract Factory](../abstract-factory/) ที่การเพิ่มตระกูลใหม่ทำได้ง่าย แต่การเพิ่ม product ชนิดใหม่ทำได้ยาก rule ของ ESLint, plugin ของ Babel และ `FileVisitor` ของ Java ล้วนเป็น visitor ส่วนเมื่อชุดของชนิดปิดตายแล้ว การใช้ union ของ TypeScript กับ `switch` ที่ครอบคลุมทุกกรณี (exhaustive) หรือ `switch` ของ Java บน sealed interface ก็ให้การแยกแบบเดียวกันได้โดยไม่ต้องมี `accept()`"
+      "body": "**TaxVisitor** (ภาษีสมมติ 20 % กับสินค้าและบริการ ไม่คิดกับค่าส่ง) เป็นแค่ class ใหม่หนึ่งตัวที่คืน **EUR 16.80** และไม่มี line class ตัวไหนต้องเปลี่ยน แต่ line ชนิดใหม่จะกลับกัน: **DiscountLine** ต้องเพิ่ม `visitDiscount()` ใน `InvoiceVisitor` เลยต้องเพิ่มในทุก visitor ไปด้วย เป็น trade-off แบบเดียวกับ [Abstract Factory](../abstract-factory/) ที่เพิ่มตระกูลใหม่ได้ง่าย แต่เพิ่ม product ชนิดใหม่ไม่ง่ายแบบนั้น rule ของ ESLint, plugin ของ Babel และ `FileVisitor` ของ Java ก็เป็น visitor ทั้งนั้น ส่วนถ้าชุดของชนิดปิดตายแล้ว ใช้ union ของ TypeScript กับ `switch` ที่ครอบคลุมทุกกรณี (exhaustive) หรือ `switch` ของ Java บน sealed interface ก็ได้การแยกแบบเดียวกันโดยไม่ต้องมี `accept()`"
     }
   ]
 }

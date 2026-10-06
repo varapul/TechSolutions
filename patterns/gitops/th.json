@@ -1,21 +1,21 @@
 {
-  "summary": "Git เก็บ desired state ไว้ และมี agent คอย reconcile cluster ให้ตรงกับ Git อยู่ตลอดเวลา",
+  "summary": "Git เก็บ desired state ไว้ แล้วมี agent คอย reconcile cluster ให้ตรงกับ Git อยู่ตลอด",
   "steps": [
     {
-      "title": "Push จาก CI และแก้ด้วยมือ",
-      "body": "Pipeline deploy ด้วยการรัน `kubectl apply` ใส่ cluster โดยใช้ credential ระดับ administrator ที่เก็บไว้ใน CI ระหว่างเกิด incident operator คนหนึ่ง scale deployment เป็น 10 และเพิ่มค่า timeout ด้วยมือ ทั้งสองการเปลี่ยนแปลงไม่ถูกเขียนกลับไปที่ไหนเลย deploy ครั้งถัดไปจึงเงียบ ๆ ใส่ 3 replica และค่า timeout เดิมกลับมา ไม่มีใครบอกได้แน่ชัดว่าตอนนี้อะไรกำลังรันอยู่ หรือเพราะอะไร"
+      "title": "Push จาก CI แล้วแก้ด้วยมือ",
+      "body": "Pipeline deploy ด้วยการรัน `kubectl apply` ใส่ cluster โดยใช้ credential ระดับ administrator ที่เก็บไว้ใน CI ส่วนตอนเกิด incident มี operator คนหนึ่ง scale deployment เป็น 10 และเพิ่มค่า timeout ด้วยมือ แต่การเปลี่ยนแปลงทั้งสองอย่างไม่ได้เขียนกลับไปที่ไหนเลย deploy รอบถัดไปเลยเอา 3 replica กับ timeout ค่าเดิมกลับมาแบบเงียบ ๆ ไม่มีใครบอกได้ชัด ๆ ว่าตอนนี้อะไรรันอยู่ หรือรันเพราะอะไร"
     },
     {
       "title": "Desired state อยู่ใน Git",
-      "body": "ทุกการเปลี่ยนแปลงคือ pull request เข้า configuration repository ในที่นี้ CI build และ push image **v43** แล้วเปิด PR ที่ตั้ง `image: v43` และ `replicas: 4` ให้ production หลัง review และ merge แล้ว agent ที่อยู่ใน cluster จะ pull commit ใหม่ เห็นว่า live state ไม่ตรงกับมันแล้ว (**OutOfSync**) และ apply ส่วนที่ต่าง ทั้งนี้ CI มีหน้าที่แค่ build image และเสนอการเปลี่ยนแปลง ส่วน credential ที่เปลี่ยน cluster ได้ไม่เคยออกไปนอก cluster"
+      "body": "ทุกการเปลี่ยนแปลงคือ pull request เข้า configuration repository ในตัวอย่างนี้ CI build และ push image **v43** แล้วเปิด PR ที่ตั้ง `image: v43` และ `replicas: 4` ให้ production พอ review และ merge แล้ว agent ที่อยู่ใน cluster ก็ pull commit ใหม่มา เห็นว่า live state ไม่ตรงกับ commit นั้นแล้ว (**OutOfSync**) ก็ apply ส่วนที่ต่าง CI มีหน้าที่แค่ build image กับเสนอการเปลี่ยนแปลง ส่วน credential ที่เปลี่ยน cluster ได้ก็ไม่เคยออกไปนอก cluster เลย"
     },
     {
-      "title": "Drift ถูก reconcile",
-      "body": "มีคน scale deployment เป็น 10 replica ด้วยมือ ตัว agent ที่คอยเปรียบเทียบ live state กับ Git อยู่ตลอดจึงรายงาน **OutOfSync** และเพราะเปิด self-healing ไว้ มันจึงปรับจำนวนกลับเป็น 4 ถ้าปิด self-healing มันจะแค่รายงาน drift เพื่อให้ยิง alert แทนได้ การเปลี่ยนแปลงที่ต้องการให้คงอยู่ต้องผ่าน Git"
+      "title": "Drift ถูก reconcile กลับ",
+      "body": "มีคน scale deployment เป็น 10 replica ด้วยมือ agent ที่คอยเทียบ live state กับ Git อยู่ตลอดก็รายงาน **OutOfSync** และเพราะเปิด self-healing ไว้ มันเลยปรับจำนวนกลับเป็น 4 ถ้าปิด self-healing ไว้ มันก็จะแค่รายงาน drift ให้ไปยิง alert แทนได้ การเปลี่ยนแปลงไหนที่อยากให้อยู่ต่อ ต้องผ่าน Git"
     },
     {
       "title": "Rollback และ promote",
-      "body": "v43 ทำงานผิดปกติ การ revert commit ของมันก็เป็นแค่ pull request ธรรมดาที่ผ่านการ review: พอ merge แล้ว agent ก็พา cluster กลับไปเป็น v42 และ 3 replica และการ rollback นี้ก็อยู่ในประวัติเหมือนการเปลี่ยนแปลงอื่น ๆ การ promote ก็ทำแบบเดียวกัน คือเปิด PR ที่คัดลอก image tag จาก `envs/staging/` ไปที่ `envs/prod/` ส่วน secret ไม่เคยอยู่ใน Git เป็น plain text: จะ commit แบบเข้ารหัส (SOPS, Sealed Secrets) หรือเป็นการอ้างอิงไปยัง external secret store"
+      "body": "v43 ทำงานผิดปกติ จะ revert commit ของมันก็แค่เปิด pull request ธรรมดาที่ผ่านการ review: พอ merge แล้ว agent ก็พา cluster กลับไปเป็น v42 กับ 3 replica และการ rollback นี้ก็อยู่ในประวัติเหมือนการเปลี่ยนแปลงอื่น ๆ การ promote ก็ทำแบบเดียวกัน คือเปิด PR ที่คัดลอก image tag จาก `envs/staging/` ไปที่ `envs/prod/` ส่วน secret ไม่เคยอยู่ใน Git แบบ plain text: จะ commit แบบเข้ารหัส (SOPS, Sealed Secrets) หรือเป็น reference ที่ชี้ไปที่ external secret store"
     }
   ]
 }

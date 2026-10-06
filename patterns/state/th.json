@@ -1,21 +1,21 @@
 {
-  "summary": "ให้ object เปลี่ยนพฤติกรรมเมื่อ state ของมันเปลี่ยน ด้วยการส่งต่อการทำงานให้ state object แทนการขยาย switch statement ให้ยาวขึ้นเรื่อย ๆ",
+  "summary": "ให้ object เปลี่ยนพฤติกรรมเมื่อ state ของมันเปลี่ยน โดยส่งงานต่อให้ state object แทนที่จะปล่อยให้ switch statement ยาวขึ้นเรื่อย ๆ",
   "steps": [
     {
-      "title": "มี switch ในทุก method",
-      "body": "`Order` เก็บ field `status` ไว้ และ `pay()`, `ship()` และ `cancel()` ต่างก็ `switch` ตามค่านี้: method ละสี่ case รวม 12 branch และกฎของ status หนึ่ง เช่น *Shipped* ก็กระจายอยู่ในสาม method การตรวจ fraud อย่าง **OnHold** ต้องเพิ่ม case ใหม่ในทั้งสาม switch ถ้าพลาดไปหนึ่งที่ อย่างที่ `cancel()` พลาดในตัวอย่างนี้ การยกเลิก order ที่ถูก hold ไว้ก็จะเงียบไปเฉย ๆ โดยไม่ทำอะไรเลย"
+      "title": "switch อยู่ในทุก method",
+      "body": "`Order` เก็บ field `status` ไว้ แล้ว `pay()`, `ship()` และ `cancel()` ก็ต่าง `switch` ตามค่านี้: method ละสี่ case รวมเป็น 12 branch และกฎของ status เดียว อย่าง *Shipped* ก็กระจายอยู่ในสาม method พอจะเพิ่มการตรวจ fraud อย่าง **OnHold** ก็ต้องเพิ่ม case ใหม่ในทั้งสาม switch ถ้าลืมไปที่หนึ่ง อย่างที่ `cancel()` ลืมในตัวอย่างนี้ การยกเลิก order ที่โดน hold อยู่ก็จะเงียบไปเฉย ๆ ไม่ทำอะไรเลย"
     },
     {
-      "title": "หนึ่ง class ต่อหนึ่ง state",
-      "body": "status แต่ละค่ากลายเป็น class ที่ implement **OrderState** (ตัว *State*) พฤติกรรม 12 แบบเดิมจึงถูกจัดกลุ่มตาม state แทนที่จะจัดตาม method ส่วน `Order` (ตัว *Context*) ถือ state object ปัจจุบันไว้และส่งทุกการเรียกต่อให้มัน และ *ConcreteState* แต่ละตัวตัดสินว่าการเรียกนั้นหมายถึงอะไร: คืน state ถัดไปซึ่ง `Order` จะเปลี่ยนไปใช้ หรือปฏิเสธพร้อมเหตุผล ช่อง `→` แต่ละช่องคือลูกศรหนึ่งเส้นใน state diagram"
+      "title": "แต่ละ state มี class ของตัวเอง",
+      "body": "status แต่ละค่ากลายเป็น class ที่ implement **OrderState** (ตัว *State*) พฤติกรรม 12 แบบเดิมเลยมารวมกลุ่มกันตาม state แทนที่จะแยกตาม method ส่วน `Order` (ตัว *Context*) ถือ state object ปัจจุบันไว้ แล้วส่งทุกการเรียกต่อให้มัน ส่วน *ConcreteState* แต่ละตัวก็ตัดสินเองว่าการเรียกนั้นหมายถึงอะไร: คืน state ถัดไปให้ `Order` เปลี่ยนไปใช้ หรือปฏิเสธพร้อมบอกเหตุผล ช่อง `→` แต่ละช่องก็คือลูกศรหนึ่งเส้นใน state diagram"
     },
     {
-      "title": "state เป็นผู้ตัดสิน",
-      "body": "client เรียก `order.pay()`: `Order` ส่งต่อให้ **Pending** ซึ่งคืน **Paid** กลับมา แล้ว reference ก็ย้ายไป จากนั้น `ship()` ก็พา order ไปที่ **Shipped** ส่วน `cancel()` ตัวเดียวกันที่ยกเลิก order ที่ pending หรือ paid ได้ กลับถูกปฏิเสธใน Shipped (too late, start a return) state จึงคงเดิม และ client ได้รับ error ส่วน log ก็บันทึกการเรียกทั้งสามครั้งไว้"
+      "title": "state เป็นคนตัดสิน",
+      "body": "client เรียก `order.pay()`: `Order` ส่งต่อให้ **Pending** แล้ว Pending ก็คืน **Paid** กลับมา reference ก็ย้ายไป จากนั้น `ship()` ก็พา order ไปที่ **Shipped** แต่ `cancel()` ตัวเดียวกันที่ยกเลิก order ที่ pending หรือ paid ได้ กลับโดนปฏิเสธใน Shipped (too late, start a return) state เลยยังเหมือนเดิม และ client ก็ได้ error กลับไป แล้ว log ก็บันทึกการเรียกทั้งสามครั้งไว้หมด"
     },
     {
-      "title": "เพิ่ม state ด้วย class เดียว",
-      "body": "**OnHold** ซึ่งเป็นการตรวจ fraud ระหว่าง Pending กับ Paid คือ class ใหม่หนึ่งตัว (`pay()` ไปต่อที่ Paid เมื่อผ่านการตรวจแล้ว, `ship()` ถูกปฏิเสธ และ `cancel()` ยกเลิก order) และจุดเดียวที่ต้องแก้คือบรรทัดเดียวใน **Pending** ที่ตอนนี้ `pay()` คืน OnHold แทน ต่างจาก [Strategy](../strategy/) ซึ่ง client เป็นคนเลือก ตรงที่ state จะสลับไปเป็น state ถัดไปกันเอง และ state ที่ไม่มี field ก็ใช้ instance เดียวร่วมกันได้ state machine ขนาดใหญ่มักเขียนเป็นตารางหรือ statechart และในระดับทั้งระบบ [circuit breaker](../circuit-breaker/) และ [saga orchestrator](../saga-orchestration/) ก็เป็น state machine เช่นกัน"
+      "title": "state ใหม่ แค่ class เดียว",
+      "body": "**OnHold** การตรวจ fraud ที่อยู่ระหว่าง Pending กับ Paid ก็เป็นแค่ class ใหม่หนึ่งตัว (`pay()` ไปต่อที่ Paid เมื่อตรวจผ่านแล้ว, `ship()` โดนปฏิเสธ, `cancel()` ยกเลิก order) และที่ต้องแก้ก็มีแค่บรรทัดเดียวใน **Pending** ตอนนี้ `pay()` ของมันคืน OnHold แทน Paid ส่วน [Strategy](../strategy/) นั้น client เป็นคนเลือก แต่ state จะสลับไปเป็นตัวถัดไปกันเอง และ state ที่ไม่มี field ก็ใช้ instance เดียวร่วมกันได้ state machine ใหญ่ ๆ มักเขียนเป็นตารางหรือ statechart และในระดับทั้งระบบ [circuit breaker](../circuit-breaker/) กับ [saga orchestrator](../saga-orchestration/) ก็เป็น state machine เหมือนกัน"
     }
   ]
 }

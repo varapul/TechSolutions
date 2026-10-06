@@ -1,21 +1,21 @@
 {
-  "summary": "ประกอบ object ที่ซับซ้อนทีละขั้นแล้วตรวจความถูกต้องครั้งเดียวตอนท้าย แทนการเรียก constructor ที่มี argument สิบตัว",
+  "summary": "ค่อย ๆ ประกอบ object ที่ซับซ้อนทีละขั้น แล้วเช็กความถูกต้องทีเดียวตอนท้าย แทนที่จะเรียก constructor ที่มี argument สิบตัว",
   "steps": [
     {
       "title": "constructor ที่ยาวขึ้นเรื่อย ๆ",
-      "body": "ถ้าไม่มี builder ทุก option จะเป็น parameter ของ constructor ที่เรียงตามลำดับตายตัว จะตั้ง `timeoutMs` ได้ก็ต้องใส่ `connectTimeoutMs` ที่อยู่ก่อนหน้าด้วย จึงต้องส่ง `null` ไปแทน และเพราะ timeout ทั้งสองตัวเป็น type เดียวกัน ต่อให้สลับ `null` กับ `5000` ก็ยัง compile ผ่าน อีกทั้งตรงจุดที่เรียกก็ไม่มีอะไรบอกเลยว่า `true` หมายถึงอะไร ทุก option ที่เพิ่มเข้ามาทำให้รายการนี้ยาวขึ้นอีก"
+      "body": "ถ้าไม่มี builder ทุก option ก็คือ parameter ของ constructor ที่เรียงลำดับตายตัว จะตั้ง `timeoutMs` ก็ต้องใส่ `connectTimeoutMs` ที่อยู่ข้างหน้าด้วย เลยต้องส่ง `null` ไปแทน และเพราะ timeout สองตัวนี้เป็น type เดียวกัน ต่อให้สลับ `null` กับ `5000` ก็ยัง compile ผ่าน แถมตรงที่เรียกก็ไม่มีอะไรบอกเลยว่า `true` หมายถึงอะไร เพิ่ม option ใหม่ทีไร รายการนี้ก็ยาวขึ้นทุกที"
     },
     {
-      "title": "สร้างทีละขั้น",
-      "body": "`RequestBuilder` รับการเรียกที่มีชื่อบอกชัดหนึ่งครั้งต่อหนึ่งส่วน และเก็บส่วนที่รวบรวมได้จนถึงตอนนั้นไว้ `json()` จะ serialize body ด้วย `JSON.stringify` และตั้ง `Content-Type: application/json` ให้ด้วย ส่วน option ที่ไม่เคยเรียกก็ยังใช้ค่า default สุดท้าย `build()` จะสร้าง `Request` จากส่วนเหล่านั้นแล้ว freeze ไว้"
+      "title": "ค่อย ๆ สร้างทีละขั้น",
+      "body": "`RequestBuilder` ให้เรียก method ที่มีชื่อบอกชัดส่วนละหนึ่งครั้ง แล้วจำส่วนที่ได้มาแล้วไว้ `json()` จะ serialize body ด้วย `JSON.stringify` และตั้ง `Content-Type: application/json` ให้ด้วยเลย ส่วน option ไหนที่ไม่ได้เรียกก็ยังเป็นค่า default พอถึง `build()` ก็สร้าง `Request` จากส่วนทั้งหมดแล้ว freeze ไว้"
     },
     {
-      "title": "ตรวจครั้งเดียวตอน build()",
-      "body": "กฎบางข้อเกี่ยวกับหลายส่วนพร้อมกัน: body ใส่ใน POST ได้แต่ใส่ใน GET ไม่ได้ `build()` จึงตรวจทั้งชุดครั้งเดียวก่อนที่จะส่งอะไรออกไป: GET ที่มี body หรือ request ที่ไม่มี URL จะล้มเหลวพร้อม error ที่ชัดเจน ส่วน POST ที่ถูกต้องจะได้กลับมาแบบ freeze แล้ว ถ้าเขียนค่าลงไปทีหลังจะล้มเหลว โดยในโค้ด strict mode จะได้ `TypeError`"
+      "title": "เช็กทีเดียวตอน build()",
+      "body": "กฎบางข้อเกี่ยวกับหลายส่วนพร้อมกัน: body ใส่ใน POST ได้ แต่ใส่ใน GET ไม่ได้ `build()` เลยเช็กทั้งชุดทีเดียวก่อนจะส่งอะไรออกไป: GET ที่มี body หรือ request ที่ไม่มี URL จะไม่ผ่าน และได้ error ที่บอกชัดเจน ส่วน POST ที่ถูกต้องจะได้กลับมาแบบ freeze แล้ว จะเขียนค่าลงไปทีหลังก็ไม่ได้ ถ้าเป็นโค้ด strict mode จะเจอ `TypeError`"
     },
     {
       "title": "ขั้นเดิม ได้ product สองแบบ",
-      "body": "ในรูปแบบดั้งเดิมของ GoF จะมี **Director** คือ `describeCreateOrder(b)` ที่ถือสูตรไว้และเรียกแต่ละขั้นผ่าน interface `Builder` ส่วน concrete builder แต่ละตัวเป็นผู้ตัดสินว่าผลลัพธ์คืออะไร: `RequestBuilder` ได้ `Request` ที่ freeze แล้ว ส่วน `CurlBuilder` ตัวใหม่ได้ command line ของ `curl` โดย Director ไม่ต้องแก้เลย `HttpRequest.newBuilder()` ของ Java, `StringBuilder` และ `@Builder` ของ Lombok ใช้แนวคิดเดียวกัน แต่หลายครั้ง named argument หรือ options object ก็ทำให้ไม่จำเป็นต้องมี builder"
+      "body": "ในแบบดั้งเดิมของ GoF จะมี **Director** คือ `describeCreateOrder(b)` ที่ถือสูตรไว้ แล้วเรียกแต่ละขั้นผ่าน interface `Builder` ส่วน concrete builder แต่ละตัวเป็นคนกำหนดว่าผลลัพธ์จะเป็นอะไร: `RequestBuilder` ได้ `Request` ที่ freeze แล้ว ส่วน `CurlBuilder` ตัวใหม่ได้ command line ของ `curl` โดยไม่ต้องแก้ Director เลย `HttpRequest.newBuilder()` ของ Java, `StringBuilder` และ `@Builder` ของ Lombok ก็ใช้แนวคิดเดียวกัน แต่หลายครั้งแค่ใช้ named argument หรือ options object ก็ไม่ต้องมี builder แล้ว"
     }
   ]
 }

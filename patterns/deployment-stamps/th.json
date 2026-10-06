@@ -1,21 +1,21 @@
 {
-  "summary": "deploy stack ทั้งชุดเป็นหลายสำเนาที่เป็นอิสระต่อกัน แต่ละสำเนาให้บริการ tenant กลุ่มหนึ่ง",
+  "summary": "deploy stack ทั้งชุดเป็นหลาย ๆ สำเนาที่แยกเป็นอิสระต่อกัน แต่ละสำเนาดูแล tenant กลุ่มหนึ่ง",
   "steps": [
     {
       "title": "deployment เดียวชนเพดาน",
-      "body": "แอปพลิเคชัน HR แบบ SaaS รันเป็น **deployment เดียว** ใน region ของ US และให้บริการ tenant ทั้ง 88 ราย ระบบใกล้ชนเพดานที่จะยกขึ้นง่าย ๆ ไม่ได้: ฐานข้อมูลอยู่บน tier ใหญ่ที่สุดแล้ว และ vCPU quota ของ region ก็ใกล้หมด การรัน payroll สิ้นเดือนของ tenant รายใหญ่รายเดียวทำให้ทุกคนช้าลง และ Northwind ลูกค้าใหม่ใน EU ก็ให้บริการไม่ได้เลย: ข้อมูลของ Northwind ต้องอยู่ใน EU แต่ไม่มี deployment ใน EU"
+      "body": "แอป HR แบบ SaaS รันเป็น **deployment เดียว** ใน region ของ US และดูแล tenant ทั้งหมด 88 ราย ตอนนี้ระบบใกล้ชนเพดานที่จะขยับขึ้นง่าย ๆ ไม่ได้แล้ว: ฐานข้อมูลอยู่บน tier ใหญ่สุดแล้ว และ vCPU quota ของ region ก็ใกล้หมด พอ tenant รายใหญ่รายเดียวรัน payroll สิ้นเดือน ทุกคนก็ช้าตามไปหมด ส่วน Northwind ลูกค้าใหม่ใน EU ก็ใช้ระบบนี้ไม่ได้เลย: ข้อมูลของ Northwind ต้องอยู่ใน EU แต่ไม่มี deployment ใน EU"
     },
     {
       "title": "หลายสำเนา จาก template เดียว",
-      "body": "stack ทั้งชุด (app instance, cache, ฐานข้อมูล และ storage) ถูกนิยามเป็นโค้ดครั้งเดียว แล้ว deploy หลายครั้งเป็น **stamp**: stamp 1 และ 2 ใน US และ stamp 3 ใน EU แต่ละ stamp ครบในตัวและเป็นอิสระ เก็บข้อมูลของ tenant ของตัวเอง และกำหนดขนาดไว้รองรับได้ไม่เกิน 50 tenant **tenant catalog** ระดับ global บันทึกว่า tenant แต่ละรายอยู่ stamp ไหน และ router ใช้ catalog นี้ส่งทุก request ไปยัง stamp นั้น ในที่นี้ใช้ host name (`contoso.hr.example`)"
+      "body": "เขียน stack ทั้งชุด (app instance, cache, ฐานข้อมูล และ storage) เป็นโค้ดไว้ครั้งเดียว แล้ว deploy หลายรอบเป็น **stamp**: stamp 1 และ 2 อยู่ใน US ส่วน stamp 3 อยู่ใน EU แต่ละ stamp ครบในตัวและเป็นอิสระ เก็บข้อมูลของ tenant ตัวเอง และตั้งขนาดไว้รับได้ไม่เกิน 50 tenant **tenant catalog** ระดับ global จดไว้ว่า tenant แต่ละรายอยู่ stamp ไหน แล้ว router ก็ใช้ catalog นี้ส่งทุก request ไปที่ stamp นั้น ในที่นี้ดูจาก host name (`contoso.hr.example`)"
     },
     {
       "title": "จัด tenant ลง stamp",
-      "body": "เมื่อ Proseware ซึ่งเป็น tenant ใหม่ใน EU สมัครเข้ามา ขั้นตอน onboarding จะเลือก stamp ใน EU ที่ยังมีที่ว่าง (stamp 3) แล้วเพิ่ม entry ใน catalog เมื่อ stamp ฝั่ง US มี tenant ครบ 50 ราย automation ก็ deploy **stamp 4** จาก template เดียวกัน และ tenant ถัดไปใน US คือ Woodgrove ก็ถูกวางไว้ที่นั่น tenant ที่ใหญ่มาก ๆ ก็ได้ stamp ของตัวเองด้วยวิธีเดียวกันนี้"
+      "body": "พอ Proseware tenant ใหม่ใน EU สมัครเข้ามา ขั้นตอน onboarding ก็เลือก stamp ใน EU ที่ยังมีที่ว่าง (stamp 3) แล้วเพิ่ม entry ใน catalog พอ stamp ฝั่ง US มี tenant ครบ 50 ราย automation ก็ deploy **stamp 4** จาก template เดียวกัน แล้ว tenant รายถัดไปใน US คือ Woodgrove ก็ไปอยู่ที่นั่น tenant ที่ใหญ่มาก ๆ ก็แยก stamp ให้ใช้เองได้ด้วยวิธีเดียวกันนี้"
     },
     {
-      "title": "ดูแล stamp จำนวนมาก",
-      "body": "release v8 ทยอยออกเป็น **ring**: เริ่มที่ stamp ภายในก่อน ตามด้วย stamp 1 แล้วจึงเป็น stamp ที่เหลือ โดยหยุดเฝ้าดูทีละ ring ดังนั้นในช่วงหนึ่ง stamp แต่ละตัวจะรัน version ต่างกัน และ catalog ก็บันทึกไว้ว่า stamp ไหนรัน version อะไร การย้าย tenant คือการคัดลอกข้อมูลไปยัง stamp ใหม่ สลับ entry ใน catalog แล้ว drain stamp เดิม ในที่นี้ Fabrikam ซึ่งเป็น tenant รายใหญ่ย้ายจาก stamp 2 ที่เต็มแล้วไปยัง stamp 4 ส่วน router, catalog, sign-in และ billing อยู่นอก stamp จึงต้องมี availability อย่างน้อยเท่ากับ stamp ใด ๆ"
+      "title": "ดูแล stamp หลายชุด",
+      "body": "release v8 ทยอยออกเป็น **ring**: เริ่มที่ stamp ภายในก่อน ตามด้วย stamp 1 แล้วค่อยไป stamp ที่เหลือ ระหว่างทางก็หยุดดูผลทีละ ring เลยมีช่วงหนึ่งที่ stamp แต่ละตัวรัน version ไม่เหมือนกัน และ catalog ก็จดไว้ว่าตัวไหนรัน version อะไร จะย้าย tenant ก็คือคัดลอกข้อมูลไปที่ stamp ใหม่ สลับ entry ใน catalog แล้ว drain stamp เดิม ในภาพนี้ Fabrikam ที่เป็น tenant รายใหญ่ย้ายจาก stamp 2 ที่เต็มแล้วไปอยู่ stamp 4 ส่วน router, catalog, sign-in และ billing อยู่นอก stamp เลยต้องมี availability อย่างน้อยเท่ากับ stamp ตัวไหน ๆ"
     }
   ]
 }
