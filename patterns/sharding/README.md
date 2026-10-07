@@ -160,6 +160,14 @@ Sharding is hard to undo: once the data is spread out, every query, report, migr
 - [Deployment Stamps](../deployment-stamps/) — Deploy many independent copies of the whole stack, each serving a subset of tenants.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 
+## Related components and services
+
+- [PostgreSQL](../postgresql/) — A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes.
+- [MongoDB](../mongodb/) — A document database: JSON-like documents with flexible schemas, replica sets for failover and sharding to scale out.
+- [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
+- [Elasticsearch & OpenSearch](../elasticsearch/) — Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes.
+- [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
+
 ## References
 
 - [Azure Architecture Center — Sharding pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding)

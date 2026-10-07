@@ -186,6 +186,12 @@ The diagram gives its page a plain `max-age=600` to keep the picture simple. Tha
 - [Gateway Offloading](../gateway-offloading/) — Move TLS termination, authentication and compression out of every service into the gateway.
 - [Valet Key](../valet-key/) — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
 
+## Related components and services
+
+- [NGINX](../nginx/) — A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications.
+- [Amazon S3](../amazon-s3/) — Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events.
+- [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
+
 ## References
 
 - [RFC 9111 — HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111.html)

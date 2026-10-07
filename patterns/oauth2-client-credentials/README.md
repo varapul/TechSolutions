@@ -93,6 +93,11 @@ RFC 9700, the OAuth security best current practice, recommends the asymmetric me
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 
+## Related components and services
+
+- [Keycloak](../keycloak/) — An open-source identity provider: user sign-in, federation and single sign-on, issuing OpenID Connect and SAML tokens.
+- [Amazon Cognito](../amazon-cognito/) — Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials.
+
 ## References
 
 - [RFC 6749 — The OAuth 2.0 Authorization Framework (§4.4 Client Credentials Grant)](https://www.rfc-editor.org/rfc/rfc6749#section-4.4)

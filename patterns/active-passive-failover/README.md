@@ -164,6 +164,11 @@ Managed services are named as examples; their behaviour was checked against the 
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Chaos Engineering](../chaos-engineering/) — Inject failures on purpose to prove the system degrades the way you expect.
 
+## Related components and services
+
+- [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
+- [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
+
 ## References
 
 - [AWS whitepaper — Disaster Recovery of Workloads on AWS: disaster recovery options in the cloud (pilot light, warm standby, failover)](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html)

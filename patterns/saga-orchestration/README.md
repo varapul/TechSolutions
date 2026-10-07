@@ -67,6 +67,10 @@ Compensation is **semantic**, not an undo. The charge stays in the payments ledg
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 
+## Related components and services
+
+- [AWS Step Functions](../aws-step-functions/) — Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded.
+
 ## References
 
 - [Hector Garcia-Molina & Kenneth Salem — Sagas (SIGMOD 1987)](https://dl.acm.org/doi/10.1145/38713.38742)

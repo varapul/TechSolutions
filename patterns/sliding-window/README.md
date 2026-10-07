@@ -137,6 +137,11 @@ Nothing is sorted or rearranged, so stable and in place don't apply.
 - [Big-O Notation](../big-o-notation/) — How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows.
 - [Binary Search](../binary-search/) — Halve a sorted range with every check: about 20 steps find one item among a million, where a scan may need a million.
 
+## Related components and services
+
+- [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
+- [Apache Flink](../flink/) — A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints.
+
 ## References
 
 - [Cloudflare — How we built rate limiting capable of scaling to millions of domains (2017)](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/)

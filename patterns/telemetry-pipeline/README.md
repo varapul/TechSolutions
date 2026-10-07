@@ -172,6 +172,12 @@ Add the second tier when something has to be done centrally: tail sampling over 
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 
+## Related components and services
+
+- [Prometheus & Grafana](../prometheus/) — Pull-based monitoring: scrape metrics into a time-series database, query them with PromQL, alert, and chart them in Grafana.
+- [Amazon Kinesis Data Streams](../amazon-kinesis-data-streams/) — Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it.
+- [Amazon CloudWatch](../amazon-cloudwatch/) — Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service.
+
 ## References
 
 - [OpenTelemetry — Collector](https://opentelemetry.io/docs/collector/)

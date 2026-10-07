@@ -206,6 +206,10 @@ A layered edge is normal: a load balancer or CDN that terminates TLS and filters
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - [Rate Limiting & Throttling](../rate-limiting/) — Cap how fast each client may call (token bucket) and shed the excess with 429s.
 
+## Related components and services
+
+- [NGINX](../nginx/) — A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications.
+
 ## References
 
 - [Azure Architecture Center — Gateway Offloading pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-offloading)

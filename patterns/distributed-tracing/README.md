@@ -74,6 +74,11 @@ A **trace** records one request as a tree of **spans**. A span is one timed oper
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 
+## Related components and services
+
+- [Prometheus & Grafana](../prometheus/) — Pull-based monitoring: scrape metrics into a time-series database, query them with PromQL, alert, and chart them in Grafana.
+- [Amazon CloudWatch](../amazon-cloudwatch/) — Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service.
+
 ## References
 
 - [W3C — Trace Context (Recommendation)](https://www.w3.org/TR/trace-context/)

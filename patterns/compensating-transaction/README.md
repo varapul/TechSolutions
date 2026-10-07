@@ -68,6 +68,10 @@ Don't use it when everything lives in one database: a local transaction gives yo
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.
 
+## Related components and services
+
+- [AWS Step Functions](../aws-step-functions/) — Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded.
+
 ## References
 
 - [Azure Architecture Center — Compensating Transaction pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction)

@@ -128,6 +128,11 @@ It doesn't have to be all or nothing. Azure's guidance suggests applying it to t
 - [Compensating Transaction](../compensating-transaction/) — Undo the completed steps of a multi-step operation that failed part-way.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 
+## Related components and services
+
+- [Apache Kafka](../kafka/) — A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history.
+- [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
+
 ## References
 
 - [Martin Fowler — Event Sourcing (2005)](https://martinfowler.com/eaaDev/EventSourcing.html)

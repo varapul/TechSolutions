@@ -134,6 +134,14 @@ Stripe's API is a widely copied implementation. Its v1 API accepts the header on
 - [Event Sourcing](../event-sourcing/) — Store every change as an immutable event and rebuild state by replaying them.
 - [Serverless (Functions)](../serverless/) — Functions start per event, scale out automatically and scale to zero when idle.
 
+## Related components and services
+
+- [Apache Kafka](../kafka/) — A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history.
+- [RabbitMQ](../rabbitmq/) — A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it.
+- [Amazon SQS](../amazon-sqs/) — A managed message queue: consumers poll, a visibility timeout hides messages in flight, and repeated failures go to a dead-letter queue.
+- [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
+- [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
+
 ## References
 
 - [Enterprise Integration Patterns — Idempotent Receiver](https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html)

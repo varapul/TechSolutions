@@ -110,6 +110,11 @@ The diagram's one-hour certificates, replaced at two-thirds of their life, are o
 - [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 - [Gateway Offloading](../gateway-offloading/) — Move TLS termination, authentication and compression out of every service into the gateway.
 
+## Related components and services
+
+- [NGINX](../nginx/) — A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications.
+- [HashiCorp Vault](../vault/) — A secrets manager: authenticate workloads, hand out short-lived credentials, encrypt data and audit every access.
+
 ## References
 
 - [RFC 9846 — The Transport Layer Security (TLS) Protocol Version 1.3 (replaces RFC 8446)](https://www.rfc-editor.org/rfc/rfc9846)

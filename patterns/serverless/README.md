@@ -92,6 +92,11 @@ How a failure is handled depends on how the function was invoked:
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 
+## Related components and services
+
+- [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
+- [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
+
 ## References
 
 - [Mike Roberts — Serverless Architectures (martinfowler.com)](https://martinfowler.com/articles/serverless.html)

@@ -102,6 +102,12 @@ Do **not** use one:
 - [Serverless (Functions)](../serverless/) — Functions start per event, scale out automatically and scale to zero when idle.
 - [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 
+## Related components and services
+
+- [RabbitMQ](../rabbitmq/) — A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it.
+- [Amazon SQS](../amazon-sqs/) — A managed message queue: consumers poll, a visibility timeout hides messages in flight, and repeated failures go to a dead-letter queue.
+- [Amazon SNS](../amazon-sns/) — Managed publish-subscribe: a message published to a topic fans out to queues, functions, HTTP endpoints, email and SMS.
+
 ## References
 
 - [Enterprise Integration Patterns — Dead Letter Channel](https://www.enterpriseintegrationpatterns.com/patterns/messaging/DeadLetterChannel.html)

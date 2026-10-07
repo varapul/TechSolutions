@@ -84,6 +84,12 @@ In MySQL a schema *is* a database (`CREATE SCHEMA` is a synonym for `CREATE DATA
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Modular Monolith](../modular-monolith/) — One deployable unit built from strongly bounded modules that talk through explicit interfaces.
 
+## Related components and services
+
+- [PostgreSQL](../postgresql/) — A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes.
+- [MongoDB](../mongodb/) — A document database: JSON-like documents with flexible schemas, replica sets for failover and sharding to scale out.
+- [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
+
 ## References
 
 - [Chris Richardson (microservices.io) — Pattern: Database per service](https://microservices.io/patterns/data/database-per-service.html)

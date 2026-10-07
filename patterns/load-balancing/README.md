@@ -103,6 +103,13 @@ Vendor behaviour and defaults change, so treat these as examples and check the c
 - [Rolling Update](../rolling-update/) — Replace instances batch by batch while the service stays up.
 - [Circuit Breaker](../circuit-breaker/) — Stop calling a failing dependency, fail fast with a fallback, and probe until it recovers.
 
+## Related components and services
+
+- [System Map](../system-map/) — One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search.
+- [NGINX](../nginx/) — A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications.
+- [Amazon VPC](../amazon-vpc/) — Your private network in AWS: subnets in each Availability Zone, route tables, gateways, security groups and endpoints.
+- [Amazon ECS & Fargate](../amazon-ecs/) — Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate.
+
 ## References
 
 - [Google SRE Book — Load Balancing at the Frontend (chapter 19)](https://sre.google/sre-book/load-balancing-frontend/)

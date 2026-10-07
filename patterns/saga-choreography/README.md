@@ -121,6 +121,10 @@ Do **not** use it:
 - [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 - [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.
 
+## Related components and services
+
+- [Amazon EventBridge](../amazon-eventbridge/) — An event bus: rules match events from AWS services, SaaS apps and your own code by content and route them to targets.
+
 ## References
 
 - [Chris Richardson — Pattern: Saga (microservices.io)](https://microservices.io/patterns/data/saga.html)

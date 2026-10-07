@@ -80,6 +80,10 @@ They combine well: a canary build usually ships new features dark behind flags, 
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Cell-Based Architecture](../cell-based-architecture/) — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
 
+## Related components and services
+
+- [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
+
 ## References
 
 - [Google SRE Workbook — Canarying Releases](https://sre.google/workbook/canarying-releases/)

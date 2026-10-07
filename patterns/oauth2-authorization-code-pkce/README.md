@@ -68,6 +68,11 @@ The hash only works one way. Seeing the challenge in step 1 doesn't reveal the v
 - [Sessions vs Tokens](../sessions-vs-tokens/) — Server-side sessions versus self-contained tokens: where the state lives and how you revoke it.
 - [Federated Identity](../federated-identity/) — Let an external identity provider authenticate users; the application trusts its tokens.
 
+## Related components and services
+
+- [Keycloak](../keycloak/) — An open-source identity provider: user sign-in, federation and single sign-on, issuing OpenID Connect and SAML tokens.
+- [Amazon Cognito](../amazon-cognito/) — Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials.
+
 ## References
 
 - [RFC 6749 — The OAuth 2.0 Authorization Framework (§4.1 Authorization Code Grant)](https://www.rfc-editor.org/rfc/rfc6749#section-4.1)

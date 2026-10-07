@@ -141,6 +141,11 @@ Leader election brings a new dependency, a failover pause and subtle failure mod
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 - [Cell-Based Architecture](../cell-based-architecture/) — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
 
+## Related components and services
+
+- [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
+- [etcd](../etcd/) — A strongly consistent key-value store on Raft that clusters use for configuration, service discovery, locks and leader election.
+
 ## References
 
 - [Azure Architecture Center — Leader Election pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election)

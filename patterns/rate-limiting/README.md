@@ -104,6 +104,11 @@ The numbers in the animation are small so they can be counted: 5 tokens, one bac
 - [Priority Queue](../priority-queue/) — Urgent messages are processed ahead of routine ones.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 
+## Related components and services
+
+- [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
+- [NGINX](../nginx/) — A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications.
+
 ## References
 
 - [RFC 6585 — Additional HTTP Status Codes: 429 Too Many Requests](https://www.rfc-editor.org/rfc/rfc6585.html#section-4)

@@ -72,6 +72,10 @@ In the diagram, four workers each finish 2.5 jobs a second (10 in total, 0.4 s p
 - [Asynchronous Request-Reply](../asynchronous-request-reply/) — Accept now with 202, process in the background, and let the client poll a status URL.
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 
+## Related components and services
+
+- [RabbitMQ](../rabbitmq/) — A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it.
+
 ## References
 
 - [Azure Architecture Center — Priority Queue pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/priority-queue)

@@ -75,6 +75,11 @@ Authenticating first lets quotas and cache keys depend on a *verified* identity;
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 
+## Related components and services
+
+- [System Map](../system-map/) — One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search.
+- [NGINX](../nginx/) — A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications.
+
 ## References
 
 - [Azure Architecture Center — API gateways (microservices design)](https://learn.microsoft.com/en-us/azure/architecture/microservices/design/gateway)

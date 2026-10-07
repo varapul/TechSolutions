@@ -235,6 +235,12 @@ It does not answer every question:
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 
+## Related components and services
+
+- [Elasticsearch & OpenSearch](../elasticsearch/) — Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes.
+- [Prometheus & Grafana](../prometheus/) — Pull-based monitoring: scrape metrics into a time-series database, query them with PromQL, alert, and chart them in Grafana.
+- [Amazon CloudWatch](../amazon-cloudwatch/) — Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service.
+
 ## References
 
 - [The Twelve-Factor App — XI. Logs](https://12factor.net/logs)

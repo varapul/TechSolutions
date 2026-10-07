@@ -129,6 +129,11 @@ It is not a punishment, and the example says so. It gives the team permission to
 - [Chaos Engineering](../chaos-engineering/) — Inject failures on purpose to prove the system degrades the way you expect.
 - [Feature Flags](../feature-flags/) — Deploy code dark, then turn features on per user or percentage at runtime.
 
+## Related components and services
+
+- [Prometheus & Grafana](../prometheus/) — Pull-based monitoring: scrape metrics into a time-series database, query them with PromQL, alert, and chart them in Grafana.
+- [Amazon CloudWatch](../amazon-cloudwatch/) — Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service.
+
 ## References
 
 - [Google SRE Book — Service Level Objectives (chapter 4)](https://sre.google/sre-book/service-level-objectives/)

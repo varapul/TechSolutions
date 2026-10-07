@@ -154,6 +154,10 @@ Many systems combine them: the consumers, or a counter, delete promptly, and an 
 - [Competing Consumers](../competing-consumers/) — Several workers pull from one queue, so work is shared and throughput scales out.
 - [Pipes and Filters](../pipes-and-filters/) — Split processing into independent stages connected by channels.
 
+## Related components and services
+
+- [Amazon S3](../amazon-s3/) — Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events.
+
 ## References
 
 - [Enterprise Integration Patterns — Claim Check](https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html)

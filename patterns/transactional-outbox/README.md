@@ -95,6 +95,12 @@ Both are at-least-once: a poller repeats events if it crashes after publishing b
 - [Publish-Subscribe](../publish-subscribe/) — Broadcast each message to every interested subscriber through a topic.
 - [Dead-Letter Queue](../dead-letter-queue/) — Park messages that keep failing so they stop blocking the queue and can be inspected.
 
+## Related components and services
+
+- [System Map](../system-map/) — One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search.
+- [Apache Kafka](../kafka/) — A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history.
+- [PostgreSQL](../postgresql/) — A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes.
+
 ## References
 
 - [Chris Richardson — Pattern: Transactional outbox (microservices.io)](https://microservices.io/patterns/data/transactional-outbox.html)

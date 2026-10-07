@@ -126,6 +126,11 @@ The exchanged token in the diagram therefore reads `aud: inventory-api`, `sub: a
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 
+## Related components and services
+
+- [Keycloak](../keycloak/) — An open-source identity provider: user sign-in, federation and single sign-on, issuing OpenID Connect and SAML tokens.
+- [AWS IAM](../aws-iam/) — Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated.
+
 ## References
 
 - [RFC 8693 — OAuth 2.0 Token Exchange](https://www.rfc-editor.org/rfc/rfc8693)

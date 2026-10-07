@@ -64,6 +64,11 @@ A single region is a single failure domain. Spreading instances across availabil
 - [Cell-Based Architecture](../cell-based-architecture/) — Many isolated, identical cells behind a thin router contain the blast radius of any failure.
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 
+## Related components and services
+
+- [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
+- [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
+
 ## References
 
 - [AWS whitepaper — Disaster recovery options in the cloud (multi-site active/active)](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html)

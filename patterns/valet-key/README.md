@@ -172,6 +172,13 @@ A key authorises a request; it doesn't open a network path. Azure Storage applie
 - [Web-Queue-Worker](../web-queue-worker/) — A web front end hands slow work to background workers through a queue.
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 
+## Related components and services
+
+- [HashiCorp Vault](../vault/) — A secrets manager: authenticate workloads, hand out short-lived credentials, encrypt data and audit every access.
+- [Amazon S3](../amazon-s3/) — Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events.
+- [AWS IAM](../aws-iam/) — Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated.
+- [Amazon Cognito](../amazon-cognito/) — Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials.
+
 ## References
 
 - [Azure Architecture Center — Valet Key pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/valet-key)

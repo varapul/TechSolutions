@@ -141,6 +141,11 @@ Endpoints add up: one per resource, per sub-resource, per zone and per network t
 - [API Gateway](../api-gateway/) — One entry point that authenticates, rate-limits and routes calls to backend services.
 - [Multi-Region Active-Active](../multi-region-active-active/) — Serve users from several regions at once and shift traffic away from a region that fails.
 
+## Related components and services
+
+- [Amazon VPC](../amazon-vpc/) — Your private network in AWS: subnets in each Availability Zone, route tables, gateways, security groups and endpoints.
+- [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
+
 ## References
 
 - [Microsoft Learn — What is a private endpoint?](https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview)

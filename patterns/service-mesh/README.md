@@ -132,6 +132,10 @@ The node-level designs cost less, and workloads can join them without a restart.
 - [Retry with Backoff & Jitter](../retry-with-backoff/) — Retry transient failures with growing, randomised delays so clients don't stampede.
 - [Distributed Tracing](../distributed-tracing/) — Propagate a trace context across services and assemble the spans into one timeline.
 
+## Related components and services
+
+- [Kubernetes](../kubernetes/) — A container orchestrator: you declare the desired state, and controllers keep pods scheduled, healthy and reachable.
+
 ## References
 
 - [Istio — Architecture](https://istio.io/latest/docs/ops/deployment/architecture/)

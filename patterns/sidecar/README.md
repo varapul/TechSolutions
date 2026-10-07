@@ -224,6 +224,12 @@ On the positive side, a sidecar can add a security control such as [Mutual TLS](
 - [Gateway Offloading](../gateway-offloading/) — Move TLS termination, authentication and compression out of every service into the gateway.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 
+## Related components and services
+
+- [Docker & Containers](../docker/) — Package an app and its dependencies as an image and run it as an isolated process: layers, registries, namespaces, cgroups.
+- [Kubernetes](../kubernetes/) — A container orchestrator: you declare the desired state, and controllers keep pods scheduled, healthy and reachable.
+- [HashiCorp Vault](../vault/) — A secrets manager: authenticate workloads, hand out short-lived credentials, encrypt data and audit every access.
+
 ## References
 
 - [Azure Architecture Center — Sidecar pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar)

@@ -183,6 +183,10 @@ If every server can be rebuilt from an image and every environment from code, re
 - [Disaster Recovery Strategies](../disaster-recovery-strategies/) — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 - [Centralized Logging](../centralized-logging/) — Ship structured logs from every service to one searchable store, correlated by request ID.
 
+## Related components and services
+
+- [Docker & Containers](../docker/) — Package an app and its dependencies as an image and run it as an isolated process: layers, registries, namespaces, cgroups.
+
 ## References
 
 - [Kief Morris — ImmutableServer (Martin Fowler's bliki)](https://martinfowler.com/bliki/ImmutableServer.html)

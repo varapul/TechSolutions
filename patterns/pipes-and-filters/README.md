@@ -154,6 +154,11 @@ A fixed chain is the simplest pipeline. When the next step depends on the item, 
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Saga (Orchestration)](../saga-orchestration/) — A coordinator runs local transactions in sequence and triggers compensations when one fails.
 
+## Related components and services
+
+- [Apache Flink](../flink/) — A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints.
+- [AWS Step Functions](../aws-step-functions/) — Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded.
+
 ## References
 
 - [Azure Architecture Center — Pipes and Filters pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/pipes-and-filters)

@@ -236,6 +236,10 @@ Stable and in place don't apply to a map. Iteration order is not guaranteed in g
 - [Two Pointers](../two-pointers/) — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
 - [Sliding Window](../sliding-window/) — Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window.
 
+## Related components and services
+
+- [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
+
 ## References
 
 - [RFC 9923 — The FNV Non-Cryptographic Hash Algorithm (Noll, Vo, Eastlake and Hansen, 2026)](https://www.rfc-editor.org/rfc/rfc9923.html)

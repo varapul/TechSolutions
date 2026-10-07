@@ -109,6 +109,12 @@ It is overkill when:
 - [Cache-Aside](../cache-aside/) — Read from the cache first; on a miss load from the database and populate the cache.
 - [Transactional Outbox](../transactional-outbox/) — Save the event in the same database transaction as the data, then relay it: no dual-write gap.
 
+## Related components and services
+
+- [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
+- [Elasticsearch & OpenSearch](../elasticsearch/) — Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes.
+- [Apache Flink](../flink/) — A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints.
+
 ## References
 
 - [Martin Fowler — CQRS](https://martinfowler.com/bliki/CQRS.html)

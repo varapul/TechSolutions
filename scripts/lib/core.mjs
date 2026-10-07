@@ -23,6 +23,9 @@ export const ghSlug = (s) => s.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\p{Pc} -]
 // ---------------------------------------------------------------------------
 // Catalog
 
+// Categories whose pages teach a real product (System Components, AWS Services) rather than a pattern.
+export const COMPONENT_CATEGORIES = new Set(['system-components', 'aws-services']);
+
 export function loadCatalog() {
   const { categories } = readJSON('catalog.json');
   const patterns = [];
@@ -43,6 +46,15 @@ export function loadCatalog() {
     });
   }
   const bySlug = new Map(patterns.map((p) => [p.slug, p]));
+  // Each pattern links back to the component pages whose related list names it.
+  const isComponent = (p) => COMPONENT_CATEGORIES.has(p.category.id);
+  for (const p of patterns) if (!isComponent(p)) p.components = [];
+  for (const c of patterns.filter((p) => isComponent(p) && p.meta)) {
+    for (const slug of c.meta.related ?? []) {
+      const p = bySlug.get(slug);
+      if (p?.components && !p.meta?.related?.includes(c.slug)) p.components.push(c.slug);
+    }
+  }
   return { categories, patterns, bySlug };
 }
 
@@ -231,6 +243,9 @@ export function patternFooter(p, bySlug) {
   const out = [];
   if (p.meta.related?.length) {
     out.push(`## Related patterns`, ``, ...p.meta.related.map((s) => relatedLine(s, bySlug, '../')), ``);
+  }
+  if (p.components?.length) {
+    out.push(`## Related components and services`, ``, ...p.components.map((s) => relatedLine(s, bySlug, '../')), ``);
   }
   if (p.meta.references?.length) {
     out.push(`## References`, ``, ...p.meta.references.map((r) => `- [${r.title}](${r.url})`), ``);

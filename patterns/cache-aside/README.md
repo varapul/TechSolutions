@@ -92,6 +92,11 @@ If the whole data set is small and rarely changes, skip lazy loading: load it al
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 - [Space-Based](../space-based-architecture/) — Processing units share an in-memory data grid, taking the database off the hot path.
 
+## Related components and services
+
+- [System Map](../system-map/) — One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search.
+- [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
+
 ## References
 
 - [Azure Architecture Center — Cache-Aside pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside)

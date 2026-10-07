@@ -93,6 +93,12 @@ The names differ by platform; the two dials, the readiness gate and the drain ar
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.
 
+## Related components and services
+
+- [Docker & Containers](../docker/) — Package an app and its dependencies as an image and run it as an isolated process: layers, registries, namespaces, cgroups.
+- [Kubernetes](../kubernetes/) — A container orchestrator: you declare the desired state, and controllers keep pods scheduled, healthy and reachable.
+- [Amazon ECS & Fargate](../amazon-ecs/) — Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate.
+
 ## References
 
 - [Kubernetes — Deployments (rolling update strategy, rollback, progress deadline)](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)

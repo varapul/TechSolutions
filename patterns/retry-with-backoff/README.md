@@ -66,6 +66,10 @@ The numbers in the animation come from a small model: six clients send 100 ms ca
 - [Bulkhead](../bulkhead/) — Give each dependency its own pool of resources so one failure can't sink the whole ship.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 
+## Related components and services
+
+- [AWS Step Functions](../aws-step-functions/) — Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded.
+
 ## References
 
 - [AWS Architecture Blog — Exponential Backoff And Jitter (Marc Brooker)](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)

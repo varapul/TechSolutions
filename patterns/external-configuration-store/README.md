@@ -180,6 +180,11 @@ Many teams keep configuration in a Git repository and let a pipeline or an agent
 - [Blue-Green Deployment](../blue-green-deployment/) — Run the new version beside the old one and switch all traffic in one step.
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 
+## Related components and services
+
+- [etcd](../etcd/) — A strongly consistent key-value store on Raft that clusters use for configuration, service discovery, locks and leader election.
+- [HashiCorp Vault](../vault/) — A secrets manager: authenticate workloads, hand out short-lived credentials, encrypt data and audit every access.
+
 ## References
 
 - [Azure Architecture Center — External Configuration Store pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/external-configuration-store)

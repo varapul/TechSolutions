@@ -112,6 +112,11 @@ A redirect isn't the only way to finish. The status resource can also answer `20
 - [Serverless (Functions)](../serverless/) — Functions start per event, scale out automatically and scale to zero when idle.
 - [Timeout & Fallback](../timeout-and-fallback/) — Bound every remote call and degrade gracefully when the time runs out.
 
+## Related components and services
+
+- [RabbitMQ](../rabbitmq/) — A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it.
+- [AWS Step Functions](../aws-step-functions/) — Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded.
+
 ## References
 
 - [Azure Architecture Center — Asynchronous Request-Reply pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/asynchronous-request-reply)
