@@ -68,7 +68,7 @@ Behind them sit the site's five principles: build quality in, work in small batc
 - The production stage is a deployment strategy: [canary release](../canary-release/), [blue-green deployment](../blue-green-deployment/) or [rolling update](../rolling-update/). [GitOps](../gitops/) is another way to perform that step: the pipeline writes the new digest to Git, and an agent in the cluster applies it.
 - [Feature flags](../feature-flags/) separate deploying code from releasing a feature.
 - [Expand and contract](../expand-and-contract/) lets schema changes go out with ordinary deployments while the old and new versions run side by side.
-- [Immutable infrastructure](../immutable-infrastructure/) applies "build once" to machine images, and infrastructure as code keeps the environments themselves in version control.
+- [Immutable infrastructure](../immutable-infrastructure/) applies "build once" to machine images, and [infrastructure as code](../infrastructure-as-code/) keeps the environments themselves in version control.
 - [DORA metrics](../dora-metrics/) show whether the pipeline is making delivery faster and safer.
 - The artifact is usually a container image ([Docker](../docker/)), deployed to a platform such as [Kubernetes](../kubernetes/).
 
@@ -109,7 +109,7 @@ It returns less for software that rarely changes and for short-lived prototypes,
 - [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.
 - [GitOps](../gitops/) — Git holds the desired state; an agent continuously reconciles the cluster to match it.
 - [Expand and Contract](../expand-and-contract/) — Change a schema or API in backward-compatible steps: expand, migrate, then contract.
-- Infrastructure as Code *(planned)* — Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift.
+- [Infrastructure as Code](../infrastructure-as-code/) — Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift.
 
 ## References
 

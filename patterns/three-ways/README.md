@@ -83,7 +83,7 @@ The Three Ways are the reasoning behind many pages in this catalog:
 | Third Way: learning | [Blameless Postmortems](../blameless-postmortems/), [Chaos Engineering](../chaos-engineering/), [Timeout & Fallback](../timeout-and-fallback/) (the kind of safe default worth sharing) |
 | Measuring the result | [DORA Metrics](../dora-metrics/) |
 
-Team Topologies applies the same thinking to the organisation: stream-aligned teams follow one flow of work, and platform teams offer internal products, such as a shared library with safe defaults, that speed those teams up.
+[Team Topologies](../team-topologies/) applies the same thinking to the organisation: stream-aligned teams follow one flow of work, and platform teams offer internal products, such as a shared library with safe defaults, that speed those teams up.
 
 ## When to use it
 
@@ -119,7 +119,7 @@ It costs more than it returns for a system that rarely changes and rarely fails:
 - [You Build It, You Run It](../you-build-it-you-run-it/) — The team that builds a service runs it in production, on call, so the people who can fix a problem hear about it first.
 - [Chaos Engineering](../chaos-engineering/) — Inject failures on purpose to prove the system degrades the way you expect.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
-- Team Topologies *(planned)* — Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check.
+- [Team Topologies](../team-topologies/) — Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check.
 
 ## References
 

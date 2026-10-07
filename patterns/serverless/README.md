@@ -97,6 +97,10 @@ How a failure is handled depends on how the function was invoked:
 - [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
 - [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
 
+## Related principles and frameworks
+
+- [FinOps](../finops/) — Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value.
+
 ## References
 
 - [Mike Roberts — Serverless Architectures (martinfowler.com)](https://martinfowler.com/articles/serverless.html)

@@ -1,0 +1,48 @@
+{
+  "aka": ["12-factor app", "Twelve-factor methodology"],
+  "steps": [
+    {
+      "title": "A pet server",
+      "caption": "catalog-01: password in Git, sessions in memory, logs on disk; a second server logs shoppers out.",
+      "body": "Before the move, Acme's catalog service runs on **catalog-01**, a server built and patched by hand: the production database password sits in `config/prod.yml` in Git, staging and production each get their own build (#88 and #91), and the logs go to files on its disk that cron rotates. The sessions of 1,800 logged-in shoppers live in its memory, so a second server doesn't help: a request that lands on catalog-02 finds no session and the shopper is logged out. Migrations are run by hand over SSH, and the only way to scale is a bigger server, from 8 to 32 vCPUs."
+    },
+    {
+      "title": "Code and config (I–V)",
+      "caption": "One repo builds catalog:2.3.0 once; each environment's config makes it v41-staging or v41-prod.",
+      "body": "Factors I to V separate the code from its configuration. One repository builds one image, `catalog:2.3.0`, with its dependencies declared in `requirements.txt` and installed inside it (I, II); everything that differs between deploys, such as `DATABASE_URL`, reaches the app as environment variables that Kubernetes fills from a ConfigMap and a Secret (III), and PostgreSQL, Redis and S3 are attached resources that the app finds by URL (IV). Build, release and run are separate stages: the image plus an environment's config makes a release with an ID, `v41-staging` or `v41-prod`, and a change to either makes a new release instead of editing this one (V)."
+    },
+    {
+      "title": "Running it (VI–IX)",
+      "caption": "Sessions move to Redis, web scales to 6 pods and worker to 2; pods start in 2 s, drain on SIGTERM.",
+      "body": "Factors VI to IX make the processes disposable. Sessions move to Redis, so any web pod can serve any shopper (VI); the app serves HTTP itself on the port it is given, 8080, behind the Service (VII); each process type scales on its own, web to 6 pods and worker to 2 (VIII); and a pod is ready 2 seconds after it starts and, on SIGTERM, finishes its 3 in-flight requests before it exits (IX). Kubernetes can now add, move and replace pods whenever it needs to (Acme's numbers are the example's own)."
+    },
+    {
+      "title": "Operating it, and limits",
+      "caption": "PostgreSQL 16 in dev, logs on stdout, the migration as a Job; limits: secrets, databases, telemetry.",
+      "body": "Developers run the same PostgreSQL 16, in a container (X); every pod writes its log to stdout as an event stream that the platform's log agent ships (XI); and the schema migration runs once, as a Kubernetes Job from release `v41-prod` with the same image and config (XII). The limits, in amber: the factors were written in 2011 for Heroku-style web apps; environment variables are a poor home for secrets, so mount the password from a secrets manager; a database is stateful and outside the model; and telemetry and security aren't among the twelve, which the community revision begun when Heroku open-sourced the text in November 2024 has not changed yet."
+    }
+  ],
+  "related": ["continuous-delivery", "external-configuration-store", "immutable-infrastructure", "health-endpoint-monitoring", "centralized-logging", "autoscaling", "docker", "kubernetes"],
+  "references": [
+    { "title": "Adam Wiggins — The Twelve-Factor App (12factor.net, Heroku, 2011; last updated 2017)", "url": "https://12factor.net/" },
+    { "title": "12factor.net — III. Config", "url": "https://12factor.net/config" },
+    { "title": "12factor.net — V. Build, release, run", "url": "https://12factor.net/build-release-run" },
+    { "title": "12factor.net — VI. Processes", "url": "https://12factor.net/processes" },
+    { "title": "12factor.net — IX. Disposability", "url": "https://12factor.net/disposability" },
+    { "title": "12factor.net — XI. Logs", "url": "https://12factor.net/logs" },
+    { "title": "Heroku — Heroku Open Sources the Twelve-Factor App Definition (November 2024)", "url": "https://www.heroku.com/blog/heroku-open-sources-twelve-factor-app-definition/" },
+    { "title": "Yehuda Katz — Twelve-Factor App Methodology is now Open Source (12factor.net blog, November 2024)", "url": "https://12factor.net/blog/open-source-announcement" },
+    { "title": "twelve-factor/twelve-factor — the community revision of the manifesto (GitHub)", "url": "https://github.com/twelve-factor/twelve-factor" },
+    { "title": "Kevin Hoffman — Beyond the Twelve-Factor App (O'Reilly, 2016; e-book hosted by VMware)", "url": "https://www.vmware.com/docs/ebook-beyond-the-12-factor-app" },
+    { "title": "Kubernetes documentation — ConfigMaps", "url": "https://kubernetes.io/docs/concepts/configuration/configmap/" },
+    { "title": "Kubernetes documentation — Secrets", "url": "https://kubernetes.io/docs/concepts/configuration/secret/" },
+    { "title": "Kubernetes documentation — Pod Lifecycle: termination of Pods", "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination" },
+    { "title": "Kubernetes documentation — Container Lifecycle Hooks (preStop)", "url": "https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/" },
+    { "title": "Kubernetes documentation — Jobs", "url": "https://kubernetes.io/docs/concepts/workloads/controllers/job/" },
+    { "title": "Kubernetes documentation — Sidecar Containers (stable since v1.33)", "url": "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/" },
+    { "title": "Kubernetes documentation — Virtual IPs and Service Proxies (session affinity)", "url": "https://kubernetes.io/docs/reference/networking/virtual-ips/" },
+    { "title": "Kubernetes documentation — Logging Architecture", "url": "https://kubernetes.io/docs/concepts/cluster-administration/logging/" },
+    { "title": "OWASP — Secrets Management Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html" },
+    { "title": "Docker documentation — Dockerfile reference: ENTRYPOINT, shell and exec form", "url": "https://docs.docker.com/reference/dockerfile/#entrypoint" }
+  ]
+}

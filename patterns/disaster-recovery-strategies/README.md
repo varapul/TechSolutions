@@ -120,6 +120,11 @@ Choose per workload, starting from its RTO and RPO, and take the cheapest strate
 - [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 - [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
 
+## Related principles and frameworks
+
+- [Infrastructure as Code](../infrastructure-as-code/) — Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift.
+- [Well-Architected Framework](../well-architected-framework/) — Review a workload against six pillars, from operational excellence to sustainability, and decide on the trade-offs between them.
+
 ## References
 
 - [AWS whitepaper — Disaster Recovery of Workloads on AWS: disaster recovery options in the cloud](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html)

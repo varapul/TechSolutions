@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**172 animated** · 9 planned · 16 categories
+**181 animated** · 0 planned · 16 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -28,7 +28,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
 | 🧭 | [DevOps & SRE Principles](#devops--sre-principles) | 9 / 9 | How teams ship changes often and keep production reliable: the principles, measures and practices behind DevOps and site reliability engineering. |
-| 🏗️ | [Platform Engineering](#platform-engineering) | 0 / 9 | Design principles and frameworks for the internal platform: how to build it, organise teams around it and keep it secure, well-architected and affordable. |
+| 🏗️ | [Platform Engineering](#platform-engineering) | 9 / 9 | Design principles and frameworks for the internal platform: how to build it, organise teams around it and keep it secure, well-architected and affordable. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 | 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
 | 🧱 | [System Components](#system-components) | 16 / 16 | The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it. |
@@ -239,15 +239,15 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 
 | Pattern | In one line | Status |
 |---|---|:-:|
-| The Twelve-Factor App | Twelve rules for apps that deploy cleanly anywhere: config in the environment, stateless processes, separate build, release and run. | ⏳ planned |
-| Infrastructure as Code | Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift. | ⏳ planned |
-| Team Topologies | Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check. | ⏳ planned |
-| Platform as a Product | An internal developer platform run like a product: developers are its customers, self-service is its interface, adoption is earned. | ⏳ planned |
-| Golden Paths | A paved, supported route for common tasks: one template creates a service with its pipeline, infrastructure and monitoring. | ⏳ planned |
-| Well-Architected Framework | Review a workload against six pillars, from operational excellence to sustainability, and decide on the trade-offs between them. | ⏳ planned |
-| FinOps | Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value. | ⏳ planned |
-| Supply Chain Security (SLSA) | Prove that what you deploy was built from your source: build provenance, SBOMs, signatures and a check before every deploy. | ⏳ planned |
-| Policy as Code | Write rules as code and check them automatically in CI and at deploy time, so guardrails replace manual approval gates. | ⏳ planned |
+| [**The Twelve-Factor App**](patterns/twelve-factor-app/) | Twelve rules for apps that deploy cleanly anywhere: config in the environment, stateless processes, separate build, release and run. | ✅ animated |
+| [**Infrastructure as Code**](patterns/infrastructure-as-code/) | Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift. | ✅ animated |
+| [**Team Topologies**](patterns/team-topologies/) | Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check. | ✅ animated |
+| [**Platform as a Product**](patterns/platform-as-a-product/) | An internal developer platform run like a product: developers are its customers, self-service is its interface, adoption is earned. | ✅ animated |
+| [**Golden Paths**](patterns/golden-paths/) | A paved, supported route for common tasks: one template creates a service with its pipeline, infrastructure and monitoring. | ✅ animated |
+| [**Well-Architected Framework**](patterns/well-architected-framework/) | Review a workload against six pillars, from operational excellence to sustainability, and decide on the trade-offs between them. | ✅ animated |
+| [**FinOps**](patterns/finops/) | Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value. | ✅ animated |
+| [**Supply Chain Security (SLSA)**](patterns/supply-chain-security/) | Prove that what you deploy was built from your source: build provenance, SBOMs, signatures and a check before every deploy. | ✅ animated |
+| [**Policy as Code**](patterns/policy-as-code/) | Write rules as code and check them automatically in CI and at deploy time, so guardrails replace manual approval gates. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 

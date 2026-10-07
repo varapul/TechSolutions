@@ -259,6 +259,10 @@ Google Cloud's counterpart, Secret Manager, keeps versioned secrets and sends a 
 - [Valet Key](../valet-key/) — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
 - [Sidecar](../sidecar/) — Run helper capabilities (proxy, logging, config) in a separate process next to the app.
 
+## Related principles and frameworks
+
+- [Supply Chain Security (SLSA)](../supply-chain-security/) — Prove that what you deploy was built from your source: build provenance, SBOMs, signatures and a check before every deploy.
+
 ## References
 
 - [HashiCorp Vault docs — Architecture](https://developer.hashicorp.com/vault/docs/internals/architecture)

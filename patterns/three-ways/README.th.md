@@ -64,7 +64,7 @@ Three Ways เป็นเหตุผลเบื้องหลังหลา
 | Third Way: learning | [Blameless Postmortems](../blameless-postmortems/), [Chaos Engineering](../chaos-engineering/), [Timeout & Fallback](../timeout-and-fallback/) (ค่า default ที่ปลอดภัยแบบที่ควรแชร์ต่อ) |
 | วัดผลลัพธ์ | [DORA Metrics](../dora-metrics/) |
 
-Team Topologies เอาแนวคิดเดียวกันไปใช้กับองค์กร: stream-aligned team เดินตาม flow ของงานหนึ่งสาย ส่วน platform team ก็ทำ product ภายใน เช่น shared library ที่มีค่า default ปลอดภัย เพื่อให้ทีมพวกนั้นไปได้เร็วขึ้น
+[Team Topologies](../team-topologies/) เอาแนวคิดเดียวกันไปใช้กับองค์กร: stream-aligned team เดินตาม flow ของงานหนึ่งสาย ส่วน platform team ก็ทำ product ภายใน เช่น shared library ที่มีค่า default ปลอดภัย เพื่อให้ทีมพวกนั้นไปได้เร็วขึ้น
 
 ## ใช้ตอนไหนดี
 

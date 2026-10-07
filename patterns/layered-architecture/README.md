@@ -130,6 +130,10 @@ Where it hurts (step 4):
 - [CQRS](../cqrs/) — Separate the write model (commands) from read models (queries), each optimised for its job.
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 
+## Related principles and frameworks
+
+- [Team Topologies](../team-topologies/) — Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check.
+
 ## References
 
 - [Azure Architecture Center — N-tier architecture style](https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/n-tier)

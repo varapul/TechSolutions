@@ -1,0 +1,975 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Policy as Code</title>
+<desc id="dg-desc">Policy as Code. Write rules as code and check them automatically in CI and at deploy time, so guardrails replace manual approval gates. Step 1, A wiki and a weekly gate: Before: 20 rules in a wiki and a weekly CAB: 3 days per approval, and a public bucket slips through. Step 2, Rules as code, in CI: PR #512 adds a public bucket. The CI policy check fails in 40 s and names the rule; fixed in 2 min. Step 3, At deploy and in audit: Admission blocks bad pods. New rule no-root warns first: 12 pods found, 11 fixed, 1 dated exception. Step 4, Pitfalls and limits: Pitfalls: too many rules at once, no tests, vague errors, hidden exceptions, copies per engine.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">PLATFORM ENGINEERING</text>
+  <text class="title" x="40" y="64">Policy as Code</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A wiki and a weekly gate</text>
+  <text class="step on p1" x="40" y="518">1 · A wiki and a weekly gate</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Rules as code, in CI</text>
+  <text class="step on p2" x="262" y="518">2 · Rules as code, in CI</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · At deploy and in audit</text>
+  <text class="step on p3" x="484" y="518">3 · At deploy and in audit</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Pitfalls and limits</text>
+  <text class="step on p4" x="706" y="518">4 · Pitfalls and limits</text>
+  <text class="caption p1" x="40" y="552">Before: 20 rules in a wiki and a weekly CAB: 3 days per approval, and a public bucket slips through.</text>
+  <text class="caption p2" x="40" y="552">PR #512 adds a public bucket. The CI policy check fails in 40 s and names the rule; fixed in 2 min.</text>
+  <text class="caption p3" x="40" y="552">Admission blocks bad pods. New rule no-root warns first: 12 pods found, 11 fixed, 1 dated exception.</text>
+  <text class="caption p4" x="40" y="552">Pitfalls: too many rules at once, no tests, vague errors, hidden exceptions, copies per engine.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Policy as Code. Timeline (20 s loop, 1 s = 5%):
+   0-5 s   before: CR-2207 reaches the weekly CAB at 0.85 s and waits Mon-Thu (1.0-2.05 s); approved 2.4 s,
+           CR-2211 rejected for no tags 2.6 s; the bucket is created by hand 2.95-3.3 s and is public;
+           a security scan finds it two months later at 3.6 s
+   5-10 s  rules as code: opa test passes 18/18 at 5.9 s; PR #512's plan reaches CI 6.0-6.4 s, the check
+           fails at 7.0 s naming s3-no-public-access, the fix lands 7.75 s and passes 8.35 s; apply 8.6-9.05 s
+   10-15 s admission denies a Docker Hub debug pod (10.3-10.9 s); no-root added in warn at 11.0 s; the audit
+           sweeps 11.3-11.8 s and finds 12 root pods, tickets 11.95-12.15 s; 3 weeks later 11 fixed and one
+           exception (12.5-12.8 s); no-root switches to deny 13.1 s and a root pod is denied 13.45-14.05 s
+   15-20 s pitfall cards 15.3 / 15.9 / 16.5 / 17.1 / 17.7 / 18.3 s, guardrails 18.9 s; all fades 19.7-20 s */
+.diagram .pac-code { font-size: 10.5px; white-space: pre; }
+.diagram .pac-con { font-size: 10px; white-space: pre; }
+.diagram .pac-tok { opacity: 0; }
+.diagram .pac-w0_9-2_4 { opacity: 0; animation: pac-w0_9-2_4 var(--T) linear infinite; }
+.diagram .pac-w0_9-4_7 { animation: pac-w0_9-4_7 var(--T) linear infinite; }
+.diagram .pac-w1-4_7 { animation: pac-w1-4_7 var(--T) linear infinite; }
+.diagram .pac-w1_35-4_7 { animation: pac-w1_35-4_7 var(--T) linear infinite; }
+.diagram .pac-w1_7-4_7 { animation: pac-w1_7-4_7 var(--T) linear infinite; }
+.diagram .pac-w2_05-4_7 { animation: pac-w2_05-4_7 var(--T) linear infinite; }
+.diagram .pac-w2_1-4_7 { animation: pac-w2_1-4_7 var(--T) linear infinite; }
+.diagram .pac-w2_25-4_7 { animation: pac-w2_25-4_7 var(--T) linear infinite; }
+.diagram .pac-w2_4-4_7 { animation: pac-w2_4-4_7 var(--T) linear infinite; }
+.diagram .pac-w2_6-4_7 { animation: pac-w2_6-4_7 var(--T) linear infinite; }
+.diagram .pac-w2_8-4_7 { animation: pac-w2_8-4_7 var(--T) linear infinite; }
+.diagram .pac-w3_3-4_7 { animation: pac-w3_3-4_7 var(--T) linear infinite; }
+.diagram .pac-w3_6-4_7 { animation: pac-w3_6-4_7 var(--T) linear infinite; }
+.diagram .pac-w3_7-4_7 { animation: pac-w3_7-4_7 var(--T) linear infinite; }
+.diagram .pac-w3_9-4_7 { animation: pac-w3_9-4_7 var(--T) linear infinite; }
+.diagram .pac-w5_3-6_4 { opacity: 0; animation: pac-w5_3-6_4 var(--T) linear infinite; }
+.diagram .pac-w5_3-7_2 { opacity: 0; animation: pac-w5_3-7_2 var(--T) linear infinite; }
+.diagram .pac-w5_3-7_75 { opacity: 0; animation: pac-w5_3-7_75 var(--T) linear infinite; }
+.diagram .pac-w5_3-12_8 { opacity: 0; animation: pac-w5_3-12_8 var(--T) linear infinite; }
+.diagram .pac-w5_45-19_7 { opacity: 0; animation: pac-w5_45-19_7 var(--T) linear infinite; }
+.diagram .pac-w5_6-19_7 { opacity: 0; animation: pac-w5_6-19_7 var(--T) linear infinite; }
+.diagram .pac-w5_75-19_7 { opacity: 0; animation: pac-w5_75-19_7 var(--T) linear infinite; }
+.diagram .pac-w5_9-11 { opacity: 0; animation: pac-w5_9-11 var(--T) linear infinite; }
+.diagram .pac-w6_4-7 { opacity: 0; animation: pac-w6_4-7 var(--T) linear infinite; }
+.diagram .pac-w7-8_35 { opacity: 0; animation: pac-w7-8_35 var(--T) linear infinite; }
+.diagram .pac-w7_2-7_75 { opacity: 0; animation: pac-w7_2-7_75 var(--T) linear infinite; }
+.diagram .pac-w7_2-8_9 { opacity: 0; animation: pac-w7_2-8_9 var(--T) linear infinite; }
+.diagram .pac-w7_75-9_7 { opacity: 0; animation: pac-w7_75-9_7 var(--T) linear infinite; }
+.diagram .pac-w7_75-19_7 { opacity: 0; animation: pac-w7_75-19_7 var(--T) linear infinite; }
+.diagram .pac-w8_35-14_7 { opacity: 0; animation: pac-w8_35-14_7 var(--T) linear infinite; }
+.diagram .pac-w8_9-19_7 { opacity: 0; animation: pac-w8_9-19_7 var(--T) linear infinite; }
+.diagram .pac-w9_1-9_7 { opacity: 0; animation: pac-w9_1-9_7 var(--T) linear infinite; }
+.diagram .pac-w9_1-19_7 { opacity: 0; animation: pac-w9_1-19_7 var(--T) linear infinite; }
+.diagram .pac-w10_55-14_7 { opacity: 0; animation: pac-w10_55-14_7 var(--T) linear infinite; }
+.diagram .pac-w10_7-14_7 { opacity: 0; animation: pac-w10_7-14_7 var(--T) linear infinite; }
+.diagram .pac-w11-13_1 { opacity: 0; animation: pac-w11-13_1 var(--T) linear infinite; }
+.diagram .pac-w11-13_6 { opacity: 0; animation: pac-w11-13_6 var(--T) linear infinite; }
+.diagram .pac-w11-19_7 { opacity: 0; animation: pac-w11-19_7 var(--T) linear infinite; }
+.diagram .pac-w11_3-11_8 { opacity: 0; animation: pac-w11_3-11_8 var(--T) linear infinite; }
+.diagram .pac-w11_8-12_5 { opacity: 0; animation: pac-w11_8-12_5 var(--T) linear infinite; }
+.diagram .pac-w11_8-14_7 { opacity: 0; animation: pac-w11_8-14_7 var(--T) linear infinite; }
+.diagram .pac-w11_95-12_5 { opacity: 0; animation: pac-w11_95-12_5 var(--T) linear infinite; }
+.diagram .pac-w12-12_5 { opacity: 0; animation: pac-w12-12_5 var(--T) linear infinite; }
+.diagram .pac-w12_05-12_5 { opacity: 0; animation: pac-w12_05-12_5 var(--T) linear infinite; }
+.diagram .pac-w12_05-14_7 { opacity: 0; animation: pac-w12_05-14_7 var(--T) linear infinite; }
+.diagram .pac-w12_1-12_5 { opacity: 0; animation: pac-w12_1-12_5 var(--T) linear infinite; }
+.diagram .pac-w12_15-12_5 { opacity: 0; animation: pac-w12_15-12_5 var(--T) linear infinite; }
+.diagram .pac-w12_5-14_7 { opacity: 0; animation: pac-w12_5-14_7 var(--T) linear infinite; }
+.diagram .pac-w12_5-19_7 { opacity: 0; animation: pac-w12_5-19_7 var(--T) linear infinite; }
+.diagram .pac-w12_6-19_7 { opacity: 0; animation: pac-w12_6-19_7 var(--T) linear infinite; }
+.diagram .pac-w12_8-19_7 { opacity: 0; animation: pac-w12_8-19_7 var(--T) linear infinite; }
+.diagram .pac-w13_1-14_7 { opacity: 0; animation: pac-w13_1-14_7 var(--T) linear infinite; }
+.diagram .pac-w13_1-19_7 { opacity: 0; animation: pac-w13_1-19_7 var(--T) linear infinite; }
+.diagram .pac-w13_7-14_7 { opacity: 0; animation: pac-w13_7-14_7 var(--T) linear infinite; }
+.diagram .pac-w13_85-14_7 { opacity: 0; animation: pac-w13_85-14_7 var(--T) linear infinite; }
+.diagram .pac-w15_3-19_7 { opacity: 0; animation: pac-w15_3-19_7 var(--T) linear infinite; }
+.diagram .pac-w15_9-19_7 { opacity: 0; animation: pac-w15_9-19_7 var(--T) linear infinite; }
+.diagram .pac-w16_5-19_7 { opacity: 0; animation: pac-w16_5-19_7 var(--T) linear infinite; }
+.diagram .pac-w17_1-19_7 { opacity: 0; animation: pac-w17_1-19_7 var(--T) linear infinite; }
+.diagram .pac-w17_7-19_7 { opacity: 0; animation: pac-w17_7-19_7 var(--T) linear infinite; }
+.diagram .pac-w18_3-19_7 { opacity: 0; animation: pac-w18_3-19_7 var(--T) linear infinite; }
+.diagram .pac-w18_9-19_7 { opacity: 0; animation: pac-w18_9-19_7 var(--T) linear infinite; }
+.diagram .pac-t-cr { animation: pac-t-cr var(--T) linear infinite; }
+.diagram .pac-t-byhand { animation: pac-t-byhand var(--T) linear infinite; }
+.diagram .pac-t-plan { animation: pac-t-plan var(--T) linear infinite; }
+.diagram .pac-t-fix { animation: pac-t-fix var(--T) linear infinite; }
+.diagram .pac-t-apply { animation: pac-t-apply var(--T) linear infinite; }
+.diagram .pac-t-req1 { animation: pac-t-req1 var(--T) linear infinite; }
+.diagram .pac-t-req1x { animation: pac-t-req1x var(--T) linear infinite; }
+.diagram .pac-t-req2 { animation: pac-t-req2 var(--T) linear infinite; }
+.diagram .pac-t-req2x { animation: pac-t-req2x var(--T) linear infinite; }
+.diagram .pac-t-sweep { animation: pac-t-sweep var(--T) linear infinite; }
+@keyframes pac-w0_9-2_4 {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.75% { opacity: 1; }
+  12% { opacity: 1; }
+  13.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w0_9-4_7 {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w1-4_7 {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  6.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w1_35-4_7 {
+  0% { opacity: 0; }
+  6.75% { opacity: 0; }
+  8% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w1_7-4_7 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w2_05-4_7 {
+  0% { opacity: 0; }
+  10.25% { opacity: 0; }
+  11.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w2_1-4_7 {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w2_25-4_7 {
+  0% { opacity: 0; }
+  11.25% { opacity: 0; }
+  12.5% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w2_4-4_7 {
+  0% { opacity: 0; }
+  12% { opacity: 0; }
+  13.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w2_6-4_7 {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  14.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w2_8-4_7 {
+  0% { opacity: 0; }
+  14% { opacity: 0; }
+  15.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w3_3-4_7 {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w3_6-4_7 {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  19.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w3_7-4_7 {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  19.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w3_9-4_7 {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20.75% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_3-6_4 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.75% { opacity: 1; }
+  32% { opacity: 1; }
+  33.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_3-7_2 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.75% { opacity: 1; }
+  36% { opacity: 1; }
+  37.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_3-7_75 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.75% { opacity: 1; }
+  38.75% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_3-12_8 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.75% { opacity: 1; }
+  64% { opacity: 1; }
+  65.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_45-19_7 {
+  0% { opacity: 0; }
+  27.25% { opacity: 0; }
+  28.5% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_6-19_7 {
+  0% { opacity: 0; }
+  28% { opacity: 0; }
+  29.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_75-19_7 {
+  0% { opacity: 0; }
+  28.75% { opacity: 0; }
+  30% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w5_9-11 {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  30.75% { opacity: 1; }
+  55% { opacity: 1; }
+  56.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w6_4-7 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  33.25% { opacity: 1; }
+  35% { opacity: 1; }
+  36.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w7-8_35 {
+  0% { opacity: 0; }
+  35% { opacity: 0; }
+  36.25% { opacity: 1; }
+  41.75% { opacity: 1; }
+  43.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w7_2-7_75 {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  37.25% { opacity: 1; }
+  38.75% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w7_2-8_9 {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  37.25% { opacity: 1; }
+  44.5% { opacity: 1; }
+  46% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w7_75-9_7 {
+  0% { opacity: 0; }
+  38.75% { opacity: 0; }
+  40% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w7_75-19_7 {
+  0% { opacity: 0; }
+  38.75% { opacity: 0; }
+  40% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w8_35-14_7 {
+  0% { opacity: 0; }
+  41.75% { opacity: 0; }
+  43% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w8_9-19_7 {
+  0% { opacity: 0; }
+  44.5% { opacity: 0; }
+  45.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w9_1-9_7 {
+  0% { opacity: 0; }
+  45.5% { opacity: 0; }
+  46.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w9_1-19_7 {
+  0% { opacity: 0; }
+  45.5% { opacity: 0; }
+  46.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w10_55-14_7 {
+  0% { opacity: 0; }
+  52.75% { opacity: 0; }
+  54% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w10_7-14_7 {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w11-13_1 {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.25% { opacity: 1; }
+  65.5% { opacity: 1; }
+  67% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w11-13_6 {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.25% { opacity: 1; }
+  68% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w11-19_7 {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w11_3-11_8 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  57.75% { opacity: 1; }
+  59% { opacity: 1; }
+  60.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w11_8-12_5 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60.25% { opacity: 1; }
+  62.5% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w11_8-14_7 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w11_95-12_5 {
+  0% { opacity: 0; }
+  59.75% { opacity: 0; }
+  61% { opacity: 1; }
+  62.5% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12-12_5 {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  61.25% { opacity: 1; }
+  62.5% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_05-12_5 {
+  0% { opacity: 0; }
+  60.25% { opacity: 0; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_05-14_7 {
+  0% { opacity: 0; }
+  60.25% { opacity: 0; }
+  61.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_1-12_5 {
+  0% { opacity: 0; }
+  60.5% { opacity: 0; }
+  61.75% { opacity: 1; }
+  62.5% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_15-12_5 {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  62% { opacity: 1; }
+  62.5% { opacity: 1; }
+  64% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_5-14_7 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_5-19_7 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_6-19_7 {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w12_8-19_7 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  65.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w13_1-14_7 {
+  0% { opacity: 0; }
+  65.5% { opacity: 0; }
+  66.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w13_1-19_7 {
+  0% { opacity: 0; }
+  65.5% { opacity: 0; }
+  66.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w13_7-14_7 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w13_85-14_7 {
+  0% { opacity: 0; }
+  69.25% { opacity: 0; }
+  70.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w15_3-19_7 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w15_9-19_7 {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w16_5-19_7 {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w17_1-19_7 {
+  0% { opacity: 0; }
+  85.5% { opacity: 0; }
+  86.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w17_7-19_7 {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w18_3-19_7 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-w18_9-19_7 {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pac-t-cr {
+  0% { transform: translate(262px, 150px); opacity: 0; }
+  2.25% { transform: translate(262px, 150px); opacity: 0; }
+  2.5% { opacity: 1; }
+  4.25% { transform: translate(330px, 150px); opacity: 1; }
+  4.5% { transform: translate(330px, 150px); opacity: 0; }
+  100% { transform: translate(330px, 150px); opacity: 0; }
+}
+@keyframes pac-t-byhand {
+  0% { transform: translate(598px, 150px); opacity: 0; }
+  14.75% { transform: translate(598px, 150px); opacity: 0; }
+  15% { opacity: 1; }
+  16.5% { transform: translate(668px, 150px); opacity: 1; }
+  16.75% { transform: translate(668px, 150px); opacity: 0; }
+  100% { transform: translate(668px, 150px); opacity: 0; }
+}
+@keyframes pac-t-plan {
+  0% { transform: translate(262px, 150px); opacity: 0; }
+  30% { transform: translate(262px, 150px); opacity: 0; }
+  30.25% { opacity: 1; }
+  32% { transform: translate(330px, 150px); opacity: 1; }
+  32.25% { transform: translate(330px, 150px); opacity: 0; }
+  100% { transform: translate(330px, 150px); opacity: 0; }
+}
+@keyframes pac-t-fix {
+  0% { transform: translate(262px, 150px); opacity: 0; }
+  39.25% { transform: translate(262px, 150px); opacity: 0; }
+  39.5% { opacity: 1; }
+  41.25% { transform: translate(330px, 150px); opacity: 1; }
+  41.5% { transform: translate(330px, 150px); opacity: 0; }
+  100% { transform: translate(330px, 150px); opacity: 0; }
+}
+@keyframes pac-t-apply {
+  0% { transform: translate(598px, 150px); opacity: 0; }
+  43% { transform: translate(598px, 150px); opacity: 0; }
+  43.25% { opacity: 1; }
+  45.25% { transform: translate(668px, 150px); opacity: 1; }
+  45.5% { transform: translate(668px, 150px); opacity: 0; }
+  100% { transform: translate(668px, 150px); opacity: 0; }
+}
+@keyframes pac-t-req1 {
+  0% { transform: translate(552px, 285px); opacity: 0; }
+  51.5% { transform: translate(552px, 285px); opacity: 0; }
+  51.75% { opacity: 1; }
+  52.75% { transform: translate(604px, 285px); opacity: 1; }
+  53% { transform: translate(604px, 285px); opacity: 0; }
+  100% { transform: translate(604px, 285px); opacity: 0; }
+}
+@keyframes pac-t-req1x {
+  0% { transform: translate(604px, 285px); opacity: 0; }
+  52.75% { transform: translate(604px, 285px); opacity: 0; }
+  53% { opacity: 1; }
+  54.5% { transform: translate(604px, 285px); opacity: 1; }
+  54.75% { transform: translate(604px, 285px); opacity: 0; }
+  100% { transform: translate(604px, 285px); opacity: 0; }
+}
+@keyframes pac-t-req2 {
+  0% { transform: translate(552px, 315px); opacity: 0; }
+  67.25% { transform: translate(552px, 315px); opacity: 0; }
+  67.5% { opacity: 1; }
+  68.5% { transform: translate(604px, 315px); opacity: 1; }
+  68.75% { transform: translate(604px, 315px); opacity: 0; }
+  100% { transform: translate(604px, 315px); opacity: 0; }
+}
+@keyframes pac-t-req2x {
+  0% { transform: translate(604px, 315px); opacity: 0; }
+  68.5% { transform: translate(604px, 315px); opacity: 0; }
+  68.75% { opacity: 1; }
+  70.25% { transform: translate(604px, 315px); opacity: 1; }
+  70.5% { transform: translate(604px, 315px); opacity: 0; }
+  100% { transform: translate(604px, 315px); opacity: 0; }
+}
+@keyframes pac-t-sweep {
+  0% { transform: translate(716px, 282px); opacity: 0; }
+  56.5% { transform: translate(716px, 282px); opacity: 0; }
+  56.75% { opacity: 1; }
+  59% { transform: translate(840px, 282px); opacity: 1; }
+  59.25% { transform: translate(840px, 282px); opacity: 0; }
+  100% { transform: translate(840px, 282px); opacity: 0; }
+}
+</style>
+<g class="stage">
+  <!-- wires: change -> check -> AWS on top, rules from the repo in orange -->
+  <line class="wire" x1="286" y1="150" x2="301" y2="150" marker-end="url(#ah)"/>
+  <line class="wire" x1="622" y1="150" x2="637" y2="150" marker-end="url(#ah)"/>
+  <g class="p1"><path class="wire dash" d="M286 244H294V196H301" marker-end="url(#ah)"/><line class="s-red dash" x1="622" y1="285" x2="637" y2="285" stroke-width="1.8" marker-end="url(#ah-red)"/></g>
+  <g class="p234"><path class="none s-orange" d="M286 244H294V196H301" stroke-width="1.8" marker-end="url(#ah-orange)"/><line class="s-orange" x1="286" y1="285" x2="301" y2="285" stroke-width="1.8" marker-end="url(#ah-orange)"/><line class="s-orange" x1="286" y1="372" x2="301" y2="372" stroke-width="1.8" marker-end="url(#ah-orange)"/><line class="s-orange" x1="158" y1="406" x2="158" y2="393" stroke-width="1.8" marker-end="url(#ah-orange)"/><line class="wire" x1="462" y1="216" x2="462" y2="229" marker-end="url(#ah)"/><text class="tiny" x="470" y="227">deploy</text><line class="wire" x1="622" y1="285" x2="637" y2="285" marker-end="url(#ah)"/><line class="wire dash" x1="638" y1="400" x2="623" y2="400" marker-end="url(#ah)"/></g>
+  <!-- frames -->
+  <rect class="box" x="30" y="96" width="256" height="120" rx="12"/>
+  <rect class="box" x="30" y="230" width="256" height="162" rx="12"/>
+  <rect class="box" x="302" y="96" width="320" height="120" rx="12"/>
+  <rect class="box" x="302" y="354" width="320" height="116" rx="12"/>
+  <rect class="box" x="638" y="96" width="292" height="120" rx="12"/>
+  <rect class="box" x="638" y="230" width="292" height="240" rx="12"/>
+  <g class="p1"><rect class="zone" x="302" y="230" width="320" height="110" rx="12"/><rect class="zone" x="30" y="406" width="256" height="64" rx="12"/></g>
+  <g class="p234"><rect class="box" x="302" y="230" width="320" height="110" rx="12"/><rect class="box" x="30" y="406" width="256" height="64" rx="12"/></g>
+  <!-- L1: change request CR-2207 / PR #512 -->
+  <g class="p1"><text class="label" x="46" y="120">Change request</text><rect class="f-panel-2 s-line" x="214" y="106" width="58" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="243" y="119">CR-2207</text><text class="sub" x="46" y="137">delivery team · returns service</text><text class="tiny f-ink" x="46" y="158">New S3 bucket: <tspan class="mono sb">returns-exports</tspan></text><rect class="f-panel-2 s-line" x="46" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="64" y="182">Mon</text><rect class="f-panel-2 s-line" x="86" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="104" y="182">Tue</text><rect class="f-panel-2 s-line" x="126" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="144" y="182">Wed</text><rect class="f-panel-2 s-line" x="166" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="184" y="182">Thu</text></g>
+  <g class="pac-w1-4_7"><rect class="f-amber-soft s-amber" x="46" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="64" y="182">Mon</text></g>
+  <g class="pac-w1_35-4_7"><rect class="f-amber-soft s-amber" x="86" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="104" y="182">Tue</text></g>
+  <g class="pac-w1_7-4_7"><rect class="f-amber-soft s-amber" x="126" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="144" y="182">Wed</text></g>
+  <g class="pac-w2_05-4_7"><rect class="f-amber-soft s-amber" x="166" y="169" width="36" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="184" y="182">Thu</text></g>
+  <g class="pac-w2_1-4_7"><text class="sub b f-amber-ink end" x="272" y="182">3 days</text></g>
+  <g class="pac-w2_25-4_7"><text class="tiny sb f-red" x="46" y="205">Security feels like a gate.</text></g>
+  <g class="p234"><text class="label" x="46" y="120">PR #512</text><text class="sub" x="46" y="137"><tspan class="mono">acme/returns</tspan> · delivery team</text><line class="s-line" x1="42" y1="143" x2="276" y2="143" stroke-width="1"/><text class="pac-code mono f-faint" x="46" y="158" xml:space="preserve">labels.tf</text><text class="tiny end f-faint" x="272" y="158">+18 −0</text><text class="pac-code mono f-ink" x="46" y="171" xml:space="preserve">+   bucket = "returns-label-exports"</text><text class="pac-code mono f-faint" x="46" y="183" xml:space="preserve">    …</text></g>
+  <g class="pac-w5_3-7_2"><rect class="f-bg" x="233" y="106" width="39" height="18" rx="9"/><rect class="f-blue-soft s-blue" x="233" y="106" width="39" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="252.5" y="119">open</text></g>
+  <g class="pac-w7_2-8_9"><rect class="f-bg" x="182" y="106" width="90" height="18" rx="9"/><rect class="f-red-soft s-red" x="182" y="106" width="90" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-red" x="227" y="119">check failed</text></g>
+  <g class="pac-w8_9-19_7"><rect class="f-bg" x="220" y="106" width="52" height="18" rx="9"/><rect class="f-green-soft s-green" x="220" y="106" width="52" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-green" x="246" y="119">merged</text></g>
+  <g class="pac-w7_2-7_75"><rect class="f-red-soft" x="42" y="186" width="234" height="25" rx="3"/></g>
+  <g class="pac-w7_75-9_7"><rect class="f-green-soft" x="42" y="186" width="234" height="25" rx="3"/></g>
+  <g class="pac-w5_3-7_75"><text class="pac-code mono f-ink" x="46" y="195" xml:space="preserve">+   block_public_policy     = false</text><text class="pac-code mono f-ink" x="46" y="207" xml:space="preserve">+   restrict_public_buckets = false</text></g>
+  <g class="pac-w7_75-19_7"><text class="pac-code mono f-ink" x="46" y="195" xml:space="preserve">+   block_public_policy     = true</text><text class="pac-code mono f-ink" x="46" y="207" xml:space="preserve">+   restrict_public_buckets = true</text></g>
+  <!-- C1: CAB / CI check with conftest -->
+  <g class="p1"><text class="label" x="316" y="120">Change advisory board</text><rect class="f-orange-soft s-orange" x="518" y="106" width="90" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-orange" x="563" y="119">weekly · Thu</text><text class="sub" x="316" y="137">reads each request against the wiki</text><text class="tiny mono sb f-ink" x="316" y="175">CR-2211</text><text class="tiny f-ink" x="372" y="175">catalog-cache bucket</text><text class="tiny mono sb f-ink" x="316" y="193">CR-2214</text><text class="tiny f-ink" x="372" y="193">search: new image</text></g>
+  <g class="pac-w0_9-4_7"><text class="tiny mono sb f-ink" x="316" y="157">CR-2207</text><text class="tiny f-ink" x="372" y="157">returns-exports bucket</text></g>
+  <g class="pac-w0_9-2_4"><rect class="f-panel-2 s-line" x="550" y="144" width="58" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="579" y="157">waiting</text></g>
+  <g class="pac-w2_4-4_7"><rect class="f-bg" x="544" y="144" width="64" height="18" rx="9"/><rect class="f-orange-soft s-orange" x="544" y="144" width="64" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-orange" x="576" y="157">approved</text></g>
+  <g class="pac-w2_6-4_7"><rect class="f-red-soft s-red" x="537" y="162" width="71" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-red" x="572.5" y="175">✕ no tags</text></g>
+  <g class="pac-w2_8-4_7"><rect class="f-amber-soft s-amber" x="537" y="180" width="71" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="572.5" y="193">next week</text></g>
+  <g class="pac-w3_9-4_7"><text class="tiny sb f-red" x="316" y="210">CR-2207 had no tags either, and was public.</text></g>
+  <g class="p234"><text class="label" x="316" y="120">CI check</text><text class="sub mono" x="390" y="120">conftest</text><text class="sub" x="316" y="137">every pull request: Terraform plan, manifests</text><line class="s-line" x1="312" y1="143" x2="612" y2="143" stroke-width="1"/></g>
+  <g class="pac-w5_3-6_4"><rect class="f-bg" x="550" y="106" width="58" height="18" rx="9"/><rect class="f-panel-2 s-line" x="550" y="106" width="58" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="579" y="119">waiting</text><text class="tiny f-faint" x="316" y="160">waiting for a pull request</text></g>
+  <g class="pac-w6_4-7"><rect class="f-bg" x="550" y="106" width="58" height="18" rx="9"/><rect class="f-blue-soft s-blue" x="550" y="106" width="58" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="579" y="119">running</text></g>
+  <g class="pac-w7-8_35"><rect class="f-bg" x="512" y="106" width="96" height="18" rx="9"/><rect class="f-red-soft s-red" x="512" y="106" width="96" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-red" x="560" y="119">failed · 40 s</text><text class="pac-con mono sb f-red" x="316" y="159" xml:space="preserve">FAIL - plan.json - main - s3-no-public-access:</text><text class="pac-con mono f-ink" x="316" y="173" xml:space="preserve">aws_s3_bucket_public_access_block.labels</text><text class="pac-con mono f-ink" x="316" y="187" xml:space="preserve">allows public access. Keep all four settings</text><text class="pac-con mono f-ink" x="316" y="201" xml:space="preserve">true; share files with presigned URLs.</text></g>
+  <g class="pac-w8_35-14_7"><rect class="f-bg" x="512" y="106" width="96" height="18" rx="9"/><rect class="f-green-soft s-green" x="512" y="106" width="96" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-green" x="560" y="119">passed · 38 s</text><text class="pac-con mono sb f-green" x="316" y="159" xml:space="preserve">3 tests, 3 passed, 0 warnings,</text><text class="pac-con mono sb f-green" x="316" y="173" xml:space="preserve">0 failures, 0 exceptions</text><text class="tiny f-ink" x="316" y="192">Fix pushed 2 min after the failure.</text><text class="tiny sb f-green" x="316" y="208">Feedback in 40 s instead of 3 days.</text></g>
+  <!-- R1: AWS account -->
+  <text class="label" x="652" y="120">AWS account</text>
+  <text class="sub mono" x="756" y="120">production</text>
+  <text class="sub" x="652" y="137">S3 buckets of the returns service</text>
+  <path class="f-teal-soft s-teal" d="M652 151h11l-1.6 10h-7.8z" stroke-width="1.3" stroke-linejoin="round"/>
+  <text class="pac-code mono f-ink" x="670" y="160">returns-labels</text>
+  <text class="tiny sb f-green end" x="916" y="160">private · tagged</text>
+  <g class="pac-w3_7-4_7"><rect class="f-red-soft" x="646" y="168" width="276" height="20" rx="3"/></g>
+  <g class="pac-w3_3-4_7"><path class="f-teal-soft s-teal" d="M652 173h11l-1.6 10h-7.8z" stroke-width="1.3" stroke-linejoin="round"/><text class="pac-code mono f-ink" x="670" y="182">returns-exports</text><rect class="f-red-soft s-red" x="801" y="169" width="115" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-red" x="858.5" y="182">public · no tags</text></g>
+  <g class="p234"><path class="f-teal-soft s-teal" d="M652 173h11l-1.6 10h-7.8z" stroke-width="1.3" stroke-linejoin="round"/><text class="pac-code mono f-ink" x="670" y="182">returns-exports</text><text class="tiny sb f-green end" x="916" y="182">private · tagged</text></g>
+  <g class="pac-w9_1-9_7"><rect class="f-green-soft" x="646" y="190" width="276" height="20" rx="3"/></g>
+  <g class="pac-w9_1-19_7"><path class="f-teal-soft s-teal" d="M652 195h11l-1.6 10h-7.8z" stroke-width="1.3" stroke-linejoin="round"/><text class="pac-code mono f-ink" x="670" y="204">returns-label-exports</text><text class="tiny sb f-green end" x="916" y="204">private · tagged</text></g>
+  <!-- L2: wiki / policy repo -->
+  <g class="p1"><text class="label" x="46" y="254">Wiki: Platform rules</text><rect class="f-panel-2 s-line" x="208" y="240" width="64" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="240" y="253">20 items</text><text class="sub" x="46" y="271">prose, edited by hand, no tests</text><rect class="f-bg s-muted" x="46" y="284" width="9" height="9" rx="2" stroke-width="1.2"/><text class="tiny f-ink" x="62" y="292">Images from Acme's registry only</text><rect class="f-bg s-muted" x="46" y="301" width="9" height="9" rx="2" stroke-width="1.2"/><text class="tiny f-ink" x="62" y="309">… and pinned by digest</text><rect class="f-bg s-muted" x="46" y="318" width="9" height="9" rx="2" stroke-width="1.2"/><text class="tiny f-ink" x="62" y="326">Containers don't run as root</text><rect class="f-bg s-muted" x="46" y="335" width="9" height="9" rx="2" stroke-width="1.2"/><text class="tiny f-ink" x="62" y="343">Tag team and cost-centre</text><rect class="f-bg s-muted" x="46" y="352" width="9" height="9" rx="2" stroke-width="1.2"/><text class="tiny f-ink" x="62" y="360">No public S3 buckets</text><text class="tiny f-faint" x="62" y="377">… and 15 more</text></g>
+  <g class="p234"><text class="label" x="46" y="254">Policy repo</text><text class="sub mono" x="146" y="254">acme/policies</text><text class="sub" x="46" y="271">rules in Rego with tests, changed by PR</text><line class="s-line" x1="42" y1="277" x2="276" y2="277" stroke-width="1"/><text class="tiny f-faint" x="46" y="292">rule</text><text class="tiny f-faint" x="204" y="292">mode</text><text class="tiny f-faint end" x="272" y="292">tests</text><text class="pac-code mono f-ink" x="46" y="309">s3-no-public-access</text><rect class="f-orange-soft s-orange" x="200" y="296" width="38" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-orange" x="219" y="309">deny</text><text class="pac-code mono f-ink" x="46" y="326">registry-and-digest</text><rect class="f-orange-soft s-orange" x="200" y="313" width="38" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-orange" x="219" y="326">deny</text><text class="pac-code mono f-ink" x="46" y="343">required-tags</text><rect class="f-orange-soft s-orange" x="200" y="330" width="38" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-orange" x="219" y="343">deny</text><text class="pac-con mono f-muted" x="46" y="382">$ opa test rules/</text></g>
+  <g class="pac-w5_45-19_7"><circle class="f-green" cx="254" cy="305" r="5"/><path class="none s-bg" d="M251.2 305.2l2 2 3.8-4.2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green end" x="272" y="309">6</text></g>
+  <g class="pac-w5_6-19_7"><circle class="f-green" cx="254" cy="322" r="5"/><path class="none s-bg" d="M251.2 322.2l2 2 3.8-4.2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green end" x="272" y="326">7</text></g>
+  <g class="pac-w5_75-19_7"><circle class="f-green" cx="254" cy="339" r="5"/><path class="none s-bg" d="M251.2 339.2l2 2 3.8-4.2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green end" x="272" y="343">5</text></g>
+  <g class="pac-w11-19_7"><text class="pac-code mono f-ink" x="46" y="360">no-root</text><circle class="f-green" cx="254" cy="356" r="5"/><path class="none s-bg" d="M251.2 356.2l2 2 3.8-4.2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green end" x="272" y="360">5</text></g>
+  <g class="pac-w11-13_1"><rect class="f-bg" x="200" y="347" width="38" height="18" rx="9"/><rect class="f-amber-soft s-amber" x="200" y="347" width="38" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="219" y="360">warn</text></g>
+  <g class="pac-w13_1-19_7"><rect class="f-bg" x="200" y="347" width="38" height="18" rx="9"/><rect class="f-orange-soft s-orange" x="200" y="347" width="38" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-orange" x="219" y="360">deny</text></g>
+  <g class="pac-w11-13_6"><rect class="f-amber-soft" x="42" y="347" width="234" height="18" rx="3"/></g>
+  <g class="pac-w5_9-11"><text class="tiny sb f-green end" x="272" y="382">PASS: 18/18</text></g>
+  <g class="pac-w11-19_7"><text class="tiny sb f-green end" x="272" y="382">PASS: 23/23</text></g>
+  <!-- L3: exceptions -->
+  <g class="p1"><text class="label f-faint" x="46" y="428">Exceptions</text><text class="tiny sb f-red" x="46" y="446">agreed in the meeting,</text><text class="tiny sb f-red" x="46" y="461">written down nowhere.</text></g>
+  <g class="p234"><text class="sub mono b f-ink" x="46" y="428">exceptions.yaml</text><text class="tiny end f-faint" x="272" y="428">owner + expiry</text></g>
+  <g class="pac-w5_3-12_8"><text class="tiny f-faint" x="46" y="448">No exceptions yet.</text></g>
+  <g class="pac-w12_8-19_7"><rect class="f-orange-soft" x="42" y="435" width="234" height="31" rx="3"/><text class="pac-code mono sb f-orange" x="46" y="447">legacy-invoicing · no-root</text><text class="pac-code mono f-ink" x="46" y="461">payments team · until 2026-12-31</text></g>
+  <!-- C2: admission -->
+  <g class="p1"><text class="label f-faint" x="316" y="254">At deploy</text><text class="sub" x="316" y="271">kubectl and Helm go straight in</text><text class="tiny f-ink" x="316" y="292">Images from anywhere, pods as root:</text><text class="tiny sb f-red" x="316" y="308">nothing checks a deploy.</text></g>
+  <g class="p2"><text class="label f-faint" x="316" y="254">Admission</text><rect class="f-panel-2 s-line" x="506" y="240" width="102" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="557" y="253">OPA Gatekeeper</text><text class="sub f-faint" x="316" y="271">the same rules, when a pod is created</text></g>
+  <g class="p34"><text class="label" x="316" y="254">Admission</text><rect class="f-panel-2 s-line" x="506" y="240" width="102" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="557" y="253">OPA Gatekeeper</text><text class="sub" x="316" y="271">the API server asks before it stores a pod</text></g>
+  <g class="pac-w10_55-14_7"><circle class="f-red" cx="322" cy="285" r="6"/><path class="none s-bg" d="M319.7 282.7l4.6 4.6M324.3 282.7l-4.6 4.6" stroke-width="1.8" stroke-linecap="round"/><text class="pac-con mono f-ink" x="334" y="289" xml:space="preserve">kubectl run debug --image=busybox</text></g>
+  <g class="pac-w10_7-14_7"><text class="pac-con mono f-red" x="334" y="303" xml:space="preserve">[registry-and-digest] not from Acme's registry</text></g>
+  <g class="pac-w13_7-14_7"><circle class="f-red" cx="322" cy="315" r="6"/><path class="none s-bg" d="M319.7 312.7l4.6 4.6M324.3 312.7l-4.6 4.6" stroke-width="1.8" stroke-linecap="round"/><text class="pac-con mono f-ink" x="334" y="319" xml:space="preserve">helm install pdf vendor/pdf-render</text></g>
+  <g class="pac-w13_85-14_7"><text class="pac-con mono f-red" x="334" y="333" xml:space="preserve">[no-root] container "render" runs as UID 0</text></g>
+  <!-- C3: scan / audit -->
+  <g class="p1"><text class="label" x="316" y="378">Security scan</text><text class="sub" x="316" y="395">another team's tool, run now and then</text></g>
+  <g class="pac-w3_6-4_7"><rect class="f-red-soft s-red" x="506" y="364" width="102" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-red" x="557" y="377">2 months later</text><text class="tiny sb f-red" x="316" y="416">Found: returns-exports is public,</text><text class="tiny f-ink" x="316" y="432">two months after it was created.</text></g>
+  <g class="p2"><text class="label f-faint" x="316" y="378">Audit</text><rect class="f-panel-2 s-line" x="531" y="364" width="77" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="569.5" y="377">continuous</text><text class="sub f-faint" x="316" y="395">checks what already runs, all the time</text></g>
+  <g class="p34"><text class="label" x="316" y="378">Audit</text><rect class="f-panel-2 s-line" x="531" y="364" width="77" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-muted" x="569.5" y="377">continuous</text><text class="sub" x="316" y="395">Gatekeeper audit + AWS Config, on what runs</text></g>
+  <g class="pac-w11_3-11_8"><text class="tiny f-muted" x="316" y="416">scanning 38 running pods …</text></g>
+  <g class="pac-w11_8-14_7"><text class="tiny f-ink" x="316" y="416">no-root (warn): <tspan class="sb f-red">12 of 38 pods break it</tspan></text></g>
+  <g class="pac-w12_05-14_7"><text class="tiny sb f-purple" x="316" y="432">→ a ticket to each of the 5 owning teams</text></g>
+  <g class="pac-w12_5-14_7"><text class="tiny f-ink" x="316" y="448">3 weeks later: <tspan class="sb f-green">11 fixed</tspan>, <tspan class="sb f-orange">1 exception</tspan></text></g>
+  <g class="pac-w13_1-14_7"><text class="tiny sb f-orange" x="316" y="464">→ no-root switched from warn to deny</text></g>
+  <!-- R2: EKS cluster, pods by namespace -->
+  <text class="label" x="652" y="254">EKS cluster</text>
+  <text class="sub mono" x="758" y="254">prod</text>
+  <text class="sub" x="652" y="271">pods by namespace; each team owns one</text>
+  <text class="pac-code mono f-ink" x="652" y="296">checkout</text>
+  <rect class="f-panel-2 s-line" x="722" y="286" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="738" y="286" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="754" y="286" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="770" y="286" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="786" y="286" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="802" y="286" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="818" y="286" width="12" height="12" rx="3" stroke-width="1"/>
+  <text class="pac-code mono f-ink" x="652" y="320">catalog</text>
+  <rect class="f-panel-2 s-line" x="722" y="310" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="738" y="310" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="754" y="310" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="770" y="310" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="786" y="310" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="802" y="310" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="818" y="310" width="12" height="12" rx="3" stroke-width="1"/>
+  <text class="pac-code mono f-ink" x="652" y="344">search</text>
+  <rect class="f-panel-2 s-line" x="722" y="334" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="738" y="334" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="754" y="334" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="770" y="334" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="786" y="334" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="802" y="334" width="12" height="12" rx="3" stroke-width="1"/>
+  <text class="pac-code mono f-ink" x="652" y="368">delivery</text>
+  <rect class="f-panel-2 s-line" x="722" y="358" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="738" y="358" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="754" y="358" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="770" y="358" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="786" y="358" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="802" y="358" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="818" y="358" width="12" height="12" rx="3" stroke-width="1"/>
+  <text class="pac-code mono f-ink" x="652" y="392">mobile</text>
+  <rect class="f-panel-2 s-line" x="722" y="382" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="738" y="382" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="754" y="382" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="770" y="382" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="786" y="382" width="12" height="12" rx="3" stroke-width="1"/>
+  <text class="pac-code mono f-ink" x="652" y="416">payments</text>
+  <rect class="f-panel-2 s-line" x="722" y="406" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="738" y="406" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="754" y="406" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="770" y="406" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="786" y="406" width="12" height="12" rx="3" stroke-width="1"/>
+  <rect class="f-panel-2 s-line" x="802" y="406" width="12" height="12" rx="3" stroke-width="1"/>
+  <g class="p1"><text class="tiny sb f-amber-ink end" x="916" y="296">root?</text><text class="tiny sb f-amber-ink end" x="916" y="320">root?</text><text class="tiny sb f-amber-ink end" x="916" y="344">root?</text><text class="tiny sb f-amber-ink end" x="916" y="368">root?</text><text class="tiny sb f-amber-ink end" x="916" y="392">root?</text><text class="tiny sb f-amber-ink end" x="916" y="416">root?</text><text class="tiny sb f-red" x="652" y="446">Which pods run as root? Nobody knows.</text></g>
+  <g class="p2"><text class="tiny f-muted" x="652" y="446">38 pods in 6 namespaces, one per team</text></g>
+  <g class="pac-w11_8-12_5"><rect class="f-red s-bg" x="722" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="754" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="770" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="802" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="738" y="334" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="754" y="334" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="786" y="334" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="770" y="358" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="802" y="358" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="722" y="382" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="770" y="382" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-red s-bg" x="786" y="406" width="12" height="12" rx="3" stroke-width="1"/></g>
+  <g class="pac-w12_5-19_7"><rect class="f-green s-bg" x="722" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="754" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="770" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="802" y="310" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="738" y="334" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="754" y="334" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="786" y="334" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="770" y="358" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="802" y="358" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="722" y="382" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-green s-bg" x="770" y="382" width="12" height="12" rx="3" stroke-width="1"/><rect class="f-amber s-bg" x="786" y="406" width="12" height="12" rx="3" stroke-width="1"/></g>
+  <g class="pac-w11_95-12_5"><rect class="f-bg" x="850" y="307" width="66" height="18" rx="9"/><rect class="f-purple-soft s-purple" x="850" y="307" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="883" y="320">4 tickets</text></g>
+  <g class="pac-w12-12_5"><rect class="f-bg" x="850" y="331" width="66" height="18" rx="9"/><rect class="f-purple-soft s-purple" x="850" y="331" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="883" y="344">3 tickets</text></g>
+  <g class="pac-w12_05-12_5"><rect class="f-bg" x="850" y="355" width="66" height="18" rx="9"/><rect class="f-purple-soft s-purple" x="850" y="355" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="883" y="368">2 tickets</text></g>
+  <g class="pac-w12_1-12_5"><rect class="f-bg" x="850" y="379" width="66" height="18" rx="9"/><rect class="f-purple-soft s-purple" x="850" y="379" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="883" y="392">2 tickets</text></g>
+  <g class="pac-w12_15-12_5"><rect class="f-bg" x="850" y="403" width="66" height="18" rx="9"/><rect class="f-purple-soft s-purple" x="850" y="403" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="883" y="416">1 ticket</text></g>
+  <g class="pac-w12_5-19_7"><rect class="f-bg" x="850" y="307" width="66" height="18" rx="9"/><rect class="f-green-soft s-green" x="850" y="307" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-green" x="883" y="320">✓ fixed</text></g>
+  <g class="pac-w12_5-19_7"><rect class="f-bg" x="850" y="331" width="66" height="18" rx="9"/><rect class="f-green-soft s-green" x="850" y="331" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-green" x="883" y="344">✓ fixed</text></g>
+  <g class="pac-w12_5-19_7"><rect class="f-bg" x="850" y="355" width="66" height="18" rx="9"/><rect class="f-green-soft s-green" x="850" y="355" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-green" x="883" y="368">✓ fixed</text></g>
+  <g class="pac-w12_5-19_7"><rect class="f-bg" x="850" y="379" width="66" height="18" rx="9"/><rect class="f-green-soft s-green" x="850" y="379" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-green" x="883" y="392">✓ fixed</text></g>
+  <g class="pac-w12_5-19_7"><rect class="f-bg" x="850" y="403" width="66" height="18" rx="9"/><rect class="f-orange-soft s-orange" x="850" y="403" width="66" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-orange" x="883" y="416">exception</text></g>
+  <g class="pac-w12_6-19_7"><text class="tiny sb f-green" x="652" y="446">Root pods: 12 → 1 in 3 weeks (exception)</text></g>
+  <!-- step 4: pitfalls, one card per place they show up -->
+  <g class="p4"><rect class="f-bg" x="638" y="96" width="292" height="120" rx="12" opacity=".7"/><rect class="f-bg" x="638" y="230" width="292" height="240" rx="12" opacity=".7"/></g>
+  <g class="pac-w15_3-19_7"><rect class="f-bg" x="30" y="230" width="256" height="84" rx="12"/><rect class="f-bg" x="30" y="230" width="256" height="78" rx="12"/><rect class="f-amber-soft s-amber" x="30" y="230" width="256" height="78" rx="12" stroke-width="1.5"/><text class="sub sb f-amber-ink" x="46" y="252">Too many rules at once</text><text class="tiny f-ink" x="46" y="268">60 rules in the first week: builds</text><text class="tiny f-ink" x="46" y="283">turn red, teams look for side doors.</text><text class="tiny sb f-green" x="46" y="299">→ start with a few, in warn mode</text></g>
+  <g class="pac-w15_9-19_7"><rect class="f-bg" x="30" y="314" width="256" height="78" rx="12"/><rect class="f-red-soft s-red" x="30" y="314" width="256" height="78" rx="12" stroke-width="1.5"/><text class="sub sb f-red" x="46" y="336">Rules without tests</text><text class="tiny f-ink" x="46" y="352">One typo in a rule blocks every</text><text class="tiny f-ink" x="46" y="367">deploy, and nobody saw it coming.</text><text class="tiny sb f-green" x="46" y="383">→ a passing and a failing case each</text></g>
+  <g class="pac-w16_5-19_7"><rect class="f-bg" x="302" y="96" width="320" height="120" rx="12"/><rect class="f-red-soft s-red" x="302" y="96" width="320" height="120" rx="12" stroke-width="1.5"/><text class="sub sb f-red" x="316" y="120">Vague errors</text><text class="pac-con mono sb f-red" x="316" y="141" xml:space="preserve">FAIL - plan.json - main - violation</text><text class="tiny f-ink" x="316" y="162">Which rule? Which resource? What fix? People</text><text class="tiny f-ink" x="316" y="177">open a ticket and wait: the gate is back.</text><text class="tiny sb f-green" x="316" y="200">→ name the rule, the resource and the fix</text></g>
+  <g class="pac-w17_1-19_7"><rect class="f-bg" x="30" y="406" width="256" height="64" rx="12"/><rect class="f-red-soft s-red" x="30" y="406" width="256" height="64" rx="12" stroke-width="1.5"/><text class="sub sb f-red" x="46" y="427">Exceptions in the dark</text><text class="tiny f-ink" x="46" y="443">Exempted in chat: no owner, no end.</text><text class="tiny sb f-green" x="46" y="459">→ this file, with owner and expiry</text></g>
+  <g class="pac-w17_7-19_7"><rect class="f-bg" x="302" y="230" width="320" height="110" rx="12"/><rect class="f-red-soft s-red" x="302" y="230" width="320" height="110" rx="12" stroke-width="1.5"/><text class="sub sb f-red" x="316" y="252">One rule, two copies</text><text class="tiny f-ink" x="316" y="270"><tspan class="mono">no-root</tspan> in CI skips init containers, while</text><text class="tiny f-ink" x="316" y="285">Gatekeeper's copy checks them: CI passes,</text><text class="tiny f-ink" x="316" y="300">then the deploy is rejected.</text><text class="tiny sb f-green" x="316" y="322">→ one shared Rego library, one set of tests</text></g>
+  <g class="pac-w18_3-19_7"><rect class="f-bg" x="30" y="96" width="256" height="120" rx="12"/><rect class="f-amber-soft s-amber" x="30" y="96" width="256" height="120" rx="12" stroke-width="1.5"/><text class="sub sb f-amber-ink" x="46" y="120">Not a design review</text><text class="tiny f-ink" x="46" y="140">All checks pass, yet the export keeps</text><text class="tiny f-ink" x="46" y="155">customer addresses forever: no rule</text><text class="tiny f-ink" x="46" y="170">asks whether the design is right.</text><text class="tiny sb f-green" x="46" y="194">→ keep design reviews for new systems</text></g>
+  <g class="pac-w18_9-19_7"><rect class="f-bg" x="302" y="354" width="320" height="116" rx="12"/><rect class="f-green-soft s-green" x="302" y="354" width="320" height="116" rx="12" stroke-width="1.5"/><text class="label f-green" x="316" y="378">Guardrails, not gates</text><text class="tiny f-ink" x="316" y="400">Most changes pass in seconds, with no meeting,</text><text class="tiny f-ink" x="316" y="416">and a failure says how to fix it. People</text><text class="tiny f-ink" x="316" y="432">review designs and exceptions, not checklists.</text></g>
+  <!-- tokens -->
+  <g class="pac-tok pac-t-cr"><circle class="pkt f-blue" r="7"/><rect class="f-bg s-blue" x="-28" y="-27" width="57" height="16" rx="8" stroke-width="1"/><text class="tiny mid sb f-blue" x="0" y="-15">CR-2207</text></g>
+  <g class="pac-tok pac-t-byhand"><circle class="pkt f-blue" r="7"/><rect class="f-bg s-blue" x="-28" y="-27" width="57" height="16" rx="8" stroke-width="1"/><text class="tiny mid sb f-blue" x="0" y="-15">by hand</text></g>
+  <g class="pac-tok pac-t-plan"><circle class="pkt f-blue" r="7"/><rect class="f-bg s-blue" x="-19" y="-27" width="38" height="16" rx="8" stroke-width="1"/><text class="tiny mid sb f-blue" x="0" y="-15">plan</text></g>
+  <g class="pac-tok pac-t-fix"><circle class="pkt f-blue" r="7"/><rect class="f-bg s-blue" x="-16" y="-27" width="31" height="16" rx="8" stroke-width="1"/><text class="tiny mid sb f-blue" x="0" y="-15">fix</text></g>
+  <g class="pac-tok pac-t-apply"><circle class="pkt f-blue" r="7"/><rect class="f-bg s-blue" x="-22" y="-27" width="44" height="16" rx="8" stroke-width="1"/><text class="tiny mid sb f-blue" x="0" y="-15">apply</text></g>
+  <g class="pac-tok pac-t-req1"><circle class="pkt f-blue" r="7"/></g>
+  <g class="pac-tok pac-t-req1x"><circle class="pkt f-red" r="7"/></g>
+  <g class="pac-tok pac-t-req2"><circle class="pkt f-blue" r="7"/></g>
+  <g class="pac-tok pac-t-req2x"><circle class="pkt f-red" r="7"/></g>
+  <g class="pac-tok pac-t-sweep"><rect class="f-purple-soft" x="-6" y="0" width="12" height="140" rx="3"/><line class="s-purple" x1="0" y1="0" x2="0" y2="140" stroke-width="2"/></g>
+</g>
+</svg>

@@ -151,6 +151,10 @@ It is not enough, on its own, when a part of the system has clearly different ne
 - [Event-Driven Architecture](../event-driven-architecture/) — Producers publish events to a broker; any number of consumers react on their own schedule.
 - [Branch by Abstraction](../branch-by-abstraction/) — Introduce an abstraction, build the new implementation behind it, then switch over.
 
+## Related principles and frameworks
+
+- [Team Topologies](../team-topologies/) — Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check.
+
 ## References
 
 - [Martin Fowler — Monolith First](https://martinfowler.com/bliki/MonolithFirst.html)

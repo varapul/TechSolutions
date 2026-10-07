@@ -171,6 +171,10 @@ def handler(event, context):  # Invoke: one batch of up to 10 SQS messages
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 - [Queue-Based Load Leveling](../queue-based-load-leveling/) — A queue absorbs traffic spikes so the backend can work at a steady pace.
 
+## Related principles and frameworks
+
+- [FinOps](../finops/) — Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value.
+
 ## References
 
 - [AWS Lambda Developer Guide — What is AWS Lambda?](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)

@@ -83,7 +83,7 @@ The group opens up log access in the first quarter and does the other three in t
 - [SLOs & Error Budgets](../slo-error-budgets/): an SLO tells the team which operational work can wait, and paging on error-budget burn instead of on every blip removes a whole class of on-call toil.
 - [Idempotent Consumer](../idempotent-consumer/) and [Health Endpoint Monitoring](../health-endpoint-monitoring/): the root-cause fix and the safety net for the stuck order consumer.
 - [Centralized Logging](../centralized-logging/): one searchable store with access per team turns log requests into self-service.
-- [GitOps](../gitops/), [Immutable Infrastructure](../immutable-infrastructure/) and Infrastructure as Code: changes go through reviewed pull requests and rebuilds instead of commands typed on servers, which removes whole categories of toil and leaves an audit trail.
+- [GitOps](../gitops/), [Immutable Infrastructure](../immutable-infrastructure/) and [Infrastructure as Code](../infrastructure-as-code/): changes go through reviewed pull requests and rebuilds instead of commands typed on servers, which removes whole categories of toil and leaves an audit trail.
 - [You Build It, You Run It](../you-build-it-you-run-it/) decides who carries the operational work; this page is about keeping that work small, whoever carries it. When an SRE team stays over the cap, handing some of the operations back to the developers is one of the book's levers.
 - Golden Paths and Platform as a Product: self-service at the scale of a whole platform, so that each new service doesn't bring new tickets with it.
 - [The Three Ways](../three-ways/): the Third Way's time reserved for improving daily work is where toil reduction happens.
@@ -112,8 +112,8 @@ The group opens up log access in the first quarter and does the other three in t
 ## Related patterns
 
 - [You Build It, You Run It](../you-build-it-you-run-it/) — The team that builds a service runs it in production, on call, so the people who can fix a problem hear about it first.
-- Infrastructure as Code *(planned)* — Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift.
-- Golden Paths *(planned)* — A paved, supported route for common tasks: one template creates a service with its pipeline, infrastructure and monitoring.
+- [Infrastructure as Code](../infrastructure-as-code/) — Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift.
+- [Golden Paths](../golden-paths/) — A paved, supported route for common tasks: one template creates a service with its pipeline, infrastructure and monitoring.
 - [SLOs & Error Budgets](../slo-error-budgets/) — Measure SLIs against an objective and alert on error-budget burn rate, not on every blip.
 - [GitOps](../gitops/) — Git holds the desired state; an agent continuously reconciles the cluster to match it.
 - [Immutable Infrastructure](../immutable-infrastructure/) — Never patch servers in place: bake a new image and replace them.

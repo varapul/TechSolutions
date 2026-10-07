@@ -1,0 +1,62 @@
+{
+  "aka": ["SLSA", "software supply chain security"],
+  "steps": [
+    {
+      "title": "An unguarded supply chain",
+      "caption": "A shared build server, a typosquat, a re-pushed :latest, and 4 days to find who ships a CVE.",
+      "body": "Before: the checkout image is built on `build-01`, a Jenkins VM that 23 people can log in to, and the cluster runs whatever `checkout:latest` points to. The red letters mark where attacks strike, named as in the SLSA v1.2 threat model: **E** a tampered build, **H** a typosquatted package (`lodahs` instead of `lodash`), **F** an image re-pushed under the same tag from a laptop. Nobody keeps a list of what is inside an image, so when a critical CVE in a popular library is announced, finding which of the 38 services ship it takes four days."
+    },
+    {
+      "title": "Provenance and SBOMs",
+      "caption": "A fresh VM builds 4e7a1c; signed provenance and an SBOM attach to the image digest in ECR.",
+      "body": "The release workflow runs on a GitHub-hosted runner: a fresh VM for every job, with no logins and nothing left behind. It records **provenance**, an in-toto statement with the SLSA provenance predicate that names the image digest, the builder, the source commit `4e7a1c` and the workflow, signed through Sigstore, and Syft lists the image's 1,214 components in an **SBOM** (CycloneDX here; SPDX is the other common format). Both are stored in ECR next to the image, keyed by its digest `sha256:9f2c41…`."
+    },
+    {
+      "title": "Sign and verify",
+      "caption": "Signed with a 10-min certificate; admission checks signer and provenance and rejects a laptop build.",
+      "body": "The job signs the digest with **cosign** and no stored key: its GitHub Actions OIDC token is exchanged for a Fulcio certificate that names the workflow and is valid for 10 minutes, and the signature is recorded in the Rekor transparency log. At deploy time the Sigstore policy-controller admits the image only if it was signed by `release.yml` on `main` of `acme/checkout` and its provenance shows the expected builder, repository and branch; the pod runs the verified digest. An image built and pushed from a laptop carries no such signature and is rejected."
+    },
+    {
+      "title": "Roadmap, payoff, limits",
+      "caption": "Build L2 now, L3 next; SBOMs list who ships a new CVE in 6 min, but only if someone queries them.",
+      "body": "SLSA v1.2's Build levels make a roadmap: L1 provenance exists, L2 a hosted platform signs it (Acme today), L3 isolates every run and keeps signing secrets out of the build's reach. When the next critical CVE lands, Dependency-Track checks the stored SBOMs and lists the 3 affected services in 6 minutes instead of 4 days (Acme's numbers). The limits, in amber: provenance shows where and how an image was built, not that its code or its build was sound; SBOMs help only when someone queries them; a policy left in audit mode verifies nothing; and the dependencies' own supply chains are not Acme's to control."
+    }
+  ],
+  "related": ["policy-as-code", "continuous-delivery", "immutable-infrastructure", "gitops", "docker", "kubernetes", "zero-trust-access", "vault"],
+  "references": [
+    { "title": "SLSA — Specification v1.2", "url": "https://slsa.dev/spec/v1.2/" },
+    { "title": "SLSA blog — Announcing SLSA v1.2 (24 November 2025)", "url": "https://slsa.dev/blog/2025/11/announce-slsa-v1.2" },
+    { "title": "SLSA v1.2 — Build: Track Basics (levels)", "url": "https://slsa.dev/spec/v1.2/build-track-basics" },
+    { "title": "SLSA v1.2 — Build: requirements for producing artifacts", "url": "https://slsa.dev/spec/v1.2/build-requirements" },
+    { "title": "SLSA v1.2 — Source: requirements for producing source", "url": "https://slsa.dev/spec/v1.2/source-requirements" },
+    { "title": "SLSA v1.2 — Supply chain threats, with real-world examples", "url": "https://slsa.dev/spec/v1.2/threats-overview" },
+    { "title": "SLSA v1.2 — Threats and mitigations", "url": "https://slsa.dev/spec/v1.2/threats" },
+    { "title": "SLSA v1.2 — Build provenance", "url": "https://slsa.dev/spec/v1.2/build-provenance" },
+    { "title": "SLSA v1.2 — Verifying artifacts", "url": "https://slsa.dev/spec/v1.2/verifying-artifacts" },
+    { "title": "SLSA blog — Mini Shai-Hulud: Where SLSA's Boundaries Fall (May 2026)", "url": "https://slsa.dev/blog/2026/05/mini-shai-hulud-what-slsa-can-and-cannot-do" },
+    { "title": "in-toto — Attestation Framework", "url": "https://github.com/in-toto/attestation" },
+    { "title": "Sigstore — Fulcio, the certificate authority", "url": "https://docs.sigstore.dev/certificate_authority/overview/" },
+    { "title": "Sigstore — Security model", "url": "https://docs.sigstore.dev/about/security/" },
+    { "title": "Sigstore — Verifying signatures with cosign", "url": "https://docs.sigstore.dev/cosign/verifying/verify/" },
+    { "title": "Sigstore — Fulcio certificate extensions (OID information)", "url": "https://github.com/sigstore/fulcio/blob/main/docs/oid-info.md" },
+    { "title": "Sigstore — Key management overview (cosign)", "url": "https://docs.sigstore.dev/cosign/key_management/overview/" },
+    { "title": "Sigstore — Kubernetes policy-controller", "url": "https://docs.sigstore.dev/policy-controller/overview/" },
+    { "title": "Kyverno — Verify images: overview", "url": "https://kyverno.io/docs/policy-types/cluster-policy/verify-images/overview/" },
+    { "title": "Kyverno — ImageValidatingPolicy", "url": "https://kyverno.io/docs/policy-types/image-validating-policy/" },
+    { "title": "GitHub Docs — Artifact attestations", "url": "https://docs.github.com/en/actions/concepts/security/artifact-attestations" },
+    { "title": "GitHub Docs — Using artifact attestations to establish provenance for builds", "url": "https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations" },
+    { "title": "GitHub Docs — Using GitHub-hosted runners", "url": "https://docs.github.com/en/actions/how-tos/manage-runners/github-hosted-runners/use-github-hosted-runners" },
+    { "title": "SPDX — Specifications (ISO/IEC 5962:2021)", "url": "https://spdx.dev/use/specifications/" },
+    { "title": "CycloneDX — Specification overview (ECMA-424)", "url": "https://cyclonedx.org/specification/overview/" },
+    { "title": "OWASP Dependency-Track", "url": "https://github.com/DependencyTrack/dependency-track" },
+    { "title": "Docker Docs — Build attestations (provenance and SBOM)", "url": "https://docs.docker.com/build/metadata/attestations/" },
+    { "title": "NIST SP 800-218 — Secure Software Development Framework (SSDF) Version 1.1 (February 2022)", "url": "https://csrc.nist.gov/pubs/sp/800/218/final" },
+    { "title": "NIST SP 800-218 Rev. 1 — SSDF Version 1.2, initial public draft (December 2025)", "url": "https://csrc.nist.gov/pubs/sp/800/218/r1/ipd" },
+    { "title": "OpenSSF Scorecard", "url": "https://github.com/ossf/scorecard" },
+    { "title": "CrowdStrike — SUNSPOT Malware: A Technical Analysis (January 2021)", "url": "https://www.crowdstrike.com/en-us/blog/sunspot-malware-technical-analysis/" },
+    { "title": "Codecov — Bash Uploader Security Update (April 2021)", "url": "https://about.codecov.io/security-update/" },
+    { "title": "Andres Freund — backdoor in upstream xz/liblzma (oss-security, 29 March 2024)", "url": "https://www.openwall.com/lists/oss-security/2024/03/29/4" },
+    { "title": "CISA — Apache Log4j Vulnerability Guidance", "url": "https://www.cisa.gov/news-events/news/apache-log4j-vulnerability-guidance" },
+    { "title": "Kubernetes documentation — Images (tags and digests)", "url": "https://kubernetes.io/docs/concepts/containers/images/" }
+  ]
+}

@@ -185,6 +185,10 @@ Many teams keep configuration in a Git repository and let a pipeline or an agent
 - [etcd](../etcd/) — A strongly consistent key-value store on Raft that clusters use for configuration, service discovery, locks and leader election.
 - [HashiCorp Vault](../vault/) — A secrets manager: authenticate workloads, hand out short-lived credentials, encrypt data and audit every access.
 
+## Related principles and frameworks
+
+- [The Twelve-Factor App](../twelve-factor-app/) — Twelve rules for apps that deploy cleanly anywhere: config in the environment, stateless processes, separate build, release and run.
+
 ## References
 
 - [Azure Architecture Center — External Configuration Store pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/external-configuration-store)

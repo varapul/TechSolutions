@@ -64,7 +64,7 @@ toil สี่แบบที่ใหญ่ที่สุดของ Acme แ
 - [SLOs & Error Budgets](../slo-error-budgets/): SLO บอกทีมว่างาน operation ไหนรอได้ และการ page ตาม burn ของ error budget แทนที่จะ page ทุกครั้งที่ระบบสะดุดนิดเดียว ก็กำจัด toil ของ on-call ไปได้ทั้งกลุ่ม
 - [Idempotent Consumer](../idempotent-consumer/) และ [Health Endpoint Monitoring](../health-endpoint-monitoring/): การแก้ที่ต้นเหตุ และตาข่ายกันตก สำหรับ order consumer ที่ค้าง
 - [Centralized Logging](../centralized-logging/): store เดียวที่ค้นได้และให้สิทธิ์ตามทีม เปลี่ยน request ขอ log ให้เป็น self-service
-- [GitOps](../gitops/), [Immutable Infrastructure](../immutable-infrastructure/) และ Infrastructure as Code: การเปลี่ยนแปลงไปผ่าน pull request ที่ผ่าน review และการ rebuild แทนที่จะพิมพ์คำสั่งบน server ทำให้ toil หายไปทั้งหมวด และยังทิ้ง audit trail ไว้ด้วย
+- [GitOps](../gitops/), [Immutable Infrastructure](../immutable-infrastructure/) และ [Infrastructure as Code](../infrastructure-as-code/): การเปลี่ยนแปลงไปผ่าน pull request ที่ผ่าน review และการ rebuild แทนที่จะพิมพ์คำสั่งบน server ทำให้ toil หายไปทั้งหมวด และยังทิ้ง audit trail ไว้ด้วย
 - [You Build It, You Run It](../you-build-it-you-run-it/) ตัดสินว่าใครแบกงาน operation ขณะที่หน้านี้พูดถึงการทำให้งานนั้นเล็กลง ไม่ว่าใครจะเป็นคนแบก ถ้าทีม SRE อยู่เกินเพดานต่อเนื่อง การส่งงาน operation บางส่วนคืนให้ developer ก็เป็นหนึ่งในคันโยกที่หนังสือให้ไว้
 - Golden Paths และ Platform as a Product: self-service ในระดับทั้ง platform ทำให้ service ใหม่แต่ละตัวไม่พา ticket ใหม่มาด้วย
 - [The Three Ways](../three-ways/): เวลาที่ Third Way กันไว้สำหรับปรับปรุงงานประจำวัน คือที่ที่การลด toil เกิดขึ้น

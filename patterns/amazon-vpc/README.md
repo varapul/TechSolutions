@@ -129,7 +129,7 @@ VPC Block Public Access (BPA) is an account-wide setting per Region that overrid
 
 ### Surviving a zone failure
 
-The VPC and its route tables span the Region, and AWS runs the internet gateway as a redundant, horizontally scaled component; subnets, and everything placed in them, belong to one zone. AWS's Well-Architected reliability pillar asks for every production workload to run in at least two Availability Zones, and the VPC is where that is drawn: each tier has a subnet in each zone, and each zone has its own ALB node, NAT gateway and tasks. When zone a fails, the ALB sends requests only to healthy targets, and by default it also stops answering DNS with the address of a zone that has no healthy target left. RDS fails over to the synchronous standby in zone b, typically in 60 to 120 seconds, and moves the database's DNS name to it, so applications have to reconnect and must not cache DNS answers for long. The ECS service starts replacement tasks in the zone it can still use, and since September 2025 ECS rebalances eligible services across zones once the failed zone is back.
+The VPC and its route tables span the Region, and AWS runs the internet gateway as a redundant, horizontally scaled component; subnets, and everything placed in them, belong to one zone. AWS's [Well-Architected](../well-architected-framework/) reliability pillar asks for every production workload to run in at least two Availability Zones, and the VPC is where that is drawn: each tier has a subnet in each zone, and each zone has its own ALB node, NAT gateway and tasks. When zone a fails, the ALB sends requests only to healthy targets, and by default it also stops answering DNS with the address of a zone that has no healthy target left. RDS fails over to the synchronous standby in zone b, typically in 60 to 120 seconds, and moves the database's DNS name to it, so applications have to reconnect and must not cache DNS answers for long. The ECS service starts replacement tasks in the zone it can still use, and since September 2025 ECS rebalances eligible services across zones once the failed zone is back.
 
 ## Where it fits
 
@@ -213,6 +213,10 @@ With a regional NAT gateway the per-zone routes collapse into one: `aws ec2 crea
 - [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 - [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
 - [AWS IAM](../aws-iam/) — Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated.
+
+## Related principles and frameworks
+
+- [Infrastructure as Code](../infrastructure-as-code/) — Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift.
 
 ## References
 

@@ -238,6 +238,7 @@ aws logs put-retention-policy --log-group-name /ecs/catalog --retention-in-days 
 ## Related principles and frameworks
 
 - [Golden Signals, RED & USE](../golden-signals/) — What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources.
+- [FinOps](../finops/) — Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value.
 
 ## References
 

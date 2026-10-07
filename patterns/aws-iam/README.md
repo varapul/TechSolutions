@@ -256,6 +256,11 @@ s3:DeleteObject	implicitDeny
 - [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
 - [Amazon Cognito](../amazon-cognito/) — Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials.
 
+## Related principles and frameworks
+
+- [Well-Architected Framework](../well-architected-framework/) — Review a workload against six pillars, from operational excellence to sustainability, and decide on the trade-offs between them.
+- [Policy as Code](../policy-as-code/) — Write rules as code and check them automatically in CI and at deploy time, so guardrails replace manual approval gates.
+
 ## References
 
 - [AWS IAM User Guide — What is IAM?](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html)

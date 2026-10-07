@@ -196,6 +196,10 @@ Recent features blur the line with file systems: S3 Express One Zone directory b
 - [Amazon EventBridge](../amazon-eventbridge/) — An event bus: rules match events from AWS services, SaaS apps and your own code by content and route them to targets.
 - [Disaster Recovery Strategies](../disaster-recovery-strategies/) — Backup & restore, pilot light, warm standby, active-active: trading cost against RTO and RPO.
 
+## Related principles and frameworks
+
+- [FinOps](../finops/) — Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value.
+
 ## References
 
 - [Amazon S3 User Guide — Amazon S3 data consistency model](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html#ConsistencyModel)

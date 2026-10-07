@@ -1,0 +1,50 @@
+{
+  "aka": ["IaC"],
+  "steps": [
+    {
+      "title": "Built by hand",
+      "caption": "Clicked together in the console: production lacks encryption and backups; a rebuild takes 3 days.",
+      "body": "Before: the delivery team clicks the returns service's database, queue and bucket together in the AWS console, once per environment, following a 31-step wiki page that is 14 months old. Staging's database is encrypted and keeps 7 days of backups; production's has neither, and an inbound rule opening port 5432 to 198.51.100.0/24 appeared that nobody can explain. Nothing was reviewed, and rebuilding production by hand would take about 3 days."
+    },
+    {
+      "title": "Declare it, plan it",
+      "caption": "returns.tf uses the platform's modules; PR #418's plan shows 10 to add, and 12 policy checks pass.",
+      "body": "`returns.tf` declares the three resources through the platform team's versioned modules, which build in encryption, backups, deletion protection and a dead-letter queue. Pull request #418 runs `terraform plan` in CI for each environment: **Plan: 10 to add, 0 to change, 0 to destroy**, since the modules also create the subnet group, the security group and its rules, the dead-letter queue and the bucket settings. All 12 policy rules pass on the plan, and the reviewers approve the plan as well as the code."
+    },
+    {
+      "title": "Apply it the same way",
+      "caption": "Run #57 applies staging, then production, with different .tfvars; a state lock makes run #58 wait.",
+      "body": "After the merge, pipeline run #57 applies the same code to staging and then to production; only the `.tfvars` differ (instance class, Multi-AZ, 7 or 14 days of backups). Each environment has its own state file in S3 with a lock, and the pipeline retries for it with `-lock-timeout`, so run #58 waits until #57 has finished. A quarterly drill rebuilds production in us-west-2 from the same code in 40 minutes and restores the data from the latest snapshot copy (Acme's numbers)."
+    },
+    {
+      "title": "Drift and pitfalls",
+      "caption": "A port opened by hand shows up as drift overnight. Beware plans that replace data, and leaky state.",
+      "body": "Someone opens port 5432 to `0.0.0.0/0` in the console; the nightly `plan -detailed-exitcode` exits with 2, and applying `main` again removes the rule. A hotfix that is really needed belongs in code, or the next apply undoes it. Read every plan: setting `kms_key_id` forces the database to be **replaced**, which `prevent_destroy` stops. Keep secrets out of the state or encrypt it, and split one huge state into one per service and environment."
+    }
+  ],
+  "related": ["immutable-infrastructure", "gitops", "policy-as-code", "golden-paths", "eliminating-toil", "continuous-delivery", "disaster-recovery-strategies", "amazon-vpc"],
+  "references": [
+    { "title": "Kief Morris — Infrastructure as Code, third edition (O'Reilly, 2025)", "url": "https://infrastructure-as-code.com/book/" },
+    { "title": "Martin Fowler — InfrastructureAsCode (2016)", "url": "https://martinfowler.com/bliki/InfrastructureAsCode.html" },
+    { "title": "Terraform documentation — terraform plan command reference", "url": "https://developer.hashicorp.com/terraform/cli/commands/plan" },
+    { "title": "Terraform documentation — Backend type: s3 (state locking)", "url": "https://developer.hashicorp.com/terraform/language/backend/s3" },
+    { "title": "Terraform documentation — Manage sensitive data", "url": "https://developer.hashicorp.com/terraform/language/state/sensitive-data" },
+    { "title": "Terraform documentation — lifecycle meta-argument (prevent_destroy)", "url": "https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle" },
+    { "title": "Terraform documentation — Refactor modules (moved blocks)", "url": "https://developer.hashicorp.com/terraform/language/modules/develop/refactoring" },
+    { "title": "Terraform documentation — Tests", "url": "https://developer.hashicorp.com/terraform/language/tests" },
+    { "title": "HCP Terraform — Health assessments (drift detection)", "url": "https://developer.hashicorp.com/terraform/cloud-docs/workspaces/health" },
+    { "title": "HashiCorp — Terraform licence: Business Source License 1.1, Terraform 1.6.0 and later", "url": "https://github.com/hashicorp/terraform/blob/main/LICENSE" },
+    { "title": "IBM — IBM completes acquisition of HashiCorp (27 February 2025)", "url": "https://newsroom.ibm.com/2025-02-27-ibm-completes-acquisition-of-hashicorp,-creates-comprehensive,-end-to-end-hybrid-cloud-platform" },
+    { "title": "OpenTofu — Manifesto (2023)", "url": "https://opentofu.org/manifesto/" },
+    { "title": "OpenTofu documentation — State and plan encryption", "url": "https://opentofu.org/docs/language/state/encryption/" },
+    { "title": "CNCF — OpenTofu (sandbox project since April 2025)", "url": "https://www.cncf.io/projects/opentofu/" },
+    { "title": "AWS CloudFormation User Guide — Drift detection", "url": "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html" },
+    { "title": "AWS CDK Developer Guide — What is the AWS CDK?", "url": "https://docs.aws.amazon.com/cdk/v2/guide/home.html" },
+    { "title": "Pulumi documentation — Languages and SDKs", "url": "https://www.pulumi.com/docs/iac/languages-sdks/" },
+    { "title": "CNCF — Crossplane (graduated October 2025)", "url": "https://www.cncf.io/projects/crossplane/" },
+    { "title": "Ansible documentation — Glossary (idempotency)", "url": "https://docs.ansible.com/ansible/latest/reference_appendices/glossary.html" },
+    { "title": "Amazon RDS User Guide — Encrypting Amazon RDS resources", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html" },
+    { "title": "Amazon RDS User Guide — Backup retention period", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.BackupRetention.html" },
+    { "title": "Terraform AWS provider — aws_vpc_security_group_rules_exclusive", "url": "https://github.com/hashicorp/terraform-provider-aws/blob/main/website/docs/r/vpc_security_group_rules_exclusive.html.markdown" }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "aka": ["PaC"],
+  "steps": [
+    {
+      "title": "A wiki and a weekly gate",
+      "caption": "Before: 20 rules in a wiki and a weekly CAB: 3 days per approval, and a public bucket slips through.",
+      "body": "Before: Acme's platform rules are a 20-item wiki page, and every infrastructure change waits for the weekly change advisory board, which reads each request against the page by eye. Change request CR-2207 waits from Monday to Thursday and is approved, while CR-2211 is rejected for missing tags that CR-2207 lacks too, and nothing checks deploys at all. A security scan finds the public bucket `returns-exports` two months after it was created, and to engineers security feels like a gate."
+    },
+    {
+      "title": "Rules as code, in CI",
+      "caption": "PR #512 adds a public bucket. The CI policy check fails in 40 s and names the rule; fixed in 2 min.",
+      "body": "The rules become code in the Git repository `acme/policies`: Rego files with unit tests that `opa test` runs (18 of 18 pass), changed through reviewed pull requests like any other code. Pull request #512 adds the bucket `returns-label-exports` with public access switched on; the CI check runs Conftest against the Terraform plan and fails in 40 seconds with a message that names the rule, the resource and the fix. The developer pushes the fix 2 minutes later, the check passes, and the bucket is created private."
+    },
+    {
+      "title": "At deploy and in audit",
+      "caption": "Admission blocks bad pods. New rule no-root warns first: 12 pods found, 11 fixed, 1 dated exception.",
+      "body": "The same repository feeds the cluster's admission controller (OPA Gatekeeper here), which rejects a debug pod from Docker Hub and, later, a root pod from a vendor chart, and a continuous audit of what already runs (Gatekeeper's audit in the cluster, AWS Config in the account). The new rule `no-root` starts in **warn** mode: the audit finds 12 of 38 running pods that break it and sends a ticket to each of the 5 owning teams. Three weeks later 11 are fixed, `legacy-invoicing` gets an exception in `exceptions.yaml` with an owner and an expiry date, and the rule switches to **deny**."
+    },
+    {
+      "title": "Pitfalls and limits",
+      "caption": "Pitfalls: too many rules at once, no tests, vague errors, hidden exceptions, copies per engine.",
+      "body": "Sixty rules in the first week turn every build red and push teams to side doors: start with a few, in warn mode. Rules without tests break deploys by surprise, a vague message sends people back to a queue, exceptions granted in chat never expire, and a rule copied into two engines drifts (here the CI copy skips init containers). Passing checks don't replace a design review: policy as code gives teams guardrails, not gates."
+    }
+  ],
+  "related": ["policy-based-authorization", "infrastructure-as-code", "supply-chain-security", "kubernetes", "aws-iam", "golden-paths", "continuous-delivery", "zero-trust-access"],
+  "references": [
+    { "title": "Open Policy Agent — Documentation: decoupling policy decisions from enforcement", "url": "https://www.openpolicyagent.org/docs" },
+    { "title": "Open Policy Agent — Policy testing (opa test)", "url": "https://www.openpolicyagent.org/docs/policy-testing" },
+    { "title": "Open Policy Agent — Terraform (policies on plan JSON)", "url": "https://www.openpolicyagent.org/docs/terraform" },
+    { "title": "OPA blog — Announcing OPA 1.0 (December 2024)", "url": "https://www.openpolicyagent.org/blog/announcing-opa-1-0-a-new-standard-for-policy-as-code-a6d8427ee828" },
+    { "title": "OPA blog — Note from Teemu, Tim, and Torin to the OPA community (August 2025)", "url": "https://www.openpolicyagent.org/blog/note-from-teemu-tim-and-torin-to-the-open-policy-agent-community-2dbbfe494371" },
+    { "title": "Conftest — Documentation", "url": "https://www.conftest.dev/" },
+    { "title": "Conftest — Exceptions", "url": "https://www.conftest.dev/exceptions/" },
+    { "title": "OPA Gatekeeper — Handling constraint violations (deny, dryrun, warn)", "url": "https://open-policy-agent.github.io/gatekeeper/website/docs/violations/" },
+    { "title": "OPA Gatekeeper — Audit", "url": "https://open-policy-agent.github.io/gatekeeper/website/docs/audit/" },
+    { "title": "OPA Gatekeeper — Failing closed (the webhook fails open by default)", "url": "https://open-policy-agent.github.io/gatekeeper/website/docs/failing-closed/" },
+    { "title": "Kyverno — ValidatingPolicy (compared with ValidatingAdmissionPolicy)", "url": "https://kyverno.io/docs/policy-types/validating-policy/" },
+    { "title": "Kyverno — ClusterPolicy overview (deprecated in 1.19)", "url": "https://kyverno.io/docs/policy-types/cluster-policy/overview/" },
+    { "title": "Kubernetes documentation — Validating Admission Policy", "url": "https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/" },
+    { "title": "Kubernetes documentation — Pod Security Admission", "url": "https://kubernetes.io/docs/concepts/security/pod-security-admission/" },
+    { "title": "Kubernetes documentation — Pod Security Standards", "url": "https://kubernetes.io/docs/concepts/security/pod-security-standards/" },
+    { "title": "HashiCorp — Sentinel enforcement levels", "url": "https://developer.hashicorp.com/sentinel/docs/concepts/enforcement-levels" },
+    { "title": "HashiCorp — HCP Terraform policy enforcement overview", "url": "https://developer.hashicorp.com/terraform/cloud-docs/policy-enforcement" },
+    { "title": "Cedar — What is Cedar?", "url": "https://docs.cedarpolicy.com/" },
+    { "title": "AWS Organizations — Service control policies (SCPs)", "url": "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html" },
+    { "title": "AWS Config — Custom rules (Lambda and Guard)", "url": "https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules.html" },
+    { "title": "AWS Control Tower — Control behavior: preventive, detective and proactive", "url": "https://docs.aws.amazon.com/controltower/latest/controlreference/control-behavior.html" },
+    { "title": "Amazon S3 — Blocking public access to your Amazon S3 storage", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html" },
+    { "title": "DORA — Capabilities: Streamlining change approval", "url": "https://dora.dev/capabilities/streamlining-change-approval/" },
+    { "title": "CNCF — Open Policy Agent (graduated January 2021)", "url": "https://www.cncf.io/projects/open-policy-agent-opa/" },
+    { "title": "CNCF — Kyverno (graduated March 2026)", "url": "https://www.cncf.io/projects/kyverno/" },
+    { "title": "CNCF — Cedar (sandbox, accepted October 2025)", "url": "https://www.cncf.io/projects/cedar/" }
+  ]
+}

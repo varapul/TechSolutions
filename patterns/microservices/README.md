@@ -82,6 +82,10 @@ You trade complexity inside one codebase for complexity between many processes, 
 - [Strangler Fig](../strangler-fig/) — Put a facade in front of the legacy system and move routes to new services one at a time.
 - [Distributed Tracing](../distributed-tracing/) — Propagate a trace context across services and assemble the spans into one timeline.
 
+## Related principles and frameworks
+
+- [Team Topologies](../team-topologies/) — Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check.
+
 ## References
 
 - [James Lewis and Martin Fowler — Microservices (2014)](https://martinfowler.com/articles/microservices.html)

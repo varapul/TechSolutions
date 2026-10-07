@@ -90,6 +90,10 @@ In MySQL a schema *is* a database (`CREATE SCHEMA` is a synonym for `CREATE DATA
 - [MongoDB](../mongodb/) — A document database: JSON-like documents with flexible schemas, replica sets for failover and sharding to scale out.
 - [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 
+## Related principles and frameworks
+
+- [Team Topologies](../team-topologies/) — Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check.
+
 ## References
 
 - [Chris Richardson (microservices.io) — Pattern: Database per service](https://microservices.io/patterns/data/database-per-service.html)

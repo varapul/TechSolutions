@@ -49,7 +49,7 @@ practice สี่อย่างที่ continuousdelivery.com แนะน�
 - production stage คือ deployment strategy: [canary release](../canary-release/), [blue-green deployment](../blue-green-deployment/) หรือ [rolling update](../rolling-update/) ส่วน [GitOps](../gitops/) ก็เป็นอีกวิธีที่ใช้ทำขั้นนี้: pipeline เขียน digest ใหม่ลง Git แล้ว agent ใน cluster ก็ apply มัน
 - [Feature flags](../feature-flags/) แยกการ deploy โค้ดออกจากการ release feature
 - [Expand and contract](../expand-and-contract/) ทำให้ schema change ออกไปพร้อม deployment ปกติได้ ระหว่างที่เวอร์ชันเก่ากับเวอร์ชันใหม่รันคู่กันอยู่
-- [Immutable infrastructure](../immutable-infrastructure/) เอาหลัก "build ครั้งเดียว" ไปใช้กับ machine image ส่วน infrastructure as code ก็เก็บตัว environment เองไว้ใน version control
+- [Immutable infrastructure](../immutable-infrastructure/) เอาหลัก "build ครั้งเดียว" ไปใช้กับ machine image ส่วน [infrastructure as code](../infrastructure-as-code/) ก็เก็บตัว environment เองไว้ใน version control
 - [DORA metrics](../dora-metrics/) บอกว่า pipeline ทำให้ delivery เร็วขึ้นและปลอดภัยขึ้นจริงไหม
 - artifact ส่วนใหญ่เป็น container image ([Docker](../docker/)) ที่ deploy ไปบน platform อย่าง [Kubernetes](../kubernetes/)
 
