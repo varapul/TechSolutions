@@ -1,0 +1,155 @@
+{
+  "aka": [
+    "Flink"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Flink reads orders from Kafka, keeps a count per card, writes fraud alerts and per-minute counts.",
+      "body": "Acme Shop's fraud check is a Flink job between the Kafka topic **orders** and the systems that act on it. It reads every order as it arrives, keeps state about what it has seen (a count per card for each 10-minute window), writes an alert to the topic **fraud-alerts** when a card places more than 5 orders in a window, and emits orders per minute per country for a live dashboard. The job runs with parallelism 3 on a Flink cluster, here on Kubernetes, and keeps running for months; on AWS, Amazon Managed Service for Apache Flink runs it for you."
+    },
+    {
+      "title": "Dataflow and keyed state",
+      "caption": "keyBy(card) sends all of C-9's orders to count 3/3; the sixth, made at 10:07, makes 6 > 5: an alert.",
+      "body": "Each source subtask reads one partition of **orders**, and `keyBy(card)` hashes card C-9 to key group 126 of 128, which belongs to count subtask 3/3, so all of C-9's orders meet there whichever partition they came in on. Its keyed state holds C-9's count for the window [10:00, 10:10): the sixth order, made at 10:07, takes the count past 5 and an alert goes to **fraud-alerts**. That state lives with the computation, in RocksDB on the TaskManager's local disk, not in an external database."
+    },
+    {
+      "title": "Event time and watermarks",
+      "caption": "Watermark: latest event time − 5 s. At 10:10 the [10:00, 10:10) windows close; late orders go aside.",
+      "body": "Orders arrive out of order: C-9's order made at 10:03 came in after the one made at 10:04, and it still counts, because Flink measures time by the events' own timestamps. The **watermark**, the largest event time seen minus 5 s, tells each window when it may close: once orders stamped 10:10:05 have come in on all three partitions, it reaches 10:10, and every [10:00, 10:10) window closes and its state is cleared. An order stamped 10:08:40 that arrives after that is later than the allowed lateness (0 by default), so it goes to the side output **late-orders** instead of being silently dropped."
+    },
+    {
+      "title": "Checkpoints and the limits",
+      "caption": "Every 30 s barriers snapshot state and offsets to S3; after a crash Flink resumes from chk 812.",
+      "body": "Every 30 s the JobManager starts a checkpoint: barriers flow from the sources through the job, and each operator snapshots its state to S3 together with the Kafka offsets it has read. When TaskManager 2 is lost, the job restarts from the last completed checkpoint (812) and the sources rewind to its offsets, so every order affects the state exactly once; the Kafka sink commits its transactions when each checkpoint completes, so readers that use `read_committed` see each alert exactly once too. The limits: big state makes checkpoints and restarts slow, backpressure shows up as lag, upgrading a running job needs a savepoint and compatible state, and for stateless or small jobs Kafka Streams or a Lambda function reading the stream is simpler."
+    }
+  ],
+  "related": [
+    "kafka",
+    "event-driven-architecture",
+    "change-data-capture",
+    "materialized-view",
+    "amazon-kinesis-data-streams",
+    "pipes-and-filters",
+    "sliding-window",
+    "cqrs"
+  ],
+  "references": [
+    {
+      "title": "Apache Flink 2.3 documentation — Stateful Stream Processing",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Timely Stream Processing",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/time/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Flink Architecture",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Generating Watermarks",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/event-time/generating_watermarks/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Windows",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Event-driven Applications (process functions, timers, side outputs)",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/learn-flink/event_driven/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Checkpointing",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/checkpointing/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — State Backends",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/state/state_backends/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Disaggregated State Management",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/state/disaggregated_state/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Savepoints",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/state/savepoints/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Task Failure Recovery",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/state/task_failure_recovery/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Production Readiness Checklist",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/production_ready/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Kafka connector",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/connectors/datastream/kafka/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Window Aggregation (Flink SQL)",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/sql/reference/queries/window-agg/"
+    },
+    {
+      "title": "Apache Flink 2.3 documentation — Configuration",
+      "url": "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/deployment/config/"
+    },
+    {
+      "title": "Apache Flink 2.0.0: A new Era of Real-Time Data Processing (March 2025)",
+      "url": "https://flink.apache.org/2025/03/24/apache-flink-2.0.0-a-new-era-of-real-time-data-processing/"
+    },
+    {
+      "title": "Apache Flink 2.3.0 Release Announcement (June 2026)",
+      "url": "https://flink.apache.org/2026/06/25/apache-flink-2.3.0-release-announcement/"
+    },
+    {
+      "title": "Apache Flink — Downloads (releases and connector compatibility)",
+      "url": "https://flink.apache.org/downloads/"
+    },
+    {
+      "title": "Apache Flink Kubernetes Operator 1.16 documentation — Job Management",
+      "url": "https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-release-1.16/docs/managing/job-management/"
+    },
+    {
+      "title": "Apache Flink CDC 3.6 documentation",
+      "url": "https://nightlies.apache.org/flink/flink-cdc-docs-release-3.6/"
+    },
+    {
+      "title": "Carbone, Fóra, Ewen, Haridi, Tzoumas — Lightweight Asynchronous Snapshots for Distributed Dataflows (2015)",
+      "url": "https://arxiv.org/abs/1506.08603"
+    },
+    {
+      "title": "Chandy and Lamport — Distributed Snapshots: Determining Global States of a Distributed System (ACM TOCS, 1985)",
+      "url": "https://lamport.azurewebsites.net/pubs/chandy.pdf"
+    },
+    {
+      "title": "Amazon Managed Service for Apache Flink — What is Amazon Managed Service for Apache Flink?",
+      "url": "https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html"
+    },
+    {
+      "title": "Amazon Managed Service for Apache Flink — Supported and deprecated Apache Flink versions",
+      "url": "https://docs.aws.amazon.com/managed-flink/latest/java/release-version-list.html"
+    },
+    {
+      "title": "Amazon Managed Service for Apache Flink — Per second billing",
+      "url": "https://docs.aws.amazon.com/managed-flink/latest/java/how-pricing.html"
+    },
+    {
+      "title": "Confluent Cloud for Apache Flink — Stream Processing with Confluent Cloud for Apache Flink",
+      "url": "https://docs.confluent.io/cloud/current/flink/overview.html"
+    },
+    {
+      "title": "Apache Kafka 4.3 documentation — Kafka Streams Architecture",
+      "url": "https://kafka.apache.org/43/streams/architecture/"
+    },
+    {
+      "title": "Apache Spark 4.2.0 documentation — Structured Streaming Programming Guide",
+      "url": "https://spark.apache.org/docs/4.2.0/streaming/index.html"
+    },
+    {
+      "title": "AWS Lambda Developer Guide — Implementing stateful Kinesis Data Streams processing in Lambda",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-kinesis-windows.html"
+    }
+  ]
+}

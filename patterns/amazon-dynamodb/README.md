@@ -112,7 +112,7 @@ Throughput is shared out by partition, so one busy key can be throttled while th
 
 - Choose a partition key with many distinct values, so the traffic spreads over the partitions: a real id for every guest instead of `GUEST`.
 - **Write sharding:** append a suffix, either random (`GUEST#0` … `GUEST#9`) or computed from something you look items up by (a hash of the order id), and read all the suffixes back with parallel queries.
-- Use CloudWatch Contributor Insights to see the most accessed and most throttled items.
+- Use [CloudWatch](../amazon-cloudwatch/) Contributor Insights to see the most accessed and most throttled items.
 
 ### Time to live
 
@@ -120,7 +120,7 @@ Enable TTL on a Number attribute that holds an expiry time in Unix epoch seconds
 
 ### Change data capture: Streams or Kinesis
 
-| | DynamoDB Streams | Kinesis Data Streams for DynamoDB |
+| | DynamoDB Streams | [Kinesis Data Streams](../amazon-kinesis-data-streams/) for DynamoDB |
 |---|---|---|
 | Retention | 24 hours | up to 1 year |
 | Readers | up to 2 per shard | up to 5 per shard, or 20 with enhanced fan-out |
@@ -152,7 +152,7 @@ AWS's data-modelling guide offers two foundations. **Single-table design** store
 
 The 2007 Dynamo paper described Amazon's internal key-value store for shopping carts, which each team ran for itself. Its design was leaderless and built to accept writes at all times: consistent hashing with virtual nodes, sloppy quorums with hinted handoff, vector clocks with conflicts reconciled on read, Merkle-tree anti-entropy and gossip-based membership.
 
-DynamoDB, a public service since 2012, is a different system. The 2022 USENIX ATC paper explains that it combined Dynamo's incremental scalability and predictable performance with SimpleDB's managed operation, consistency and table model, and that apart from the name it kept little of Dynamo's architecture. It is a multi-tenant service with request routers, a metadata service that maps keys to partitions, a leader-based Multi-Paxos replication group for each partition, and global admission control that tracks each table's total consumption. Apache Cassandra stays much closer to the original Dynamo design: consistent hashing, gossip and tunable consistency, with last-write-wins timestamps instead of vector clocks.
+DynamoDB, a public service since 2012, is a different system. The 2022 USENIX ATC paper explains that it combined Dynamo's incremental scalability and predictable performance with SimpleDB's managed operation, consistency and table model, and that apart from the name it kept little of Dynamo's architecture. It is a multi-tenant service with request routers, a metadata service that maps keys to partitions, a leader-based Multi-Paxos replication group for each partition, and global admission control that tracks each table's total consumption. [Apache Cassandra](../cassandra/) stays much closer to the original Dynamo design: consistent hashing, gossip and tunable consistency, with last-write-wins timestamps instead of vector clocks.
 
 ## Where it fits
 
@@ -208,7 +208,7 @@ Look elsewhere when the queries are ad hoc or relational (joins, reports, flexib
 - [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
-- Apache Cassandra *(planned)* — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
+- [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
 - [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 

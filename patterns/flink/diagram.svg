@@ -1,0 +1,978 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Apache Flink</title>
+<desc id="dg-desc">Apache Flink. A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints. Step 1, Where it sits: Flink reads orders from Kafka, keeps a count per card, writes fraud alerts and per-minute counts. Step 2, Dataflow and keyed state: keyBy(card) sends all of C-9's orders to count 3/3; the sixth, made at 10:07, makes 6 &gt; 5: an alert. Step 3, Event time and watermarks: Watermark: latest event time − 5 s. At 10:10 the [10:00, 10:10) windows close; late orders go aside. Step 4, Checkpoints and the limits: Every 30 s barriers snapshot state and offsets to S3; after a crash Flink resumes from chk 812.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">Apache Flink</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Dataflow and keyed state</text>
+  <text class="step on p2" x="262" y="518">2 · Dataflow and keyed state</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Event time and watermarks</text>
+  <text class="step on p3" x="484" y="518">3 · Event time and watermarks</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Checkpoints and the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Checkpoints and the limits</text>
+  <text class="caption p1" x="40" y="552">Flink reads orders from Kafka, keeps a count per card, writes fraud alerts and per-minute counts.</text>
+  <text class="caption p2" x="40" y="552">keyBy(card) sends all of C-9's orders to count 3/3; the sixth, made at 10:07, makes 6 &gt; 5: an alert.</text>
+  <text class="caption p3" x="40" y="552">Watermark: latest event time − 5 s. At 10:10 the [10:00, 10:10) windows close; late orders go aside.</text>
+  <text class="caption p4" x="40" y="552">Every 30 s barriers snapshot state and offsets to S3; after a crash Flink resumes from chk 812.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Apache Flink. Timeline (20s loop, 1s = 5%):
+   0-25%   step 1: orders from P0-P2 enter the job; keyBy(card) and keyBy(country) branches; an alert for C-9
+           reaches fraud-alerts at 3.32 s and a per-minute count reaches the dashboard
+   25-50%  step 2: five orders cross the keyBy(card) shuffle; C-9's (10:03, 10:05, 10:07) all go to count 3/3
+           (key group 126 of 128); its count goes 3 -> 6 and the alert lands at 9.10 s
+   50-75%  step 3: the watermark moves from 10:07:15 to 10:10, every [10:00,10:10) window closes at 12.05 s;
+           an order stamped 10:08:40 arrives late and goes to the side output late-orders
+   75-100% step 4: checkpoint 812 (barriers, snapshots to S3, completed at 16.8 s, Kafka transactions commit);
+           TaskManager 2 is lost at 17.2 s, the job restarts from chk 812 and the sources rewind; the limits
+           appear; everything resets in the last half-second */
+.diagram .fl-frame { fill: none; stroke: var(--wire); stroke-width: 1.5; }
+.diagram .fl-lane { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+.diagram .fl-op { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .fl-rec { fill: var(--purple-soft); stroke: var(--purple); stroke-width: 1; }
+.diagram .fl-ev { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+.diagram .fl-shuf { stroke: var(--wire); stroke-width: 1.1; opacity: 0.75; }
+.diagram .fl-thin { stroke: var(--wire); stroke-width: 1.5; }
+.diagram .fl-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .fl-w { font-size: 9px; font-weight: 700; text-anchor: middle; }
+.diagram .fl-halo { paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
+.diagram .fl-a0 { opacity: 0; animation: fl-a0 var(--T) linear infinite; }
+.diagram .fl-a1 { opacity: 0; animation: fl-a1 var(--T) linear infinite; }
+.diagram .fl-a2 { opacity: 0; animation: fl-a2 var(--T) linear infinite; }
+.diagram .fl-b1 { opacity: 0; animation: fl-b1 var(--T) linear infinite; }
+.diagram .fl-b2 { opacity: 0; animation: fl-b2 var(--T) linear infinite; }
+.diagram .fl-s1ring { opacity: 0; animation: fl-s1ring var(--T) linear infinite; }
+.diagram .fl-s1al { opacity: 0; animation: fl-s1al var(--T) linear infinite; }
+.diagram .fl-s1d { opacity: 0; animation: fl-s1d var(--T) linear infinite; }
+.diagram .fl-dfl { opacity: 0; animation: fl-dfl var(--T) linear infinite; }
+.diagram .fl-o1 { opacity: 0; animation: fl-o1 var(--T) linear infinite; }
+.diagram .fl-o2 { opacity: 0; animation: fl-o2 var(--T) linear infinite; }
+.diagram .fl-o3 { opacity: 0; animation: fl-o3 var(--T) linear infinite; }
+.diagram .fl-o4 { opacity: 0; animation: fl-o4 var(--T) linear infinite; }
+.diagram .fl-o5 { opacity: 0; animation: fl-o5 var(--T) linear infinite; }
+.diagram .fl-v0a { opacity: 0; animation: fl-v0a var(--T) linear infinite; }
+.diagram .fl-v0b { opacity: 0; animation: fl-v0b var(--T) linear infinite; }
+.diagram .fl-v1a { opacity: 0; animation: fl-v1a var(--T) linear infinite; }
+.diagram .fl-v1b { opacity: 0; animation: fl-v1b var(--T) linear infinite; }
+.diagram .fl-v2a { opacity: 0; animation: fl-v2a var(--T) linear infinite; }
+.diagram .fl-v2b { opacity: 0; animation: fl-v2b var(--T) linear infinite; }
+.diagram .fl-v2c { opacity: 0; animation: fl-v2c var(--T) linear infinite; }
+.diagram .fl-v2d { opacity: 0; animation: fl-v2d var(--T) linear infinite; }
+.diagram .fl-chip { opacity: 0; animation: fl-chip var(--T) linear infinite; }
+.diagram .fl-clr { opacity: 0; animation: fl-clr var(--T) linear infinite; }
+.diagram .fl-s2ring { opacity: 0; animation: fl-s2ring var(--T) linear infinite; }
+.diagram .fl-s2al { opacity: 0; animation: fl-s2al var(--T) linear infinite; }
+.diagram .fl-farec { animation: fl-farec var(--T) linear infinite; }
+.diagram .fl-ann { opacity: 0; animation: fl-ann var(--T) linear infinite; }
+.diagram .fl-wm { opacity: 0; animation: fl-wm var(--T) linear infinite; }
+.diagram .fl-shut { opacity: 0; animation: fl-shut var(--T) linear infinite; }
+.diagram .fl-w0 { opacity: 0; animation: fl-w0 var(--T) linear infinite; }
+.diagram .fl-w1 { opacity: 0; animation: fl-w1 var(--T) linear infinite; }
+.diagram .fl-w2 { opacity: 0; animation: fl-w2 var(--T) linear infinite; }
+.diagram .fl-w3 { opacity: 0; animation: fl-w3 var(--T) linear infinite; }
+.diagram .fl-w4 { opacity: 0; animation: fl-w4 var(--T) linear infinite; }
+.diagram .fl-w5 { opacity: 0; animation: fl-w5 var(--T) linear infinite; }
+.diagram .fl-w6 { opacity: 0; animation: fl-w6 var(--T) linear infinite; }
+.diagram .fl-w7 { opacity: 0; animation: fl-w7 var(--T) linear infinite; }
+.diagram .fl-w8 { opacity: 0; animation: fl-w8 var(--T) linear infinite; }
+.diagram .fl-li { opacity: 0; animation: fl-li var(--T) linear infinite; }
+.diagram .fl-late { opacity: 0; animation: fl-late var(--T) linear infinite; }
+.diagram .fl-lo { opacity: 0; animation: fl-lo var(--T) linear infinite; }
+.diagram .fl-lrec { opacity: 0; animation: fl-lrec var(--T) linear infinite; }
+.diagram .fl-jm1 { opacity: 0; animation: fl-jm1 var(--T) linear infinite; }
+.diagram .fl-jm2 { opacity: 0; animation: fl-jm2 var(--T) linear infinite; }
+.diagram .fl-bar0 { opacity: 0; animation: fl-bar0 var(--T) linear infinite; }
+.diagram .fl-fs0 { opacity: 0; animation: fl-fs0 var(--T) linear infinite; }
+.diagram .fl-fc0 { opacity: 0; animation: fl-fc0 var(--T) linear infinite; }
+.diagram .fl-fr0 { opacity: 0; animation: fl-fr0 var(--T) linear infinite; }
+.diagram .fl-bar1 { opacity: 0; animation: fl-bar1 var(--T) linear infinite; }
+.diagram .fl-fs1 { opacity: 0; animation: fl-fs1 var(--T) linear infinite; }
+.diagram .fl-fc1 { opacity: 0; animation: fl-fc1 var(--T) linear infinite; }
+.diagram .fl-fr1 { opacity: 0; animation: fl-fr1 var(--T) linear infinite; }
+.diagram .fl-bar2 { opacity: 0; animation: fl-bar2 var(--T) linear infinite; }
+.diagram .fl-fs2 { opacity: 0; animation: fl-fs2 var(--T) linear infinite; }
+.diagram .fl-fc2 { opacity: 0; animation: fl-fc2 var(--T) linear infinite; }
+.diagram .fl-fr2 { opacity: 0; animation: fl-fr2 var(--T) linear infinite; }
+.diagram .fl-c811 { animation: fl-c811 var(--T) linear infinite; }
+.diagram .fl-c812 { opacity: 0; animation: fl-c812 var(--T) linear infinite; }
+.diagram .fl-commit { opacity: 0; animation: fl-commit var(--T) linear infinite; }
+.diagram .fl-crash { opacity: 0; animation: fl-crash var(--T) linear infinite; }
+.diagram .fl-run { animation: fl-run var(--T) linear infinite; }
+.diagram .fl-rst { opacity: 0; animation: fl-rst var(--T) linear infinite; }
+.diagram .fl-pod { opacity: 0; animation: fl-pod var(--T) linear infinite; }
+.diagram .fl-rd { animation: fl-rd var(--T) linear infinite; }
+.diagram .fl-rw { opacity: 0; animation: fl-rw var(--T) linear infinite; }
+.diagram .fl-l1 { opacity: 0; animation: fl-l1 var(--T) linear infinite; }
+.diagram .fl-l2 { opacity: 0; animation: fl-l2 var(--T) linear infinite; }
+.diagram .fl-l3 { opacity: 0; animation: fl-l3 var(--T) linear infinite; }
+.diagram .fl-l4 { opacity: 0; animation: fl-l4 var(--T) linear infinite; }
+@keyframes fl-a0 {
+  0% { transform: translate(136px, 182px); opacity: 0; }
+  2.5% { transform: translate(136px, 182px); opacity: 0; }
+  2.75% { opacity: 1; }
+  4.625% { transform: translate(204px, 182px); opacity: 1; }
+  4.875% { transform: translate(204px, 182px); opacity: 0; }
+  100% { transform: translate(204px, 182px); opacity: 0; }
+}
+@keyframes fl-a1 {
+  0% { transform: translate(136px, 244px); opacity: 0; }
+  3.75% { transform: translate(136px, 244px); opacity: 0; }
+  4% { opacity: 1; }
+  5.875% { transform: translate(204px, 244px); opacity: 1; }
+  6.125% { transform: translate(204px, 244px); opacity: 0; }
+  100% { transform: translate(204px, 244px); opacity: 0; }
+}
+@keyframes fl-a2 {
+  0% { transform: translate(136px, 306px); opacity: 0; }
+  5% { transform: translate(136px, 306px); opacity: 0; }
+  5.25% { opacity: 1; }
+  7.125% { transform: translate(204px, 306px); opacity: 1; }
+  7.375% { transform: translate(204px, 306px); opacity: 0; }
+  100% { transform: translate(204px, 306px); opacity: 0; }
+}
+@keyframes fl-b1 {
+  0% { transform: translate(272px, 214px); opacity: 0; }
+  7.75% { transform: translate(272px, 214px); opacity: 0; }
+  8% { opacity: 1; }
+  10.711% { transform: translate(370px, 191px); opacity: 1; }
+  10.961% { transform: translate(370px, 191px); opacity: 0; }
+  100% { transform: translate(370px, 191px); opacity: 0; }
+}
+@keyframes fl-b2 {
+  0% { transform: translate(272px, 274px); opacity: 0; }
+  8.25% { transform: translate(272px, 274px); opacity: 0; }
+  8.5% { opacity: 1; }
+  11.198% { transform: translate(370px, 295px); opacity: 1; }
+  11.448% { transform: translate(370px, 295px); opacity: 0; }
+  100% { transform: translate(370px, 295px); opacity: 0; }
+}
+@keyframes fl-s1ring {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.25% { opacity: 1; }
+  17% { opacity: 1; }
+  17.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-s1al {
+  0% { transform: translate(592px, 190px); opacity: 0; }
+  12.25% { transform: translate(592px, 190px); opacity: 0; }
+  12.5% { opacity: 1; }
+  16.614% { transform: translate(784px, 190px); opacity: 1; }
+  16.864% { transform: translate(784px, 190px); opacity: 0; }
+  100% { transform: translate(784px, 190px); opacity: 0; }
+}
+@keyframes fl-s1d {
+  0% { transform: translate(592px, 296px); opacity: 0; }
+  13.25% { transform: translate(592px, 296px); opacity: 0; }
+  13.5% { opacity: 1; }
+  16.554% { transform: translate(744px, 296px); }
+  17.141% { transform: translate(744px, 323px); }
+  18.011% { transform: translate(784px, 323px); opacity: 1; }
+  18.261% { transform: translate(784px, 323px); opacity: 0; }
+  100% { transform: translate(784px, 323px); opacity: 0; }
+}
+@keyframes fl-dfl {
+  0% { opacity: 0; }
+  18.011% { opacity: 0; }
+  18.511% { opacity: 1; }
+  22.75% { opacity: 1; }
+  23.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-o1 {
+  0% { transform: translate(136px, 244px); opacity: 0; }
+  27.5% { transform: translate(136px, 244px); opacity: 0; }
+  27.75% { opacity: 1; }
+  29.158% { transform: translate(262px, 244px); }
+  30.369% { transform: translate(330px, 306px); }
+  31.921% { transform: translate(448px, 306px); opacity: 1; }
+  32.171% { transform: translate(448px, 306px); opacity: 0; }
+  100% { transform: translate(448px, 306px); opacity: 0; }
+}
+@keyframes fl-o2 {
+  0% { transform: translate(136px, 182px); opacity: 0; }
+  29.75% { transform: translate(136px, 182px); opacity: 0; }
+  30% { opacity: 1; }
+  31.408% { transform: translate(262px, 182px); }
+  32.303% { transform: translate(330px, 182px); }
+  33.855% { transform: translate(448px, 182px); opacity: 1; }
+  34.105% { transform: translate(448px, 182px); opacity: 0; }
+  100% { transform: translate(448px, 182px); opacity: 0; }
+}
+@keyframes fl-o3 {
+  0% { transform: translate(136px, 182px); opacity: 0; }
+  32% { transform: translate(136px, 182px); opacity: 0; }
+  32.25% { opacity: 1; }
+  33.658% { transform: translate(262px, 182px); }
+  35.519% { transform: translate(330px, 306px); }
+  37.071% { transform: translate(448px, 306px); opacity: 1; }
+  37.321% { transform: translate(448px, 306px); opacity: 0; }
+  100% { transform: translate(448px, 306px); opacity: 0; }
+}
+@keyframes fl-o4 {
+  0% { transform: translate(136px, 306px); opacity: 0; }
+  34.25% { transform: translate(136px, 306px); opacity: 0; }
+  34.5% { opacity: 1; }
+  35.908% { transform: translate(262px, 306px); }
+  37.119% { transform: translate(330px, 244px); }
+  38.671% { transform: translate(448px, 244px); opacity: 1; }
+  38.921% { transform: translate(448px, 244px); opacity: 0; }
+  100% { transform: translate(448px, 244px); opacity: 0; }
+}
+@keyframes fl-o5 {
+  0% { transform: translate(136px, 306px); opacity: 0; }
+  36.5% { transform: translate(136px, 306px); opacity: 0; }
+  36.75% { opacity: 1; }
+  38.158% { transform: translate(262px, 306px); }
+  39.053% { transform: translate(330px, 306px); }
+  40.605% { transform: translate(448px, 306px); opacity: 1; }
+  40.855% { transform: translate(448px, 306px); opacity: 0; }
+  100% { transform: translate(448px, 306px); opacity: 0; }
+}
+@keyframes fl-v0a {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.4% { opacity: 1; }
+  33.855% { opacity: 1; }
+  34.255% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-v0b {
+  0% { opacity: 0; }
+  33.855% { opacity: 0; }
+  34.255% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-v1a {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.4% { opacity: 1; }
+  38.671% { opacity: 1; }
+  39.071% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-v1b {
+  0% { opacity: 0; }
+  38.671% { opacity: 0; }
+  39.071% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-v2a {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.4% { opacity: 1; }
+  31.921% { opacity: 1; }
+  32.321% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-v2b {
+  0% { opacity: 0; }
+  31.921% { opacity: 0; }
+  32.321% { opacity: 1; }
+  37.071% { opacity: 1; }
+  37.471% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-v2c {
+  0% { opacity: 0; }
+  37.071% { opacity: 0; }
+  37.471% { opacity: 1; }
+  40.605% { opacity: 1; }
+  41.005% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-v2d {
+  0% { opacity: 0; }
+  40.605% { opacity: 0; }
+  41.005% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-chip {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  60.75% { opacity: 1; }
+  61.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-clr {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.5% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-s2ring {
+  0% { opacity: 0; }
+  40.605% { opacity: 0; }
+  41.105% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-s2al {
+  0% { transform: translate(596px, 306px); opacity: 0; }
+  41.355% { transform: translate(596px, 306px); opacity: 0; }
+  41.605% { opacity: 1; }
+  43.755% { transform: translate(740px, 306px); }
+  44.788% { transform: translate(740px, 244px); }
+  45.522% { transform: translate(784px, 244px); opacity: 1; }
+  45.772% { transform: translate(784px, 244px); opacity: 0; }
+  100% { transform: translate(784px, 244px); opacity: 0; }
+}
+@keyframes fl-farec {
+  0% { opacity: 0; }
+  16.614% { opacity: 0; }
+  17.114% { opacity: 1; }
+  24% { opacity: 1; }
+  24.8% { opacity: 0; }
+  45.522% { opacity: 0; }
+  46.022% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-ann {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53.5% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-wm {
+  0% { transform: translate(652.5px, 0px); opacity: 0; }
+  50% { transform: translate(652.5px, 0px); opacity: 0; }
+  51.5% { opacity: 1; }
+  54% { transform: translate(652.5px, 0px); }
+  60% { transform: translate(790px, 0px); }
+  73.5% { transform: translate(790px, 0px); opacity: 1; }
+  75% { transform: translate(790px, 0px); opacity: 0; }
+  100% { transform: translate(790px, 0px); opacity: 0; }
+}
+@keyframes fl-shut {
+  0% { opacity: 0; }
+  60.25% { opacity: 0; }
+  61.25% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-w0 {
+  0% { transform: translate(268px, 182px); opacity: 0; }
+  57.25% { transform: translate(268px, 182px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 182px); opacity: 1; }
+  60.6% { transform: translate(324px, 182px); opacity: 0; }
+  100% { transform: translate(324px, 182px); opacity: 0; }
+}
+@keyframes fl-w1 {
+  0% { transform: translate(268px, 182px); opacity: 0; }
+  57.25% { transform: translate(268px, 182px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 244px); opacity: 1; }
+  60.6% { transform: translate(324px, 244px); opacity: 0; }
+  100% { transform: translate(324px, 244px); opacity: 0; }
+}
+@keyframes fl-w2 {
+  0% { transform: translate(268px, 182px); opacity: 0; }
+  57.25% { transform: translate(268px, 182px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 306px); opacity: 1; }
+  60.6% { transform: translate(324px, 306px); opacity: 0; }
+  100% { transform: translate(324px, 306px); opacity: 0; }
+}
+@keyframes fl-w3 {
+  0% { transform: translate(268px, 244px); opacity: 0; }
+  57.25% { transform: translate(268px, 244px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 182px); opacity: 1; }
+  60.6% { transform: translate(324px, 182px); opacity: 0; }
+  100% { transform: translate(324px, 182px); opacity: 0; }
+}
+@keyframes fl-w4 {
+  0% { transform: translate(268px, 244px); opacity: 0; }
+  57.25% { transform: translate(268px, 244px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 244px); opacity: 1; }
+  60.6% { transform: translate(324px, 244px); opacity: 0; }
+  100% { transform: translate(324px, 244px); opacity: 0; }
+}
+@keyframes fl-w5 {
+  0% { transform: translate(268px, 244px); opacity: 0; }
+  57.25% { transform: translate(268px, 244px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 306px); opacity: 1; }
+  60.6% { transform: translate(324px, 306px); opacity: 0; }
+  100% { transform: translate(324px, 306px); opacity: 0; }
+}
+@keyframes fl-w6 {
+  0% { transform: translate(268px, 306px); opacity: 0; }
+  57.25% { transform: translate(268px, 306px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 182px); opacity: 1; }
+  60.6% { transform: translate(324px, 182px); opacity: 0; }
+  100% { transform: translate(324px, 182px); opacity: 0; }
+}
+@keyframes fl-w7 {
+  0% { transform: translate(268px, 306px); opacity: 0; }
+  57.25% { transform: translate(268px, 306px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 244px); opacity: 1; }
+  60.6% { transform: translate(324px, 244px); opacity: 0; }
+  100% { transform: translate(324px, 244px); opacity: 0; }
+}
+@keyframes fl-w8 {
+  0% { transform: translate(268px, 306px); opacity: 0; }
+  57.25% { transform: translate(268px, 306px); opacity: 0; }
+  57.85% { opacity: 1; }
+  60% { transform: translate(324px, 306px); opacity: 1; }
+  60.6% { transform: translate(324px, 306px); opacity: 0; }
+  100% { transform: translate(324px, 306px); opacity: 0; }
+}
+@keyframes fl-li {
+  0% { transform: translate(136px, 244px); opacity: 0; }
+  62.75% { transform: translate(136px, 244px); opacity: 0; }
+  63% { opacity: 1; }
+  64.15% { transform: translate(262px, 244px); }
+  65.172% { transform: translate(330px, 306px); }
+  66.484% { transform: translate(448px, 306px); opacity: 1; }
+  66.734% { transform: translate(448px, 306px); opacity: 0; }
+  100% { transform: translate(448px, 306px); opacity: 0; }
+}
+@keyframes fl-late {
+  0% { opacity: 0; }
+  66.484% { opacity: 0; }
+  66.984% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-lo {
+  0% { transform: translate(448px, 306px); opacity: 0; }
+  66.984% { transform: translate(448px, 306px); opacity: 0; }
+  67.234% { opacity: 1; }
+  67.321% { transform: translate(448px, 341px); }
+  70.551% { transform: translate(784px, 341px); opacity: 1; }
+  70.801% { transform: translate(784px, 341px); opacity: 0; }
+  100% { transform: translate(784px, 341px); opacity: 0; }
+}
+@keyframes fl-lrec {
+  0% { opacity: 0; }
+  70.551% { opacity: 0; }
+  71.051% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-jm1 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  76.5% { opacity: 1; }
+  86% { opacity: 1; }
+  86.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-jm2 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-bar0 {
+  0% { transform: translate(265px, 182px); opacity: 0; }
+  77.25% { transform: translate(265px, 182px); opacity: 0; }
+  77.85% { opacity: 1; }
+  79% { transform: translate(333px, 182px); }
+  80.25% { transform: translate(333px, 182px); }
+  81.5% { transform: translate(607px, 182px); }
+  82.25% { transform: translate(677px, 182px); }
+  84% { transform: translate(677px, 182px); opacity: 1; }
+  84.6% { transform: translate(677px, 182px); opacity: 0; }
+  100% { transform: translate(677px, 182px); opacity: 0; }
+}
+@keyframes fl-fs0 {
+  0% { transform: translate(227px, 196px); opacity: 0; }
+  77.75% { transform: translate(227px, 196px); opacity: 0; }
+  78.35% { opacity: 1; }
+  80.75% { transform: translate(330px, 364px); opacity: 1; }
+  81.35% { transform: translate(330px, 364px); opacity: 0; }
+  100% { transform: translate(330px, 364px); opacity: 0; }
+}
+@keyframes fl-fc0 {
+  0% { transform: translate(522px, 192px); opacity: 0; }
+  80.25% { transform: translate(522px, 192px); opacity: 0; }
+  80.85% { opacity: 1; }
+  83.25% { transform: translate(470px, 364px); opacity: 1; }
+  83.85% { transform: translate(470px, 364px); opacity: 0; }
+  100% { transform: translate(470px, 364px); opacity: 0; }
+}
+@keyframes fl-fr0 {
+  0% { transform: translate(470px, 364px); opacity: 0; }
+  87.75% { transform: translate(470px, 364px); opacity: 0; }
+  88.35% { opacity: 1; }
+  90.5% { transform: translate(522px, 192px); opacity: 1; }
+  91.1% { transform: translate(522px, 192px); opacity: 0; }
+  100% { transform: translate(522px, 192px); opacity: 0; }
+}
+@keyframes fl-bar1 {
+  0% { transform: translate(265px, 244px); opacity: 0; }
+  77.25% { transform: translate(265px, 244px); opacity: 0; }
+  77.85% { opacity: 1; }
+  79% { transform: translate(333px, 244px); }
+  80.25% { transform: translate(333px, 244px); }
+  81.5% { transform: translate(607px, 244px); }
+  82.25% { transform: translate(677px, 244px); }
+  84% { transform: translate(677px, 244px); opacity: 1; }
+  84.6% { transform: translate(677px, 244px); opacity: 0; }
+  100% { transform: translate(677px, 244px); opacity: 0; }
+}
+@keyframes fl-fs1 {
+  0% { transform: translate(227px, 258px); opacity: 0; }
+  77.75% { transform: translate(227px, 258px); opacity: 0; }
+  78.35% { opacity: 1; }
+  80.75% { transform: translate(352px, 364px); opacity: 1; }
+  81.35% { transform: translate(352px, 364px); opacity: 0; }
+  100% { transform: translate(352px, 364px); opacity: 0; }
+}
+@keyframes fl-fc1 {
+  0% { transform: translate(522px, 254px); opacity: 0; }
+  80.25% { transform: translate(522px, 254px); opacity: 0; }
+  80.85% { opacity: 1; }
+  83.25% { transform: translate(492px, 364px); opacity: 1; }
+  83.85% { transform: translate(492px, 364px); opacity: 0; }
+  100% { transform: translate(492px, 364px); opacity: 0; }
+}
+@keyframes fl-fr1 {
+  0% { transform: translate(492px, 364px); opacity: 0; }
+  87.75% { transform: translate(492px, 364px); opacity: 0; }
+  88.35% { opacity: 1; }
+  90.5% { transform: translate(522px, 254px); opacity: 1; }
+  91.1% { transform: translate(522px, 254px); opacity: 0; }
+  100% { transform: translate(522px, 254px); opacity: 0; }
+}
+@keyframes fl-bar2 {
+  0% { transform: translate(265px, 306px); opacity: 0; }
+  77.25% { transform: translate(265px, 306px); opacity: 0; }
+  77.85% { opacity: 1; }
+  79% { transform: translate(333px, 306px); }
+  80.25% { transform: translate(333px, 306px); }
+  81.5% { transform: translate(607px, 306px); }
+  82.25% { transform: translate(677px, 306px); }
+  84% { transform: translate(677px, 306px); opacity: 1; }
+  84.6% { transform: translate(677px, 306px); opacity: 0; }
+  100% { transform: translate(677px, 306px); opacity: 0; }
+}
+@keyframes fl-fs2 {
+  0% { transform: translate(227px, 320px); opacity: 0; }
+  77.75% { transform: translate(227px, 320px); opacity: 0; }
+  78.35% { opacity: 1; }
+  80.75% { transform: translate(374px, 364px); opacity: 1; }
+  81.35% { transform: translate(374px, 364px); opacity: 0; }
+  100% { transform: translate(374px, 364px); opacity: 0; }
+}
+@keyframes fl-fc2 {
+  0% { transform: translate(522px, 316px); opacity: 0; }
+  80.25% { transform: translate(522px, 316px); opacity: 0; }
+  80.85% { opacity: 1; }
+  83.25% { transform: translate(514px, 364px); opacity: 1; }
+  83.85% { transform: translate(514px, 364px); opacity: 0; }
+  100% { transform: translate(514px, 364px); opacity: 0; }
+}
+@keyframes fl-fr2 {
+  0% { transform: translate(514px, 364px); opacity: 0; }
+  87.75% { transform: translate(514px, 364px); opacity: 0; }
+  88.35% { opacity: 1; }
+  90.5% { transform: translate(522px, 316px); opacity: 1; }
+  91.1% { transform: translate(522px, 316px); opacity: 0; }
+  100% { transform: translate(522px, 316px); opacity: 0; }
+}
+@keyframes fl-c811 {
+  0% { opacity: 1; }
+  83.75% { opacity: 1; }
+  84.25% { opacity: 0; }
+  97.75% { opacity: 0; }
+  98.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes fl-c812 {
+  0% { opacity: 0; }
+  84% { opacity: 0; }
+  84.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-commit {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-crash {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  86.5% { opacity: 1; }
+  90.25% { opacity: 1; }
+  91.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-run {
+  0% { opacity: 1; }
+  85.75% { opacity: 1; }
+  86.25% { opacity: 0; }
+  91.25% { opacity: 0; }
+  91.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes fl-rst {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  86.5% { opacity: 1; }
+  91% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-pod {
+  0% { opacity: 0; }
+  90.5% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-rd {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26.5% { opacity: 1; }
+  89.25% { opacity: 1; }
+  89.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-rw {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  90.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-l1 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-l2 {
+  0% { opacity: 0; }
+  92.75% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-l3 {
+  0% { opacity: 0; }
+  94% { opacity: 0; }
+  94.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes fl-l4 {
+  0% { opacity: 0; }
+  95.25% { opacity: 0; }
+  95.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- Kafka topic orders -->
+<rect class="box" x="36" y="104" width="114" height="242" rx="12"/>
+<text class="label" x="48" y="127">orders</text>
+<text class="tiny" x="48" y="143">Kafka topic</text>
+<text class="tiny" x="48" y="157">3 partitions</text>
+<text class="tiny mono sb f-ink" x="48" y="186">P0</text>
+<rect class="fl-rec" x="72" y="177" width="10" height="10" rx="2"/>
+<rect class="fl-rec" x="87" y="177" width="10" height="10" rx="2"/>
+<rect class="fl-rec" x="102" y="177" width="10" height="10" rx="2"/>
+<line class="wire" x1="128" y1="182" x2="190" y2="182" marker-end="url(#ah)"/>
+<text class="tiny mono sb f-ink" x="48" y="248">P1</text>
+<rect class="fl-rec" x="72" y="239" width="10" height="10" rx="2"/>
+<rect class="fl-rec" x="87" y="239" width="10" height="10" rx="2"/>
+<rect class="fl-rec" x="102" y="239" width="10" height="10" rx="2"/>
+<line class="wire" x1="128" y1="244" x2="190" y2="244" marker-end="url(#ah)"/>
+<text class="tiny mono sb f-ink" x="48" y="310">P2</text>
+<rect class="fl-rec" x="72" y="301" width="10" height="10" rx="2"/>
+<rect class="fl-rec" x="87" y="301" width="10" height="10" rx="2"/>
+<rect class="fl-rec" x="102" y="301" width="10" height="10" rx="2"/>
+<line class="wire" x1="128" y1="306" x2="190" y2="306" marker-end="url(#ah)"/>
+<!-- the product: one Flink cluster running job fraud-check -->
+<rect class="fl-frame" x="172" y="96" width="594" height="256" rx="16"/>
+<text class="label" x="188" y="120">Apache Flink</text>
+<text class="tiny mono" x="188" y="138">job fraud-check · parallelism 3</text>
+<g class="fl-run"><rect class="f-green-soft s-green" x="296" y="108" width="66" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb mid f-green" x="329" y="120">RUNNING</text></g>
+<g class="fl-rst"><rect class="f-amber-soft s-amber" x="296" y="108" width="84" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb mid f-amber-ink" x="338" y="120">RESTARTING</text></g>
+<rect class="box" x="470" y="104" width="286" height="36" rx="9"/>
+<text class="sub sb f-ink" x="482" y="119">JobManager</text>
+<text class="tiny" x="482" y="133">schedules tasks · checkpoints every 30 s</text>
+<g class="fl-jm1"><rect class="f-teal-soft s-teal" x="632" y="108" width="116" height="15" rx="7.5" stroke-width="1.2"/><text class="tiny sb mid f-teal" x="690" y="119">triggers chk 812</text></g>
+<g class="fl-jm2"><rect class="f-amber-soft s-amber" x="612" y="108" width="136" height="15" rx="7.5" stroke-width="1.2"/><text class="tiny sb mid f-amber-ink" x="680" y="119">restart from chk 812</text></g>
+<!-- step 1: the logical job graph -->
+<g class="p1"><rect class="box" x="192" y="166" width="80" height="156" rx="10"/><text class="sub sb mid f-ink" x="232" y="238">source ×3</text><text class="tiny mono mid" x="232" y="254">KafkaSource</text><line class="wire" x1="272" y1="214" x2="370" y2="191" marker-end="url(#ah)"/><text class="tiny mono mid f-ink" x="321" y="192">keyBy(card)</text><line class="wire" x1="272" y1="274" x2="370" y2="295" marker-end="url(#ah)"/><text class="tiny mono mid f-ink" x="322" y="307">keyBy(country)</text><rect class="box" x="372" y="158" width="220" height="64" rx="10"/><text class="sub" x="386" y="179"><tspan class="sb f-ink">count per card</tspan> · alert if &gt; 5</text><text class="tiny" x="386" y="194">10-min event-time windows</text><rect class="f-teal-soft s-teal" x="386" y="201" width="168" height="15" rx="7.5" stroke-width="1.2"/><text class="tiny mono sb mid f-teal" x="470" y="212">C-9 [10:00,10:10) → 6</text><rect class="box" x="372" y="266" width="220" height="60" rx="10"/><text class="sub sb f-ink" x="386" y="287">orders per minute</text><text class="tiny" x="386" y="302">per country · 1-min windows</text><rect class="f-teal-soft s-teal" x="386" y="308" width="136" height="15" rx="7.5" stroke-width="1.2"/><text class="tiny mono sb mid f-teal" x="454" y="319">DE [10:06,10:07)</text><text class="tiny sb mid f-teal" x="482" y="240">state lives here: RocksDB on local disk</text><text class="tiny mid" x="482" y="254">snapshot to S3 every 30 s</text><line class="wire" x1="592" y1="190" x2="610" y2="190" marker-end="url(#ah)"/><rect class="box" x="612" y="172" width="80" height="36" rx="9"/><text class="tiny sb mid f-ink" x="652" y="187">Kafka sink</text><text class="tiny mid" x="652" y="200">Kafka txn</text><line class="wire" x1="692" y1="190" x2="784" y2="190" marker-end="url(#ah)"/><line class="wire" x1="592" y1="296" x2="610" y2="296" marker-end="url(#ah)"/><rect class="box" x="612" y="278" width="80" height="36" rx="9"/><text class="tiny sb mid f-ink" x="652" y="293">sink</text><text class="tiny mid" x="652" y="306">per minute</text><path class="wire" d="M692 296H736Q744 296 744 304V315Q744 323 752 323H784" marker-end="url(#ah)"/></g>
+<rect class="none s-purple fl-s1ring" x="383" y="198" width="174" height="21" rx="10.5" stroke-width="2"/>
+<!-- steps 2-4: parallelism 3 on three TaskManagers, one slot each -->
+<g class="p234"><rect class="fl-lane" x="182" y="150" width="574" height="56" rx="10"/><text class="tiny" x="192" y="163"><tspan class="sb f-ink">TaskManager 1</tspan> · RocksDB on local disk</text><rect class="fl-op" x="192" y="168" width="70" height="28" rx="7"/><text class="tiny sb f-ink" x="199" y="179">source 1/3</text><rect class="fl-op" x="330" y="168" width="274" height="28" rx="7"/><text class="tiny sb f-ink" x="338" y="179">count 1/3</text><text class="tiny" x="338" y="191">key groups 0–42</text><line class="fl-thin" x1="604" y1="182" x2="614" y2="182"/><rect class="fl-op" x="614" y="168" width="66" height="28" rx="7"/><text class="tiny sb f-ink" x="621" y="179">sink 1/3</text><text class="tiny" x="621" y="191">Kafka txn</text><line class="fl-thin" x1="680" y1="182" x2="740" y2="182"/><rect class="fl-lane" x="182" y="212" width="574" height="56" rx="10"/><text class="tiny" x="192" y="225"><tspan class="sb f-ink">TaskManager 2</tspan> · RocksDB on local disk</text><rect class="fl-op" x="192" y="230" width="70" height="28" rx="7"/><text class="tiny sb f-ink" x="199" y="241">source 2/3</text><rect class="fl-op" x="330" y="230" width="274" height="28" rx="7"/><text class="tiny sb f-ink" x="338" y="241">count 2/3</text><text class="tiny" x="338" y="253">key groups 43–85</text><line class="fl-thin" x1="604" y1="244" x2="614" y2="244"/><rect class="fl-op" x="614" y="230" width="66" height="28" rx="7"/><text class="tiny sb f-ink" x="621" y="241">sink 2/3</text><text class="tiny" x="621" y="253">Kafka txn</text><line class="fl-thin" x1="680" y1="244" x2="740" y2="244"/><rect class="fl-lane" x="182" y="274" width="574" height="56" rx="10"/><text class="tiny" x="192" y="287"><tspan class="sb f-ink">TaskManager 3</tspan> · RocksDB on local disk</text><rect class="fl-op" x="192" y="292" width="70" height="28" rx="7"/><text class="tiny sb f-ink" x="199" y="303">source 3/3</text><rect class="fl-op" x="330" y="292" width="274" height="28" rx="7"/><text class="tiny sb f-ink" x="338" y="303">count 3/3</text><text class="tiny" x="338" y="315">key groups 86–127</text><line class="fl-thin" x1="604" y1="306" x2="614" y2="306"/><rect class="fl-op" x="614" y="292" width="66" height="28" rx="7"/><text class="tiny sb f-ink" x="621" y="303">sink 3/3</text><text class="tiny" x="621" y="315">Kafka txn</text><line class="fl-thin" x1="680" y1="306" x2="740" y2="306"/><line class="fl-shuf" x1="262" y1="182" x2="330" y2="182"/><line class="fl-shuf" x1="262" y1="182" x2="330" y2="244"/><line class="fl-shuf" x1="262" y1="182" x2="330" y2="306"/><line class="fl-shuf" x1="262" y1="244" x2="330" y2="182"/><line class="fl-shuf" x1="262" y1="244" x2="330" y2="244"/><line class="fl-shuf" x1="262" y1="244" x2="330" y2="306"/><line class="fl-shuf" x1="262" y1="306" x2="330" y2="182"/><line class="fl-shuf" x1="262" y1="306" x2="330" y2="244"/><line class="fl-shuf" x1="262" y1="306" x2="330" y2="306"/><line class="fl-thin" x1="740" y1="182" x2="740" y2="306"/><line class="wire" x1="740" y1="244" x2="784" y2="244" marker-end="url(#ah)"/></g>
+<g class="p234"><text class="tiny fl-rd" x="199" y="191">reads P0</text></g>
+<g class="p4"><text class="tiny sb f-blue fl-rw" x="199" y="191">↺ chk 812</text></g>
+<g class="p234"><text class="tiny fl-rd" x="199" y="253">reads P1</text></g>
+<g class="p4"><text class="tiny sb f-blue fl-rw" x="199" y="253">↺ chk 812</text></g>
+<g class="p234"><text class="tiny fl-rd" x="199" y="315">reads P2</text></g>
+<g class="p4"><text class="tiny sb f-blue fl-rw" x="199" y="315">↺ chk 812</text></g>
+<g class="p2"><text class="tiny mono mid f-ink" x="296" y="345">keyBy(card)</text></g>
+<g class="p4"><text class="tiny mid f-teal" x="296" y="345">barriers flow with the orders</text></g>
+<g class="p3"><text class="tiny mid f-ink" x="296" y="345">watermarks flow with the orders</text></g>
+<g class="fl-chip"><rect class="f-teal-soft s-teal" x="448" y="172" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny mono sb f-teal" x="455" y="186">C-4 [10:00,10:10)</text></g>
+<g class="p3"><text class="tiny sb f-green fl-clr" x="455" y="186">closed · state cleared</text></g>
+<g class="p4"><rect class="f-teal-soft s-teal" x="448" y="172" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny mono sb f-teal" x="455" y="186">state [10:10,10:20)</text></g>
+<g class="fl-chip"><rect class="f-teal-soft s-teal" x="448" y="234" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny mono sb f-teal" x="455" y="248">C-7 [10:00,10:10)</text></g>
+<g class="p3"><text class="tiny sb f-green fl-clr" x="455" y="248">closed · state cleared</text></g>
+<g class="p4"><rect class="f-teal-soft s-teal" x="448" y="234" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny mono sb f-teal" x="455" y="248">state [10:10,10:20)</text></g>
+<g class="fl-chip"><rect class="f-teal-soft s-teal" x="448" y="296" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny mono sb f-teal" x="455" y="310">C-9 [10:00,10:10)</text></g>
+<g class="p3"><text class="tiny sb f-green fl-clr" x="455" y="310">closed · state cleared</text></g>
+<g class="p4"><rect class="f-teal-soft s-teal" x="448" y="296" width="148" height="20" rx="6" stroke-width="1.2"/><text class="tiny mono sb f-teal" x="455" y="310">state [10:10,10:20)</text></g>
+<!-- fraud-alerts topic, dashboard, late-orders -->
+<rect class="box" x="786" y="150" width="138" height="138" rx="12"/>
+<text class="label" x="798" y="172">fraud-alerts</text>
+<text class="tiny" x="798" y="188">Kafka topic</text>
+<g class="fl-farec"><rect class="fl-ev" x="798" y="199" width="12" height="12" rx="3"/><text class="tiny mono sb f-ink" x="816" y="209">C-9 · 6 orders</text></g>
+<g class="fl-commit"><circle class="f-green" cx="804" cy="228" r="6"/><path class="none s-bg" d="M801 228l2 2 4-4.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green" x="816" y="232">committed</text></g>
+<g class="p4"><text class="tiny" x="798" y="260">readers set</text><text class="tiny mono f-ink" x="798" y="274">read_committed</text></g>
+<g class="p1"><rect class="box" x="786" y="296" width="138" height="54" rx="12"/><text class="sub sb f-ink" x="798" y="316">dashboard</text><text class="tiny" x="798" y="331">orders per minute</text><text class="tiny" x="798" y="345">per country</text></g>
+<rect class="none s-purple fl-dfl" x="786" y="296" width="138" height="54" rx="12" stroke-width="2"/>
+<g class="p3"><rect class="f-amber-soft s-amber" x="786" y="296" width="138" height="54" rx="12" stroke-width="1.5"/><text class="sub sb f-amber-ink" x="798" y="314">late-orders</text><text class="tiny" x="798" y="328">side output</text><path class="none s-amber" d="M448 320V341H784" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ah-amber)"/></g>
+<g class="fl-lrec"><rect class="f-amber" x="798" y="334" width="10" height="10" rx="2"/><text class="tiny mono sb f-amber-ink" x="813" y="343">C-9 · 10:08:40</text></g>
+<!-- checkpoint store -->
+<rect class="box" x="280" y="362" width="400" height="34" rx="10"/>
+<text class="sub sb f-ink" x="292" y="377">Amazon S3</text>
+<text class="tiny" x="366" y="377">checkpoints</text>
+<text class="tiny mono" x="292" y="390">s3://acme-shop-flink/checkpoints/fraud-check</text>
+<text class="tiny end fl-c811" x="668" y="377">latest: chk 811</text>
+<g class="fl-c812"><text class="tiny sb end f-green" x="652" y="377">latest: chk 812</text><circle class="f-green" cx="662" cy="373" r="6"/><path class="none s-bg" d="M659 373l2 2 4-4.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<!-- notes, one per step -->
+<rect class="box" x="36" y="402" width="888" height="64" rx="12"/>
+<g class="p1"><text class="fl-hd" x="52" y="420">A STATEFUL STREAM PROCESSOR</text><text class="tiny end" x="908" y="420">deployed once, runs for months</text><text class="sub f-ink" x="52" y="438">Flink reads every order from Kafka as it arrives, keeps state about what it has seen, and keeps writing alerts and per-minute counts.</text><text class="sub f-ink" x="52" y="456">It runs as one long-lived job on a cluster: Kubernetes here, or a managed service such as Amazon Managed Service for Apache Flink.</text></g>
+<g class="p2"><text class="fl-hd" x="52" y="420">DATAFLOW AND KEYED STATE</text><text class="tiny end" x="908" y="420">the state lives with the computation, not in a database</text><text class="sub f-ink" x="52" y="438">Each source subtask reads one partition. keyBy(card) hashes C-9 to key group 126 of 128, owned by count 3/3, so all its orders meet there.</text><text class="sub f-ink" x="52" y="456">Keyed state counts C-9’s orders in [10:00, 10:10). The sixth, made at 10:07, makes 6 &gt; 5 and an alert goes to fraud-alerts.</text></g>
+<g class="p4"><text class="fl-hd" x="52" y="420">CHECKPOINTS, RECOVERY AND THE LIMITS</text><text class="tiny end" x="908" y="420">every 30 s · exactly-once state</text><text class="sub f-ink" x="52" y="438">Barriers from the sources make each operator snapshot its state, with the Kafka offsets, to S3. After the crash the job resumes from chk 812.</text></g>
+<g class="p3"><text class="fl-hd" x="52" y="420">EVENT TIME AND WATERMARKS</text><text class="tiny f-ink" x="52" y="438">W = largest event time seen − 5 s</text><text class="tiny" x="52" y="454">a window closes once W passes its end</text><rect class="f-teal-soft s-teal" x="290" y="422" width="500" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono sb f-teal" x="296" y="434">C-9</text><line class="s-muted" x1="290" y1="446" x2="890" y2="446" stroke-width="1.2"/><line class="s-muted" x1="290" y1="442" x2="290" y2="450" stroke-width="1.2"/><text class="tiny mono mid" x="290" y="461">10:00</text><line class="s-muted" x1="340" y1="444" x2="340" y2="448" stroke-width="1.2"/><line class="s-muted" x1="390" y1="442" x2="390" y2="450" stroke-width="1.2"/><text class="tiny mono mid" x="390" y="461">10:02</text><line class="s-muted" x1="440" y1="444" x2="440" y2="448" stroke-width="1.2"/><line class="s-muted" x1="490" y1="442" x2="490" y2="450" stroke-width="1.2"/><text class="tiny mono mid" x="490" y="461">10:04</text><line class="s-muted" x1="540" y1="444" x2="540" y2="448" stroke-width="1.2"/><line class="s-muted" x1="590" y1="442" x2="590" y2="450" stroke-width="1.2"/><text class="tiny mono mid" x="590" y="461">10:06</text><line class="s-muted" x1="640" y1="444" x2="640" y2="448" stroke-width="1.2"/><line class="s-muted" x1="690" y1="442" x2="690" y2="450" stroke-width="1.2"/><text class="tiny mono mid" x="690" y="461">10:08</text><line class="s-muted" x1="740" y1="444" x2="740" y2="448" stroke-width="1.2"/><line class="s-muted" x1="790" y1="442" x2="790" y2="450" stroke-width="1.2"/><text class="tiny mono mid" x="790" y="461">10:10</text><line class="s-muted" x1="840" y1="444" x2="840" y2="448" stroke-width="1.2"/><line class="s-muted" x1="890" y1="442" x2="890" y2="450" stroke-width="1.2"/><text class="tiny mono mid" x="890" y="461">10:12</text><circle class="f-purple" cx="348.3" cy="430" r="3.5"/><circle class="f-purple" cx="415.0" cy="430" r="3.5"/><circle class="f-purple" cx="490.0" cy="430" r="3.5"/><circle class="f-purple" cx="465.0" cy="430" r="3.5"/><circle class="f-purple" cx="556.7" cy="430" r="3.5"/><circle class="f-purple" cx="640.0" cy="430" r="3.5"/><circle class="none s-amber" cx="465.0" cy="430" r="6.5" stroke-width="1.5"/></g>
+<g class="fl-ann"><text class="tiny sb mid f-amber-ink" x="465.0" y="417">10:03 arrived after 10:04</text></g>
+<g class="fl-wm"><line class="s-ink" x1="0" y1="420" x2="0" y2="451" stroke-width="1.6"/><text class="tiny b mid f-ink" x="0" y="417">W</text></g>
+<g class="fl-shut"><rect class="f-green-soft s-green" x="290" y="422" width="500" height="16" rx="4" stroke-width="1.5"/><circle class="f-green" cx="804" cy="430" r="6"/><path class="none s-bg" d="M801 430l2 2 4-4.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text class="tiny sb f-green" x="814" y="434">closed</text></g>
+<g class="fl-late"><circle class="f-purple" cx="723.3" cy="430" r="3.5"/><circle class="none s-amber" cx="723.3" cy="430" r="6.5" stroke-width="1.5"/><text class="tiny sb mid f-amber-ink" x="723.3" y="417">late → side output</text></g>
+<g class="p4"><g class="fl-l1"><rect class="f-amber-soft s-amber" x="52" y="445" width="250" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="63" y="457.5">big state: slow checkpoints, restarts</text></g></g>
+<g class="p4"><g class="fl-l2"><rect class="f-amber-soft s-amber" x="310" y="445" width="157" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="321" y="457.5">lag under backpressure</text></g></g>
+<g class="p4"><g class="fl-l3"><rect class="f-amber-soft s-amber" x="475" y="445" width="170" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="486" y="457.5">upgrades need savepoints</text></g></g>
+<g class="p4"><g class="fl-l4"><rect class="f-amber-soft s-amber" x="653" y="445" width="225" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="664" y="457.5">small jobs: Kafka Streams, Lambda</text></g></g>
+<g class="fl-crash"><rect class="f-red-soft s-red" x="182" y="212" width="574" height="56" rx="10" stroke-width="1.5"/><path class="none s-red" d="M738 218l8 8m0 -8l-8 8" stroke-width="2" stroke-linecap="round"/><text class="tiny sb end f-red" x="730" y="225">process lost</text></g>
+<g class="fl-pod"><text class="tiny sb f-green" x="412" y="225">· new pod</text></g>
+<text class="tiny mono b end f-ink fl-v0a" x="588" y="186">1</text>
+<text class="tiny mono b end f-ink fl-v0b" x="588" y="186">2</text>
+<text class="tiny mono b end f-ink fl-v1a" x="588" y="248">1</text>
+<text class="tiny mono b end f-ink fl-v1b" x="588" y="248">2</text>
+<text class="tiny mono b end f-ink fl-v2a" x="588" y="310">3</text>
+<text class="tiny mono b end f-ink fl-v2b" x="588" y="310">4</text>
+<text class="tiny mono b end f-ink fl-v2c" x="588" y="310">5</text>
+<text class="tiny mono b end f-ink fl-v2d" x="588" y="310">6</text>
+<g class="fl-s2ring"><rect class="none s-purple" x="445" y="293" width="154" height="26" rx="9" stroke-width="2"/><text class="tiny sb mid f-purple" x="522" y="287">6 &gt; 5 → alert</text></g>
+<!-- moving records, watermarks, barriers and snapshots -->
+<rect class="fl-ev fl-a0" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="fl-ev fl-a1" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="fl-ev fl-a2" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="fl-ev fl-b1" x="-6" y="-6" width="12" height="12" rx="3"/>
+<rect class="fl-ev fl-b2" x="-6" y="-6" width="12" height="12" rx="3"/>
+<g class="fl-s1al"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny b mid f-purple fl-halo" x="0" y="-14">alert · C-9</text></g>
+<rect class="fl-ev fl-s1d" x="-6" y="-6" width="12" height="12" rx="3"/>
+<g class="fl-o1"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny mono b mid f-purple fl-halo" x="0" y="-11">C-9 · 10:03</text></g>
+<g class="fl-o2"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny mono b mid f-purple fl-halo" x="0" y="-11">C-4 · 10:05</text></g>
+<g class="fl-o3"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny mono b mid f-purple fl-halo" x="0" y="-11">C-9 · 10:05</text></g>
+<g class="fl-o4"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny mono b mid f-purple fl-halo" x="0" y="-11">C-7 · 10:06</text></g>
+<g class="fl-o5"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny mono b mid f-purple fl-halo" x="0" y="-11">C-9 · 10:07</text></g>
+<g class="fl-s2al"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny b mid f-purple fl-halo" x="0" y="-11">alert · C-9</text></g>
+<g class="fl-w0"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w1"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w2"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w3"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w4"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w5"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w6"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w7"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-w8"><rect class="f-ink" x="-7" y="-6" width="14" height="12" rx="3"/><text class="fl-w f-bg" x="0" y="3.5">W</text></g>
+<g class="fl-li"><rect class="fl-ev" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny mono b mid f-purple fl-halo" x="0" y="-11">C-9 · 10:08:40</text></g>
+<g class="fl-lo"><rect class="f-amber pkt" x="-7" y="-7" width="14" height="14" rx="3"/><text class="tiny mono b mid f-amber-ink fl-halo" x="0" y="-11">late</text></g>
+<g class="fl-bar0"><rect class="f-teal" x="-2.5" y="-13" width="5" height="26" rx="2.5"/></g>
+<rect class="f-teal pkt fl-fs0" x="-5" y="-5" width="10" height="10" rx="2"/>
+<rect class="f-teal pkt fl-fc0" x="-5" y="-5" width="10" height="10" rx="2"/>
+<rect class="f-teal pkt fl-fr0" x="-5" y="-5" width="10" height="10" rx="2"/>
+<g class="fl-bar1"><rect class="f-teal" x="-2.5" y="-13" width="5" height="26" rx="2.5"/></g>
+<rect class="f-teal pkt fl-fs1" x="-5" y="-5" width="10" height="10" rx="2"/>
+<rect class="f-teal pkt fl-fc1" x="-5" y="-5" width="10" height="10" rx="2"/>
+<rect class="f-teal pkt fl-fr1" x="-5" y="-5" width="10" height="10" rx="2"/>
+<g class="fl-bar2"><rect class="f-teal" x="-2.5" y="-13" width="5" height="26" rx="2.5"/></g>
+<rect class="f-teal pkt fl-fs2" x="-5" y="-5" width="10" height="10" rx="2"/>
+<rect class="f-teal pkt fl-fc2" x="-5" y="-5" width="10" height="10" rx="2"/>
+<rect class="f-teal pkt fl-fr2" x="-5" y="-5" width="10" height="10" rx="2"/>
+</g>
+</svg>

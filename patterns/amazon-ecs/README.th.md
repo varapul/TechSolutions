@@ -26,7 +26,7 @@ service Catalog ของ Acme Shop ส่งออกมาเป็น contain
 
 - **`awsvpc`** ให้ task ทุกตัวมี elastic network interface (ENI) ของตัวเอง พร้อม private IP address จาก subnet ที่เราเลือก ทำให้ security group มีผลกับ task แต่ละตัว ส่วน task ของ Acme Shop อยู่ใน private app subnet `10.0.10.0/24` และ `10.0.11.0/24` และ security group `app-sg` ของมันรับ port 8080 จาก `alb-sg` ของ load balancer เท่านั้น (ดู [Amazon VPC](../amazon-vpc/)) นี่เป็น mode เดียวบน Fargate ส่วนบน EC2 instance ตัว ENI ของแต่ละ task จะกิน network interface ของ instance ไปหนึ่งตัว แล้ว ENI trunking (account setting `awsvpcTrunking`) ก็ช่วยเลี่ยงข้อจำกัดนี้ได้
 - **`bridge`** เป็นค่า default ของ Linux task บน EC2 instance และใช้ virtual network ของ Docker บน host ส่วน **`host`** ใช้ network stack ของ instance เอง ทำให้ task สองตัวบน instance เดียวกันใช้ port เดียวกันไม่ได้ ส่วน **`none`** ไม่มี network ภายนอกเลย
-- **Service คุยกับ service** ถ้าใช้ **Service Connect** ตัว ECS จะเพิ่ม Service Connect proxy เข้าไปในทุก task ของ service ที่อยู่ใน namespace ของ AWS Cloud Map แล้ว client ก็เรียกชื่อสั้น ๆ อย่าง `http://catalog:8080` ส่วน proxy เลือก task ที่ healthy ด้วย round robin และ outlier detection และทุก service ก็รายงาน traffic metric ชุดเดียวกัน แบบนี้ไม่ต้องใช้ Route 53 hosted zone ส่วน **service discovery** แบบเก่า register แต่ละ task ไว้ใน Cloud Map และ Route 53 private DNS แล้ว client ก็ resolve ชื่อเอง นอกจากนี้ service ยัง join VPC Lattice ได้ด้วย
+- **Service คุยกับ service** ถ้าใช้ **Service Connect** ตัว ECS จะเพิ่ม Service Connect proxy เข้าไปในทุก task ของ service ที่อยู่ใน namespace ของ AWS Cloud Map แล้ว client ก็เรียกชื่อสั้น ๆ อย่าง `http://catalog:8080` ส่วน proxy เลือก task ที่ healthy ด้วย round robin และ outlier detection และทุก service ก็รายงาน traffic metric ชุดเดียวกัน แบบนี้ไม่ต้องใช้ [Route 53](../amazon-route-53/) hosted zone ส่วน **service discovery** แบบเก่า register แต่ละ task ไว้ใน Cloud Map และ Route 53 private DNS แล้ว client ก็ resolve ชื่อเอง นอกจากนี้ service ยัง join VPC Lattice ได้ด้วย
 
 ### Load balancing และ health check
 
@@ -37,7 +37,7 @@ service Catalog ของ Acme Shop ส่งออกมาเป็น contain
 ### IAM role สองตัว
 
 - **task role** (`taskRoleArn` ที่นี่คือ `catalog-task`) ถือสิทธิ์ของโค้ดแอป ตัว AWS SDK ใน container หยิบ temporary credential ของมันไปใช้เองอัตโนมัติ ทำให้ไม่มี key ไปอยู่ใน image หรือใน environment
-- **task execution role** (`executionRoleArn` ที่นี่คือ `catalog-execution`) คือ role ที่ ECS container agent หรือ Fargate ใช้ดึง image จาก ECR repository แบบ private ส่ง log ของ `awslogs` ไปที่ CloudWatch และอ่าน secret ของ Secrets Manager กับ parameter ของ Parameter Store ที่ task definition อ้างถึง ส่วน AWS managed policy `AmazonECSTaskExecutionRolePolicy` ครอบคลุมการดึง image และ log
+- **task execution role** (`executionRoleArn` ที่นี่คือ `catalog-execution`) คือ role ที่ ECS container agent หรือ Fargate ใช้ดึง image จาก ECR repository แบบ private ส่ง log ของ `awslogs` ไปที่ [CloudWatch](../amazon-cloudwatch/) และอ่าน secret ของ Secrets Manager กับ parameter ของ Parameter Store ที่ task definition อ้างถึง ส่วน AWS managed policy `AmazonECSTaskExecutionRolePolicy` ครอบคลุมการดึง image และ log
 - role ทั้งสองตัว trust service principal `ecs-tasks.amazonaws.com` (ดู [AWS IAM](../aws-iam/)) บน Fargate นั้น task แต่ละตัวแยกขาดจากกัน แต่บน EC2 instance, Managed Instances และ ECS Anywhere ไม่ใช่แบบนั้น: container อาจเข้าถึง credential ของ task อื่นบน instance เดียวกัน, instance role และ instance metadata service ได้ ทำให้ AWS แนะนำให้ block container ไม่ให้เข้าถึง metadata service บนพวกนี้
 
 ### Secret และ configuration
@@ -46,7 +46,7 @@ service Catalog ของ Acme Shop ส่งออกมาเป็น contain
 
 ### Log
 
-log driver **`awslogs`** ส่ง stdout และ stderr ของแต่ละ container ไปที่ CloudWatch Logs ที่นี่คือ group `/ecs/catalog` โดยแยกหนึ่ง stream ต่อหนึ่ง container ชื่อ `prefix/container/task-id` และบน Fargate ต้องใส่ `awslogs-stream-prefix` เสมอ ตั้งแต่ 25 มิถุนายน 2025 เป็นต้นมา delivery mode ที่เป็น default คือ `non-blocking`: log จะรออยู่ใน buffer (`max-buffer-size` ค่า default 10m) และเมื่อ buffer เต็ม บรรทัดใหม่จะถูกทิ้ง แทนที่จะทำให้แอปค้าง ให้ตั้ง `mode` เป็น `blocking` ตรงที่การเสีย log บางบรรทัดแย่กว่าการที่ container ค้าง ส่วน **FireLens** รัน Fluent Bit หรือ Fluentd เป็น sidecar ใน task (AWS publish image AWS for Fluent Bit ไว้ให้) แล้ว route log ไปที่อื่น: S3, [OpenSearch](../elasticsearch/), Kinesis หรือ service ของ partner (ดู [centralized logging](../centralized-logging/))
+log driver **`awslogs`** ส่ง stdout และ stderr ของแต่ละ container ไปที่ CloudWatch Logs ที่นี่คือ group `/ecs/catalog` โดยแยกหนึ่ง stream ต่อหนึ่ง container ชื่อ `prefix/container/task-id` และบน Fargate ต้องใส่ `awslogs-stream-prefix` เสมอ ตั้งแต่ 25 มิถุนายน 2025 เป็นต้นมา delivery mode ที่เป็น default คือ `non-blocking`: log จะรออยู่ใน buffer (`max-buffer-size` ค่า default 10m) และเมื่อ buffer เต็ม บรรทัดใหม่จะถูกทิ้ง แทนที่จะทำให้แอปค้าง ให้ตั้ง `mode` เป็น `blocking` ตรงที่การเสีย log บางบรรทัดแย่กว่าการที่ container ค้าง ส่วน **FireLens** รัน Fluent Bit หรือ Fluentd เป็น sidecar ใน task (AWS publish image AWS for Fluent Bit ไว้ให้) แล้ว route log ไปที่อื่น: S3, [OpenSearch](../elasticsearch/), [Kinesis](../amazon-kinesis-data-streams/) หรือ service ของ partner (ดู [centralized logging](../centralized-logging/))
 
 ### Scaling
 

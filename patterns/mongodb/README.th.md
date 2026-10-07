@@ -177,7 +177,7 @@ storage engine **WiredTiger** ใช้ concurrency control ระดับ docu
 
 เลือก MongoDB เมื่อแต่ละ record เป็น document ที่ซ้อนกันโดยธรรมชาติ และแอปอ่านเขียนมันทั้งก้อน เมื่อ field ต่างกันไปในแต่ละ record หรือเปลี่ยนบ่อย และเมื่ออยากได้ผลิตภัณฑ์ตัวเดียวที่ให้ replication พร้อม automatic failover ตอนนี้ และ sharding ทีหลังเมื่อ replica set เดียวไม่พอแล้ว ให้มองหาตัวอื่นเมื่อข้อมูลเป็น relational มาก ๆ และถูก query แบบ ad hoc ข้ามหลายตาราง เมื่อการเปลี่ยนแปลงส่วนใหญ่กินหลาย record ที่ต้อง commit พร้อมกัน หรือเมื่อทุกการเข้าถึงเป็นการ lookup ด้วย key ในระดับที่ใหญ่มาก
 
-| | MongoDB | [PostgreSQL](../postgresql/) กับ JSONB | [Amazon DynamoDB](../amazon-dynamodb/) | Apache Cassandra |
+| | MongoDB | [PostgreSQL](../postgresql/) กับ JSONB | [Amazon DynamoDB](../amazon-dynamodb/) | [Apache Cassandra](../cassandra/) |
 |---|---|---|---|---|
 | Data model | BSON document ที่มี field ซ้อนและ array ใหญ่ได้ถึง 16 MiB ต่อตัว | row ในตาราง โดย column แบบ `jsonb` เก็บส่วนที่ยืดหยุ่น | item ขนาดไม่เกิน 400 KB อ่านด้วย partition key (และ sort key) | row ในตารางที่แบ่ง partition ด้วย partition key (wide-column) |
 | Query ส่วนที่ยืดหยุ่น | compound, multikey และ wildcard index บน path ที่ซ้อน และ aggregation pipeline | GIN index บน `jsonb` (`jsonb_ops`, `jsonb_path_ops`) คู่กับ SQL, join และ constraint | เข้าถึงด้วย key และมี secondary index บน attribute | CQL ตาม partition key และมี secondary index |

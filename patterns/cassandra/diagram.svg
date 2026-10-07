@@ -1,0 +1,847 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Apache Cassandra</title>
+<desc id="dg-desc">Apache Cassandra. A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage. Step 1, Where it sits: Both data centres take writes for every parcel; each serves its own customers, with no primary. Step 2, Partition and replicate: S-77 hashes into bkk-2's range; the write goes to every replica, and LOCAL_QUORUM acks at 2 of 3. Step 3, Inside a node: bkk-2 logs the write, adds it to the memtable; a read merges memtable and SSTables; files compact. Step 4, Failure and the limits: bkk-3 is down: 2 of 3 still ack and a hint waits. Limits: query-first tables, big partitions, LWTs.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">Apache Cassandra</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Partition and replicate</text>
+  <text class="step on p2" x="262" y="518">2 · Partition and replicate</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Inside a node</text>
+  <text class="step on p3" x="484" y="518">3 · Inside a node</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Failure and the limits</text>
+  <text class="step on p4" x="706" y="518">4 · Failure and the limits</text>
+  <text class="caption p1" x="40" y="552">Both data centres take writes for every parcel; each serves its own customers, with no primary.</text>
+  <text class="caption p2" x="40" y="552">S-77 hashes into bkk-2's range; the write goes to every replica, and LOCAL_QUORUM acks at 2 of 3.</text>
+  <text class="caption p3" x="40" y="552">bkk-2 logs the write, adds it to the memtable; a read merges memtable and SSTables; files compact.</text>
+  <text class="caption p4" x="40" y="552">bkk-3 is down: 2 of 3 still ack and a hint waits. Limits: query-first tables, big partitions, LWTs.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Apache Cassandra. Timeline (20s loop, 1s = 5%):
+   0-25%   step 1: Bangkok's tracking service writes S-77 "out for delivery" to dc-bkk while Singapore's writes S-80
+           to dc-sgp; the two data centres copy each other's writes; both customer apps read S-77 locally
+   25-50%  step 2: the write reaches bkk-1 (6.0 s); the token appears in bkk-2's range (6.2 s); copies go to bkk-2,
+           bkk-3 and, across the WAN, sgp-1 (7.1 s); bkk-2's ack makes 2 of 3 (8.1 s) and the reply leaves at 8.2 s;
+           sgp-1 relays to sgp-2 and sgp-3 (8.05 s); bkk-3's ack arrives late (8.8 s)
+   50-75%  step 3: inside bkk-2: commit log (11.2 s), memtable (11.4 s), ack; the read checks the memtable and the bloom
+           filters (12.2-12.6 s) and returns 5 rows; flush to SSTable 4 (13.3-13.7 s); compaction 1 + 3 -> 5 (13.8-14.3 s)
+   75-100% step 4: bkk-3 goes down (15.1 s); the write reaches bkk-1 (16.2 s); copies to bkk-2 and dc-sgp, a hint
+           for bkk-3; the ack at 2 of 3 (17.3 s); bkk-3 returns (18.0 s) and the hint is replayed (18.35-18.85 s);
+           the limits appear; everything resets in the last half-second */
+.diagram .cs-frame { fill: none; stroke: var(--wire); stroke-width: 1.5; }
+.diagram .cs-band { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .cs-pan { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+.diagram .cs-in { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .cs-row { fill: var(--panel); }
+.diagram .cs-ring { fill: none; stroke: var(--line); stroke-width: 5; }
+.diagram .cs-arc { stroke-width: 5; stroke-linecap: round; }
+.diagram .cs-node { fill: var(--panel-2); stroke: var(--wire); stroke-width: 1.2; }
+.diagram .cs-strip { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .cs-chip { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .cs-cell { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 1; }
+.diagram .cs-slot { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.diagram .cs-zoom { fill: none; stroke: var(--wire); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.diagram .cs-10 { font-size: 10px; }
+.diagram .cs-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .cs-hd-amber { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--amber-ink); }
+.diagram .cs-w1 { opacity: 0; animation: cs-w1 var(--T) linear infinite; }
+.diagram .cs-w2 { opacity: 0; animation: cs-w2 var(--T) linear infinite; }
+.diagram .cs-x1 { opacity: 0; animation: cs-x1 var(--T) linear infinite; }
+.diagram .cs-x2 { opacity: 0; animation: cs-x2 var(--T) linear infinite; }
+.diagram .cs-r1 { opacity: 0; animation: cs-r1 var(--T) linear infinite; }
+.diagram .cs-r2 { opacity: 0; animation: cs-r2 var(--T) linear infinite; }
+.diagram .cs-a1 { opacity: 0; animation: cs-a1 var(--T) linear infinite; }
+.diagram .cs-a2 { opacity: 0; animation: cs-a2 var(--T) linear infinite; }
+.diagram .cs-n1 { animation: cs-n1 var(--T) linear infinite; }
+.diagram .cs-q1 { opacity: 0; animation: cs-q1 var(--T) linear infinite; }
+.diagram .cs-b1a { animation: cs-b1a var(--T) linear infinite; }
+.diagram .cs-b1b { opacity: 0; animation: cs-b1b var(--T) linear infinite; }
+.diagram .cs-w3 { opacity: 0; animation: cs-w3 var(--T) linear infinite; }
+.diagram .cs-ta { opacity: 0; animation: cs-ta var(--T) linear infinite; }
+.diagram .cs-tok { opacity: 0; animation: cs-tok var(--T) linear infinite; }
+.diagram .cs-tb { opacity: 0; animation: cs-tb var(--T) linear infinite; }
+.diagram .cs-o1 { opacity: 0; animation: cs-o1 var(--T) linear infinite; }
+.diagram .cs-o2 { opacity: 0; animation: cs-o2 var(--T) linear infinite; }
+.diagram .cs-o3 { opacity: 0; animation: cs-o3 var(--T) linear infinite; }
+.diagram .cs-c1 { opacity: 0; animation: cs-c1 var(--T) linear infinite; }
+.diagram .cs-c2 { opacity: 0; animation: cs-c2 var(--T) linear infinite; }
+.diagram .cs-lw { opacity: 0; animation: cs-lw var(--T) linear infinite; }
+.diagram .cs-c3 { opacity: 0; animation: cs-c3 var(--T) linear infinite; }
+.diagram .cs-k1 { opacity: 0; animation: cs-k1 var(--T) linear infinite; }
+.diagram .cs-c4 { opacity: 0; animation: cs-c4 var(--T) linear infinite; }
+.diagram .cs-c5 { opacity: 0; animation: cs-c5 var(--T) linear infinite; }
+.diagram .cs-rp { opacity: 0; animation: cs-rp var(--T) linear infinite; }
+.diagram .cs-k2 { opacity: 0; animation: cs-k2 var(--T) linear infinite; }
+.diagram .cs-s1 { opacity: 0; animation: cs-s1 var(--T) linear infinite; }
+.diagram .cs-s2 { opacity: 0; animation: cs-s2 var(--T) linear infinite; }
+.diagram .cs-okt { opacity: 0; animation: cs-okt var(--T) linear infinite; }
+.diagram .cs-s3 { opacity: 0; animation: cs-s3 var(--T) linear infinite; }
+.diagram .cs-ok { opacity: 0; animation: cs-ok var(--T) linear infinite; }
+.diagram .cs-w5 { opacity: 0; animation: cs-w5 var(--T) linear infinite; }
+.diagram .cs-cl { opacity: 0; animation: cs-cl var(--T) linear infinite; }
+.diagram .cs-m1 { opacity: 0; animation: cs-m1 var(--T) linear infinite; }
+.diagram .cs-ka { opacity: 0; animation: cs-ka var(--T) linear infinite; }
+.diagram .cs-b3a { opacity: 0; animation: cs-b3a var(--T) linear infinite; }
+.diagram .cs-b3b { opacity: 0; animation: cs-b3b var(--T) linear infinite; }
+.diagram .cs-q3 { opacity: 0; animation: cs-q3 var(--T) linear infinite; }
+.diagram .cs-hm { opacity: 0; animation: cs-hm var(--T) linear infinite; }
+.diagram .cs-bf1 { opacity: 0; animation: cs-bf1 var(--T) linear infinite; }
+.diagram .cs-bf2 { opacity: 0; animation: cs-bf2 var(--T) linear infinite; }
+.diagram .cs-bf3 { opacity: 0; animation: cs-bf3 var(--T) linear infinite; }
+.diagram .cs-hs { opacity: 0; animation: cs-hs var(--T) linear infinite; }
+.diagram .cs-res { opacity: 0; animation: cs-res var(--T) linear infinite; }
+.diagram .cs-rd { opacity: 0; animation: cs-rd var(--T) linear infinite; }
+.diagram .cs-mt { opacity: 0; animation: cs-mt var(--T) linear infinite; }
+.diagram .cs-fl { opacity: 0; animation: cs-fl var(--T) linear infinite; }
+.diagram .cs-me { opacity: 0; animation: cs-me var(--T) linear infinite; }
+.diagram .cs-clg { opacity: 0; animation: cs-clg var(--T) linear infinite; }
+.diagram .cs-s4e { opacity: 0; animation: cs-s4e var(--T) linear infinite; }
+.diagram .cs-s4g { opacity: 0; animation: cs-s4g var(--T) linear infinite; }
+.diagram .cs-cf { opacity: 0; animation: cs-cf var(--T) linear infinite; }
+.diagram .cs-s1g { opacity: 0; animation: cs-s1g var(--T) linear infinite; }
+.diagram .cs-s3g { opacity: 0; animation: cs-s3g var(--T) linear infinite; }
+.diagram .cs-s5g { opacity: 0; animation: cs-s5g var(--T) linear infinite; }
+.diagram .cs-s3e { opacity: 0; animation: cs-s3e var(--T) linear infinite; }
+.diagram .cs-cmp { opacity: 0; animation: cs-cmp var(--T) linear infinite; }
+.diagram .cs-dn { opacity: 0; animation: cs-dn var(--T) linear infinite; }
+.diagram .cs-w6 { opacity: 0; animation: cs-w6 var(--T) linear infinite; }
+.diagram .cs-c6 { opacity: 0; animation: cs-c6 var(--T) linear infinite; }
+.diagram .cs-hint { opacity: 0; animation: cs-hint var(--T) linear infinite; }
+.diagram .cs-up { opacity: 0; animation: cs-up var(--T) linear infinite; }
+.diagram .cs-hd2 { opacity: 0; animation: cs-hd2 var(--T) linear infinite; }
+.diagram .cs-hr { opacity: 0; animation: cs-hr var(--T) linear infinite; }
+.diagram .cs-l1 { opacity: 0; animation: cs-l1 var(--T) linear infinite; }
+.diagram .cs-l2 { opacity: 0; animation: cs-l2 var(--T) linear infinite; }
+.diagram .cs-l3 { opacity: 0; animation: cs-l3 var(--T) linear infinite; }
+.diagram .cs-l4 { opacity: 0; animation: cs-l4 var(--T) linear infinite; }
+.diagram .cs-l5 { opacity: 0; animation: cs-l5 var(--T) linear infinite; }
+@keyframes cs-w1 {
+  0% { transform: translate(150px, 183px); opacity: 0; }
+  1.5% { transform: translate(150px, 183px); opacity: 0; }
+  1.75% { opacity: 1; }
+  1.767% { transform: translate(158px, 183px); }
+  2.6% { transform: translate(158px, 208px); }
+  5.333% { transform: translate(240px, 208px); opacity: 1; }
+  5.583% { transform: translate(240px, 208px); opacity: 0; }
+  100% { transform: translate(240px, 208px); opacity: 0; }
+}
+@keyframes cs-w2 {
+  0% { transform: translate(150px, 301px); opacity: 0; }
+  2.5% { transform: translate(150px, 301px); opacity: 0; }
+  2.75% { opacity: 1; }
+  2.767% { transform: translate(158px, 301px); }
+  3.6% { transform: translate(158px, 326px); }
+  6.333% { transform: translate(240px, 326px); opacity: 1; }
+  6.583% { transform: translate(240px, 326px); opacity: 0; }
+  100% { transform: translate(240px, 326px); opacity: 0; }
+}
+@keyframes cs-x1 {
+  0% { transform: translate(262px, 217px); opacity: 0; }
+  6.5% { transform: translate(262px, 217px); opacity: 0; }
+  6.75% { opacity: 1; }
+  11.045% { transform: translate(262px, 317px); opacity: 1; }
+  11.295% { transform: translate(262px, 317px); opacity: 0; }
+  100% { transform: translate(262px, 317px); opacity: 0; }
+}
+@keyframes cs-x2 {
+  0% { transform: translate(270px, 317px); opacity: 0; }
+  7.5% { transform: translate(270px, 317px); opacity: 0; }
+  7.75% { opacity: 1; }
+  12.045% { transform: translate(270px, 217px); opacity: 1; }
+  12.295% { transform: translate(270px, 217px); opacity: 0; }
+  100% { transform: translate(270px, 217px); opacity: 0; }
+}
+@keyframes cs-r1 {
+  0% { transform: translate(150px, 233px); opacity: 0; }
+  12.5% { transform: translate(150px, 233px); opacity: 0; }
+  12.75% { opacity: 1; }
+  12.767% { transform: translate(158px, 233px); }
+  13.6% { transform: translate(158px, 208px); }
+  16.333% { transform: translate(240px, 208px); opacity: 1; }
+  16.583% { transform: translate(240px, 208px); opacity: 0; }
+  100% { transform: translate(240px, 208px); opacity: 0; }
+}
+@keyframes cs-r2 {
+  0% { transform: translate(150px, 351px); opacity: 0; }
+  13.25% { transform: translate(150px, 351px); opacity: 0; }
+  13.5% { opacity: 1; }
+  13.517% { transform: translate(158px, 351px); }
+  14.35% { transform: translate(158px, 326px); }
+  17.083% { transform: translate(240px, 326px); opacity: 1; }
+  17.333% { transform: translate(240px, 326px); opacity: 0; }
+  100% { transform: translate(240px, 326px); opacity: 0; }
+}
+@keyframes cs-a1 {
+  0% { transform: translate(240px, 208px); opacity: 0; }
+  17% { transform: translate(240px, 208px); opacity: 0; }
+  17.25% { opacity: 1; }
+  19.158% { transform: translate(158px, 208px); }
+  19.816% { transform: translate(158px, 233px); }
+  20.026% { transform: translate(150px, 233px); opacity: 1; }
+  20.276% { transform: translate(150px, 233px); opacity: 0; }
+  100% { transform: translate(150px, 233px); opacity: 0; }
+}
+@keyframes cs-a2 {
+  0% { transform: translate(240px, 326px); opacity: 0; }
+  17.75% { transform: translate(240px, 326px); opacity: 0; }
+  18% { opacity: 1; }
+  19.908% { transform: translate(158px, 326px); }
+  20.566% { transform: translate(158px, 351px); }
+  20.776% { transform: translate(150px, 351px); opacity: 1; }
+  21.026% { transform: translate(150px, 351px); opacity: 0; }
+  100% { transform: translate(150px, 351px); opacity: 0; }
+}
+@keyframes cs-n1 {
+  0% { opacity: 0; }
+  5.75% { opacity: 0; }
+  7.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-q1 {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  18% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-b1a {
+  0% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-b1b {
+  0% { opacity: 0; }
+  12.75% { opacity: 0; }
+  13.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-w3 {
+  0% { transform: translate(150px, 183px); opacity: 0; }
+  26% { transform: translate(150px, 183px); opacity: 0; }
+  26.25% { opacity: 1; }
+  26.267% { transform: translate(158px, 183px); }
+  27.1% { transform: translate(158px, 208px); }
+  29.833% { transform: translate(240px, 208px); opacity: 1; }
+  30.083% { transform: translate(240px, 208px); opacity: 0; }
+  100% { transform: translate(240px, 208px); opacity: 0; }
+}
+@keyframes cs-ta {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  32% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-tok {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  33% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-tb {
+  0% { opacity: 0; }
+  32.5% { opacity: 0; }
+  34.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-o1 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  34.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-o2 {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  35.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-o3 {
+  0% { opacity: 0; }
+  35% { opacity: 0; }
+  36.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-c1 {
+  0% { transform: translate(266px, 208px); opacity: 0; }
+  35.5% { transform: translate(266px, 208px); opacity: 0; }
+  35.75% { opacity: 1; }
+  37.809% { transform: translate(326px, 173.36px); opacity: 1; }
+  38.059% { transform: translate(326px, 173.36px); opacity: 0; }
+  100% { transform: translate(326px, 173.36px); opacity: 0; }
+}
+@keyframes cs-c2 {
+  0% { transform: translate(266px, 208px); opacity: 0; }
+  35.5% { transform: translate(266px, 208px); opacity: 0; }
+  35.75% { opacity: 1; }
+  38.964% { transform: translate(326px, 242.64px); opacity: 1; }
+  39.214% { transform: translate(326px, 242.64px); opacity: 0; }
+  100% { transform: translate(326px, 242.64px); opacity: 0; }
+}
+@keyframes cs-lw {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.5% { opacity: 1; }
+  38% { opacity: 1; }
+  39% { opacity: 0; }
+  81.25% { opacity: 0; }
+  82.25% { opacity: 1; }
+  83.75% { opacity: 1; }
+  84.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-c3 {
+  0% { transform: translate(266px, 217px); opacity: 0; }
+  35.5% { transform: translate(266px, 217px); opacity: 0; }
+  35.75% { opacity: 1; }
+  40.045% { transform: translate(266px, 317px); opacity: 1; }
+  40.295% { transform: translate(266px, 317px); opacity: 0; }
+  81.25% { transform: translate(266px, 217px); opacity: 0; }
+  81.5% { opacity: 1; }
+  85.795% { transform: translate(266px, 317px); opacity: 1; }
+  86.045% { transform: translate(266px, 317px); opacity: 0; }
+  100% { transform: translate(266px, 317px); opacity: 0; }
+}
+@keyframes cs-k1 {
+  0% { transform: translate(326px, 173.36px); opacity: 0; }
+  38.25% { transform: translate(326px, 173.36px); opacity: 0; }
+  38.5% { opacity: 1; }
+  40.559% { transform: translate(266px, 208px); opacity: 1; }
+  40.809% { transform: translate(266px, 208px); opacity: 0; }
+  84% { transform: translate(326px, 173.36px); opacity: 0; }
+  84.25% { opacity: 1; }
+  86.309% { transform: translate(266px, 208px); opacity: 1; }
+  86.559% { transform: translate(266px, 208px); opacity: 0; }
+  100% { transform: translate(266px, 208px); opacity: 0; }
+}
+@keyframes cs-c4 {
+  0% { transform: translate(266px, 326px); opacity: 0; }
+  40.25% { transform: translate(266px, 326px); opacity: 0; }
+  40.5% { opacity: 1; }
+  42.559% { transform: translate(326px, 291.36px); opacity: 1; }
+  42.809% { transform: translate(326px, 291.36px); opacity: 0; }
+  86% { transform: translate(266px, 326px); opacity: 0; }
+  86.25% { opacity: 1; }
+  88.309% { transform: translate(326px, 291.36px); opacity: 1; }
+  88.559% { transform: translate(326px, 291.36px); opacity: 0; }
+  100% { transform: translate(326px, 291.36px); opacity: 0; }
+}
+@keyframes cs-c5 {
+  0% { transform: translate(266px, 326px); opacity: 0; }
+  40.25% { transform: translate(266px, 326px); opacity: 0; }
+  40.5% { opacity: 1; }
+  42.559% { transform: translate(326px, 360.64px); opacity: 1; }
+  42.809% { transform: translate(326px, 360.64px); opacity: 0; }
+  86% { transform: translate(266px, 326px); opacity: 0; }
+  86.25% { opacity: 1; }
+  88.309% { transform: translate(326px, 360.64px); opacity: 1; }
+  88.559% { transform: translate(326px, 360.64px); opacity: 0; }
+  100% { transform: translate(326px, 360.64px); opacity: 0; }
+}
+@keyframes cs-rp {
+  0% { transform: translate(240px, 208px); opacity: 0; }
+  41% { transform: translate(240px, 208px); opacity: 0; }
+  41.25% { opacity: 1; }
+  43.158% { transform: translate(158px, 208px); }
+  43.816% { transform: translate(158px, 183px); }
+  44.026% { transform: translate(150px, 183px); opacity: 1; }
+  44.276% { transform: translate(150px, 183px); opacity: 0; }
+  86.75% { transform: translate(240px, 208px); opacity: 0; }
+  87% { opacity: 1; }
+  88.908% { transform: translate(158px, 208px); }
+  89.566% { transform: translate(158px, 183px); }
+  89.776% { transform: translate(150px, 183px); opacity: 1; }
+  90.026% { transform: translate(150px, 183px); opacity: 0; }
+  100% { transform: translate(150px, 183px); opacity: 0; }
+}
+@keyframes cs-k2 {
+  0% { transform: translate(326px, 242.64px); opacity: 0; }
+  41.5% { transform: translate(326px, 242.64px); opacity: 0; }
+  41.75% { opacity: 1; }
+  43.809% { transform: translate(266px, 208px); opacity: 1; }
+  44.059% { transform: translate(266px, 208px); opacity: 0; }
+  100% { transform: translate(266px, 208px); opacity: 0; }
+}
+@keyframes cs-s1 {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  39% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-s2 {
+  0% { opacity: 0; }
+  40.6% { opacity: 0; }
+  41.6% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-okt {
+  0% { opacity: 0; }
+  41% { opacity: 0; }
+  42% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-s3 {
+  0% { opacity: 0; }
+  43.9% { opacity: 0; }
+  44.9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-ok {
+  0% { opacity: 0; }
+  44.25% { opacity: 0; }
+  45.75% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  90% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-w5 {
+  0% { transform: translate(352px, 173.36px); opacity: 0; }
+  51% { transform: translate(352px, 173.36px); opacity: 0; }
+  51.25% { opacity: 1; }
+  52.404% { transform: translate(425px, 173.36px); }
+  53.397% { transform: translate(425px, 225px); }
+  55.916% { transform: translate(556px, 225px); }
+  56.878% { transform: translate(604px, 211px); opacity: 1; }
+  57.128% { transform: translate(604px, 211px); opacity: 0; }
+  100% { transform: translate(604px, 211px); opacity: 0; }
+}
+@keyframes cs-cl {
+  0% { opacity: 0; }
+  55.9% { opacity: 0; }
+  56.9% { opacity: 1; }
+  68.25% { opacity: 1; }
+  69.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-m1 {
+  0% { opacity: 0; }
+  56.9% { opacity: 0; }
+  57.9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-ka {
+  0% { transform: translate(425px, 173.36px); opacity: 0; }
+  57.25% { transform: translate(425px, 173.36px); opacity: 0; }
+  57.5% { opacity: 1; }
+  58.771% { transform: translate(352px, 173.36px); opacity: 1; }
+  59.021% { transform: translate(352px, 173.36px); opacity: 0; }
+  100% { transform: translate(352px, 173.36px); opacity: 0; }
+}
+@keyframes cs-b3a {
+  0% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-b3b {
+  0% { opacity: 0; }
+  59.75% { opacity: 0; }
+  60.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-q3 {
+  0% { transform: translate(352px, 173.36px); opacity: 0; }
+  59.25% { transform: translate(352px, 173.36px); opacity: 0; }
+  59.5% { opacity: 1; }
+  60.771% { transform: translate(425px, 173.36px); opacity: 1; }
+  61.021% { transform: translate(425px, 173.36px); opacity: 0; }
+  100% { transform: translate(425px, 173.36px); opacity: 0; }
+}
+@keyframes cs-hm {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61.75% { opacity: 1; }
+  64.75% { opacity: 1; }
+  65.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-bf1 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-bf2 {
+  0% { opacity: 0; }
+  62.1% { opacity: 0; }
+  63.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-bf3 {
+  0% { opacity: 0; }
+  62.7% { opacity: 0; }
+  63.7% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-hs {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64% { opacity: 1; }
+  65% { opacity: 1; }
+  66% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-res {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  65.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-rd {
+  0% { transform: translate(425px, 173.36px); opacity: 0; }
+  64% { transform: translate(425px, 173.36px); opacity: 0; }
+  64.25% { opacity: 1; }
+  65.521% { transform: translate(352px, 173.36px); opacity: 1; }
+  65.771% { transform: translate(352px, 173.36px); opacity: 0; }
+  100% { transform: translate(352px, 173.36px); opacity: 0; }
+}
+@keyframes cs-mt {
+  0% { opacity: 1; }
+  66.5% { opacity: 1; }
+  68% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-fl {
+  0% { transform: translate(746px, 232px); opacity: 0; }
+  66.5% { transform: translate(746px, 232px); opacity: 0; }
+  66.75% { opacity: 1; }
+  68.462% { transform: translate(746px, 334px); opacity: 1; }
+  68.712% { transform: translate(746px, 334px); opacity: 0; }
+  100% { transform: translate(746px, 334px); opacity: 0; }
+}
+@keyframes cs-me {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  70% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-clg {
+  0% { opacity: 1; }
+  68.25% { opacity: 1; }
+  69.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-s4e {
+  0% { opacity: 1; }
+  68.25% { opacity: 1; }
+  69.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-s4g {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  70% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-cf {
+  0% { opacity: 0; }
+  69% { opacity: 0; }
+  70% { opacity: 1; }
+  70.25% { opacity: 1; }
+  71.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-s1g {
+  0% { opacity: 1; }
+  69.5% { opacity: 1; }
+  71% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-s3g {
+  0% { opacity: 1; }
+  69.5% { opacity: 1; }
+  71% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-s5g {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  71.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-s3e {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  71.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-cmp {
+  0% { opacity: 0; }
+  70.5% { opacity: 0; }
+  72% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-dn {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  77% { opacity: 1; }
+  90% { opacity: 1; }
+  91.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-w6 {
+  0% { transform: translate(150px, 183px); opacity: 0; }
+  77% { transform: translate(150px, 183px); opacity: 0; }
+  77.25% { opacity: 1; }
+  77.267% { transform: translate(158px, 183px); }
+  78.1% { transform: translate(158px, 208px); }
+  80.833% { transform: translate(240px, 208px); opacity: 1; }
+  81.083% { transform: translate(240px, 208px); opacity: 0; }
+  100% { transform: translate(240px, 208px); opacity: 0; }
+}
+@keyframes cs-c6 {
+  0% { transform: translate(266px, 208px); opacity: 0; }
+  81.25% { transform: translate(266px, 208px); opacity: 0; }
+  81.5% { opacity: 1; }
+  83.559% { transform: translate(326px, 173.36px); opacity: 1; }
+  83.809% { transform: translate(326px, 173.36px); opacity: 0; }
+  100% { transform: translate(326px, 173.36px); opacity: 0; }
+}
+@keyframes cs-hint {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  83% { opacity: 1; }
+  94.25% { opacity: 1; }
+  95.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-up {
+  0% { opacity: 0; }
+  90.25% { opacity: 0; }
+  91.75% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-hd2 {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  96% { opacity: 1; }
+  97.25% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cs-hr {
+  0% { transform: translate(266px, 208px); opacity: 0; }
+  91.75% { transform: translate(266px, 208px); opacity: 0; }
+  92% { opacity: 1; }
+  94.224% { transform: translate(326px, 242.64px); opacity: 1; }
+  94.474% { transform: translate(326px, 242.64px); opacity: 0; }
+  100% { transform: translate(326px, 242.64px); opacity: 0; }
+}
+@keyframes cs-l1 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-l2 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  80.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-l3 {
+  0% { opacity: 0; }
+  80.5% { opacity: 0; }
+  82.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-l4 {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  84.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes cs-l5 {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  86.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+<!-- left: Acme Shop's clients in Bangkok and Singapore -->
+<text class="label" x="36" y="114">Acme Shop</text>
+<text class="tiny" x="36" y="130">shipment tracking</text>
+<text class="tiny sb f-ink" x="36" y="156">Bangkok</text>
+<rect class="box" x="36" y="162" width="114" height="42" rx="10"/><text class="label mid" x="93" y="180">tracking</text><text class="tiny mid" x="93" y="196">writes events</text>
+<rect class="box" x="36" y="212" width="114" height="42" rx="10"/><text class="label mid" x="93" y="230">customer app</text><text class="tiny mid" x="93" y="246">reads a shipment</text>
+<text class="tiny sb f-ink" x="36" y="274">Singapore</text>
+<rect class="box" x="36" y="280" width="114" height="42" rx="10"/><text class="label mid" x="93" y="298">tracking</text><text class="tiny mid" x="93" y="314">writes events</text>
+<rect class="box" x="36" y="330" width="114" height="42" rx="10"/><text class="label mid" x="93" y="348">customer app</text><text class="tiny mid" x="93" y="364">reads a shipment</text>
+<path class="wire" d="M150 183H152Q158 183 158 189V202Q158 208 164 208H238" marker-end="url(#ah)"/><path class="wire" d="M150 233H152Q158 233 158 227V214Q158 208 164 208H238" marker-end="url(#ah)"/><path class="wire" d="M150 301H152Q158 301 158 307V320Q158 326 164 326H238" marker-end="url(#ah)"/><path class="wire" d="M150 351H152Q158 351 158 345V332Q158 326 164 326H238" marker-end="url(#ah)"/>
+<!-- the product: one Cassandra cluster, two data centres -->
+<rect class="cs-frame" x="166" y="96" width="758" height="294" rx="16"/>
+<text class="label" x="182" y="121">Apache Cassandra</text>
+<rect class="f-panel-2 s-line" x="320" y="108" width="30" height="18" rx="6" stroke-width="1.2"/><text class="tiny mono sb mid f-ink" x="335" y="121">5.0</text>
+<rect class="cs-band" x="358" y="106" width="554" height="24" rx="8"/>
+<text class="tiny" x="182" y="146">keyspace <tspan class="mono f-ink">tracking</tspan> · <tspan class="mono f-ink">NetworkTopologyStrategy</tspan>: 3 replicas in dc-bkk, 3 in dc-sgp · reads and writes at <tspan class="mono f-ink">LOCAL_QUORUM</tspan></text>
+<rect class="zone" x="180" y="154" width="226" height="108" rx="12"/><text class="tiny mono sb f-ink" x="192" y="170">dc-bkk</text><text class="tiny" x="192" y="184">Bangkok</text><rect class="zone" x="180" y="272" width="226" height="108" rx="12"/><text class="tiny mono sb f-ink" x="192" y="288">dc-sgp</text><text class="tiny" x="192" y="302">Singapore</text>
+<circle class="cs-ring" cx="306" cy="208" r="40"/><circle class="cs-ring" cx="306" cy="326" r="40"/>
+<g class="p2"><g class="cs-tok"><path class="none s-orange cs-arc" opacity="0.45" d="M266 208A40 40 0 0 1 326 173.36"/><path class="none s-orange cs-arc" opacity="0.45" d="M266 326A40 40 0 0 1 326 291.36"/><circle class="f-orange s-bg" cx="292.32" cy="170.41" r="5.5" stroke-width="2"/><circle class="f-orange s-bg" cx="292.32" cy="288.41" r="5.5" stroke-width="2"/><text class="tiny mono sb f-orange" x="278" y="192">S-77</text><text class="tiny mono sb f-orange" x="278" y="310">S-77</text></g></g>
+<path class="wire dash" d="M266 217V317"/><rect class="f-bg" x="272" y="261" width="30" height="13" rx="3"/><text class="tiny" x="275" y="271">WAN</text>
+<rect class="cs-node" x="240" y="199" width="52" height="18" rx="9"/><text class="tiny mono sb mid f-ink" x="266" y="211.5">bkk-1</text><rect class="cs-node" x="300" y="164.36" width="52" height="18" rx="9"/><text class="tiny mono sb mid f-ink" x="326" y="176.86">bkk-2</text><rect class="cs-node" x="300" y="233.64" width="52" height="18" rx="9"/><text class="tiny mono sb mid f-ink" x="326" y="246.14">bkk-3</text><rect class="cs-node" x="240" y="317" width="52" height="18" rx="9"/><text class="tiny mono sb mid f-ink" x="266" y="329.5">sgp-1</text><rect class="cs-node" x="300" y="282.36" width="52" height="18" rx="9"/><text class="tiny mono sb mid f-ink" x="326" y="294.86">sgp-2</text><rect class="cs-node" x="300" y="351.64" width="52" height="18" rx="9"/><text class="tiny mono sb mid f-ink" x="326" y="364.14">sgp-3</text>
+<rect class="cs-pan" x="418" y="154" width="494" height="226" rx="12"/>
+<rect class="box" x="36" y="398" width="888" height="68" rx="12"/>
+<!-- step 1: where it sits -->
+<g class="p1"><g class="cs-b1a"><text class="tiny mono f-ink" x="370" y="122"><tspan class="f-blue sb">INSERT</tspan> … VALUES ('S-77', '2026-10-07 09:12', 'out for delivery')</text></g><g class="cs-b1b"><text class="tiny mono f-ink" x="370" y="122"><tspan class="f-blue sb">SELECT</tspan> * FROM shipment_events WHERE shipment_id = 'S-77' LIMIT 10</text></g><text class="sub sb f-ink" x="432" y="173">table <tspan class="mono">shipment_events</tspan></text><text class="tiny end" x="898" y="173">one partition per shipment</text><text class="tiny mono f-ink" x="432" y="192">PRIMARY KEY ((shipment_id), event_time)</text><text class="tiny end" x="898" y="192">partition key → which nodes</text><text class="tiny mono f-ink" x="432" y="207">WITH CLUSTERING ORDER BY (event_time DESC)</text><text class="tiny end" x="898" y="207">clustering column → row order</text><rect class="cs-in" x="432" y="216" width="466" height="156" rx="10"/><text class="tiny sb f-ink" x="446" y="234">partition <tspan class="mono">S-77</tspan></text><text class="tiny end" x="884" y="234">newest first · written in</text><rect class="cs-row" x="440" y="261" width="450" height="18" rx="4"/><text class="tiny mono f-ink" x="450" y="274">2026-10-07 06:40</text><text class="tiny f-ink" x="566" y="274">at BKK hub</text><text class="tiny mono end" x="884" y="274">dc-bkk</text><rect class="cs-row" x="440" y="281" width="450" height="18" rx="4"/><text class="tiny mono f-ink" x="450" y="294">2026-10-07 02:15</text><text class="tiny f-ink" x="566" y="294">in transit</text><text class="tiny mono end" x="884" y="294">dc-sgp</text><rect class="cs-row" x="440" y="301" width="450" height="18" rx="4"/><text class="tiny mono f-ink" x="450" y="314">2026-10-06 19:30</text><text class="tiny f-ink" x="566" y="314">sorted</text><text class="tiny mono end" x="884" y="314">dc-sgp</text><rect class="cs-row" x="440" y="321" width="450" height="18" rx="4"/><text class="tiny mono f-ink" x="450" y="334">2026-10-06 14:05</text><text class="tiny f-ink" x="566" y="334">picked up</text><text class="tiny mono end" x="884" y="334">dc-sgp</text><g class="cs-n1"><rect class="cs-row" x="440" y="241" width="450" height="18" rx="4"/><text class="tiny mono f-ink" x="450" y="254">2026-10-07 09:12</text><text class="tiny f-ink" x="566" y="254">out for delivery</text><text class="tiny mono end" x="884" y="254">dc-bkk</text><rect class="f-green-soft s-green" x="440" y="241" width="450" height="18" rx="4" stroke-width="1.2"/><text class="tiny sb f-green" x="800" y="254">new</text></g><text class="tiny" x="446" y="362">both DCs hold every row; customers read the top (LIMIT 10)</text><g class="cs-q1"><rect class="none s-blue" x="437" y="238" width="456" height="104" rx="6" stroke-width="2"/><text class="tiny sb f-blue end" x="884" y="362">5 rows back</text></g><text class="cs-hd" x="52" y="416">WHERE CASSANDRA SITS</text><text class="sub f-ink" x="52" y="435">Parcels produce status events, millions a day, in Bangkok and Singapore. Each data centre serves its own clients and holds a full copy;</text><text class="sub f-ink" x="52" y="453">every node takes reads and writes, so there is no primary to fail over. One partition per shipment keeps its events together, newest first.</text></g>
+<!-- step 2: token, replicas, LOCAL_QUORUM -->
+<g class="p2"><text class="tiny mono f-ink" x="370" y="122"><tspan class="f-blue sb">INSERT</tspan> … VALUES ('S-77', '2026-10-07 09:12', 'out for delivery')</text><text class="sub sb f-ink" x="432" y="173">partition, then replicate</text><text class="tiny end" x="898" y="173">coordinator: bkk-1, the node the request reached</text><g class="cs-ta"><rect class="cs-in" x="432" y="182" width="466" height="58" rx="10"/><text class="tiny mono f-ink" x="446" y="200">Murmur3('S-77') → token <tspan class="f-orange b">4480090637218407206</tspan></text><text class="tiny" x="446" y="216">tokens run from −2⁶³ to 2⁶³−1; this one falls in bkk-2's range (sgp-2's in dc-sgp)</text><text class="tiny" x="446" y="231">each node owns 16 small ranges (<tspan class="mono">num_tokens: 16</tspan>), drawn here as one</text></g><g class="cs-tb"><rect class="cs-in" x="432" y="246" width="466" height="56" rx="10"/><text class="tiny sb f-ink" x="446" y="263">replicas: walk the ring clockwise from the token to 3 distinct nodes per DC</text><text class="tiny mono f-ink" x="446" y="279">dc-bkk: bkk-2 → bkk-3 → bkk-1</text><text class="tiny mono f-ink" x="672" y="279">dc-sgp: sgp-2 → sgp-3 → sgp-1</text><text class="tiny" x="446" y="295">with 3 nodes and RF 3 each node holds every partition; a bigger DC picks 3</text></g><rect class="cs-in" x="432" y="308" width="466" height="64" rx="10"/><text class="tiny sb f-ink" x="446" y="325"><tspan class="mono">LOCAL_QUORUM</tspan>: answer once 2 of the 3 replicas in dc-bkk have it</text><rect class="cs-chip" x="446" y="333" width="66" height="17" rx="8.5"/><text class="tiny mono mid f-ink" x="479" y="345.5">bkk-1</text><rect class="cs-chip" x="518" y="333" width="66" height="17" rx="8.5"/><text class="tiny mono mid f-ink" x="551" y="345.5">bkk-2</text><rect class="cs-chip" x="590" y="333" width="66" height="17" rx="8.5"/><text class="tiny mono mid f-ink" x="623" y="345.5">bkk-3</text><g class="cs-s1"><rect class="f-bg" x="446" y="333" width="66" height="17" rx="8.5"/><rect class="f-green-soft s-green" x="446" y="333" width="66" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny mono sb mid f-green" x="479" y="345.5">bkk-1 ✓</text></g><g class="cs-s2"><rect class="f-bg" x="518" y="333" width="66" height="17" rx="8.5"/><rect class="f-green-soft s-green" x="518" y="333" width="66" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny mono sb mid f-green" x="551" y="345.5">bkk-2 ✓</text></g><g class="cs-s3"><rect class="f-panel-2 s-line" x="590" y="333" width="66" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny mono mid" x="623" y="345.5">bkk-3 ✓</text></g><g class="cs-okt"><text class="tiny sb f-green" x="668" y="345.5">→ acknowledged</text></g><text class="tiny f-teal end" x="884" y="345.5">dc-sgp: not waited for</text><text class="tiny" x="446" y="364">R + W &gt; RF: 2 + 2 &gt; 3, so a <tspan class="mono">LOCAL_QUORUM</tspan> read in dc-bkk sees the write</text><g class="cs-o1"><circle class="f-bg s-orange" cx="362" cy="173.36" r="7" stroke-width="1.5"/><text class="tiny mono sb mid f-orange" x="362" y="176.86">1</text><circle class="f-bg s-orange" cx="362" cy="291.36" r="7" stroke-width="1.5"/><text class="tiny mono sb mid f-orange" x="362" y="294.86">1</text></g><g class="cs-o2"><circle class="f-bg s-orange" cx="362" cy="242.64" r="7" stroke-width="1.5"/><text class="tiny mono sb mid f-orange" x="362" y="246.14">2</text><circle class="f-bg s-orange" cx="362" cy="360.64" r="7" stroke-width="1.5"/><text class="tiny mono sb mid f-orange" x="362" y="364.14">2</text></g><g class="cs-o3"><circle class="f-bg s-orange" cx="232" cy="226" r="7" stroke-width="1.5"/><text class="tiny mono sb mid f-orange" x="232" y="229.5">3</text><circle class="f-bg s-orange" cx="232" cy="344" r="7" stroke-width="1.5"/><text class="tiny mono sb mid f-orange" x="232" y="347.5">3</text></g><text class="cs-hd" x="52" y="416">PARTITION, THEN REPLICATE</text><text class="sub f-ink" x="52" y="435">Murmur3 turns the partition key S-77 into a token; walking the ring clockwise from it gives the 3 replicas in each data centre.</text><text class="sub f-ink" x="52" y="453">A write always goes to every replica. LOCAL_QUORUM answers after 2 of the 3 in dc-bkk; dc-sgp gets it too, without the client waiting.</text></g>
+<g class="p24"><rect class="none s-blue" x="239" y="198" width="54" height="20" rx="10" stroke-width="2"/></g>
+<g class="cs-lw"><circle class="none s-teal" cx="266" cy="208" r="17" stroke-width="2.5"/></g>
+<!-- step 3: inside one node -->
+<g class="p3"><path class="cs-zoom" d="M352 164.36L418 156M352 182.36L418 378"/><rect class="none s-blue" x="299" y="163.36" width="54" height="20" rx="10" stroke-width="2"/><g class="cs-b3a"><text class="tiny mono f-ink" x="370" y="122"><tspan class="f-blue sb">INSERT</tspan> … VALUES ('S-77', '2026-10-07 09:12', 'out for delivery')</text></g><g class="cs-b3b"><text class="tiny mono f-ink" x="370" y="122"><tspan class="f-blue sb">SELECT</tspan> * FROM shipment_events WHERE shipment_id = 'S-77' LIMIT 10</text></g><text class="sub sb f-ink" x="432" y="173">inside bkk-2</text><text class="tiny end" x="898" y="173">one replica's storage engine, a log-structured merge tree</text><rect class="cs-in" x="432" y="182" width="150" height="58" rx="10"/><text class="tiny sb f-ink" x="442" y="198">commit log</text><text class="tiny" x="442" y="211">on disk, append-only</text><rect class="cs-slot" x="442" y="218" width="15" height="14" rx="3"/><rect class="cs-slot" x="461" y="218" width="15" height="14" rx="3"/><rect class="cs-slot" x="480" y="218" width="15" height="14" rx="3"/><rect class="cs-slot" x="499" y="218" width="15" height="14" rx="3"/><rect class="cs-slot" x="518" y="218" width="15" height="14" rx="3"/><rect class="cs-slot" x="537" y="218" width="15" height="14" rx="3"/><rect class="cs-slot" x="556" y="218" width="15" height="14" rx="3"/><g class="cs-clg"><rect class="cs-cell" x="442" y="218" width="15" height="14" rx="3"/><rect class="cs-cell" x="461" y="218" width="15" height="14" rx="3"/><rect class="cs-cell" x="480" y="218" width="15" height="14" rx="3"/><rect class="cs-cell" x="499" y="218" width="15" height="14" rx="3"/><rect class="cs-cell" x="518" y="218" width="15" height="14" rx="3"/><rect class="cs-cell" x="537" y="218" width="15" height="14" rx="3"/><g class="cs-cl"><rect class="f-teal" x="556" y="218" width="15" height="14" rx="3"/></g></g><rect class="cs-in" x="594" y="182" width="304" height="58" rx="10"/><text class="tiny sb f-ink" x="604" y="198">memtable <tspan class="f-muted" font-weight="400">· in memory, sorted by key</tspan></text><g class="cs-mt"><g class="cs-m1"><rect class="f-green-soft s-green" x="602" y="203" width="288" height="16" rx="4" stroke-width="1.2"/><text class="tiny f-ink" x="610" y="215"><tspan class="mono">S-77 09:12</tspan> out for delivery</text><text class="tiny sb f-green end" x="882" y="215">new</text></g><text class="tiny f-ink" x="610" y="233"><tspan class="mono">S-77 06:40</tspan> at BKK hub</text></g><g class="cs-me"><text class="tiny" x="610" y="224">flushed: empty again, takes the next writes</text></g><g class="cs-hm"><rect class="none s-blue" x="601" y="202" width="290" height="35" rx="5" stroke-width="2"/></g><text class="tiny sb f-ink" x="432" y="256">SSTables <tspan class="f-muted" font-weight="400">· immutable, on disk</tspan></text><text class="tiny end" x="898" y="256">bloom filter: could S-77 be in this file?</text><rect class="cs-strip" x="432" y="262" width="466" height="18" rx="4"/><rect class="cs-strip" x="432" y="283" width="466" height="18" rx="4"/><rect class="cs-strip" x="432" y="304" width="466" height="18" rx="4"/><rect class="cs-slot" x="432" y="325" width="466" height="18" rx="4"/><g class="cs-s1g"><text class="tiny sb f-ink" x="440" y="275">SSTable 1</text><rect class="cs-chip" x="508" y="264" width="50" height="14" rx="7"/><text class="cs-10 mono mid" x="533" y="274.5">BF</text><g class="cs-bf1"><rect class="f-bg" x="508" y="264" width="50" height="14" rx="7"/><rect class="f-blue-soft s-blue" x="508" y="264" width="50" height="14" rx="7" stroke-width="1.2"/><text class="cs-10 sb mid f-blue" x="533" y="274.5">maybe</text></g><rect class="cs-chip" x="568" y="264" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="590" y="274.5">22:10</text><rect class="cs-chip" x="616" y="264" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="638" y="274.5">19:30</text><rect class="cs-chip" x="664" y="264" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="686" y="274.5">14:05</text><text class="tiny end" x="890" y="275">+ other shipments</text></g><text class="tiny sb f-ink" x="440" y="296">SSTable 2</text><rect class="cs-chip" x="508" y="285" width="50" height="14" rx="7"/><text class="cs-10 mono mid" x="533" y="295.5">BF</text><g class="cs-bf2"><rect class="f-bg" x="508" y="285" width="50" height="14" rx="7"/><rect class="f-panel-2 s-line" x="508" y="285" width="50" height="14" rx="7" stroke-width="1.2"/><text class="cs-10 sb mid f-muted" x="533" y="295.5">no</text></g><text class="tiny" x="568" y="296">other shipments only: skipped</text><g class="cs-s3g"><text class="tiny sb f-ink" x="440" y="317">SSTable 3</text><rect class="cs-chip" x="508" y="306" width="50" height="14" rx="7"/><text class="cs-10 mono mid" x="533" y="316.5">BF</text><g class="cs-bf3"><rect class="f-bg" x="508" y="306" width="50" height="14" rx="7"/><rect class="f-blue-soft s-blue" x="508" y="306" width="50" height="14" rx="7" stroke-width="1.2"/><text class="cs-10 sb mid f-blue" x="533" y="316.5">maybe</text></g><rect class="cs-chip" x="568" y="306" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="590" y="316.5">02:15</text><rect class="f-ink" x="616" y="306" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-bg" x="638" y="316.5">†22:10</text><text class="tiny end" x="890" y="317">+ other shipments</text></g><g class="cs-s4e"><text class="tiny" x="440" y="338">the next flush becomes a new SSTable here</text></g><g class="cs-s4g"><rect class="cs-strip" x="432" y="325" width="466" height="18" rx="4"/><text class="tiny sb f-ink" x="440" y="338">SSTable 4</text><rect class="cs-chip" x="508" y="327" width="50" height="14" rx="7"/><text class="cs-10 mono mid" x="533" y="337.5">BF</text><rect class="cs-chip" x="568" y="327" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="590" y="337.5">09:12</text><rect class="cs-chip" x="616" y="327" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="638" y="337.5">06:40</text><text class="tiny end" x="890" y="338">+ other shipments</text></g><g class="cs-s5g"><text class="tiny sb f-ink" x="440" y="275">SSTable 5</text><rect class="cs-chip" x="508" y="264" width="50" height="14" rx="7"/><text class="cs-10 mono mid" x="533" y="274.5">BF</text><rect class="cs-chip" x="568" y="264" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="590" y="274.5">02:15</text><rect class="f-ink" x="616" y="264" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-bg" x="638" y="274.5">†22:10</text><rect class="cs-chip" x="664" y="264" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="686" y="274.5">19:30</text><rect class="cs-chip" x="712" y="264" width="44" height="14" rx="3"/><text class="cs-10 mono mid f-ink" x="734" y="274.5">14:05</text><text class="tiny end" x="890" y="275">+ other shipments</text></g><g class="cs-s3e"><rect class="f-bg" x="433" y="305" width="464" height="16" rx="3"/><rect class="cs-slot" x="432" y="304" width="466" height="18" rx="4"/><text class="tiny" x="440" y="317">merged into SSTable 5, then deleted</text></g><g class="cs-hs"><rect class="none s-blue" x="565" y="262" width="146" height="18" rx="5" stroke-width="2"/><rect class="none s-blue" x="565" y="304" width="98" height="18" rx="5" stroke-width="2"/></g><g class="cs-cf"><rect class="none s-teal" x="431" y="261" width="468" height="20" rx="5" stroke-width="2"/><rect class="none s-teal" x="431" y="303" width="468" height="20" rx="5" stroke-width="2"/></g><g class="cs-res"><text class="tiny f-ink" x="432" y="360"><tspan class="sb f-green">read: 5 rows, newest first</tspan> · the tombstone hides the 22:10 row</text></g><g class="cs-cmp"><text class="tiny f-ink" x="432" y="374"><tspan class="sb f-teal">compaction</tspan> merged SSTables 1 and 3 into 5 in the background; the tombstone stays</text></g><text class="cs-hd" x="52" y="416">INSIDE A NODE: COMMIT LOG, MEMTABLE, SSTABLES</text><text class="sub f-ink" x="52" y="435">A write is appended to the commit log and added to the memtable, then acknowledged. Full memtables are flushed to immutable SSTables.</text><text class="sub f-ink" x="52" y="453">A read merges the memtable with the SSTables whose bloom filter says maybe. A DELETE writes a tombstone; compaction merges SSTables.</text></g>
+<!-- step 4: a node down, hinted handoff, the limits -->
+<g class="p4"><text class="tiny mono f-ink" x="370" y="122"><tspan class="f-blue sb">INSERT</tspan> … VALUES ('S-77', '2026-10-07 11:47', 'delivered')</text><text class="cs-hd-amber" x="432" y="173">THE LIMITS</text><text class="tiny end" x="898" y="173">what decides when to choose something else</text><g class="cs-l1"><rect class="f-amber-soft s-amber" x="432" y="184" width="140" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="442" y="196">one table per query</text><text class="tiny f-ink" x="582" y="196">every query names the partition key; no joins;</text></g><g class="cs-l1"><text class="tiny f-ink" x="582" y="214"><tspan class="mono">ALLOW FILTERING</tspan> means a scan</text></g><g class="cs-l2"><rect class="f-amber-soft s-amber" x="432" y="226" width="140" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="442" y="238">big partitions</text><text class="tiny f-ink" x="582" y="238">a huge partition or a pile of tombstones slows</text></g><g class="cs-l2"><text class="tiny f-ink" x="582" y="256">every read that touches it</text></g><g class="cs-l3"><rect class="f-amber-soft s-amber" x="432" y="268" width="140" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="442" y="280">lightweight txns</text><text class="tiny f-ink" x="582" y="280"><tspan class="mono">IF NOT EXISTS</tspan> runs Paxos: 4 round trips</text></g><g class="cs-l3"><text class="tiny f-ink" x="582" y="298">by default, 2 with <tspan class="mono">paxos_variant: v2</tspan></text></g><g class="cs-l4"><rect class="f-amber-soft s-amber" x="432" y="310" width="140" height="16" rx="8" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="442" y="322">a cluster to run</text><text class="tiny f-ink" x="582" y="322">repair, compaction, upgrades and capacity are yours</text></g><g class="cs-l5"><rect class="cs-in" x="432" y="334" width="466" height="40" rx="8"/><text class="tiny f-ink" x="444" y="350"><tspan class="sb">5.0 (Sept 2024):</tspan> SAI indexes, vector search, trie memtables and SSTables, UCS</text><text class="tiny f-ink" x="444" y="366"><tspan class="sb">general transactions (Accord)</tspan> are in 6.0, an alpha release as of October 2026</text></g><g class="cs-dn"><rect class="f-red-soft s-red" x="300" y="233.64" width="52" height="18" rx="9" stroke-width="1.5"/><path class="none s-red" d="M358 238.64l8 8m0 -8l-8 8" stroke-width="2" stroke-linecap="round"/><text class="tiny sb f-red" x="370" y="246.14">down</text></g><g class="cs-up"><rect class="none s-green" x="299" y="232.64" width="54" height="20" rx="10" stroke-width="2"/><text class="tiny sb f-green" x="358" y="246.14">back</text></g><g class="cs-hint"><rect class="f-amber-soft s-amber" x="184" y="232" width="88" height="16" rx="8" stroke-width="1.2"/><text class="cs-10 sb mid f-amber-ink" x="228" y="243.5">hint for bkk-3</text></g><g class="cs-hd2"><text class="tiny sb mid f-green" x="228" y="244">hint replayed</text></g><text class="cs-hd" x="52" y="416">FAILURE, THEN THE LIMITS</text><text class="sub f-ink" x="52" y="435">bkk-3 is down, yet bkk-1 and bkk-2 make 2 of 3, so the write succeeds. bkk-1 keeps a hint and replays it when bkk-3 is back.</text><text class="sub f-ink" x="52" y="453">Hints are written only for the first max_hint_window of an outage (3 h by default); after that, repair. Repair every node within gc_grace_seconds.</text></g>
+<!-- requests, copies, acknowledgements and hints -->
+<g class="cs-w1"><circle class="pkt f-blue" r="6"/><text class="tiny mono sb mid f-blue" y="-10">S-77</text></g>
+<g class="cs-w2"><circle class="pkt f-blue" r="6"/><text class="tiny mono sb mid f-blue" y="-10">S-80</text></g>
+<rect class="pkt f-teal cs-x1" x="-6" y="-6" width="12" height="12" rx="3"/><rect class="pkt f-teal cs-x2" x="-6" y="-6" width="12" height="12" rx="3"/>
+<circle class="pkt f-blue cs-r1" r="6"/><circle class="pkt f-blue cs-r2" r="6"/><circle class="pkt f-green cs-a1" r="6"/><circle class="pkt f-green cs-a2" r="6"/>
+<circle class="pkt f-blue cs-w3" r="6"/><rect class="pkt f-teal cs-c1" x="-6" y="-6" width="12" height="12" rx="3"/><rect class="pkt f-teal cs-c2" x="-6" y="-6" width="12" height="12" rx="3"/><rect class="pkt f-teal cs-c3" x="-6" y="-6" width="12" height="12" rx="3"/><rect class="pkt f-teal cs-c4" x="-6" y="-6" width="12" height="12" rx="3"/><rect class="pkt f-teal cs-c5" x="-6" y="-6" width="12" height="12" rx="3"/>
+<circle class="pkt f-green cs-k1" r="6"/><circle class="pkt f-green cs-k2" r="6"/><circle class="pkt f-green cs-rp" r="6"/>
+<g class="cs-ok"><circle class="f-green" cx="148" cy="164" r="8"/><path class="none s-bg" d="M144.5 164l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<circle class="pkt f-blue cs-w5" r="6"/><circle class="pkt f-green cs-ka" r="6"/><circle class="pkt f-blue cs-q3" r="6"/><circle class="pkt f-green cs-rd" r="6"/><rect class="pkt f-teal cs-fl" x="-6" y="-6" width="12" height="12" rx="3"/>
+<circle class="pkt f-blue cs-w6" r="6"/><rect class="pkt f-teal cs-c6" x="-6" y="-6" width="12" height="12" rx="3"/><circle class="pkt f-amber cs-hr" r="6"/>
+</g>
+</svg>

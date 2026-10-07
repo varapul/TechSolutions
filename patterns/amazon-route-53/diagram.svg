@@ -1,0 +1,874 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Amazon Route 53</title>
+<desc id="dg-desc">Amazon Route 53. Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks. Step 1, Where it sits: Every visit starts with a lookup: the site goes to CloudFront, the API to the closest healthy ALB. Step 2, One lookup, end to end: A cold resolver walks root → .example → Route 53, which answers with Thailand's ALB for 60 s. Step 3, Health checks and failover: api-th fails /health 3 times: Route 53 drops it, new lookups get Singapore, status goes to S3. Step 4, Limits and costs: Failover waits for 3 checks plus the TTL; checkers can't reach private IPs; weights split lookups.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">AWS SERVICES</text>
+  <text class="title" x="40" y="64">Amazon Route 53</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · One lookup, end to end</text>
+  <text class="step on p2" x="262" y="518">2 · One lookup, end to end</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Health checks and failover</text>
+  <text class="step on p3" x="484" y="518">3 · Health checks and failover</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Limits and costs</text>
+  <text class="step on p4" x="706" y="518">4 · Limits and costs</text>
+  <text class="caption p1" x="40" y="552">Every visit starts with a lookup: the site goes to CloudFront, the API to the closest healthy ALB.</text>
+  <text class="caption p2" x="40" y="552">A cold resolver walks root → .example → Route 53, which answers with Thailand's ALB for 60 s.</text>
+  <text class="caption p3" x="40" y="552">api-th fails /health 3 times: Route 53 drops it, new lookups get Singapore, status goes to S3.</text>
+  <text class="caption p4" x="40" y="552">Failover waits for 3 checks plus the TTL; checkers can't reach private IPs; weights split lookups.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Amazon Route 53. Acme Shop's DNS: public zone shop.example, private zone acme.internal (20 s loop, 1 s = 5%):
+   0-5 s    where it sits: the phone's resolver asks Route 53 for shop.example (alias -> CloudFront) and api.shop.example
+            (weighted 90 -> latency -> ALB api-th); inside the VPC, db.acme.internal resolves from the private zone
+   5-10 s   a cold lookup: resolver -> root -> .example TLD -> Route 53 name server; weighted 90, then latency picks Thailand;
+            answer cached with TTL 60 s; the phone connects to ALB api-th
+   10-15 s  health checks: api-th fails /health 3 times, Route 53 marks it unhealthy; the cached answer expires and a new
+            lookup gets ALB api-sg; status fails over to the S3 page; 10% of api lookups still go to the canary
+   15-20 s  the limits: failover timeline, checkers can't reach private IPs, per-lookup weights, costs. Resets 19.5-19.8 s.
+   Keyframes generated by a scratch script with scripts/lib/motion.mjs. */
+.diagram .r53-fr { fill: var(--panel); stroke: var(--line); stroke-width: 2; }
+.diagram .r53-pn { fill: var(--bg); stroke: var(--line); stroke-width: 1.25; }
+.diagram .r53-pill { fill: var(--panel); stroke: var(--line); stroke-width: 1.25; }
+.diagram .r53-pr { fill: none; stroke: var(--wire); stroke-width: 1.25; stroke-dasharray: 2 3; }
+.diagram .r53-hd { font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .r53-l1 { font-size: 11.5px; font-weight: 600; }
+.diagram .r53-t10 { font-size: 10px; fill: var(--muted); }
+.diagram .r53-t95 { font-size: 9.5px; fill: var(--muted); }
+.diagram .r53-m9 { font-size: 9px; }
+.diagram .r53-m95 { font-size: 9.5px; }
+.diagram .r53-zn { font-size: 11px; font-weight: 700; }
+.diagram .r53-n { font-size: 11.5px; }
+.diagram .r53-n11 { font-size: 11px; }
+.diagram .r53-tk { font-size: 10px; font-weight: 700; }
+.diagram .r53-bar { transform-box: fill-box; transform-origin: 0 50%; }
+.diagram .r53-q { opacity: 0; animation: r53-q var(--T) linear infinite; }
+.diagram .r53-a { opacity: 0; animation: r53-a var(--T) linear infinite; }
+.diagram .r53-req { opacity: 0; animation: r53-req var(--T) linear infinite; }
+.diagram .r53-reql { opacity: 0; animation: r53-reql var(--T) linear infinite; }
+.diagram .r53-v { opacity: 0; animation: r53-v var(--T) linear infinite; }
+.diagram .r53-va { opacity: 0; animation: r53-va var(--T) linear infinite; }
+.diagram .r53-vd { opacity: 0; animation: r53-vd var(--T) linear infinite; }
+.diagram .r53-pt { opacity: 0; animation: r53-pt var(--T) linear infinite; }
+.diagram .r53-ps { opacity: 0; animation: r53-ps var(--T) linear infinite; }
+.diagram .r53-px { opacity: 0; animation: r53-px var(--T) linear infinite; }
+.diagram .r53-ns2 { opacity: 0; animation: r53-ns2 var(--T) linear infinite; }
+.diagram .r53-root { opacity: 0; animation: r53-root var(--T) linear infinite; }
+.diagram .r53-tld { opacity: 0; animation: r53-tld var(--T) linear infinite; }
+.diagram .r53-r1 { opacity: 0; animation: r53-r1 var(--T) linear infinite; }
+.diagram .r53-r2 { opacity: 0; animation: r53-r2 var(--T) linear infinite; }
+.diagram .r53-r4 { opacity: 0; animation: r53-r4 var(--T) linear infinite; }
+.diagram .r53-pz { opacity: 0; animation: r53-pz var(--T) linear infinite; }
+.diagram .r53-can { opacity: 0; animation: r53-can var(--T) linear infinite; }
+.diagram .r53-thf { opacity: 0; animation: r53-thf var(--T) linear infinite; }
+.diagram .r53-c1 { opacity: 0; animation: r53-c1 var(--T) linear infinite; }
+.diagram .r53-c2 { opacity: 0; animation: r53-c2 var(--T) linear infinite; }
+.diagram .r53-c3 { opacity: 0; animation: r53-c3 var(--T) linear infinite; }
+.diagram .r53-unh { opacity: 0; animation: r53-unh var(--T) linear infinite; }
+.diagram .r53-st { opacity: 0; animation: r53-st var(--T) linear infinite; }
+.diagram .r53-sg { opacity: 0; animation: r53-sg var(--T) linear infinite; }
+.diagram .r53-rds { opacity: 0; animation: r53-rds var(--T) linear infinite; }
+.diagram .r53-x { opacity: 0; animation: r53-x var(--T) linear infinite; }
+.diagram .r53-cns { animation: r53-cns var(--T) linear infinite; }
+.diagram .r53-cth { opacity: 0; animation: r53-cth var(--T) linear infinite; }
+.diagram .r53-csg { opacity: 0; animation: r53-csg var(--T) linear infinite; }
+.diagram .r53-ttl1 { animation: r53-ttl1 var(--T) linear infinite; }
+.diagram .r53-ttl2 { animation: r53-ttl2 var(--T) linear infinite; }
+.diagram .r53-tb1 { animation: r53-tb1 var(--T) linear infinite; }
+.diagram .r53-tb2 { animation: r53-tb2 var(--T) linear infinite; }
+.diagram .r53-tb3 { animation: r53-tb3 var(--T) linear infinite; }
+@keyframes r53-q {
+  0% { transform: translate(97px, 128px); opacity: 0; }
+  0.75% { transform: translate(97px, 128px); opacity: 0; }
+  1% { opacity: 1; }
+  2% { transform: translate(97px, 150px); opacity: 1; }
+  2.25% { transform: translate(97px, 150px); opacity: 0; }
+  2.5% { transform: translate(160px, 228px); opacity: 0; }
+  2.75% { opacity: 1; }
+  4.25% { transform: translate(204px, 228px); opacity: 1; }
+  4.5% { transform: translate(204px, 228px); opacity: 0; }
+  9.25% { transform: translate(97px, 128px); opacity: 0; }
+  9.5% { opacity: 1; }
+  10.5% { transform: translate(97px, 150px); opacity: 1; }
+  10.75% { transform: translate(97px, 150px); opacity: 0; }
+  11% { transform: translate(160px, 228px); opacity: 0; }
+  11.25% { opacity: 1; }
+  12.75% { transform: translate(204px, 228px); opacity: 1; }
+  13% { transform: translate(204px, 228px); opacity: 0; }
+  25.5% { transform: translate(97px, 128px); opacity: 0; }
+  25.75% { opacity: 1; }
+  26.75% { transform: translate(97px, 150px); opacity: 1; }
+  27% { transform: translate(97px, 150px); opacity: 0; }
+  27.25% { transform: translate(63px, 280px); opacity: 0; }
+  27.5% { opacity: 1; }
+  28.75% { transform: translate(63px, 311px); opacity: 1; }
+  29% { transform: translate(63px, 311px); opacity: 0; }
+  31.25% { transform: translate(131px, 280px); opacity: 0; }
+  31.5% { opacity: 1; }
+  32.75% { transform: translate(131px, 311px); opacity: 1; }
+  33% { transform: translate(131px, 311px); opacity: 0; }
+  35.25% { transform: translate(160px, 228px); opacity: 0; }
+  35.5% { opacity: 1; }
+  37% { transform: translate(204px, 228px); opacity: 1; }
+  37.25% { transform: translate(204px, 228px); opacity: 0; }
+  62.75% { transform: translate(97px, 128px); opacity: 0; }
+  63% { opacity: 1; }
+  64% { transform: translate(97px, 150px); opacity: 1; }
+  64.25% { transform: translate(97px, 150px); opacity: 0; }
+  64.5% { transform: translate(160px, 228px); opacity: 0; }
+  64.75% { opacity: 1; }
+  66.25% { transform: translate(204px, 228px); opacity: 1; }
+  66.5% { transform: translate(204px, 228px); opacity: 0; }
+  100% { transform: translate(204px, 228px); opacity: 0; }
+}
+@keyframes r53-a {
+  0% { transform: translate(204px, 228px); opacity: 0; }
+  5% { transform: translate(204px, 228px); opacity: 0; }
+  5.25% { opacity: 1; }
+  6.75% { transform: translate(160px, 228px); opacity: 1; }
+  7% { transform: translate(160px, 228px); opacity: 0; }
+  7.25% { transform: translate(97px, 150px); opacity: 0; }
+  7.5% { opacity: 1; }
+  8.5% { transform: translate(97px, 128px); opacity: 1; }
+  8.75% { transform: translate(97px, 128px); opacity: 0; }
+  13.5% { transform: translate(204px, 228px); opacity: 0; }
+  13.75% { opacity: 1; }
+  15.25% { transform: translate(160px, 228px); opacity: 1; }
+  15.5% { transform: translate(160px, 228px); opacity: 0; }
+  15.75% { transform: translate(97px, 150px); opacity: 0; }
+  16% { opacity: 1; }
+  17% { transform: translate(97px, 128px); opacity: 1; }
+  17.25% { transform: translate(97px, 128px); opacity: 0; }
+  29.25% { transform: translate(63px, 311px); opacity: 0; }
+  29.5% { opacity: 1; }
+  30.75% { transform: translate(63px, 280px); opacity: 1; }
+  31% { transform: translate(63px, 280px); opacity: 0; }
+  33.25% { transform: translate(131px, 311px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34.75% { transform: translate(131px, 280px); opacity: 1; }
+  35% { transform: translate(131px, 280px); opacity: 0; }
+  39.25% { transform: translate(204px, 228px); opacity: 0; }
+  39.5% { opacity: 1; }
+  41% { transform: translate(160px, 228px); opacity: 1; }
+  41.25% { transform: translate(160px, 228px); opacity: 0; }
+  41.5% { transform: translate(97px, 150px); opacity: 0; }
+  41.75% { opacity: 1; }
+  42.75% { transform: translate(97px, 128px); opacity: 1; }
+  43% { transform: translate(97px, 128px); opacity: 0; }
+  68.5% { transform: translate(204px, 228px); opacity: 0; }
+  68.75% { opacity: 1; }
+  70.25% { transform: translate(160px, 228px); opacity: 1; }
+  70.5% { transform: translate(160px, 228px); opacity: 0; }
+  70.75% { transform: translate(97px, 150px); opacity: 0; }
+  71% { opacity: 1; }
+  72% { transform: translate(97px, 128px); opacity: 1; }
+  72.25% { transform: translate(97px, 128px); opacity: 0; }
+  100% { transform: translate(97px, 128px); opacity: 0; }
+}
+@keyframes r53-req {
+  0% { transform: translate(160px, 110px); opacity: 0; }
+  9% { transform: translate(160px, 110px); opacity: 0; }
+  9.25% { opacity: 1; }
+  13% { transform: translate(679px, 110px); }
+  14.75% { transform: translate(679px, 110px); opacity: 1; }
+  15% { transform: translate(679px, 110px); opacity: 0; }
+  17.5% { transform: translate(160px, 110px); opacity: 0; }
+  17.75% { opacity: 1; }
+  21.413% { transform: translate(660px, 110px); }
+  21.851% { transform: translate(660px, 166px); }
+  22% { transform: translate(679px, 166px); }
+  24.25% { transform: translate(679px, 166px); opacity: 1; }
+  24.5% { transform: translate(679px, 166px); opacity: 0; }
+  43.25% { transform: translate(160px, 110px); opacity: 0; }
+  43.5% { opacity: 1; }
+  46.728% { transform: translate(660px, 110px); }
+  47.118% { transform: translate(660px, 166px); }
+  47.25% { transform: translate(679px, 166px); }
+  49.25% { transform: translate(679px, 166px); opacity: 1; }
+  49.5% { transform: translate(679px, 166px); opacity: 0; }
+  75.5% { transform: translate(160px, 110px); opacity: 0; }
+  75.75% { opacity: 1; }
+  79.043% { transform: translate(660px, 110px); }
+  79.865% { transform: translate(660px, 226px); }
+  80% { transform: translate(679px, 226px); }
+  83% { transform: translate(679px, 226px); opacity: 1; }
+  83.25% { transform: translate(679px, 226px); opacity: 0; }
+  100% { transform: translate(679px, 226px); opacity: 0; }
+}
+@keyframes r53-reql {
+  0% { transform: translate(160px, 110px); opacity: 0; }
+  9% { transform: translate(160px, 110px); opacity: 0; }
+  9.25% { opacity: 1; }
+  13% { transform: translate(679px, 110px); opacity: 1; }
+  13.25% { transform: translate(679px, 110px); opacity: 0; }
+  17.5% { transform: translate(160px, 110px); opacity: 0; }
+  17.75% { opacity: 1; }
+  21.413% { transform: translate(660px, 110px); }
+  21.851% { transform: translate(660px, 166px); }
+  22% { transform: translate(679px, 166px); opacity: 1; }
+  22.25% { transform: translate(679px, 166px); opacity: 0; }
+  43.25% { transform: translate(160px, 110px); opacity: 0; }
+  43.5% { opacity: 1; }
+  46.728% { transform: translate(660px, 110px); }
+  47.118% { transform: translate(660px, 166px); }
+  47.25% { transform: translate(679px, 166px); opacity: 1; }
+  47.5% { transform: translate(679px, 166px); opacity: 0; }
+  75.5% { transform: translate(160px, 110px); opacity: 0; }
+  75.75% { opacity: 1; }
+  79.043% { transform: translate(660px, 110px); }
+  79.865% { transform: translate(660px, 226px); }
+  80% { transform: translate(679px, 226px); opacity: 1; }
+  80.25% { transform: translate(679px, 226px); opacity: 0; }
+  100% { transform: translate(679px, 226px); opacity: 0; }
+}
+@keyframes r53-v {
+  0% { transform: translate(826px, 362px); opacity: 0; }
+  4.5% { transform: translate(826px, 362px); opacity: 0; }
+  4.75% { opacity: 1; }
+  5.75% { transform: translate(790px, 362px); opacity: 1; }
+  6% { transform: translate(790px, 362px); opacity: 0; }
+  6.25% { transform: translate(690px, 366px); opacity: 0; }
+  6.5% { opacity: 1; }
+  8% { transform: translate(631px, 366px); opacity: 1; }
+  8.25% { transform: translate(631px, 366px); opacity: 0; }
+  100% { transform: translate(631px, 366px); opacity: 0; }
+}
+@keyframes r53-va {
+  0% { transform: translate(631px, 366px); opacity: 0; }
+  9% { transform: translate(631px, 366px); opacity: 0; }
+  9.25% { opacity: 1; }
+  10.75% { transform: translate(690px, 366px); opacity: 1; }
+  11% { transform: translate(690px, 366px); opacity: 0; }
+  11.25% { transform: translate(790px, 362px); opacity: 0; }
+  11.5% { opacity: 1; }
+  12.5% { transform: translate(826px, 362px); opacity: 1; }
+  12.75% { transform: translate(826px, 362px); opacity: 0; }
+  100% { transform: translate(826px, 362px); opacity: 0; }
+}
+@keyframes r53-vd {
+  0% { transform: translate(826px, 348px); opacity: 0; }
+  13% { transform: translate(826px, 348px); opacity: 0; }
+  13.25% { opacity: 1; }
+  13.831% { transform: translate(808px, 348px); }
+  15.215% { transform: translate(808px, 318px); }
+  16% { transform: translate(791px, 318px); opacity: 1; }
+  16.25% { transform: translate(791px, 318px); opacity: 0; }
+  100% { transform: translate(791px, 318px); opacity: 0; }
+}
+@keyframes r53-pt {
+  0% { transform: translate(630px, 184px); opacity: 0; }
+  50.5% { transform: translate(630px, 184px); opacity: 0; }
+  50.75% { opacity: 1; }
+  52% { transform: translate(679px, 184px); opacity: 1; }
+  52.25% { transform: translate(679px, 184px); opacity: 0; }
+  53% { transform: translate(630px, 184px); opacity: 0; }
+  53.25% { opacity: 1; }
+  54.5% { transform: translate(679px, 184px); opacity: 1; }
+  54.75% { transform: translate(679px, 184px); opacity: 0; }
+  55.5% { transform: translate(630px, 184px); opacity: 0; }
+  55.75% { opacity: 1; }
+  57% { transform: translate(679px, 184px); opacity: 1; }
+  57.25% { transform: translate(679px, 184px); opacity: 0; }
+  58% { transform: translate(630px, 184px); opacity: 0; }
+  58.25% { opacity: 1; }
+  59.5% { transform: translate(679px, 184px); opacity: 1; }
+  59.75% { transform: translate(679px, 184px); opacity: 0; }
+  60.5% { transform: translate(630px, 184px); opacity: 0; }
+  60.75% { opacity: 1; }
+  62% { transform: translate(679px, 184px); opacity: 1; }
+  62.25% { transform: translate(679px, 184px); opacity: 0; }
+  63% { transform: translate(630px, 184px); opacity: 0; }
+  63.25% { opacity: 1; }
+  64.5% { transform: translate(679px, 184px); opacity: 1; }
+  64.75% { transform: translate(679px, 184px); opacity: 0; }
+  65.5% { transform: translate(630px, 184px); opacity: 0; }
+  65.75% { opacity: 1; }
+  67% { transform: translate(679px, 184px); opacity: 1; }
+  67.25% { transform: translate(679px, 184px); opacity: 0; }
+  68% { transform: translate(630px, 184px); opacity: 0; }
+  68.25% { opacity: 1; }
+  69.5% { transform: translate(679px, 184px); opacity: 1; }
+  69.75% { transform: translate(679px, 184px); opacity: 0; }
+  70.5% { transform: translate(630px, 184px); opacity: 0; }
+  70.75% { opacity: 1; }
+  72% { transform: translate(679px, 184px); opacity: 1; }
+  72.25% { transform: translate(679px, 184px); opacity: 0; }
+  100% { transform: translate(679px, 184px); opacity: 0; }
+}
+@keyframes r53-ps {
+  0% { transform: translate(630px, 244px); opacity: 0; }
+  51.25% { transform: translate(630px, 244px); opacity: 0; }
+  51.5% { opacity: 1; }
+  52.75% { transform: translate(679px, 244px); opacity: 1; }
+  53% { transform: translate(679px, 244px); opacity: 0; }
+  53.75% { transform: translate(630px, 244px); opacity: 0; }
+  54% { opacity: 1; }
+  55.25% { transform: translate(679px, 244px); opacity: 1; }
+  55.5% { transform: translate(679px, 244px); opacity: 0; }
+  56.25% { transform: translate(630px, 244px); opacity: 0; }
+  56.5% { opacity: 1; }
+  57.75% { transform: translate(679px, 244px); opacity: 1; }
+  58% { transform: translate(679px, 244px); opacity: 0; }
+  58.75% { transform: translate(630px, 244px); opacity: 0; }
+  59% { opacity: 1; }
+  60.25% { transform: translate(679px, 244px); opacity: 1; }
+  60.5% { transform: translate(679px, 244px); opacity: 0; }
+  61.25% { transform: translate(630px, 244px); opacity: 0; }
+  61.5% { opacity: 1; }
+  62.75% { transform: translate(679px, 244px); opacity: 1; }
+  63% { transform: translate(679px, 244px); opacity: 0; }
+  63.75% { transform: translate(630px, 244px); opacity: 0; }
+  64% { opacity: 1; }
+  65.25% { transform: translate(679px, 244px); opacity: 1; }
+  65.5% { transform: translate(679px, 244px); opacity: 0; }
+  66.25% { transform: translate(630px, 244px); opacity: 0; }
+  66.5% { opacity: 1; }
+  67.75% { transform: translate(679px, 244px); opacity: 1; }
+  68% { transform: translate(679px, 244px); opacity: 0; }
+  68.75% { transform: translate(630px, 244px); opacity: 0; }
+  69% { opacity: 1; }
+  70.25% { transform: translate(679px, 244px); opacity: 1; }
+  70.5% { transform: translate(679px, 244px); opacity: 0; }
+  71.25% { transform: translate(630px, 244px); opacity: 0; }
+  71.5% { opacity: 1; }
+  72.75% { transform: translate(679px, 244px); opacity: 1; }
+  73% { transform: translate(679px, 244px); opacity: 0; }
+  100% { transform: translate(679px, 244px); opacity: 0; }
+}
+@keyframes r53-px {
+  0% { transform: translate(630px, 300px); opacity: 0; }
+  82% { transform: translate(630px, 300px); opacity: 0; }
+  82.25% { opacity: 1; }
+  84% { transform: translate(664px, 300px); opacity: 1; }
+  84.25% { transform: translate(664px, 300px); opacity: 0; }
+  100% { transform: translate(664px, 300px); opacity: 0; }
+}
+@keyframes r53-ns2 {
+  0% { opacity: 0; }
+  4% { opacity: 0; }
+  4.75% { opacity: 1; }
+  6% { opacity: 1; }
+  6.75% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.25% { opacity: 1; }
+  14.75% { opacity: 1; }
+  15.5% { opacity: 0; }
+  36.75% { opacity: 0; }
+  37.5% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40.5% { opacity: 0; }
+  66% { opacity: 0; }
+  66.75% { opacity: 1; }
+  69% { opacity: 1; }
+  69.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-root {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29.25% { opacity: 1; }
+  30.25% { opacity: 1; }
+  31% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-tld {
+  0% { opacity: 0; }
+  32.5% { opacity: 0; }
+  33.25% { opacity: 1; }
+  34.25% { opacity: 1; }
+  35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-r1 {
+  0% { opacity: 0; }
+  4.25% { opacity: 0; }
+  5% { opacity: 1; }
+  7.75% { opacity: 1; }
+  8.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-r2 {
+  0% { opacity: 0; }
+  12.75% { opacity: 0; }
+  13.5% { opacity: 1; }
+  15.25% { opacity: 1; }
+  16% { opacity: 0; }
+  37.25% { opacity: 0; }
+  38% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-r4 {
+  0% { opacity: 0; }
+  13.25% { opacity: 0; }
+  14% { opacity: 1; }
+  15.25% { opacity: 1; }
+  16% { opacity: 0; }
+  38.25% { opacity: 0; }
+  39% { opacity: 1; }
+  48.5% { opacity: 1; }
+  49.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-pz {
+  0% { opacity: 0; }
+  7.75% { opacity: 0; }
+  8.5% { opacity: 1; }
+  10.75% { opacity: 1; }
+  11.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-can {
+  0% { opacity: 0; }
+  50.75% { opacity: 0; }
+  51.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  74.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-thf {
+  0% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-c1 {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-c2 {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  57.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-c3 {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-unh {
+  0% { opacity: 0; }
+  60.5% { opacity: 0; }
+  61.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-st {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-sg {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-rds {
+  0% { opacity: 0; }
+  15.75% { opacity: 0; }
+  16.5% { opacity: 1; }
+  19.5% { opacity: 1; }
+  20.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-x {
+  0% { opacity: 0; }
+  83.75% { opacity: 0; }
+  84.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-cns {
+  0% { opacity: 1; }
+  24.25% { opacity: 1; }
+  25.25% { opacity: 0; }
+  34.75% { opacity: 0; }
+  35.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes r53-cth {
+  0% { opacity: 0; }
+  15.25% { opacity: 0; }
+  16% { opacity: 1; }
+  24.25% { opacity: 1; }
+  25% { opacity: 0; }
+  41% { opacity: 0; }
+  41.75% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-csg {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  71% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes r53-ttl1 {
+  0% { transform: scaleX(1); }
+  41% { transform: scaleX(1); }
+  61.5% { transform: scaleX(0); }
+  62.5% { transform: scaleX(0); }
+  63% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes r53-ttl2 {
+  0% { transform: scaleX(1); }
+  70.25% { transform: scaleX(1); }
+  97.5% { transform: scaleX(0.08); }
+  100% { transform: scaleX(0.08); }
+}
+@keyframes r53-tb1 {
+  0% { transform: scaleX(0); }
+  77% { transform: scaleX(0); }
+  82% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes r53-tb2 {
+  0% { transform: scaleX(0); }
+  82% { transform: scaleX(0); }
+  85% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes r53-tb3 {
+  0% { transform: scaleX(0); }
+  85% { transform: scaleX(0); }
+  87% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+</style>
+<g class="stage">
+<!-- the request path: the phone connects to whatever DNS answered -->
+<path class="wire" d="M160 110H679" marker-end="url(#ah)"/>
+<path class="wire" d="M660 110V226H679" marker-end="url(#ah)"/>
+<path class="wire" d="M660 166H679" marker-end="url(#ah)"/>
+<text class="r53-t10 mid" x="420" y="125">then HTTPS to the address in the answer</text>
+
+<!-- the user, the resolver, and the delegation above the zone -->
+<rect class="box" x="34" y="92" width="126" height="36" rx="10"/>
+<text class="r53-l1 mid" x="97" y="107">user’s phone</text>
+<text class="r53-t10 mid" x="97" y="121">in Chiang Mai</text>
+<line class="wire" x1="97" y1="128" x2="97" y2="149" marker-end="url(#ah)"/>
+<rect class="box" x="34" y="150" width="126" height="130" rx="10"/>
+<text class="r53-l1 mid" x="97" y="166">recursive resolver</text>
+<text class="r53-t10 mid" x="97" y="179">ISP or public resolver</text>
+<rect class="r53-pn" x="42" y="186" width="110" height="88" rx="8"/>
+<text class="r53-hd" x="48" y="198">CACHE</text>
+<g class="r53-cns"><rect class="f-teal-soft s-teal" x="46" y="203" width="102" height="26" rx="5" stroke-width="1"/><text class="mono r53-m95" x="51" y="214">shop.example NS</text><text class="r53-t95" x="51" y="225">Route 53 · ~2 days</text></g>
+<g class="r53-cth"><rect class="f-teal-soft s-teal" x="46" y="234" width="102" height="36" rx="5" stroke-width="1"/><text class="mono r53-m95" x="51" y="245">api.shop.example</text><text class="r53-t95" x="51" y="256">ALB api-th · 60 s</text><rect class="f-line" x="51" y="261" width="92" height="4" rx="2"/><rect class="f-amber r53-bar r53-ttl1" x="51" y="261" width="92" height="4" rx="2"/></g>
+<g class="r53-csg"><rect class="f-teal-soft s-teal" x="46" y="234" width="102" height="36" rx="5" stroke-width="1"/><text class="mono r53-m95" x="51" y="245">api.shop.example</text><text class="r53-t95" x="51" y="256">ALB api-sg · 60 s</text><rect class="f-line" x="51" y="261" width="92" height="4" rx="2"/><rect class="f-amber r53-bar r53-ttl2" x="51" y="261" width="92" height="4" rx="2"/></g>
+<line class="wire" x1="160" y1="228" x2="203" y2="228" marker-end="url(#ah)"/>
+<line class="wire dash" x1="63" y1="280" x2="63" y2="312"/>
+<line class="wire dash" x1="131" y1="280" x2="131" y2="312"/>
+<rect class="box" x="34" y="312" width="58" height="40" rx="8"/>
+<text class="r53-l1 mid" x="63" y="329">root</text>
+<text class="r53-t10 mid" x="63" y="343">servers</text>
+<rect class="box" x="102" y="312" width="58" height="40" rx="8"/>
+<text class="r53-l1 mid" x="131" y="329">TLD</text>
+<text class="mono r53-m95 mid" x="131" y="343">.example</text>
+<g class="r53-root"><rect class="f-blue-soft s-blue" x="34" y="312" width="58" height="40" rx="8" stroke-width="1.5"/></g>
+<g class="r53-tld"><rect class="f-blue-soft s-blue" x="102" y="312" width="58" height="40" rx="8" stroke-width="1.5"/></g>
+<text class="r53-t10 mid" x="97" y="371">asked only when</text>
+<text class="r53-t10 mid" x="97" y="383">the cache misses</text>
+
+<!-- the product: Amazon Route 53 -->
+<rect class="r53-fr" x="190" y="134" width="450" height="264" rx="16"/>
+<text class="label" x="202" y="154">Amazon Route 53</text>
+<text class="sub" x="336" y="154">authoritative DNS · health checks</text>
+<!-- name servers -->
+<rect class="r53-pn" x="200" y="162" width="96" height="156" rx="10"/>
+<text class="r53-hd" x="206" y="176">NAME SERVERS</text>
+<text class="r53-t10" x="206" y="188">anycast</text>
+<rect class="r53-pill" x="204" y="195" width="88" height="18" rx="9"/>
+<rect class="r53-pill" x="204" y="219" width="88" height="18" rx="9"/>
+<rect class="r53-pill" x="204" y="243" width="88" height="18" rx="9"/>
+<rect class="r53-pill" x="204" y="267" width="88" height="18" rx="9"/>
+<g class="r53-ns2"><rect class="f-blue-soft s-blue" x="204" y="219" width="88" height="18" rx="9" stroke-width="1.5"/></g>
+<text class="mono r53-m9 mid" x="248" y="207">awsdns-64.com</text>
+<text class="mono r53-m9 mid" x="248" y="231">awsdns-65.net</text>
+<text class="mono r53-m9 mid" x="248" y="255">awsdns-66.org</text>
+<text class="mono r53-m9 mid" x="248" y="279">awsdns-67.co.uk</text>
+<text class="r53-t10" x="206" y="303">4 per zone; the</text>
+<text class="r53-t10" x="206" y="314">nearest answers</text>
+<!-- public hosted zone -->
+<rect class="r53-pn" x="304" y="162" width="232" height="156" rx="10"/>
+<text class="mono r53-zn" x="312" y="177">shop.example</text>
+<g class="p123"><text class="r53-t10" x="398" y="177">public hosted zone</text></g>
+<g class="p4"><text class="r53-t10 sb f-amber-ink" x="398" y="177">public · $0.50 a month</text></g>
+<line class="s-line" x1="310" y1="200.5" x2="530" y2="200.5" stroke-width="1"/>
+<line class="s-line" x1="310" y1="232.5" x2="530" y2="232.5" stroke-width="1"/>
+<line class="s-line" x1="310" y1="264.5" x2="530" y2="264.5" stroke-width="1"/>
+<g class="r53-r1"><rect class="f-green-soft s-green" x="308" y="186" width="224" height="14" rx="4" stroke-width="1"/></g>
+<g class="r53-r2"><rect class="f-blue-soft s-blue" x="308" y="202" width="224" height="14" rx="4" stroke-width="1"/></g>
+<g class="r53-can"><rect class="f-amber-soft s-amber" x="308" y="218" width="224" height="14" rx="4" stroke-width="1"/></g>
+<g class="r53-r4"><rect class="f-green-soft s-green" x="308" y="234" width="224" height="14" rx="4" stroke-width="1"/></g>
+<g class="r53-sg"><rect class="f-green-soft s-green" x="308" y="250" width="224" height="14" rx="4" stroke-width="1"/></g>
+<g class="r53-st"><rect class="f-green-soft s-green" x="308" y="282" width="224" height="14" rx="4" stroke-width="1"/></g>
+<g class="r53-unh"><rect class="f-red-soft s-red" x="308" y="234" width="224" height="14" rx="4" stroke-width="1"/><rect class="f-red-soft s-red" x="308" y="266" width="224" height="14" rx="4" stroke-width="1"/></g>
+<text class="mono r53-m9" x="312" y="196">shop.example</text><text class="mono r53-m9 f-muted" x="383" y="196">alias</text><text class="mono r53-m9" x="452" y="196">→ CloudFront</text>
+<text class="mono r53-m9" x="312" y="212">api</text><text class="mono r53-m9 f-muted" x="383" y="212">weighted</text><text class="mono r53-m9 b" x="431" y="212">90</text><text class="mono r53-m9" x="452" y="212">→ stable.api</text>
+<text class="mono r53-m9 b" x="431" y="228">10</text><text class="mono r53-m9" x="452" y="228">→ ALB api-v2</text>
+<text class="mono r53-m9" x="312" y="244">stable.api</text><text class="mono r53-m9 f-muted" x="383" y="244">latency</text><text class="mono r53-m9 b" x="431" y="244">th</text><text class="mono r53-m9" x="452" y="244">→ ALB api-th</text>
+<text class="mono r53-m9 b" x="431" y="260">sg</text><text class="mono r53-m9" x="452" y="260">→ ALB api-sg</text>
+<text class="mono r53-m9" x="312" y="276">status</text><text class="mono r53-m9 f-muted" x="383" y="276">failover</text><text class="mono r53-m9 b" x="431" y="276">pri</text><text class="mono r53-m9" x="452" y="276">→ ALB api-th</text>
+<text class="mono r53-m9 b" x="431" y="292">sec</text><text class="mono r53-m9" x="452" y="292">→ S3 website</text>
+<circle class="f-green" cx="527" cy="225" r="3.5"/>
+<circle class="f-green" cx="527" cy="241" r="3.5"/>
+<circle class="f-green" cx="527" cy="257" r="3.5"/>
+<circle class="f-green" cx="527" cy="273" r="3.5"/>
+<g class="r53-unh"><circle class="f-red" cx="527" cy="241" r="3.5"/><circle class="f-red" cx="527" cy="273" r="3.5"/></g>
+<g class="p4"><text class="r53-t95 sb f-amber-ink" x="312" y="310">$0.40 per million queries · alias to AWS: free</text></g>
+<!-- health checkers -->
+<rect class="r53-pn" x="542" y="162" width="88" height="156" rx="10"/>
+<text class="r53-hd" x="548" y="176">HEALTH</text>
+<text class="r53-hd" x="548" y="187">CHECKERS</text>
+<g class="p123"><text class="r53-t10" x="548" y="199">in 8 Regions</text></g>
+<g class="p4"><text class="r53-t10 sb f-amber-ink" x="548" y="199">first 50 free</text></g>
+<text class="mono r53-m9" x="548" y="213">us-east-1</text>
+<text class="mono r53-m9" x="548" y="225.5">us-west-1</text>
+<text class="mono r53-m9" x="548" y="238">us-west-2</text>
+<text class="mono r53-m9" x="548" y="250.5">eu-west-1</text>
+<text class="mono r53-m9" x="548" y="263">ap-southeast-1</text>
+<text class="mono r53-m9" x="548" y="275.5">ap-southeast-2</text>
+<text class="mono r53-m9" x="548" y="288">ap-northeast-1</text>
+<text class="mono r53-m9" x="548" y="300.5">sa-east-1</text>
+<line class="r53-pr" x1="630" y1="184" x2="679" y2="184" marker-end="url(#ah)"/>
+<line class="r53-pr" x1="630" y1="244" x2="679" y2="244" marker-end="url(#ah)"/>
+<!-- private hosted zone -->
+<rect class="r53-pn" x="304" y="326" width="326" height="64" rx="10"/>
+<text class="mono r53-zn" x="312" y="341">acme.internal</text>
+<g class="p123"><text class="r53-t10" x="406" y="341">private hosted zone · vpc-acme</text></g>
+<g class="p4"><text class="r53-t10 sb f-amber-ink" x="406" y="341">private · $0.50 a month · queries free</text></g>
+<g class="r53-pz"><rect class="f-green-soft s-green" x="308" y="350" width="318" height="14" rx="4" stroke-width="1"/></g>
+<text class="mono r53-m9" x="312" y="360">db</text><text class="mono r53-m9 f-muted" x="340" y="360">CNAME</text><text class="mono r53-m9" x="380" y="360">→ acme-db.….rds.amazonaws.com</text>
+<text class="r53-t10" x="312" y="380">answers only inside the VPCs it is associated with</text>
+
+<!-- what Route 53 points to -->
+<rect class="box" x="680" y="92" width="246" height="36" rx="10"/>
+<text class="r53-l1" x="692" y="107">Amazon CloudFront</text>
+<text class="r53-t10" x="692" y="121">serves the site from the edge</text>
+<rect class="box" x="680" y="146" width="120" height="52" rx="10"/>
+<g class="r53-thf"><rect class="f-red-soft s-red" x="680" y="146" width="120" height="52" rx="10" stroke-width="1.5"/><text class="r53-tk end f-red" x="792" y="163">✕ 503</text></g>
+<text class="r53-l1" x="690" y="163">ALB api-th</text>
+<text class="mono r53-m95" x="690" y="176">ap-southeast-7</text>
+<text class="r53-t10" x="690" y="189">Thailand</text>
+<g class="p34"><circle class="f-bg s-line" cx="762" cy="186" r="3.5" stroke-width="1.25"/><circle class="f-bg s-line" cx="773" cy="186" r="3.5" stroke-width="1.25"/><circle class="f-bg s-line" cx="784" cy="186" r="3.5" stroke-width="1.25"/></g>
+<circle class="f-red r53-c1" cx="762" cy="186" r="3.5"/>
+<circle class="f-red r53-c2" cx="773" cy="186" r="3.5"/>
+<circle class="f-red r53-c3" cx="784" cy="186" r="3.5"/>
+<rect class="box" x="806" y="146" width="120" height="52" rx="10"/>
+<g class="r53-can"><rect class="f-amber-soft s-amber" x="806" y="146" width="120" height="52" rx="10" stroke-width="1.5"/><text class="r53-tk end f-amber-ink" x="918" y="163">10%</text></g>
+<text class="r53-l1" x="816" y="163">ALB api-v2</text>
+<text class="mono r53-m95" x="816" y="176">ap-southeast-7</text>
+<text class="r53-t10" x="816" y="189">canary · new API</text>
+<rect class="box" x="680" y="206" width="120" height="52" rx="10"/>
+<g class="r53-sg"><rect class="f-green-soft s-green" x="680" y="206" width="120" height="52" rx="10" stroke-width="1.5"/></g>
+<text class="r53-l1" x="690" y="223">ALB api-sg</text>
+<text class="mono r53-m95" x="690" y="236">ap-southeast-1</text>
+<text class="r53-t10" x="690" y="249">Singapore</text>
+<rect class="box" x="806" y="206" width="120" height="52" rx="10"/>
+<g class="r53-st"><rect class="f-green-soft s-green" x="806" y="206" width="120" height="52" rx="10" stroke-width="1.5"/><text class="r53-tk end f-green" x="918" y="223">✓ live</text></g>
+<text class="r53-l1" x="816" y="223">S3 website</text>
+<text class="mono r53-m95" x="816" y="236">ap-southeast-1</text>
+<text class="r53-t10" x="816" y="249">status page</text>
+<!-- the VPC that the private zone is associated with -->
+<rect class="zone" x="680" y="268" width="246" height="130" rx="12"/>
+<text class="r53-l1" x="690" y="284">VPC · ap-southeast-7</text>
+<text class="mono r53-m95 end" x="918" y="284">10.0.0.0/16</text>
+<line class="wire" x1="826" y1="362" x2="791" y2="362" marker-end="url(#ah)"/>
+<line class="wire" x1="690" y1="366" x2="631" y2="366" marker-end="url(#ah)"/>
+<path class="wire" d="M826 348H808V318H791" marker-end="url(#ah)"/>
+<rect class="box" x="690" y="292" width="100" height="38" rx="8"/>
+<g class="r53-rds"><rect class="f-teal-soft s-teal" x="690" y="292" width="100" height="38" rx="8" stroke-width="1.5"/></g>
+<text class="r53-l1 mid" x="740" y="308">RDS</text>
+<text class="mono r53-m95 mid" x="740" y="322">acme-db</text>
+<rect class="box" x="826" y="340" width="90" height="40" rx="8"/>
+<text class="r53-l1 mid" x="871" y="357">API task</text>
+<text class="r53-t10 mid" x="871" y="371">ECS</text>
+<rect class="box" x="690" y="344" width="100" height="44" rx="8"/>
+<text class="r53-l1 mid" x="740" y="362">VPC Resolver</text>
+<text class="mono r53-m95 mid" x="740" y="377">10.0.0.2</text>
+<g class="p4"><line class="s-amber" x1="790" y1="300" x2="826" y2="300" stroke-width="1.5" stroke-dasharray="3 3"/><rect class="f-amber-soft s-amber" x="826" y="292" width="90" height="38" rx="8" stroke-width="1.5"/><text class="r53-tk mid f-amber-ink" x="871" y="308">CloudWatch</text><text class="r53-t10 mid" x="871" y="322">alarm check</text><line class="s-red" x1="630" y1="300" x2="664" y2="300" stroke-width="1.5" stroke-dasharray="2 3"/></g>
+<g class="r53-x"><circle class="f-red" cx="671" cy="300" r="7"/><path class="s-bg" d="M668 297l6 6M674 297l-6 6" stroke-width="2" stroke-linecap="round"/></g>
+
+<!-- notes, one per step -->
+<g class="p1"><rect class="box" x="34" y="406" width="892" height="62" rx="10"/><text class="r53-hd" x="48" y="421">THE FIRST HOP OF EVERY VISIT</text><text class="r53-n" x="48" y="437">Before any request reaches Acme Shop, the phone’s resolver asks one of the zone’s four Route 53 name servers where a name points.</text><text class="r53-n" x="48" y="451">The site at the zone apex goes to CloudFront and the API to the closest healthy load balancer: Thailand’s for a user in Chiang Mai.</text><text class="r53-n" x="48" y="465">Inside the VPC, the private zone acme.internal turns db.acme.internal into the RDS endpoint; outside it, that name doesn’t resolve.</text></g>
+<g class="p2"><rect class="box" x="34" y="406" width="440" height="62" rx="10"/><text class="r53-hd" x="48" y="421">A COLD CACHE WALKS THE DELEGATION</text><text class="r53-n" x="48" y="437">The root names the .example servers, and they name the zone’s four</text><text class="r53-n" x="48" y="451">Route 53 servers, which resolvers keep for about two days. Route 53</text><text class="r53-n" x="48" y="465">takes the weight-90 branch, then the Region with the lowest latency.</text><rect class="box" x="484" y="406" width="442" height="62" rx="10"/><text class="r53-hd" x="498" y="421">ALIAS RECORDS</text><text class="r53-n" x="498" y="437">An alias answers with the target’s current IPs as an A record. It</text><text class="r53-n" x="498" y="451">works at the zone apex, where a CNAME can’t; queries to AWS targets</text><text class="r53-n" x="498" y="465">are free; the TTL is the target’s: 60 s for a load balancer.</text></g>
+<g class="p3"><rect class="box" x="34" y="406" width="440" height="62" rx="10"/><text class="r53-hd" x="48" y="421">HEALTH CHECK ON api-th: HTTPS /health</text><text class="r53-n" x="48" y="437">Checkers in 8 Regions probe every 30 s. Each must connect within 4 s</text><text class="r53-n" x="48" y="451">and get a 2xx or 3xx within 2 s; 3 misses in a row count as down.</text><text class="r53-n" x="48" y="465">At 18% healthy or less, Route 53 marks api-th unhealthy.</text><rect class="box" x="484" y="406" width="442" height="62" rx="10"/><text class="r53-hd" x="498" y="421">WHAT ROUTE 53 ANSWERS NOW</text><text class="r53-n" x="498" y="437">stable.api skips api-th: the next-lowest latency is Singapore. status</text><text class="r53-n" x="498" y="451">fails over to the S3 page, and 10% of api lookups still reach the</text><text class="r53-n" x="498" y="465">canary. Resolvers keep the old answer until its 60 s TTL runs out.</text></g>
+<g class="p4"><rect class="box" x="34" y="406" width="400" height="62" rx="10"/><text class="r53-hd" x="48" y="418">HOW LONG A FAILOVER TAKES HERE</text><rect class="f-line" x="48" y="424" width="372" height="14" rx="3"/><rect class="f-red-soft s-red r53-bar r53-tb1" x="48" y="424" width="186" height="14" rx="3" stroke-width="1"/><rect class="f-amber-soft s-amber r53-bar r53-tb2" x="234" y="424" width="124" height="14" rx="3" stroke-width="1"/><rect class="f-panel-2 s-wire r53-bar r53-tb3" x="358" y="424" width="62" height="14" rx="3" stroke-width="1" stroke-dasharray="3 2"/><text class="r53-m95" x="54" y="434.5">3 failed checks × 30 s</text><text class="r53-m95" x="240" y="434.5">TTL 60 s</text><text class="r53-m95" x="364" y="434.5">+ caches</text><text class="r53-t10" x="48" y="451">0 s: /health fails</text><text class="r53-t10 mid" x="234" y="451">≈ 90 s: unhealthy</text><text class="r53-t10 mid" x="358" y="451">≈ 150 s: TTL ends</text><text class="r53-n11" x="48" y="464">plus any resolver or app that keeps answers longer than told</text><rect class="f-amber-soft s-amber" x="444" y="406" width="482" height="62" rx="10" stroke-width="1.5"/><text class="r53-hd f-amber-ink" x="458" y="421">LIMITS (OCTOBER 2026)</text><text class="r53-n11" x="458" y="437">Checkers can’t reach private IPs: alarm on a CloudWatch metric instead.</text><text class="r53-n11" x="458" y="451">Weights split lookups, not requests: one cached answer serves many users.</text><text class="r53-n11" x="458" y="465">Flip Regions on command with ARC routing controls; sign the zone with DNSSEC.</text></g>
+
+<!-- moving tokens -->
+<circle class="pkt f-blue r53-q" r="5"/>
+<circle class="pkt f-green r53-a" r="5"/>
+<circle class="pkt f-blue r53-v" r="5"/>
+<circle class="pkt f-green r53-va" r="5"/>
+<circle class="pkt f-teal r53-vd" r="5"/>
+<circle class="f-blue r53-pt" r="3.5"/>
+<circle class="f-blue r53-ps" r="3.5"/>
+<circle class="f-red r53-px" r="3.5"/>
+<circle class="pkt f-blue r53-req" r="6"/>
+<text class="r53-tk mid f-blue r53-reql" y="-10">HTTPS</text>
+</g>
+</svg>

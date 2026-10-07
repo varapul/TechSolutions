@@ -69,7 +69,7 @@ aws sns publish --topic-arn arn:aws:sns:us-east-1:111122223333:order-events \
 - throttling error จาก Data Firehose ทำตามแถวที่สอง มีแค่ policy ของ HTTP/S ที่แก้ได้ ทั้งบน topic หรือบน subscription ส่วนตัวอื่นตายตัว แล้ว SNS ก็ใส่ jitter ให้ delay ด้วย
 - คำตอบ 5xx และ 429 ของ HTTP/S endpoint จะถูก retry ส่วน status อื่นถือเป็นความล้มเหลวถาวร ส่วน client-side error เช่น endpoint ที่ถูกลบไปแล้ว หรือ policy ที่ไม่ยอมให้ SNS เข้าแล้ว จะไม่ถูก retry เลย ใน step 3 ตัว partner ตอบ 503 เลยได้ retry ตั้งต้นสามครั้ง
 - เมื่อ policy หมด หรือทันทีหลังเจอ client-side error ตัว SNS จะทิ้ง message เว้นแต่ subscription จะมี **dead-letter queue**: SQS queue ที่ระบุไว้ใน `RedrivePolicy` (`deadLetterTargetArn`) ของ subscription และอยู่ใน account และ Region เดียวกัน ตัว access policy ของมันต้องยอมให้ SNS ส่งเข้าไปได้ ถ้าเป็น queue ที่ encrypt ก็ต้องใช้ customer managed KMS key ที่ยอมให้ SNS ใช้ และ AWS แนะนำให้ตั้ง retention สูงสุดคือ 14 วัน ส่วนบน FIFO topic ตัว dead-letter queue จะเป็นแบบเดียวกับ queue ที่ subscribe อยู่
-- เฝ้าดูมันด้วย CloudWatch alarm บน `ApproximateNumberOfMessagesVisible` ของ queue และ SNS ก็นับ `NumberOfNotificationsRedrivenToDlq` กับ `NumberOfNotificationsFailedToRedriveToDlq` ไว้ด้วย
+- เฝ้าดูมันด้วย [CloudWatch](../amazon-cloudwatch/) alarm บน `ApproximateNumberOfMessagesVisible` ของ queue และ SNS ก็นับ `NumberOfNotificationsRedrivenToDlq` กับ `NumberOfNotificationsFailedToRedriveToDlq` ไว้ด้วย
 - การเอา message ออกมาส่งใหม่เป็นหน้าที่ของเรา redrive ของ SQS (`StartMessageMoveTask`) ไม่รับ dead-letter queue ที่ต้นทางเป็น SNS subscription เพราะฉะนั้นพอ partner กลับมาแล้ว ก็ต้องมี consumer (เช่น Lambda function ที่มี partner-dlq เป็น event source) อ่าน queue แล้วส่ง message พวกนั้นอีกรอบ ตัว pattern นี้อยู่ในหน้า [Dead-Letter Queue](../dead-letter-queue/)
 - การส่งเป็นแบบ **at least once** บางครั้ง subscriber ได้ message เดียวกันสองครั้ง และ standard topic พยายามรักษาลำดับการ publish แต่ก็อาจส่งไม่ตามลำดับได้ ให้ทำ consumer ทุกตัวให้ [idempotent](../idempotent-consumer/) โดยใช้ key อย่าง order ID
 
@@ -149,7 +149,7 @@ aws sns set-subscription-attributes --subscription-arn "$PARTNER_SUBSCRIPTION_AR
 | **SNS FIFO topic** | push ไปที่ SQS queue เท่านั้น | ทุก subscription ที่ match | จนกว่าจะส่งถึง และมี archive ได้ถึง 365 วันไว้ replay ถ้าเปิด | ต่อ message group | fan-out ไปที่ queue แบบเรียงลำดับและตัดของซ้ำ |
 | **EventBridge** | rule route event ไปหา target และตั้งแต่กันยายน 2026 Custom event bus แบบใหม่ก็มี subscriber ด้วย | ทุก target ที่ match | target ของ rule ถูก retry ได้ถึง 24 ชั่วโมงเป็นค่าตั้งต้น, archive ใช้ replay ได้ และ Custom event bus แบบใหม่เก็บ 24 ชั่วโมง ขยายได้ถึงหนึ่งปี | เรียงลำดับเคร่งครัดบน Custom event bus แบบใหม่ | route event จาก AWS service, SaaS app และ account อื่นตาม content |
 | **SQS** | consumer poll แล้วลบ | consumer ทีละตัว | จนกว่าจะถูกลบ ไม่เกิน 14 วัน | best effort หรือต่อ group ใน FIFO | work queue, buffer หน้า consumer |
-| **Kinesis Data Streams** | อ่านตามตำแหน่งจาก stream ที่ใช้ร่วมกัน | ทุก application ที่ consume | 24 ชั่วโมงเป็นค่าตั้งต้น ได้ถึง 365 วัน | ต่อ shard | stream ที่หลาย application อ่านและ replay |
+| **[Kinesis Data Streams](../amazon-kinesis-data-streams/)** | อ่านตามตำแหน่งจาก stream ที่ใช้ร่วมกัน | ทุก application ที่ consume | 24 ชั่วโมงเป็นค่าตั้งต้น ได้ถึง 365 วัน | ต่อ shard | stream ที่หลาย application อ่านและ replay |
 | **Kafka (Amazon MSK)** | consumer group ดึงจาก partition | ทุก consumer group | ตาม retention ของ topic (ค่าตั้งต้น 7 วัน) | ต่อ partition | event stream ปริมาณสูงที่ replay ได้ |
 
 ## ได้อะไร เสียอะไร

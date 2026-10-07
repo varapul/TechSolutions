@@ -47,7 +47,7 @@ subnet แต่ละตัวผูกกับ route table ตัวเดี
 
 โดยค่าตั้งต้น NAT gateway เป็นแบบ **zonal**: สร้างแบบมีตัวสำรองไว้ใน Availability Zone เดียว แต่ถ้า zone นั้นล่ม ทุก subnet ที่ route ผ่านมันก็จะออก internet ไม่ได้ เพราะแบบนี้ Acme Shop เลยรัน NAT gateway zone ละหนึ่งตัว โดยมี route table ต่อ zone ที่ชี้ไปหามัน ตอนนี้เอกสารยังพูดถึง availability mode แบบ **regional** (`--availability-mode regional`) ด้วย: NAT gateway ID เดียวที่ขยายไปทุก zone ที่ VPC มี network interface อยู่ (zone ใหม่อาจใช้เวลาถึง 60 นาที) ไม่ต้องมี public subnet มี route table ของตัวเองที่ชี้ไปที่ internet gateway และรองรับได้ถึง 32 IP address ต่อ zone แทนที่จะเป็น 8 ส่วนเรื่องเงิน มันคิดตามแต่ละ zone ที่มันรันอยู่ และทำ private NAT ไม่ได้
 
-ส่วน IPv6 ตัว NAT64 บน NAT gateway ทำงานคู่กับ DNS64 ใน Route 53 VPC Resolver ทำให้ workload ที่มีแค่ IPv6 เข้าถึง service ที่เป็น IPv4 ได้
+ส่วน IPv6 ตัว NAT64 บน NAT gateway ทำงานคู่กับ DNS64 ใน [Route 53](../amazon-route-53/) VPC Resolver ทำให้ workload ที่มีแค่ IPv6 เข้าถึง service ที่เป็น IPv4 ได้
 
 ### Security group และ network ACL
 
@@ -103,7 +103,7 @@ diagram ของ Acme Shop ต่อ VPC อื่นและออฟฟิ�
 
 ### VPC Flow Logs
 
-flow log บันทึก metadata ของ IP traffic โดยไม่เคยเก็บ payload ทำได้ทั้ง VPC, subnet หรือ network interface ตัวเดียว record ตั้งต้นมี version, account, interface, address และ port ต้นทางกับปลายทาง, protocol, จำนวน packet, byte, เวลาเริ่มและจบ, action (`ACCEPT` หรือ `REJECT`) และ log status เราเลือกได้ว่าจะเก็บ traffic ที่ accept, ที่ reject หรือทั้งหมด แล้ว publish ไปที่ CloudWatch Logs, Amazon S3 หรือ Amazon Data Firehose ตัว record หนึ่งครอบคลุม aggregation interval ได้ถึง 10 นาทีเป็นค่าตั้งต้น หรือ 1 นาทีถ้าเราเลือก (บน Nitro instance จะเป็น 1 นาทีหรือน้อยกว่าเสมอ) และปกติใช้เวลาส่งราว 5 นาทีไป CloudWatch Logs และราว 10 นาทีไป S3 แบบ best-effort ทำให้ flow log เป็นเครื่องมือสำหรับ troubleshoot และ audit ไม่ใช่สำหรับหยุด traffic ตอนที่มันกำลังเกิด มันถูกเก็บนอกเส้นทางของ traffic เลยไม่ทำให้ traffic ช้าลง ส่วนเราจ่ายค่า vended log ตามปลายทาง ถ้าเห็น record `REJECT` ของ port 5432 ติดกันเป็นชุด ก็แปลว่า security group หรือ ACL กำลังทำงานของมันอยู่
+flow log บันทึก metadata ของ IP traffic โดยไม่เคยเก็บ payload ทำได้ทั้ง VPC, subnet หรือ network interface ตัวเดียว record ตั้งต้นมี version, account, interface, address และ port ต้นทางกับปลายทาง, protocol, จำนวน packet, byte, เวลาเริ่มและจบ, action (`ACCEPT` หรือ `REJECT`) และ log status เราเลือกได้ว่าจะเก็บ traffic ที่ accept, ที่ reject หรือทั้งหมด แล้ว publish ไปที่ [CloudWatch](../amazon-cloudwatch/) Logs, Amazon S3 หรือ Amazon Data Firehose ตัว record หนึ่งครอบคลุม aggregation interval ได้ถึง 10 นาทีเป็นค่าตั้งต้น หรือ 1 นาทีถ้าเราเลือก (บน Nitro instance จะเป็น 1 นาทีหรือน้อยกว่าเสมอ) และปกติใช้เวลาส่งราว 5 นาทีไป CloudWatch Logs และราว 10 นาทีไป S3 แบบ best-effort ทำให้ flow log เป็นเครื่องมือสำหรับ troubleshoot และ audit ไม่ใช่สำหรับหยุด traffic ตอนที่มันกำลังเกิด มันถูกเก็บนอกเส้นทางของ traffic เลยไม่ทำให้ traffic ช้าลง ส่วนเราจ่ายค่า vended log ตามปลายทาง ถ้าเห็น record `REJECT` ของ port 5432 ติดกันเป็นชุด ก็แปลว่า security group หรือ ACL กำลังทำงานของมันอยู่
 
 ### Block Public Access
 

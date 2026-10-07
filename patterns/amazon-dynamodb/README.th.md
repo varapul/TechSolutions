@@ -94,7 +94,7 @@ throughput ถูกแบ่งกันตาม partition ทำให้ key
 
 - เลือก partition key ที่มีค่าไม่ซ้ำกันเยอะ ๆ ให้ traffic กระจายไปทุก partition: ใช้ id จริงของ guest แต่ละคนแทน `GUEST`
 - **Write sharding:** ต่อท้าย key ด้วย suffix จะสุ่มก็ได้ (`GUEST#0` … `GUEST#9`) หรือคำนวณจากสิ่งที่ใช้ค้นหา item ก็ได้ (hash ของ order id) แล้วอ่านกลับมาให้ครบทุก suffix ด้วย query แบบขนาน
-- ใช้ CloudWatch Contributor Insights ดูว่า item ไหนถูกเข้าถึงบ่อยที่สุดและโดน throttle มากที่สุด
+- ใช้ [CloudWatch](../amazon-cloudwatch/) Contributor Insights ดูว่า item ไหนถูกเข้าถึงบ่อยที่สุดและโดน throttle มากที่สุด
 
 ### Time to live
 
@@ -102,7 +102,7 @@ throughput ถูกแบ่งกันตาม partition ทำให้ key
 
 ### Change data capture: Streams หรือ Kinesis
 
-| | DynamoDB Streams | Kinesis Data Streams for DynamoDB |
+| | DynamoDB Streams | [Kinesis Data Streams](../amazon-kinesis-data-streams/) for DynamoDB |
 |---|---|---|
 | Retention | 24 ชั่วโมง | ได้ถึง 1 ปี |
 | คนอ่าน | ได้ถึง 2 ตัวต่อ shard | ได้ถึง 5 ตัวต่อ shard หรือ 20 ถ้าใช้ enhanced fan-out |
@@ -134,7 +134,7 @@ AWS ให้ SLA ด้าน availability 99.999% สำหรับ global ta
 
 paper Dynamo ปี 2007 อธิบาย key-value store ภายในของ Amazon สำหรับตะกร้าสินค้า ที่แต่ละทีมรันกันเอง ดีไซน์ของมันไม่มี leader และสร้างมาให้รับ write ได้ตลอดเวลา: consistent hashing กับ virtual node, sloppy quorum กับ hinted handoff, vector clock ที่ reconcile conflict ตอนอ่าน, anti-entropy ด้วย Merkle tree และ membership แบบ gossip
 
-DynamoDB ที่เปิดเป็น public service ตั้งแต่ปี 2012 เป็นคนละระบบกัน paper ของ USENIX ATC ปี 2022 อธิบายว่ามันเอา incremental scalability และ performance ที่คาดเดาได้ของ Dynamo มารวมกับการเป็น managed service, consistency และ table model ของ SimpleDB และนอกจากชื่อแล้วก็แทบไม่ได้เก็บ architecture ของ Dynamo ไว้เลย มันเป็น service แบบ multi-tenant ที่มี request router, metadata service ที่ map key ไปหา partition, replication group แบบมี leader ที่ใช้ Multi-Paxos สำหรับแต่ละ partition และ global admission control ที่ติดตามการใช้งานรวมของแต่ละตาราง ส่วน Apache Cassandra ยังใกล้กับดีไซน์ Dynamo ดั้งเดิมมากกว่า: consistent hashing, gossip และ tunable consistency โดยใช้ timestamp แบบ last-write-wins แทน vector clock
+DynamoDB ที่เปิดเป็น public service ตั้งแต่ปี 2012 เป็นคนละระบบกัน paper ของ USENIX ATC ปี 2022 อธิบายว่ามันเอา incremental scalability และ performance ที่คาดเดาได้ของ Dynamo มารวมกับการเป็น managed service, consistency และ table model ของ SimpleDB และนอกจากชื่อแล้วก็แทบไม่ได้เก็บ architecture ของ Dynamo ไว้เลย มันเป็น service แบบ multi-tenant ที่มี request router, metadata service ที่ map key ไปหา partition, replication group แบบมี leader ที่ใช้ Multi-Paxos สำหรับแต่ละ partition และ global admission control ที่ติดตามการใช้งานรวมของแต่ละตาราง ส่วน [Apache Cassandra](../cassandra/) ยังใกล้กับดีไซน์ Dynamo ดั้งเดิมมากกว่า: consistent hashing, gossip และ tunable consistency โดยใช้ timestamp แบบ last-write-wins แทน vector clock
 
 ## อยู่ตรงไหนใน solution
 

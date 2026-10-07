@@ -116,7 +116,7 @@ Cluster metadata (topics, partitions, leaders, ISRs, configurations) used to liv
 
 ## Where it fits
 
-- **Solutions.** The event backbone of an [event-driven](../event-driven-architecture/) system; pipelines that feed search indexes, caches, data lakes and warehouses; [change data capture](../change-data-capture/) with Debezium on Kafka Connect, which can also be the relay behind a [transactional outbox](../transactional-outbox/); collecting logs, metrics and clickstreams in a [telemetry pipeline](../telemetry-pipeline/); input and output for stream processors such as Kafka Streams and Apache Flink.
+- **Solutions.** The event backbone of an [event-driven](../event-driven-architecture/) system; pipelines that feed search indexes, caches, data lakes and warehouses; [change data capture](../change-data-capture/) with Debezium on Kafka Connect, which can also be the relay behind a [transactional outbox](../transactional-outbox/); collecting logs, metrics and clickstreams in a [telemetry pipeline](../telemetry-pipeline/); input and output for stream processors such as Kafka Streams and [Apache Flink](../flink/).
 - **Patterns it implements or supports.** [Publish-subscribe](../publish-subscribe/) across consumer groups and [competing consumers](../competing-consumers/) within one; [CQRS](../cqrs/) read models and [materialized views](../materialized-view/) built by consumers; [idempotent consumers](../idempotent-consumer/) to absorb redelivery. [Event sourcing](../event-sourcing/) with care: Kafka can carry the events, but it has no per-entity stream to read back, no append that checks an entity's current version, and retention or compaction must never drop events you still need, so many teams keep the event store elsewhere and publish from it to Kafka.
 - **Usual neighbours.** Services and CDC connectors that produce; a schema registry beside the cluster; stream processors, sink connectors and services that consume; monitoring of lag and replication around it.
 - **Managed offerings.** **Amazon MSK** runs Apache Kafka on AWS: MSK Provisioned with Standard or Express brokers, MSK Serverless, MSK Connect for connectors and MSK Replicator for copying data between clusters. As of October 2026, MSK supports Kafka versions up to 4.2, with 4.2 on Express brokers only, and lists 3.9 as the recommended version. Express brokers manage storage for you, run only across three Availability Zones and don't support share groups yet. Confluent Cloud is another managed Kafka service, and Redpanda is a separate, Kafka API-compatible broker.
@@ -126,7 +126,7 @@ Cluster metadata (topics, partitions, leaders, ISRs, configurations) used to liv
 
 Choose Kafka when several independent consumers need the same events at their own pace, when events must be kept and **replayed** (to rebuild a read model, backfill a new service or reprocess after a bug), when per-key order matters but one consumer is not enough, and when you are building streaming pipelines or CDC and want the Connect and Streams ecosystem around them. For a plain work queue with per-message acknowledgements, retries and dead-lettering, a queue broker such as [RabbitMQ](../rabbitmq/) or Amazon SQS is simpler; for request/response, call the service.
 
-| | Apache Kafka | [RabbitMQ](../rabbitmq/) | [Amazon SQS](../amazon-sqs/) | Amazon Kinesis Data Streams |
+| | Apache Kafka | [RabbitMQ](../rabbitmq/) | [Amazon SQS](../amazon-sqs/) | [Amazon Kinesis Data Streams](../amazon-kinesis-data-streams/) |
 |---|---|---|---|---|
 | Model | Partitioned, replicated log | Broker: exchanges route messages into queues; streams add a log | Managed queue | Managed partitioned log (shards) |
 | After a read | The record stays; each group moves its own offset | Queue: removed once acknowledged. Stream: stays | The consumer deletes it after processing | The record stays; each consumer tracks its own position |
@@ -169,8 +169,8 @@ Figures from the Kafka 4.3, RabbitMQ, Amazon SQS and Kinesis Data Streams docume
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 - [Competing Consumers](../competing-consumers/) — Several workers pull from one queue, so work is shared and throughput scales out.
 - [RabbitMQ](../rabbitmq/) — A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it.
-- Amazon Kinesis Data Streams *(planned)* — Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it.
-- Apache Flink *(planned)* — A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints.
+- [Amazon Kinesis Data Streams](../amazon-kinesis-data-streams/) — Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it.
+- [Apache Flink](../flink/) — A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints.
 
 ## References
 

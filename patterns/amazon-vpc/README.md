@@ -65,7 +65,7 @@ A **NAT gateway** lets resources in private subnets open connections outwards, w
 
 By default a NAT gateway is **zonal**: built redundantly inside one Availability Zone, but if that zone fails, every subnet that routes through it loses internet access. That is why Acme Shop runs one NAT gateway per zone, with a route table per zone that points at it. The documentation now also describes a **regional** availability mode (`--availability-mode regional`): one NAT gateway ID that expands into every zone where the VPC has network interfaces (a new zone can take up to 60 minutes), needs no public subnet, comes with its own route table pointing at the internet gateway, and supports up to 32 IP addresses per zone instead of 8. It is billed for each zone it runs in, and it doesn't do private NAT.
 
-For IPv6, NAT64 on a NAT gateway together with DNS64 in the Route 53 VPC Resolver lets IPv6-only workloads reach IPv4 services.
+For IPv6, NAT64 on a NAT gateway together with DNS64 in the [Route 53](../amazon-route-53/) VPC Resolver lets IPv6-only workloads reach IPv4 services.
 
 ### Security groups and network ACLs
 
@@ -121,7 +121,7 @@ Every VPC comes with a resolver, the **Route 53 VPC Resolver**. It was called Ro
 
 ### VPC Flow Logs
 
-Flow logs record metadata about IP traffic, never the payload, for a whole VPC, a subnet or one network interface. The default record holds the version, account, interface, source and destination addresses and ports, protocol, packets, bytes, start and end times, the action (`ACCEPT` or `REJECT`) and a log status. You choose accepted, rejected or all traffic and publish to CloudWatch Logs, Amazon S3 or Amazon Data Firehose. A record covers an aggregation interval of up to 10 minutes by default or 1 minute if you choose (on Nitro instances it is always 1 minute or less), and delivery typically takes about 5 minutes to CloudWatch Logs and about 10 to S3, on a best-effort basis. That makes flow logs a tool for troubleshooting and auditing, not for stopping traffic as it happens. They are collected outside the traffic path, so they don't slow it down; you pay the destination's charges for vended logs. A run of `REJECT` records for port 5432 shows a security group or ACL doing its job.
+Flow logs record metadata about IP traffic, never the payload, for a whole VPC, a subnet or one network interface. The default record holds the version, account, interface, source and destination addresses and ports, protocol, packets, bytes, start and end times, the action (`ACCEPT` or `REJECT`) and a log status. You choose accepted, rejected or all traffic and publish to [CloudWatch](../amazon-cloudwatch/) Logs, Amazon S3 or Amazon Data Firehose. A record covers an aggregation interval of up to 10 minutes by default or 1 minute if you choose (on Nitro instances it is always 1 minute or less), and delivery typically takes about 5 minutes to CloudWatch Logs and about 10 to S3, on a best-effort basis. That makes flow logs a tool for troubleshooting and auditing, not for stopping traffic as it happens. They are collected outside the traffic path, so they don't slow it down; you pay the destination's charges for vended logs. A run of `REJECT` records for port 5432 shows a security group or ACL doing its job.
 
 ### Block Public Access
 
@@ -211,7 +211,7 @@ With a regional NAT gateway the per-zone routes collapse into one: `aws ec2 crea
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 - [Amazon ECS & Fargate](../amazon-ecs/) — Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate.
 - [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
-- Amazon Route 53 *(planned)* — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
+- [Amazon Route 53](../amazon-route-53/) — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
 - [AWS IAM](../aws-iam/) — Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated.
 
 ## References

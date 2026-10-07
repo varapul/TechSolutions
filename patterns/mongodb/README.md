@@ -195,7 +195,7 @@ The **WiredTiger** storage engine uses document-level concurrency control for wr
 
 Choose MongoDB when each record is naturally a nested document that the application reads and writes as a whole, when its fields vary between records or change often, and when one product should give you replication with automatic failover now and sharding later, once a single replica set is no longer enough. Look elsewhere when the data is highly relational and queried ad hoc across many tables, when most changes span many records that must commit together, or when every access is a key lookup at very large scale.
 
-| | MongoDB | [PostgreSQL](../postgresql/) with JSONB | [Amazon DynamoDB](../amazon-dynamodb/) | Apache Cassandra |
+| | MongoDB | [PostgreSQL](../postgresql/) with JSONB | [Amazon DynamoDB](../amazon-dynamodb/) | [Apache Cassandra](../cassandra/) |
 |---|---|---|---|---|
 | Data model | BSON documents with nested fields and arrays, up to 16 MiB each | Rows in tables; `jsonb` columns hold the flexible part | Items of up to 400 KB, read by partition key (and sort key) | Rows in tables partitioned by a partition key (wide-column) |
 | Querying the flexible part | Compound, multikey and wildcard indexes on nested paths; aggregation pipeline | GIN indexes on `jsonb` (`jsonb_ops`, `jsonb_path_ops`) next to SQL, joins and constraints | Key-based access; secondary indexes on attributes | CQL by partition key; secondary indexes |
@@ -238,7 +238,7 @@ Figures and terms from the MongoDB 9.0, PostgreSQL 18, Amazon DynamoDB and Apach
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [PostgreSQL](../postgresql/) — A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes.
 - [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
-- Apache Cassandra *(planned)* — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
+- [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
 
 ## References
 

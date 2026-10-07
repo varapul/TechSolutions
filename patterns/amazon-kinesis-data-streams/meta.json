@@ -1,0 +1,309 @@
+{
+  "aka": [
+    "Kinesis",
+    "KDS",
+    "Kinesis Data Streams"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Producers put clicks into the stream clicks; Lambda, Firehose and Flink each read every record.",
+      "body": "Acme Shop's web servers and mobile API call `PutRecords` for every click, about 2,000 a second, and the session ID is the partition key. The stream **clicks** runs in provisioned mode with **4 shards**; AWS runs the servers and replicates every record synchronously across three Availability Zones. Three applications read the same records independently: the Lambda function **live-metrics** computes live metrics, **Amazon Data Firehose** writes files to the S3 data lake, and a **Managed Service for Apache Flink** app builds sessions. Reading doesn't remove anything, and the retention period, raised from the default 24 hours to 7 days, lets any reader replay the last week."
+    },
+    {
+      "title": "Shards and partition keys",
+      "caption": "MD5 puts key s-41 in shard 1's hash key range; the record is stamped 842, after s-41's 837.",
+      "body": "Kinesis hashes the partition key with **MD5** into a 128-bit **hash key**, and each shard owns a contiguous range of hash keys, a quarter each here. `s-41` hashes to `6e19676a…` (hex), inside shard 1's range `40…`–`7f…`, so every click of that session lands in **shard 1**. The shard gives the record a **sequence number**, 842 here (shortened), after the session's earlier 837, and the reply names the shard and the sequence number; order holds within a shard. Each shard takes up to **1 MB/s or 1,000 records/s** of writes and serves **2 MB/s** of reads."
+    },
+    {
+      "title": "Two kinds of consumers",
+      "caption": "Lambda and Firehose poll and share each shard's 2 MB/s; Flink's enhanced fan-out gets its own.",
+      "body": "Lambda's event source mapping and Firehose poll every shard with `GetRecords` and **share** its 2 MB/s and 5 calls a second. The Flink app reads through an **enhanced fan-out** consumer: Kinesis pushes records to it over HTTP/2 (`SubscribeToShard`) with **its own** 2 MB/s per shard. When live-metrics fails on a batch, `BisectBatchOnFunctionError` splits it in two and retries the halves, and the mapping moves its position only past records that succeeded; `ParallelizationFactor` (1 to 10) can run several batches per shard at once. Firehose buffers 5 MiB or 300 s (its defaults for S3), whichever comes first, then writes a file to S3. Each reader keeps its own position: the mapping and Firehose track theirs, Flink stores its in its checkpoints, and an application built with the KCL keeps its in a DynamoDB lease table."
+    },
+    {
+      "title": "Hot shards and limits",
+      "caption": "Bot session s-90 overloads shard 2 while the others have room: fix the key, split or go on-demand.",
+      "body": "A scraper in session **s-90** adds 600 clicks a second, and all of them hash to shard 2, which now needs 1,100 records/s against its limit of 1,000. `PutRecords` returns the extra records with `ProvisionedThroughputExceededException` while shards 0, 1 and 3 use half their capacity. Fixes: change the key or stop the bot, split shard 2 (`SplitShard`, or `UpdateShardCount` for every shard), or switch to on-demand mode, which splits busy shards by itself; no fix lets a single key go past one shard's limit. The limits: order only within a shard, at-least-once delivery (producer retries write duplicates), 1 MiB per record by default (up to 10 MiB if you raise it), retention beyond 24 hours costs extra, and provisioned shards are billed by the hour, used or not."
+    }
+  ],
+  "related": [
+    "kafka",
+    "flink",
+    "aws-lambda",
+    "amazon-dynamodb",
+    "telemetry-pipeline",
+    "publish-subscribe",
+    "event-driven-architecture",
+    "amazon-sqs"
+  ],
+  "references": [
+    {
+      "title": "Amazon Kinesis Data Streams Developer Guide — What is Amazon Kinesis Data Streams?",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/introduction.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Terminology and concepts",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Quotas and limits",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Choose the right mode to stream in (provisioned, On-demand Standard, On-demand Advantage)",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/how-do-i-size-a-stream.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — How service-managed record distribution works",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/service-managed-pk-overview.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — When to use service-managed record distribution",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/service-managed-pk-when-to-use.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Handle large records",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/large-records.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Develop enhanced fan-out consumers with dedicated throughput",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/enhanced-consumers.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Use Kinesis Client Library",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kcl.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — KCL concepts",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kcl-concepts.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — DynamoDB metadata tables and load balancing in KCL",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kcl-dynamoDB.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — KCL version lifecycle policy",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kcl-version-lifecycle-policy.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — KPL key concepts",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-concepts.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — KPL version lifecycle policy",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kpl-version-lifecycle-policy.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Process serialized data using AWS Lambda with the KPL",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-record-deaggregation.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Reshard a stream",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-using-sdk-java-resharding.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Decide on a strategy for resharding",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-using-sdk-java-resharding-strategies.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Complete the resharding action",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-using-sdk-java-after-resharding.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Change the data retention period",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-extended-retention.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Handle duplicate records",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-record-processor-duplicates.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Monitor the Kinesis Data Streams service with Amazon CloudWatch",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/monitoring-with-cloudwatch.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — What is server-side encryption for Kinesis Data Streams?",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/what-is-sse.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — How do I get started with server-side encryption?",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/getting-started-with-sse.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Share access using resource-based policies",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/resource-based-policy-examples.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Use Kinesis Data Streams with interface VPC endpoints",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/vpc.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Infrastructure security",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/infrastructure-security.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Perform resilience testing with AWS Fault Injection Service",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/kinesis-fis.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams — Streaming tables and S3 delivery",
+      "url": "https://docs.aws.amazon.com/streams/latest/dev/data-delivery.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — PutRecords",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — PutRecord",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — GetRecords",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetRecords.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — GetShardIterator",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_GetShardIterator.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — SubscribeToShard",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_SubscribeToShard.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — SplitShard",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_SplitShard.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — MergeShards",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_MergeShards.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams API Reference — UpdateShardCount",
+      "url": "https://docs.aws.amazon.com/kinesis/latest/APIReference/API_UpdateShardCount.html"
+    },
+    {
+      "title": "AWS Lambda — Using Lambda to process records from Amazon Kinesis Data Streams",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html"
+    },
+    {
+      "title": "AWS Lambda — Process Amazon Kinesis Data Streams records with Lambda (event source mapping)",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-kinesis-create.html"
+    },
+    {
+      "title": "AWS Lambda — Lambda parameters for Amazon Kinesis Data Streams event source mappings",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-kinesis-parameters.html"
+    },
+    {
+      "title": "AWS Lambda — Retain discarded batch records for a Kinesis Data Streams event source",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/kinesis-on-failure-destination.html"
+    },
+    {
+      "title": "AWS Lambda — Configuring partial batch response with Kinesis Data Streams and Lambda",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-kinesis-batchfailurereporting.html"
+    },
+    {
+      "title": "AWS Lambda — Types of metrics for Lambda functions (IteratorAge)",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-types.html"
+    },
+    {
+      "title": "Amazon Data Firehose — Configure source settings for Amazon Kinesis Data Streams",
+      "url": "https://docs.aws.amazon.com/firehose/latest/dev/writing-with-kinesis-streams.html"
+    },
+    {
+      "title": "Amazon Data Firehose — Configure backup settings and buffering hints",
+      "url": "https://docs.aws.amazon.com/firehose/latest/dev/create-configure-backup.html"
+    },
+    {
+      "title": "Amazon Data Firehose — Handle data delivery failures",
+      "url": "https://docs.aws.amazon.com/firehose/latest/dev/retry.html"
+    },
+    {
+      "title": "Apache Flink documentation — Amazon Kinesis Data Streams connector",
+      "url": "https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/kinesis/"
+    },
+    {
+      "title": "Amazon DynamoDB — Using Kinesis Data Streams to capture changes to DynamoDB",
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/kds.html"
+    },
+    {
+      "title": "Amazon EventBridge — What is the EventBridge Custom Event Bus?",
+      "url": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-custom-bus-what-is.html"
+    },
+    {
+      "title": "Amazon SNS — Message archiving for FIFO topic owners",
+      "url": "https://docs.aws.amazon.com/sns/latest/dg/message-archiving-and-replay-topic-owner.html"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams pricing",
+      "url": "https://aws.amazon.com/kinesis/data-streams/pricing/"
+    },
+    {
+      "title": "Amazon Kinesis Data Streams FAQs",
+      "url": "https://aws.amazon.com/kinesis/data-streams/faqs/"
+    },
+    {
+      "title": "AWS What's New (Sep 2026) — Kinesis Data Streams announces service-managed partition keys",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/09/kinesis/service-managed-partition-keys/"
+    },
+    {
+      "title": "AWS What's New (Aug 2026) — Kinesis Data Streams delivers data to general purpose Amazon S3 buckets",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/08/kinesis/data-delivery-general-purpose-s3-buckets/"
+    },
+    {
+      "title": "AWS What's New (Aug 2026) — Kinesis Data Streams streaming tables on Amazon S3 Tables",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/08/kinesis/data-delivery-s3-tables/"
+    },
+    {
+      "title": "AWS What's New (Jul 2026) — Scaling down ingest capacity with warm throughput",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/07/kinesis/on-demand-scale-down/"
+    },
+    {
+      "title": "AWS What's New (Nov 2025) — Kinesis Data Streams supports up to 50 enhanced fan-out consumers",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2025/11/amazon-kinesis-data-streams-enhanced-fan-out-consumers/"
+    },
+    {
+      "title": "AWS What's New (Nov 2025) — Kinesis Data Streams launches On-demand Advantage mode",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2025/11/amazon-kinesis-data-streams-ondemand-advantage/"
+    },
+    {
+      "title": "AWS What's New (Oct 2025) — Kinesis Data Streams supports 10x larger record sizes",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-kinesis-data-streams-10x-larger-record-sizes/"
+    },
+    {
+      "title": "AWS What's New (Nov 2024) — Kinesis Client Library 3.0",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2024/11/kinesis-client-library-reduces-stream-processing-compute-costs/"
+    },
+    {
+      "title": "AWS What's New (Nov 2024) — Managed Service for Apache Flink releases a new Kinesis Data Streams connector",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2024/11/amazon-managed-service-apache-flink-kinesis-data-streams-connector/"
+    },
+    {
+      "title": "AWS What's New (Feb 2024) — Amazon Data Firehose, formerly Amazon Kinesis Data Firehose",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2024/02/amazon-data-firehose-formerly-kinesis-data-firehose/"
+    },
+    {
+      "title": "AWS What's New (Aug 2023) — Introducing Amazon Managed Service for Apache Flink",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2023/08/amazon-managed-service-apache-flink/"
+    },
+    {
+      "title": "AWS CLI — aws kinesis list-shards",
+      "url": "https://docs.aws.amazon.com/cli/latest/reference/kinesis/list-shards.html"
+    },
+    {
+      "title": "AWS CLI — aws kinesis put-records",
+      "url": "https://docs.aws.amazon.com/cli/latest/reference/kinesis/put-records.html"
+    },
+    {
+      "title": "AWS CLI — aws kinesis split-shard",
+      "url": "https://docs.aws.amazon.com/cli/latest/reference/kinesis/split-shard.html"
+    },
+    {
+      "title": "AWS CLI — aws kinesis increase-stream-retention-period",
+      "url": "https://docs.aws.amazon.com/cli/latest/reference/kinesis/increase-stream-retention-period.html"
+    },
+    {
+      "title": "AWS CLI — aws lambda create-event-source-mapping",
+      "url": "https://docs.aws.amazon.com/cli/latest/reference/lambda/create-event-source-mapping.html"
+    }
+  ]
+}

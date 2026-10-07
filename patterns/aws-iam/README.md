@@ -146,7 +146,7 @@ Compared with the other two large clouds (October 2026):
 
 ## Implementation notes
 
-**The execution role.** The trust policy lets the Lambda service assume the role; the permissions policy covers exactly the two prefixes, and the AWS managed policy `AWSLambdaBasicExecutionRole` adds the CloudWatch Logs permissions every function needs:
+**The execution role.** The trust policy lets the Lambda service assume the role; the permissions policy covers exactly the two prefixes, and the AWS managed policy `AWSLambdaBasicExecutionRole` adds the [CloudWatch](../amazon-cloudwatch/) Logs permissions every function needs:
 
 ```sh
 aws iam create-role --role-name thumbnailer-role \

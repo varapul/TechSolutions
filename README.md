@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**157 animated** · 6 planned · 14 categories
+**163 animated** · 0 planned · 14 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -29,8 +29,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 | 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
-| 🧱 | [System Components](#system-components) | 14 / 16 | The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it. |
-| 🟧 | [AWS Services](#aws-services) | 11 / 15 | Amazon Web Services' managed building blocks: how each service works, what it takes off your hands and how services combine into solutions. |
+| 🧱 | [System Components](#system-components) | 16 / 16 | The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it. |
+| 🟧 | [AWS Services](#aws-services) | 15 / 15 | Amazon Web Services' managed building blocks: how each service works, what it takes off your hands and how services combine into solutions. |
 
 ## Application Architecture
 
@@ -284,7 +284,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Redis & Valkey**](patterns/redis/) | An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process. | ✅ animated |
 | [**PostgreSQL**](patterns/postgresql/) | A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes. | ✅ animated |
 | [**MongoDB**](patterns/mongodb/) | A document database: JSON-like documents with flexible schemas, replica sets for failover and sharding to scale out. | ✅ animated |
-| Apache Cassandra | A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage. | ⏳ planned |
+| [**Apache Cassandra**](patterns/cassandra/) | A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage. | ✅ animated |
 | [**Elasticsearch & OpenSearch**](patterns/elasticsearch/) | Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes. | ✅ animated |
 | [**NGINX**](patterns/nginx/) | A reverse proxy and web server: TLS termination, load balancing, caching and rate limiting in front of applications. | ✅ animated |
 | [**Docker & Containers**](patterns/docker/) | Package an app and its dependencies as an image and run it as an isolated process: layers, registries, namespaces, cgroups. | ✅ animated |
@@ -293,7 +293,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Prometheus & Grafana**](patterns/prometheus/) | Pull-based monitoring: scrape metrics into a time-series database, query them with PromQL, alert, and chart them in Grafana. | ✅ animated |
 | [**HashiCorp Vault**](patterns/vault/) | A secrets manager: authenticate workloads, hand out short-lived credentials, encrypt data and audit every access. | ✅ animated |
 | [**Keycloak**](patterns/keycloak/) | An open-source identity provider: user sign-in, federation and single sign-on, issuing OpenID Connect and SAML tokens. | ✅ animated |
-| Apache Flink | A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints. | ⏳ planned |
+| [**Apache Flink**](patterns/flink/) | A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 
@@ -308,16 +308,16 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Amazon SQS**](patterns/amazon-sqs/) | A managed message queue: consumers poll, a visibility timeout hides messages in flight, and repeated failures go to a dead-letter queue. | ✅ animated |
 | [**Amazon SNS**](patterns/amazon-sns/) | Managed publish-subscribe: a message published to a topic fans out to queues, functions, HTTP endpoints, email and SMS. | ✅ animated |
 | [**Amazon EventBridge**](patterns/amazon-eventbridge/) | An event bus: rules match events from AWS services, SaaS apps and your own code by content and route them to targets. | ✅ animated |
-| Amazon Kinesis Data Streams | Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it. | ⏳ planned |
+| [**Amazon Kinesis Data Streams**](patterns/amazon-kinesis-data-streams/) | Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it. | ✅ animated |
 | [**Amazon DynamoDB**](patterns/amazon-dynamodb/) | A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads. | ✅ animated |
 | [**Amazon RDS & Aurora**](patterns/amazon-rds-aurora/) | Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones. | ✅ animated |
 | [**AWS Lambda**](patterns/aws-lambda/) | Functions as a service: code runs per event in managed execution environments that scale out with concurrency. | ✅ animated |
-| AWS Step Functions | Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded. | ⏳ planned |
+| [**AWS Step Functions**](patterns/aws-step-functions/) | Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded. | ✅ animated |
 | [**Amazon ECS & Fargate**](patterns/amazon-ecs/) | Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate. | ✅ animated |
-| Amazon Route 53 | Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks. | ⏳ planned |
+| [**Amazon Route 53**](patterns/amazon-route-53/) | Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks. | ✅ animated |
 | [**AWS IAM**](patterns/aws-iam/) | Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated. | ✅ animated |
 | [**Amazon Cognito**](patterns/amazon-cognito/) | Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials. | ✅ animated |
-| Amazon CloudWatch | Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service. | ⏳ planned |
+| [**Amazon CloudWatch**](patterns/amazon-cloudwatch/) | Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 <!-- END GENERATED: catalog -->

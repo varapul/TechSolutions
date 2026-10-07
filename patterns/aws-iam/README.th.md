@@ -128,7 +128,7 @@ AWS STS เป็นคนออก credential แบบชั่วคราว
 
 ## ข้อควรรู้ตอนลงมือทำ
 
-**Execution role** ตัว trust policy ยอมให้ Lambda service assume role นี้ ส่วน permissions policy ครอบคลุมสอง prefix พอดี และ AWS managed policy `AWSLambdaBasicExecutionRole` ก็เพิ่มสิทธิ์ CloudWatch Logs ที่ทุก function ต้องมี:
+**Execution role** ตัว trust policy ยอมให้ Lambda service assume role นี้ ส่วน permissions policy ครอบคลุมสอง prefix พอดี และ AWS managed policy `AWSLambdaBasicExecutionRole` ก็เพิ่มสิทธิ์ [CloudWatch](../amazon-cloudwatch/) Logs ที่ทุก function ต้องมี:
 
 ```sh
 aws iam create-role --role-name thumbnailer-role \

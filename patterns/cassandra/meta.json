@@ -1,0 +1,147 @@
+{
+  "aka": [
+    "Cassandra"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Both data centres take writes for every parcel; each serves its own customers, with no primary.",
+      "body": "Acme Shop's tracking service writes a status event for every parcel (picked up, sorted, out for delivery…), millions a day, in Bangkok and in Singapore, and customers read the latest events of one shipment. The cluster has six nodes in two data centres, **dc-bkk** and **dc-sgp**; each data centre serves its own clients and keeps 3 copies of every partition, and every node takes reads and writes, so there is no primary. The table `shipment_events` keeps one partition per shipment, its events sorted newest first."
+    },
+    {
+      "title": "Partition and replicate",
+      "caption": "S-77 hashes into bkk-2's range; the write goes to every replica, and LOCAL_QUORUM acks at 2 of 3.",
+      "body": "The write reaches **bkk-1**, which becomes its coordinator. The partition key `S-77` hashes (Murmur3) to the token 4480090637218407206, which falls in **bkk-2**'s range; walking the ring clockwise gives the replicas bkk-2, bkk-3 and bkk-1 (with 3 nodes and 3 replicas, every node of a data centre holds every partition). A write always goes to every replica: bkk-1 sends it to the three in dc-bkk and to one node in dc-sgp, which passes it on. With `LOCAL_QUORUM` the client is answered once 2 of the 3 replicas in dc-bkk have it, and dc-sgp catches up without the client waiting."
+    },
+    {
+      "title": "Inside a node",
+      "caption": "bkk-2 logs the write, adds it to the memtable; a read merges memtable and SSTables; files compact.",
+      "body": "Inside **bkk-2** the write is appended to the commit log and added to the memtable, then acknowledged. The read of the latest 10 events of S-77 merges the memtable with the SSTables whose bloom filter says the partition may be there (SSTable 2 is skipped); each holds S-77's rows newest first, so every file is one short slice, and the tombstone that a `DELETE` wrote hides the 22:10 row. A full memtable is flushed to a new, immutable SSTable, and compaction merges SSTables in the background, keeping tombstones until `gc_grace_seconds` (10 days by default) has passed."
+    },
+    {
+      "title": "Failure and the limits",
+      "caption": "bkk-3 is down: 2 of 3 still ack and a hint waits. Limits: query-first tables, big partitions, LWTs.",
+      "body": "**bkk-3** is down. The `delivered` event still reaches 2 of the 3 replicas in dc-bkk, so `LOCAL_QUORUM` succeeds; bkk-1 keeps a hint and replays it when bkk-3 is back (hints are written only during the first `max_hint_window` of an outage, 3 hours by default), and regular repair fixes anything older. The limits: you design one table per query (every query names the partition key, there are no joins, and `ALLOW FILTERING` means a scan), very large partitions and piles of tombstones slow reads, lightweight transactions cost extra round trips, and a cluster is work to run. Cassandra 5.0 (September 2024) added Storage-Attached Indexes, vector search, trie-based memtables and SSTables and the Unified Compaction Strategy; general-purpose transactions (Accord) are in 6.0, which is still an alpha release in October 2026."
+    }
+  ],
+  "related": [
+    "sharding",
+    "multi-region-active-active",
+    "amazon-dynamodb",
+    "mongodb",
+    "event-sourcing",
+    "cqrs",
+    "materialized-view",
+    "read-replicas"
+  ],
+  "references": [
+    {
+      "title": "Apache Cassandra 5.0 documentation — Dynamo (partitioning, replication, consistency, gossip)",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/architecture/dynamo.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Storage Engine",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/architecture/storage-engine.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Data modeling: RDBMS design",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/developing/data-modeling/data-modeling_rdbms.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Data manipulation (CQL)",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/developing/cql/dml.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Storage-Attached Indexing FAQ",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/developing/cql/indexing/sai/sai-faq.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Compaction overview",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/managing/operating/compaction/overview.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Time Window Compaction Strategy (TWCS)",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/managing/operating/compaction/twcs.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Tombstones",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/managing/operating/compaction/tombstones.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Hints",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/managing/operating/hints.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — Repair",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/managing/operating/repair.html"
+    },
+    {
+      "title": "Apache Cassandra 5.0 documentation — cassandra.yaml file configuration",
+      "url": "https://cassandra.apache.org/doc/5.0/cassandra/managing/configuration/cass_yaml_file.html"
+    },
+    {
+      "title": "Announcing Apache Cassandra 5.0 (September 2024)",
+      "url": "https://cassandra.apache.org/_/blog/Apache-Cassandra-5.0-Announcement.html"
+    },
+    {
+      "title": "Apache Cassandra — Downloads (supported releases)",
+      "url": "https://cassandra.apache.org/_/download.html"
+    },
+    {
+      "title": "Apache Cassandra 6.0-alpha2 — CHANGES.txt",
+      "url": "https://github.com/apache/cassandra/blob/cassandra-6.0-alpha2/CHANGES.txt"
+    },
+    {
+      "title": "CEP-15: General Purpose Transactions (Accord)",
+      "url": "https://cwiki.apache.org/confluence/display/CASSANDRA/CEP-15%3A+General+Purpose+Transactions"
+    },
+    {
+      "title": "Apache Cassandra 5.0.9 source — StorageProxy.java (write fan-out to remote data centres)",
+      "url": "https://github.com/apache/cassandra/blob/cassandra-5.0.9/src/java/org/apache/cassandra/service/StorageProxy.java"
+    },
+    {
+      "title": "Apache Cassandra Java Driver 4.x manual — Load balancing",
+      "url": "https://github.com/apache/cassandra-java-driver/tree/4.x/manual/core/load_balancing"
+    },
+    {
+      "title": "Avinash Lakshman and Prashant Malik — Cassandra: A Decentralized Structured Storage System (LADIS 2009; ACM SIGOPS OSR, 2010)",
+      "url": "https://www.cs.cornell.edu/projects/ladis2009/papers/lakshman-ladis2009.pdf"
+    },
+    {
+      "title": "Giuseppe DeCandia et al. — Dynamo: Amazon's Highly Available Key-value Store (SOSP 2007)",
+      "url": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf"
+    },
+    {
+      "title": "Amazon Keyspaces Developer Guide — Functional differences: Amazon Keyspaces vs. Apache Cassandra",
+      "url": "https://docs.aws.amazon.com/keyspaces/latest/devguide/functional-differences.html"
+    },
+    {
+      "title": "Amazon Keyspaces Developer Guide — Supported Apache Cassandra read and write consistency levels",
+      "url": "https://docs.aws.amazon.com/keyspaces/latest/devguide/consistency.html"
+    },
+    {
+      "title": "Amazon Keyspaces Developer Guide — Supported Cassandra APIs, operations, functions, and data types",
+      "url": "https://docs.aws.amazon.com/keyspaces/latest/devguide/cassandra-apis.html"
+    },
+    {
+      "title": "Amazon Keyspaces Developer Guide — Multi-Region replication",
+      "url": "https://docs.aws.amazon.com/keyspaces/latest/devguide/multiRegion-replication.html"
+    },
+    {
+      "title": "IBM — IBM to Acquire DataStax (February 2025)",
+      "url": "https://newsroom.ibm.com/2025-02-25-ibm-to-acquire-datastax,-deepening-watsonx-capabilities-and-addressing-generative-ai-data-needs-for-the-enterprise"
+    },
+    {
+      "title": "IBM DataStax — Astra DB and Hyper-Converged Database",
+      "url": "https://www.ibm.com/products/datastax"
+    },
+    {
+      "title": "ScyllaDB — Why We’re Moving to a Source Available License (December 2024)",
+      "url": "https://www.scylladb.com/2024/12/18/why-were-moving-to-a-source-available-license/"
+    },
+    {
+      "title": "ScyllaDB Software License Agreement (source-available licence)",
+      "url": "https://github.com/scylladb/scylladb/blob/master/LICENSE-ScyllaDB-Source-Available.md"
+    }
+  ]
+}
