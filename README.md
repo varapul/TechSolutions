@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**163 animated** · 18 planned · 16 categories
+**172 animated** · 9 planned · 16 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -27,7 +27,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
-| 🧭 | [DevOps & SRE Principles](#devops--sre-principles) | 0 / 9 | How teams ship changes often and keep production reliable: the principles, measures and practices behind DevOps and site reliability engineering. |
+| 🧭 | [DevOps & SRE Principles](#devops--sre-principles) | 9 / 9 | How teams ship changes often and keep production reliable: the principles, measures and practices behind DevOps and site reliability engineering. |
 | 🏗️ | [Platform Engineering](#platform-engineering) | 0 / 9 | Design principles and frameworks for the internal platform: how to build it, organise teams around it and keep it secure, well-architected and affordable. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 | 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
@@ -221,15 +221,15 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 
 | Pattern | In one line | Status |
 |---|---|:-:|
-| The Three Ways | DevOps in three principles: speed the flow of work to customers, amplify feedback back to the team, and keep learning. | ⏳ planned |
-| DORA Metrics | Measure software delivery by throughput and stability: how often and how fast changes reach production, and how often they fail. | ⏳ planned |
-| Continuous Delivery | Keep every change releasable: a deployment pipeline builds once, tests in stages and promotes the same artifact to production. | ⏳ planned |
-| Trunk-Based Development | Everyone merges small changes into one main branch at least daily; feature flags hide unfinished work instead of long branches. | ⏳ planned |
-| You Build It, You Run It | The team that builds a service runs it in production, on call, so the people who can fix a problem hear about it first. | ⏳ planned |
-| Golden Signals, RED & USE | What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources. | ⏳ planned |
-| Eliminating Toil | Find the manual, repetitive operations work that grows with the system, measure it, cap it and automate it away. | ⏳ planned |
-| Incident Management | A practised response when production breaks: declare early, assign roles, mitigate first and keep everyone informed. | ⏳ planned |
-| Blameless Postmortems | Learn from every incident without blame: a timeline, the contributing factors and tracked action items, shared widely. | ⏳ planned |
+| [**The Three Ways**](patterns/three-ways/) | DevOps in three principles: speed the flow of work to customers, amplify feedback back to the team, and keep learning. | ✅ animated |
+| [**DORA Metrics**](patterns/dora-metrics/) | Measure software delivery by throughput and stability: how often and how fast changes reach production, and how often they fail. | ✅ animated |
+| [**Continuous Delivery**](patterns/continuous-delivery/) | Keep every change releasable: a deployment pipeline builds once, tests in stages and promotes the same artifact to production. | ✅ animated |
+| [**Trunk-Based Development**](patterns/trunk-based-development/) | Everyone merges small changes into one main branch at least daily; feature flags hide unfinished work instead of long branches. | ✅ animated |
+| [**You Build It, You Run It**](patterns/you-build-it-you-run-it/) | The team that builds a service runs it in production, on call, so the people who can fix a problem hear about it first. | ✅ animated |
+| [**Golden Signals, RED & USE**](patterns/golden-signals/) | What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources. | ✅ animated |
+| [**Eliminating Toil**](patterns/eliminating-toil/) | Find the manual, repetitive operations work that grows with the system, measure it, cap it and automate it away. | ✅ animated |
+| [**Incident Management**](patterns/incident-management/) | A practised response when production breaks: declare early, assign roles, mitigate first and keep everyone informed. | ✅ animated |
+| [**Blameless Postmortems**](patterns/blameless-postmortems/) | Learn from every incident without blame: a timeline, the contributing factors and tracked action items, shared widely. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 

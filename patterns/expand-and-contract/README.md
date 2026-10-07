@@ -113,6 +113,10 @@ The idea scales up and down. A [strangler fig](../strangler-fig/) migration appl
 - [Parallel Run](../parallel-run/) — Run old and new side by side on the same inputs and compare results before cutting over.
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 
+## Related principles and frameworks
+
+- [Continuous Delivery](../continuous-delivery/) — Keep every change releasable: a deployment pipeline builds once, tests in stages and promotes the same artifact to production.
+
 ## References
 
 - [Danilo Sato — Parallel Change (martinfowler.com)](https://martinfowler.com/bliki/ParallelChange.html)

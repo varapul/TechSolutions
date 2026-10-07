@@ -167,6 +167,10 @@ A feature flag hides a *feature* from users at runtime. Branch by abstraction is
 - [Anti-Corruption Layer](../anti-corruption-layer/) — A translation layer that keeps a legacy model from leaking into the new domain.
 - [Modular Monolith](../modular-monolith/) — One deployable unit built from strongly bounded modules that talk through explicit interfaces.
 
+## Related principles and frameworks
+
+- [Trunk-Based Development](../trunk-based-development/) — Everyone merges small changes into one main branch at least daily; feature flags hide unfinished work instead of long branches.
+
 ## References
 
 - [Paul Hammant — Introducing Branch By Abstraction (the 2007 post)](https://paulhammant.com/blog/branch_by_abstraction.html)

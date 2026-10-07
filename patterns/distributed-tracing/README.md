@@ -79,6 +79,10 @@ A **trace** records one request as a tree of **spans**. A span is one timed oper
 - [Prometheus & Grafana](../prometheus/) — Pull-based monitoring: scrape metrics into a time-series database, query them with PromQL, alert, and chart them in Grafana.
 - [Amazon CloudWatch](../amazon-cloudwatch/) — Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service.
 
+## Related principles and frameworks
+
+- [Golden Signals, RED & USE](../golden-signals/) — What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources.
+
 ## References
 
 - [W3C — Trace Context (Recommendation)](https://www.w3.org/TR/trace-context/)

@@ -1,0 +1,38 @@
+{
+  "aka": ["Four golden signals", "RED method", "USE method", "Symptom-based alerting"],
+  "steps": [
+    {
+      "title": "Alerts on causes",
+      "caption": "140 rules on causes page every night while users are fine; Saturday's 2.4 s search paged nobody.",
+      "body": "Acme's search service (the search box on every catalog page, 1,200 requests a second at peak) has about 140 alert rules, all on **causes**: CPU above 80%, disk, GC pauses, pod restarts. They page someone every night while shoppers notice nothing (CPU at 85% on pod 3 hurts nobody), so the on-call engineer acks each page and stops reading them. On Saturday search slowed to a p99 of 2.4 s for 40 minutes and no rule fired, because none watched what users feel."
+    },
+    {
+      "title": "The four golden signals",
+      "caption": "Measure what users feel: p99 850 ms, 1,200 req/s, 0.4% errors, DB pool 46 of 50 in use (92%).",
+      "body": "Google's SRE book (chapter 6, *Monitoring Distributed Systems*) names four signals to watch on any user-facing system, and the team rebuilds the search dashboard around them. At the next Saturday peak they read: **latency** p50 140 ms and p99 850 ms for successful requests (failed requests are timed apart, so fast errors can't hide a slow service), **traffic** 1,200 requests a second, **errors** 0.4% (HTTP 5xx *and* wrong answers such as empty results from a broken index), and **saturation** 92%: 46 of the database pool's 50 connections busy, above the 80% target."
+    },
+    {
+      "title": "RED and USE in practice",
+      "caption": "Page on the symptom (p99 > 800 ms for 10 min); RED shows search is slow, USE finds the pool full.",
+      "body": "Every request-driven service gets a **RED** view (rate, errors and duration per endpoint: Tom Wilkie's method) and every resource a **USE** view (utilisation, saturation and errors: Brendan Gregg's method). The page fires on a symptom, search p99 above 800 ms for 10 minutes (once search has an SLO, a burn-rate alert as in [SLOs & Error Budgets](../slo-error-budgets/) can replace the fixed threshold). The on-call engineer goes from the RED row (search is slow) to the USE row (the DB pool is 92% busy and 12 requests wait for a connection) to the cause: since Friday's deploy the price query takes 38 ms instead of 30, so they roll it back."
+    },
+    {
+      "title": "Common pitfalls",
+      "caption": "Averages hide the tail, a 200 can be an error, saturation needs a limit, pages must be actionable.",
+      "body": "**Averages hide the tail**: a mean of 190 ms looks fine while 1 search in 100 takes over 850 ms, so read percentiles from histograms. **Errors can come back as HTTP 200**: counting only 5xx shows 0.3% and misses the empty results from a broken index shard; **saturation needs a known limit** (46 busy connections mean nothing without the 50), and a **dashboard of 60 graphs** buries the four signals. **Every page must be actionable**: CPU at 85% belongs on a dashboard, a disk that fills in 9 days is a ticket, and only a symptom that needs a human now pages."
+    }
+  ],
+  "related": ["slo-error-budgets", "prometheus", "amazon-cloudwatch", "distributed-tracing", "centralized-logging", "telemetry-pipeline", "health-endpoint-monitoring", "incident-management"],
+  "references": [
+    { "title": "Google SRE Book — Monitoring Distributed Systems (chapter 6, the four golden signals)", "url": "https://sre.google/sre-book/monitoring-distributed-systems/" },
+    { "title": "Rob Ewaschuk — My Philosophy on Alerting", "url": "https://docs.google.com/document/d/199PqyG3UsyXlwieHaqbGiWVa8eMWi8zzAn0YfcApr8Q/edit" },
+    { "title": "Tom Wilkie — The RED Method: key metrics for microservices architecture (Weaveworks blog, 2017; archived copy)", "url": "https://web.archive.org/web/20240114064147/https://www.weave.works/blog/the-red-method-key-metrics-for-microservices-architecture/" },
+    { "title": "Grafana Labs blog — The RED Method: How to Instrument Your Services (Julie Dam, 2018, on Tom Wilkie's GrafanaCon EU talk)", "url": "https://grafana.com/blog/the-red-method-how-to-instrument-your-services/" },
+    { "title": "Brendan Gregg — The USE Method", "url": "https://www.brendangregg.com/usemethod.html" },
+    { "title": "Brendan Gregg — USE Method: Linux Performance Checklist", "url": "https://www.brendangregg.com/USEmethod/use-linux.html" },
+    { "title": "Grafana documentation — Grafana dashboard best practices", "url": "https://grafana.com/docs/grafana/latest/visualizations/dashboards/build-dashboards/best-practices/" },
+    { "title": "Prometheus — Histograms and summaries", "url": "https://prometheus.io/docs/practices/histograms/" },
+    { "title": "Prometheus — Alerting (best practices)", "url": "https://prometheus.io/docs/practices/alerting/" },
+    { "title": "Amazon CloudWatch — Metrics concepts (percentiles)", "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html" }
+  ]
+}

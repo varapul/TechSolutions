@@ -178,6 +178,10 @@ Add the second tier when something has to be done centrally: tail sampling over 
 - [Amazon Kinesis Data Streams](../amazon-kinesis-data-streams/) — Managed streaming: records go to shards by partition key, and consumers read each shard in order and can replay it.
 - [Amazon CloudWatch](../amazon-cloudwatch/) — Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service.
 
+## Related principles and frameworks
+
+- [Golden Signals, RED & USE](../golden-signals/) — What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources.
+
 ## References
 
 - [OpenTelemetry — Collector](https://opentelemetry.io/docs/collector/)

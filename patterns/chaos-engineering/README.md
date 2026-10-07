@@ -173,6 +173,12 @@ In those cases start with observability, the known fixes and a game day in a pre
 - [Active-Passive Failover](../active-passive-failover/) — A warm standby region is promoted when the primary region goes down.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
 
+## Related principles and frameworks
+
+- [The Three Ways](../three-ways/) — DevOps in three principles: speed the flow of work to customers, amplify feedback back to the team, and keep learning.
+- [Incident Management](../incident-management/) — A practised response when production breaks: declare early, assign roles, mitigate first and keep everyone informed.
+- [Blameless Postmortems](../blameless-postmortems/) — Learn from every incident without blame: a timeline, the contributing factors and tracked action items, shared widely.
+
 ## References
 
 - [Principles of Chaos Engineering](https://principlesofchaos.org/)

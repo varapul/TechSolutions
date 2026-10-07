@@ -99,6 +99,10 @@ The names differ by platform; the two dials, the readiness gate and the drain ar
 - [Kubernetes](../kubernetes/) — A container orchestrator: you declare the desired state, and controllers keep pods scheduled, healthy and reachable.
 - [Amazon ECS & Fargate](../amazon-ecs/) — Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate.
 
+## Related principles and frameworks
+
+- [Continuous Delivery](../continuous-delivery/) — Keep every change releasable: a deployment pipeline builds once, tests in stages and promotes the same artifact to production.
+
 ## References
 
 - [Kubernetes — Deployments (rolling update strategy, rollback, progress deadline)](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)

@@ -247,6 +247,11 @@ Figures from the Prometheus 3.15, Amazon CloudWatch, Datadog and VictoriaMetrics
 - [Autoscaling](../autoscaling/) — Add and remove instances automatically as load rises and falls.
 - [Amazon CloudWatch](../amazon-cloudwatch/) — Metrics, logs, alarms and dashboards for AWS resources and your applications, in one monitoring service.
 
+## Related principles and frameworks
+
+- [You Build It, You Run It](../you-build-it-you-run-it/) — The team that builds a service runs it in production, on call, so the people who can fix a problem hear about it first.
+- [Golden Signals, RED & USE](../golden-signals/) — What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources.
+
 ## References
 
 - [Prometheus documentation — Overview](https://prometheus.io/docs/introduction/overview/)

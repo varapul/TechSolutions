@@ -187,6 +187,11 @@ If every server can be rebuilt from an image and every environment from code, re
 
 - [Docker & Containers](../docker/) — Package an app and its dependencies as an image and run it as an isolated process: layers, registries, namespaces, cgroups.
 
+## Related principles and frameworks
+
+- [Continuous Delivery](../continuous-delivery/) — Keep every change releasable: a deployment pipeline builds once, tests in stages and promotes the same artifact to production.
+- [Eliminating Toil](../eliminating-toil/) — Find the manual, repetitive operations work that grows with the system, measure it, cap it and automate it away.
+
 ## References
 
 - [Kief Morris — ImmutableServer (Martin Fowler's bliki)](https://martinfowler.com/bliki/ImmutableServer.html)
