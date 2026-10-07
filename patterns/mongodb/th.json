@@ -1,0 +1,21 @@
+{
+  "summary": "document database: document แบบคล้าย JSON ที่ schema ยืดหยุ่น, replica set สำหรับ failover และ sharding สำหรับ scale out",
+  "steps": [
+    {
+      "title": "MongoDB อยู่ตรงไหน",
+      "body": "service Catalog ของ Acme Shop เก็บสินค้าแต่ละตัวเป็น document หนึ่งตัวใน collection **products** ผ่าน MongoDB driver และ replica set ที่มีสมาชิกสามตัว แก้วมีสีและความจุ เสื้อยืดมีไซซ์ ส่วน e-book มี format และไม่มีอะไรบังคับให้ทุกตัวต้องมีรูปแบบเดียวกัน `insertOne` ไปที่ primary และถูก acknowledge เมื่อสมาชิกส่วนใหญ่ได้มันไปแล้ว จากนั้น **change stream** ก็ส่งสินค้าใหม่ต่อให้ search-sync และ analytics"
+    },
+    {
+      "title": "Document และ index",
+      "body": "MUG-1 เก็บ `attributes` ที่ซ้อนอยู่และ array `tags` ไว้ใน document เดียว ตัว `find({ \"attributes.colour\": \"red\", price: { $lt: 20 } })` เดินไปตาม compound index `{ \"attributes.colour\": 1, price: 1 }` โดยมี field แบบ equality ก่อนและ field แบบ range ตามหลัง แล้วดึงมาแค่ MUG-1 กับ TEE-7 แทนที่จะ scan document ทั้ง 4 ตัว ส่วน pipeline `$match` → `$group` → `$sort` เก็บสินค้าที่เป็นของขวัญ 3 ตัวไว้ นับแยกตาม brand แล้วคืน Acme Home 2, Acme Wear 1 การเขียน document ตัวเดียวเป็น atomic ส่วน transaction ข้ามหลาย document ก็ทำได้ แต่แพงกว่า"
+    },
+    {
+      "title": "Replica set และ failover",
+      "body": "การ insert **LAMP-4** ไปที่ primary **m1** และลงใน oplog ของมัน แล้ว **m2** กับ **m3** ก็ copy entry นั้นไป apply และเมื่อใช้ `w: \"majority\"` ตัว driver จะได้ acknowledgement ทันทีที่สมาชิก 2 จาก 3 ตัวได้มันไปแล้ว จากนั้น m1 ก็พังไปตอนที่มี update ค้างอยู่ พอ primary เงียบไปนานเท่า `electionTimeoutMillis` (ค่าตั้งต้น 10 s) secondary ก็เลือก **m2** ขึ้นมา MongoDB บอกว่าถ้าใช้ค่าตั้งต้น เวลามัธยฐานกว่าจะได้ primary ตัวใหม่ไม่เกิน 12 s ตัว driver retry update นั้นหนึ่งครั้งบน m2 (retryable write) แล้ว m3 ก็ copy มันไปจากตรงนั้น"
+    },
+    {
+      "title": "Sharding และข้อจำกัด",
+      "body": "พอ catalog โตเกินกว่า replica set เดียวจะรับไหว `sh.shardCollection(\"catalog.products\", { sku: \"hashed\" })` ก็แบ่งมันเป็น chunk ตาม hash ของ `sku` แล้ว balancer ก็กระจาย chunk ไปที่สอง shard โดยแต่ละ shard เป็น replica set ของตัวเอง ส่วน config server เก็บช่วงของ chunk และ router **mongos** ก็ cache มันไว้ ตัว `find({ sku: \"MUG-1\" })` ไปที่ shard B ตัวเดียว แต่ `find({ \"attributes.colour\": \"red\" })` ไม่ได้ระบุ shard key ทำให้ mongos ต้องถามทั้งสอง shard แล้วรวมคำตอบ ส่วนข้อจำกัดคือ document หนึ่งตัวใหญ่ได้ไม่เกิน **16 MiB**, shard key ที่เลือกไม่ดีทำให้โหลดไปกองที่ shard เดียว, schema ที่ยืดหยุ่นก็ยังต้องมี validation rule และ `$lookup` join ได้แค่ collection ใน database เดียวกัน ตั้งแต่ 16 ตุลาคม 2018 ตัว Community Server ใช้ license **SSPL**"
+    }
+  ]
+}

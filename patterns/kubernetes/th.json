@@ -1,0 +1,21 @@
+{
+  "summary": "container orchestrator: เราประกาศ desired state ไว้ แล้ว controller ก็คอยดูแลให้ pod ถูก schedule ทำงานปกติ และเข้าถึงได้",
+  "steps": [
+    {
+      "title": "Kubernetes อยู่ตรงไหน",
+      "body": "service **Catalog** ของ Acme Shop รันอยู่บน Kubernetes cluster ที่มี worker node สามตัว ทีมประกาศใน YAML ว่าอะไรควรรัน (Deployment ของ `catalog:1.4.2` 3 replica, Service หนึ่งตัว และ autoscaler) แล้ว apply ด้วย `kubectl apply` หรือเครื่องมือ GitOps อย่าง Argo CD จากนั้น **control plane** ก็คอยดูแลให้ cluster ตรงตามนั้น ส่วน `GET /products/42` ของคนซื้อผ่าน **load balancer** ของ cloud และ **Gateway** แล้ว HTTPRoute ของ Gateway ก็ส่ง `/products` ไปที่ Service **catalog** จากนั้น Service ก็ส่งต่อให้ pod ตัวหนึ่งที่ ready อยู่ ไม่ว่ามันจะรันบน node ไหน"
+    },
+    {
+      "title": "Desired state และ controller",
+      "body": "`kubectl apply` ส่ง Deployment ไปที่ **API server** แล้ว API server ก็ validate และเก็บมันไว้ใน **etcd** ตัว Deployment controller สร้าง ReplicaSet ส่วน ReplicaSet controller สร้าง Pod 3 ตัว แล้ว **scheduler** ก็ผูกแต่ละ Pod เข้ากับ node ที่ยังมี capacity ที่ไม่มีใคร request ไว้พอสำหรับ request ของมัน (CPU 250m, 256Mi) จากนั้น **kubelet** ของ node นั้นก็ให้ container runtime เริ่ม container และรายงานว่า pod Ready เมื่อ readiness probe ผ่าน แต่ละส่วนพวกนี้คือ control loop: มัน watch API server แล้วเทียบ desired state กับสถานะจริง แล้วลงมือแก้ส่วนที่ต่างกัน"
+    },
+    {
+      "title": "ซ่อมตัวเองและ scale",
+      "body": "node-2 หยุดรายงานตัว พอไม่มี heartbeat ครบ 50 s ตัว node controller ก็ mark มันเป็น NotReady และ mark pod ของมันว่าไม่ ready ทำให้ Service หยุดส่ง traffic ไปให้ อีก 300 s ต่อมา พอ toleration ตั้งต้นของ pod หมดเวลา pod ก็ถูก evict แล้ว ReplicaSet ของมันก็สร้างตัวใหม่มาแทน และ scheduler ก็วางตัวใหม่ไว้บน node-3 ต่อมาโหลดขึ้นไปเฉลี่ย 90% ของ CPU ที่ request ไว้ เทียบกับ target 60% ทำให้ HorizontalPodAutoscaler ตั้งเป็น ceil(3 × 90 / 60) = **5** replica แล้วโหลดเท่าเดิมที่กระจายไป 5 pod ก็เฉลี่ยเหลือ 54% ส่วน rolling update ไปเป็น image ใหม่ในภายหลังจะเปลี่ยน pod ทีละไม่กี่ตัว ภายในกรอบของ `maxSurge` และ `maxUnavailable`"
+    },
+    {
+      "title": "ข้อจำกัดและสิ่งที่ต้องแลก",
+      "body": "cluster เป็นระบบที่ต้องดูแลในตัวมันเอง: Kubernetes ออก minor release ปีละประมาณสามครั้ง และ patch แต่ละ release ราว 14 เดือน (v1.37 ที่ออกเดือนสิงหาคม 2026 ได้ patch ถึงตุลาคม 2027) ทำให้ต้อง upgrade cluster อย่างน้อยปีละครั้ง ทีละ minor version ตัว scheduler วาง pod ตาม **request** ไม่ใช่ตามที่ใช้จริง: request ที่ตั้งสูงเกินไปทำให้ node เต็มแต่ว่าง ส่วน memory **limit** ที่ตั้งต่ำเกินไปทำให้ container โดน OOMKilled แล้วเรื่อง networking, storage, RBAC และ add-on ก็ต้องใช้ความเชี่ยวชาญเหมือนกัน Amazon EKS, Azure AKS และ Google GKE รัน control plane ให้ (EKS Auto Mode และ GKE Autopilot รัน node ให้ด้วย) ส่วน Amazon ECS หรือ Google Cloud Run เป็นที่รัน container ที่ง่ายกว่า"
+    }
+  ]
+}

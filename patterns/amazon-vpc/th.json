@@ -1,0 +1,21 @@
+{
+  "summary": "network ส่วนตัวของเราใน AWS: มี subnet ในแต่ละ Availability Zone, route table, gateway, security group และ endpoint",
+  "steps": [
+    {
+      "title": "VPC อยู่ตรงไหน",
+      "body": "VPC `10.0.0.0/16` ของ Acme Shop กินพื้นที่ us-east-1 และ subnet ทั้งหกของมันแต่ละตัวอยู่ใน Availability Zone เดียว: zone ละหนึ่ง public subnet, หนึ่ง app subnet และหนึ่ง data subnet รวมสอง zone ตัว subnet จะเป็น **public** ก็ต่อเมื่อ route table ของมันส่ง `0.0.0.0/0` ไปที่ **internet gateway** และที่อยู่ในนั้นมีแค่ node ของ ALB กับ NAT gateway ส่วน ECS task และ database RDS มีแค่ address แบบ private และ data subnet ก็ไม่มี route ออกนอก VPC เลย ส่วน VPC อื่น และออฟฟิศที่ต่อผ่าน Site-to-Site VPN หรือ Direct Connect จะต่อเข้ามาผ่าน Transit Gateway (ส่วน VPC peering ต่อสอง VPC เข้าหากันตรง ๆ) แล้ว VPC Flow Logs ก็บันทึก traffic ไว้ใน CloudWatch Logs"
+    },
+    {
+      "title": "request เข้ามา",
+      "body": "request ของคนซื้อเข้ามาทาง internet gateway แล้วไปถึง node ของ ALB ใน zone a ตัวนี้มี security group `alb-sg` ที่ยอมให้ TCP 443 เข้ามาจากที่ไหนก็ได้ ALB ส่ง request ต่อให้ catalog task ที่มี `app-sg` ยอมให้ 8080 เข้ามาได้เฉพาะจากสมาชิกของ `alb-sg` แล้ว task ก็ query RDS ที่มี `db-sg` ยอมให้ 5432 เข้ามาได้เฉพาะจาก `app-sg` แปลว่าแต่ละชั้นรับ traffic เฉพาะจากชั้นที่อยู่ข้างหน้ามันเท่านั้น security group เป็นแบบ **stateful** ทำให้ reply ไหลกลับได้โดยไม่ต้องมี rule ของตัวเอง ส่วน **network ACL** กรองทั้ง subnet และเป็นแบบ stateless เลยต้องมี rule ให้ traffic ขากลับด้วย"
+    },
+    {
+      "title": "ขาออกไปข้างนอก",
+      "body": "orders task ใน zone b เรียก payment API ตัว route table `rt-app-b` ของ subnet มันส่ง `0.0.0.0/0` ไปที่ **nat-b** ใน zone เดียวกัน แล้ว nat-b ก็เปลี่ยน source address แบบ private ของ task เป็น address ของตัวเอง จากนั้น internet gateway ก็ map address นั้นเป็น Elastic IP ของ nat-b และนี่คือ address เดียวที่ payment API เห็น ตัว reply กลับมาได้ แต่ connection ที่เริ่มจากฝั่ง internet จะถูกทิ้ง ส่วนการ upload invoice ขึ้น S3 จะ match route ของ prefix list ที่เจาะจงกว่า และไปที่ **gateway endpoint** แทน ทางนี้ไม่เสียเงินเลย และไม่ผ่าน NAT gateway เลย"
+    },
+    {
+      "title": "zone ล่ม และข้อจำกัด",
+      "body": "Availability Zone a ล่ม แต่ zone b มี node ของ ALB, NAT gateway และ task เป็นของตัวเอง เลยยังให้บริการต่อได้: ALB ส่ง request ไปแค่ target ที่ healthy แล้ว RDS ก็ promote ตัว standby ใน zone b (ปกติใช้เวลา 60–120 วินาที) และชี้ชื่อ DNS ของ database ไปที่มัน ข้อจำกัดที่ต้องวางแผนไว้ (ตุลาคม 2026, us-east-1): NAT gateway คิด $0.045 ต่อชั่วโมง บวก $0.045 ต่อ GB ที่ process, AWS กัน address ไว้ 5 ตัวในทุก subnet, ช่วง CIDR ต้องไม่ทับกับ network ที่เราจะต่อด้วย และโดยค่าตั้งต้น security group หนึ่งมี rule ขาเข้าได้ 60 ตัวและขาออก 60 ตัว โดยใส่ได้ถึง 5 group ต่อ network interface"
+    }
+  ]
+}

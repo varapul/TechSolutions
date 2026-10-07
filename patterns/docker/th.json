@@ -1,0 +1,21 @@
+{
+  "summary": "แพ็กแอปกับ dependency ของมันเป็น image แล้วรันเป็น process ที่แยกตัวออกมา: layer, registry, namespace และ cgroup",
+  "steps": [
+    {
+      "title": "Docker อยู่ตรงไหน",
+      "body": "CI ของ Acme Shop build image ของ service Catalog ชื่อ **catalog:1.4.2** แค่ครั้งเดียว แล้ว push ไปที่ Amazon ECR โดยที่ใน ECR ตัว tag ชี้ไปที่ manifest digest `sha256:9f2c…` ทั้ง laptop ของ developer (Docker Desktop), staging (Amazon ECS) และ production (Kubernetes บน Amazon EKS) ต่าง pull **digest** ตัวนี้ ทำให้ image ที่ผ่าน test ใน staging คือตัวเดียวกับที่รันใน production ทุก byte ตัว image พาทั้ง service และทุกอย่างที่มันต้องใช้เหนือ kernel ไปด้วย: userland ของ Debian, Node.js 24, npm dependency และโค้ดที่ compile แล้ว"
+    },
+    {
+      "title": "Layer และ cache",
+      "body": "ทุกคำสั่ง `RUN`, `COPY` หรือ `ADD` เก็บไฟล์ที่มันเปลี่ยนไว้เป็น **layer** แบบอ่านอย่างเดียว ตั้งชื่อด้วย hash ของเนื้อหา รอบนี้ `src/price.ts` เปลี่ยนไฟล์เดียว BuildKit เลยรัน `COPY . .` ใหม่ รวมถึงขั้น build และ `COPY` ที่หยิบผลของมันไป ส่วนขั้นอื่นทั้งหมดเอามาจาก **cache** แล้ว image ก็ได้ layer ใหม่แค่ชั้นเดียว ส่วน build stage ที่ใช้ `node:24` พร้อม TypeScript และ dev dependency ไม่ได้เข้าไปอยู่ใน image เลย เพราะ stage สุดท้ายเริ่มด้วย `FROM node:24-slim` แล้ว copy มาเฉพาะที่ต้องใช้ ตอน push และ pull มีการเทียบ digest ทำให้ ECR กับ host-1 ได้รับแค่ layer ใหม่ชั้นนั้น"
+    },
+    {
+      "title": "รัน container",
+      "body": "`docker run` ไปที่ **dockerd** แล้ว dockerd ก็ขอให้ **containerd** สร้าง container ส่วน containerd ให้ **runc** เริ่ม `node` เป็น PID 1 ใน **namespace** ใหม่ของ pid, net, mnt, uts, ipc และ cgroup ทำให้มันได้ process tree, network interface, mount และ hostname เป็นของตัวเอง ตัว **cgroup** จำกัดมันไว้ที่ 0.5 CPU (`cpu.max` 50000 100000) และ 512 MiB (`memory.max`) แต่ละ container เพิ่มแค่ **writable layer** บาง ๆ (copy-on-write) ไว้บน layer ของ image โดยที่สอง container ใช้ layer ของ image ร่วมกัน และทั้งคู่รันบน kernel ตัวเดียวของ host-1"
+    },
+    {
+      "title": "ข้อจำกัดและสิ่งที่ต้องแลก",
+      "body": "พอ catalog-2 ใช้ memory ถึงลิมิต 512 MiB ตัว OOM killer ของ kernel ก็ส่ง SIGKILL ไปหามัน แล้ว `docker inspect` ก็รายงาน `OOMKilled` กับ exit code **137** (128 + 9) ส่วน writable layer ของมันจะถูกลบทิ้งตอนลบ container เพราะฉะนั้น state ต้องอยู่ใน volume หรือใน database ทุก container ใช้ kernel ของ host ร่วมกัน ทำให้การแยกตัวอ่อนกว่า virtual machine: ให้รันแบบไม่ใช่ root, drop capability, ให้ root filesystem อ่านได้อย่างเดียว และ scan, sign และ pin image ด้วย digest"
+    }
+  ]
+}

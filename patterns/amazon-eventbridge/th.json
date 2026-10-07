@@ -1,0 +1,21 @@
+{
+  "summary": "event bus: rule จะ match event จาก AWS service, SaaS app และโค้ดของเราเองตาม content แล้ว route ไปหา target",
+  "steps": [
+    {
+      "title": "EventBridge อยู่ตรงไหน",
+      "body": "Orders service ของ Acme Shop publish event `OrderPlaced` ไปที่ custom bus **shop-bus** ด้วย `PutEvents` ส่วน S3 ส่ง event `Object Created` ของ bucket `product-images` ไปที่ bus **default** ของ account และ Stripe ส่ง event เรื่อง dispute ไปที่ bus แบบ **partner** ส่วนบนแต่ละ bus ตัว **rule** จะ match event ตาม content แล้วส่งไปหา target ได้ถึงห้าตัวต่อ rule: ในที่นี้คือ workflow ของ Step Functions, SQS queue `analytics`, Lambda function และ event bus ใน account ฝ่ายการเงินของ Acme ส่วนฝั่ง producer ไม่เคยรู้ว่าใครตอบสนองบ้าง ทำให้ consumer ใหม่ก็แค่ rule ใหม่ ไม่ต้องแก้ Orders service"
+    },
+    {
+      "title": "Rule match ตาม content",
+      "body": "call `PutEvents` ครั้งเดียวมีสอง entry: **o-981** (amount 1280, country TH) และ **o-982** (420, TH) แต่ละ rule เทียบ **event pattern** ของตัวเองกับ JSON ของ event และทุก field ที่ pattern ระบุไว้ต้อง match: o-981 มี `detail-type` OrderPlaced, `country` TH และ `amount` อย่างน้อย 1000 (เปรียบเทียบแบบ `numeric`) เลย match ทั้ง **all-orders** และ **high-value** ส่วน o-982 ไม่ผ่านเงื่อนไขตัวเลข เลยไปแค่ที่ `analytics` ตัว target ของ high-value มี **input transformer** ทำให้ Step Functions ได้รับแค่ `{\"orderId\": \"o-981\", \"amount\": 1280}`"
+    },
+    {
+      "title": "Retry, DLQ และ replay",
+      "body": "Step Functions throttle การเริ่ม `high-value-review` ทำให้ EventBridge retry ด้วย exponential backoff และ jitter: โดยค่าตั้งต้นนาน 24 ชั่วโมงและได้ถึง 185 attempt แต่ในที่นี้ไม่เกินหนึ่งชั่วโมง เพราะ `RetryPolicy` ของ target ตั้ง `MaximumEventAgeInSeconds` ไว้ที่ 3600 จากนั้นมันก็ส่ง o-981 ไปที่ **dead-letter queue** ของ target คือ `high-value-dlq` ที่เป็น standard SQS queue พร้อม attribute ที่บอกชื่อ error และขีดจำกัดที่หมดไป ส่วน **shop-archive** เก็บทุก event ไว้ 30 วัน: `analytics` เพิ่งเปิดใช้วันนี้ เลยใช้ **replay** ย้อนหลัง 24 ชั่วโมง โดยส่งไปที่ rule all-orders เท่านั้น เพื่อเติมข้อมูลย้อนหลังให้มัน และ event ที่ replay ทุกตัวจะมี field `replay-name`"
+    },
+    {
+      "title": "ข้อจำกัด และทางเลือกอื่น",
+      "body": "การส่งเป็นแบบ **at least once** และ **ไม่เรียงลำดับ**: o-982 อาจไปถึง `analytics` ก่อน o-981 และ o-981 อาจมาถึงสองครั้ง ทำให้ consumer ต้องตัดของซ้ำ ในที่นี้ใช้ `orderId` ส่วนทุก event ต้องผ่าน routing เพิ่มอีกหนึ่ง hop (AWS วัด P99 ได้ราว 130 ms จากตอนรับเข้าถึงการส่งครั้งแรก เมื่อสิงหาคม 2024) ตัว request `PutEvents` หนึ่งตัวมีได้ไม่เกิน 10 entry และ 1 MB ส่วน us-east-1 รับ request แบบนี้ได้ 10,000 ตัวต่อวินาทีเป็นค่าตั้งต้น (quota ที่ปรับได้) และ custom event คิด $1.00 ต่อล้าน (ตุลาคม 2026) ตัว **Custom Event Bus** ที่เปิดตัวเมื่อกันยายน 2026 เพิ่มการเรียงลำดับต่อ event group, retention ในตัว และ subscriber ที่ consumer เป็นเจ้าของ ส่วน **Pipes** (source หนึ่งตัวไป target หนึ่งตัว พร้อม filtering และ enrichment) และ **Scheduler** เป็นส่วนแยกของ EventBridge"
+    }
+  ]
+}

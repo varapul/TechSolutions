@@ -1,0 +1,21 @@
+{
+  "summary": "reverse proxy และ web server: ทำ TLS termination, load balancing, caching และ rate limiting ไว้หน้าแอปพลิเคชัน",
+  "steps": [
+    {
+      "title": "NGINX อยู่ตรงไหน",
+      "body": "ทุก request ของ **shop.example** มาถึง NGINX ก่อน มัน terminate TLS ที่ port 443 ด้วย certificate ของเว็บ เสิร์ฟ `location /static/` จาก disk ในเครื่อง และส่ง `location /api/` ต่อไปที่ upstream **catalog** คือ app server สามตัวที่คุย HTTP ธรรมดาบน port 8080 โดยมี cache 60 s สำหรับ response ของสินค้า และจำกัดไว้ที่ 10 request ต่อวินาทีต่อ client IP งานนี้คืองานเดียวกับที่ ingress controller ทำใน Kubernetes และมักมี load balancer ของ cloud อยู่หน้ามันอีกชั้น"
+    },
+    {
+      "title": "Worker ที่ขับด้วย event",
+      "body": "**master process** อ่าน `nginx.conf` แล้วเมื่อตั้ง `worker_processes auto` มันก็เริ่ม **worker** หนึ่งตัวต่อ CPU core ในที่นี้คือสี่ตัว แต่ละ worker ดูแลทุก connection ของตัวเองจาก event loop เดียว (epoll บน Linux) ไม่ใช่ thread ละ connection ตัว `GET /api/products/42` ถูกถอดรหัส แล้ว match กับ `location /api/products/` (prefix ที่ match ยาวที่สุด และ cache MISS) จากนั้น `least_conn` ก็ส่งมันไปที่ **app-2** ตัวที่มี active connection น้อยที่สุด ผ่าน connection แบบ keep-alive แล้ว 200 ก็กลับมาและถูก cache ไว้ 60 s"
+    },
+    {
+      "title": "Cache, limit และตอนพัง",
+      "body": "แอปมือถือขอ `/api/products/42` ภายใน 60 s นั้น NGINX เลยตอบจาก **proxy_cache** (HIT) โดยไม่ต้องเรียก app server ตัวไหนเลย ส่วน scraper ที่ 203.0.113.7 ส่งเกิน 10 request ต่อวินาที ตัวที่เกินจะรอใน queue ขนาด 20 (`burst=20`) แล้วพอ queue เต็ม request ถัดไปก็โดนปฏิเสธด้วย **429** (ตั้งด้วย `limit_req_status` ค่าตั้งต้นคือ 503) ส่วน **app-2** ไม่รับ `GET /api/reviews/42` นับเป็นการพังครั้งที่สามภายใน 10 s (`max_fails=3 fail_timeout=10s`) ทำให้ NGINX ข้ามมันไป 10 s และส่ง request ต่อให้ **app-3**"
+    },
+    {
+      "title": "Reload และข้อจำกัด",
+      "body": "`nginx -s reload` ส่ง HUP ไปที่ master แล้ว master ก็เช็ก config ใหม่ เริ่ม worker ชุดใหม่ด้วย config นั้น และขอให้ worker ชุดเก่าปิดตัวอย่างนุ่มนวล: หยุดรับ connection ทำ request ที่กำลังเสิร์ฟให้เสร็จ แล้ว exit ส่วนข้อจำกัดคือ config ส่วนใหญ่เป็นแบบ static ทำให้ upstream server ตัวใหม่แปลว่าต้อง reload (หรือ resolve DNS ใหม่ด้วย parameter `resolve` ส่วน NGINX Plus API เปลี่ยน upstream ได้โดยไม่ต้อง reload) ส่วน active health check เป็นฟีเจอร์ของ NGINX Plus และ policy ต่อ request ที่ซับซ้อนอย่าง quota ต่อ key หรือการแปลง request ทำใน API gateway หรือ Envoy ได้ง่ายกว่า"
+    }
+  ]
+}

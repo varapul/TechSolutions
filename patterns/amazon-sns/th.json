@@ -1,0 +1,21 @@
+{
+  "summary": "publish-subscribe แบบ managed: message ที่ publish ไปที่ topic จะกระจายออกไปที่ queue, function, HTTP endpoint, อีเมล และ SMS",
+  "steps": [
+    {
+      "title": "SNS อยู่ตรงไหน",
+      "body": "Orders service ของ Acme Shop เรียก `Publish` หนึ่งครั้งต่อ order เพื่อส่ง **OrderPlaced** ไปที่ standard topic **order-events** และไม่เคยรู้ว่าใคร subscribe อยู่ ส่วน SNS ก็ push สำเนาไปให้ทุก subscription ที่ filter policy match: SQS queue **email-queue** และ **analytics-queue**, Lambda function **fraud-check** และ HTTPS endpoint ของ partner ส่วน SMS subscription ของโทรศัพท์ on-call ต้องการแค่ order ที่มียอด 5000 ขึ้นไป ตัว consumer ของแต่ละ queue อ่าน queue ของตัวเอง (SNS-to-SQS fan-out) ทำให้ analytics loader ที่รันทุกชั่วโมงตามหลังได้โดยไม่ถ่วงใคร"
+    },
+    {
+      "title": "Publish แล้ว filter",
+      "body": "`Publish` คืน **200** พร้อม `MessageId` ทันทีที่ SNS เขียนสำเนาของ message ลงหลาย Availability Zone แล้ว คำตอบนี้ไม่ได้บอกอะไรเลยว่าใครจะได้รับ จากนั้น SNS ก็เช็ก `FilterPolicy` ของแต่ละ subscription เทียบกับ message attribute คือ `amount` = 640 (Number) และ `country` = TH (String): subscription ที่ไม่มี policy รับทุก message ส่วน `amount ≥ 500` ของ fraud-check match แต่ `amount ≥ 5000` ของโทรศัพท์ on-call ไม่ match เลยไม่มี SMS ส่งออกไป"
+    },
+    {
+      "title": "ส่งต่อ และ retry",
+      "body": "SNS push แต่ละสำเนาออกไป: email-queue ที่เปิด raw message delivery อยู่จะเก็บแค่ body ส่วน analytics-queue เก็บมันไว้ใน JSON envelope และ Lambda รับ event ของ fraud-check ด้วย 202 แล้วรันแบบ asynchronous ส่วน partner ตอบ **503** ทำให้ SNS ทำตาม delivery policy ตั้งต้นของ HTTP/S คือ retry 3 ครั้งห่างกัน 20 s (ส่วน endpoint ที่เป็น SQS และ Lambda ได้ 100,015 attempt ตลอด 23 วัน) แล้วก็ย้าย message ไปที่ dead-letter queue **partner-dlq** ของ subscription นั้น การส่งเป็นแบบ at least once ทำให้ consumer ทุกตัวต้องรับมือกับของซ้ำได้"
+    },
+    {
+      "title": "ไม่มี archive, FIFO, ข้อจำกัด",
+      "body": "standard topic ไม่เก็บ archive: **search-queue** ที่มา subscribe วันถัดไปจะไม่ได้ order ที่ publish ไปก่อนหน้านั้นเลย ส่วน FIFO topic (`.fifo`) รักษาลำดับภายใน message group ทิ้งของซ้ำที่ส่งมาภายใน 5 นาที รับแค่ SQS queue เป็น subscriber และ archive message ไว้ได้ถึง 365 วันเพื่อ replay ส่วนข้อจำกัด ณ ตุลาคม 2026: ค่าตั้งต้น 256 KiB ต่อ message (1 MiB บน topic ที่ subscriber ทุกตัวเป็น SQS, Lambda หรือ Data Firehose) และ publish ได้ 30,000 message ต่อวินาทีต่อ account ใน US East (N. Virginia) ถ้าจะ route event จากหลายแหล่งไปหา target หลายแบบ ตัว EventBridge มี rule ที่ทำได้มากกว่า"
+    }
+  ]
+}

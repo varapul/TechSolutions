@@ -22,7 +22,7 @@ Acme Shop's application has parts the internet must reach and parts it must neve
 
 ## How it works
 
-An Amazon VPC is a logically isolated virtual network in one AWS Region. You give it an IP address range, divide the range into subnets, and decide with route tables, gateways and firewall rules what may enter, leave and move inside. The VPC itself costs nothing; NAT gateways, endpoints, public IPv4 addresses and data transfer have their own prices (see [Trade-offs](#trade-offs)).
+An Amazon VPC is a logically isolated virtual network in one AWS Region. You give it an IP address range, divide the range into subnets, and decide with route tables, gateways and firewall rules what may enter, leave and move inside. The VPC itself costs nothing; NAT gateways, endpoints, public IPv4 addresses and data transfer have their own prices (see *Trade-offs* below).
 
 ### The address plan
 

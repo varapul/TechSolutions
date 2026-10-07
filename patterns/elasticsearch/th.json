@@ -1,0 +1,21 @@
+{
+  "summary": "search engine ที่สร้างบน inverted index: full-text query ที่จัดอันดับตาม relevance และ aggregation บน index ที่แบ่ง shard",
+  "steps": [
+    {
+      "title": "Elasticsearch อยู่ตรงไหน",
+      "body": "Acme Shop เก็บ catalogue ไว้ใน **PostgreSQL** ที่เป็น system of record ตัว Debezium อ่านทุกการเปลี่ยนแปลงที่ commit แล้ว และ publish มันไปที่ Kafka topic `acme.public.products` แล้ว **search-indexer** ก็เขียนมันลง index **products** ด้วย `_bulk` API แอปส่งการค้นหามาที่นี่แทนที่จะส่งไปที่ database และได้ hit ที่จัดอันดับแล้วพร้อมจำนวนตาม brand กลับไป ส่วน engine ตัวเดียวกันนี้ยังใช้ทำ log analytics ด้วย โดยเก็บ log ไว้ใน data stream"
+    },
+    {
+      "title": "Analyse, index และ refresh",
+      "body": "analyzer `english` แยก *Red ceramic mug* เป็น token แปลงเป็นตัวพิมพ์เล็ก และตัดให้เหลือรากศัพท์ (stem) เป็น term **red**, **ceram** และ **mug** ส่วน **inverted index** ก็ list ว่าแต่ละ term อยู่ใน document ไหนบ้าง การเขียนลงไปที่ buffer ใน memory และที่ **translog** โดย translog ถูก fsync ก่อนจะ acknowledge การเขียน ส่วน **refresh** ที่ในที่นี้ทำทุกหนึ่งวินาที เปลี่ยน buffer เป็น segment ใหม่ที่การค้นหามองเห็นได้ (near real time) แล้ว segment เล็ก ๆ ก็ถูก merge อยู่เบื้องหลัง"
+    },
+    {
+      "title": "Route, replicate แล้ว search",
+      "body": "request `_bulk` ไปถึง node-3 แล้ว `hash(_id) % 3` ก็ส่ง document `14` ไปที่ shard 1: primary **P1** บน node-2 index มัน แล้วส่งต่อให้ replica **R1** บน node-3 หลังจากนั้นถึงจะ acknowledge การเขียน ส่วนการค้นหา *red mug* ไปถึง **node-1** แล้ว node-1 ก็ส่งมันไปที่ copy หนึ่งตัวของทุก shard (ในที่นี้คือ R0, R1 และ P2) แต่ละตัวคืน top hit พร้อม score และจำนวนตาม brand ของตัวเอง แล้ว node-1 ก็รวมผล ดึง document 3 ตัวที่ชนะ และตอบกลับ"
+    },
+    {
+      "title": "Failover และข้อจำกัด",
+      "body": "**node-2** พัง ตัว master เลื่อน **R1** บน node-3 ขึ้นเป็น primary การค้นหาและการเขียนก็ทำต่อได้ และ cluster health เป็น **yellow** จนกว่า replica ที่หายไปจะถูกสร้างใหม่ โดยค่าตั้งต้นจะเริ่มหลังผ่านไป 1 นาที ส่วนข้อจำกัดคือ index เป็น copy ที่ derive มา ช้ากว่าต้นทางเท่ากับ refresh interval และไม่มี transaction ข้ามหลาย document, ชื่อ field ที่ไม่ได้ควบคุมทำให้ mapping บวมจนพังได้, หน้าลึก ๆ ที่ใช้ `from` กับ `size` แพง และจำนวน shard ถูกกำหนดตายตัวตอนสร้าง index"
+    }
+  ]
+}

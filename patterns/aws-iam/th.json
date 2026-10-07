@@ -1,0 +1,21 @@
+{
+  "summary": "ใครทำอะไรได้บ้างใน AWS: principal, policy และ role ที่แจก credential แบบชั่วคราว และวิธีที่ request หนึ่งถูกประเมิน",
+  "steps": [
+    {
+      "title": "IAM อยู่ตรงไหน",
+      "body": "request ที่ส่งไป AWS API จะถูก sign ด้วย credential (**Signature Version 4**) แล้ว IAM ก็ยืนยันตัวตนจาก signature นั้น และประเมิน policy ก่อนที่ service จะลงมือทำ ในแอปรูปภาพ ตัว `make-thumbnail` เรียก S3 ด้วย **execution role** `thumbnailer-role` ส่วน developer sign in ผ่าน **IAM Identity Center** พร้อม MFA แล้วทำงานใน role ของ permission set `PhotoDev` และ GitHub Actions ก็เอา token **OIDC** ของมันมาแลกเป็น role `gha-deploy` ส่วน workload อื่นก็ได้ role ด้วยวิธีเดียวกัน (ECS task role, EC2 instance profile) และ account อื่นก็เข้ามาผ่าน cross-account role"
+    },
+    {
+      "title": "credential แบบชั่วคราว",
+      "body": "ตอน `make-thumbnail` รัน ตัว Lambda จะ assume `thumbnailer-role` ได้ เพราะ **trust policy** ของ role ยอมให้ service principal `lambda.amazonaws.com` ทำแบบนี้ แล้ว AWS STS ก็คืน **credential แบบชั่วคราว** มา: access key ID ที่ขึ้นต้นด้วย `ASIA`, secret access key, session token และเวลาหมดอายุ ตัว Lambda ส่งพวกนี้ให้ function เป็น `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` และ `AWS_SESSION_TOKEN` แล้ว SDK ก็ sign แต่ละ request ไป S3 ด้วย key ที่ derive มาจาก secret และส่ง token ไปด้วย ไม่มี secret ไหนถูกเก็บไว้ในโค้ดหรือใน image และ credential ก็ใช้ไม่ได้อีกเมื่อหมดอายุ"
+    },
+    {
+      "title": "ประเมิน request",
+      "body": "สาม call บน `u/9f3c/IMG_0042.jpg` ตัวแรกคือ **GetObject ผ่าน HTTPS**: ไม่มี Deny ไหนเข้าเงื่อนไข ส่วน SCP และ RCP ของ organization ก็ยอมให้ และ identity policy ก็ยอมให้ ทำให้ S3 คืนรูปมา ตัวที่สองคือ **DeleteObject**: ไม่มี policy ไหนยอมให้ เลยจบที่ **implicit deny** (403 `AccessDenied`) ตัวที่สามคือ **GetObject ผ่าน HTTP ธรรมดา**: bucket policy ปฏิเสธ request ที่ `aws:SecureTransport` เป็น `false` และ **explicit deny** นี้ชนะ Allow ทุกตัว ส่วน permissions boundary และ session policy ถ้ามี ก็ทำได้แค่บีบสิ่งที่ policy อื่นยอมให้ให้แคบลง"
+    },
+    {
+      "title": "Least privilege และข้อจำกัด",
+      "body": "least privilege เขียนด้วยมือได้ยาก: ให้เริ่มจากแคบ ๆ แล้วให้ **IAM Access Analyzer** เช็ก role เทียบกับ CloudTrail ในตัวอย่างนี้มันพบว่า AWS managed policy `AWSLambda_FullAccess` ส่วนใหญ่ไม่ได้ถูก `gha-deploy` ใช้เลยตลอด 90 วัน แล้วมันก็ร่าง policy จาก call ที่ role นี้เคยทำ เช่น `lambda:UpdateFunctionCode` ข้อจำกัด (ตุลาคม 2026): managed policy หนึ่งยาวได้ 6,144 ตัวอักษร และ inline policy ของ role หนึ่งรวมกันได้ 10,240 ตัว, session ของ AssumeRole อยู่ได้ 15 นาทีถึง 12 ชั่วโมง (ค่าตั้งต้น 1 ชั่วโมง) และ IAM เป็นแบบ **eventually consistent** ทำให้การเปลี่ยนแปลงต้องใช้เวลากว่าจะไปถึงทุก endpoint ส่วน access key แบบอายุยาว (`AKIA…`) ใช้ได้จนกว่าจะถูก deactivate หรือลบ เพราะฉะนั้นให้ใช้ role และ federation เป็นหลัก บังคับ MFA สำหรับคน และเก็บ root user ไว้สำหรับงานไม่กี่อย่างที่ต้องใช้มันจริง ๆ"
+    }
+  ]
+}
