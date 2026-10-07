@@ -1,0 +1,21 @@
+{
+  "summary": "workflow ในรูป state machine: ทำงานตามลำดับ แยก branch, retry, รอ และรันขนานกันข้ามหลาย service โดยบันทึกทุก step ไว้",
+  "steps": [
+    {
+      "title": "Step Functions อยู่ตรงไหน",
+      "body": "Orders API ของ Acme Shop เรียก `StartExecution` บน Standard state machine **PlaceOrder** ตั้งชื่อ execution ตาม order (**o-981**) และส่ง order เข้าไปเป็น input ตัว call คืน execution ARN กลับมาทันที ทำให้ API ตอบคนซื้อได้โดยไม่ต้องรอ จากนั้น Step Functions ก็ไล่ทำทีละ state: เรียก Lambda, DynamoDB, SNS และ ECS ตามลำดับ ส่ง output ของแต่ละ state ต่อให้ state ถัดไป และเขียนทุก step ลง execution history ตัว flow อยู่ใน definition เดียวที่เขียนด้วย Amazon States Language แทนที่จะเป็น glue code ที่เรียก Lambda function ต่อกันเป็นทอด ๆ แบบนี้ Step Functions เลยเป็นตัว orchestrator ของ [saga](../saga-orchestration/)"
+    },
+    {
+      "title": "รัน o-981",
+      "body": "**ValidateOrder** invoke Lambda function ส่วน **ReserveStock** เรียก DynamoDB `UpdateItem` พร้อม condition ว่าต้องเหลือสต็อกพอ โดยเรียกเองผ่าน optimized integration เลยไม่มี function คั่นกลาง แล้ว **ChargeCard** ก็เก็บ charge ID ไว้ใน variable ด้วย `Assign` ตัว Choice state **NeedsApproval** เห็นว่า THB 1,280 ต่ำกว่าเกณฑ์ THB 50,000 เลยไปทาง `Default` สู่ **Fulfil** ตัวนี้เป็น Parallel state ที่รันทุก branch พร้อมกัน: branch หนึ่ง publish คำยืนยันไปที่ SNS อีก branch รัน ECS task แบบ `.sync` แล้วรอจนกว่า task จะหยุด ระหว่างทาง execution history ก็เก็บ input และ output ของแต่ละ state รวมถึง variable ที่มัน assign ไว้ด้วย โดย workflow นี้ใช้ JSONata (`Arguments`, `Output`, `Assign`) ตามที่ AWS แนะนำสำหรับ workflow ใหม่ แต่ค่าตั้งต้นยังเป็น JSONPath อยู่"
+    },
+    {
+      "title": "Retry, catch และ wait",
+      "body": "สำหรับ **o-982** ผู้ให้บริการ payment ไม่ตอบ แล้ว charge-card ก็ throw `Payment.Timeout` ตัว retrier (`IntervalSeconds` 2, `BackoffRate` 2, `MaxAttempts` 2) รัน ChargeCard ใหม่หลัง 2 s และหลัง 4 s พอครั้งที่สามพังอีก `Catch` ก็ส่ง execution ไปที่ **ReleaseStock** เพื่อคืนสต็อก (step ชดเชย) แล้วต่อไปที่ Fail state **OrderFailed** โดยที่ history บันทึก error และสาเหตุของมันไว้ ระหว่างนั้น **o-983** (THB 68,400) มาถึง **WaitForApproval** ที่ส่ง task token ไปที่ approvals queue แล้วหยุดรอจนกว่า app ของคนอนุมัติจะเรียก `SendTaskSuccess` พร้อม token นั้น ตัว Standard execution รอแบบนี้ได้นานถึงหนึ่งปี เพราะฉะนั้นให้ตั้ง `TimeoutSeconds` ไว้ที่ task ด้วย"
+    },
+    {
+      "title": "Standard, Express และข้อจำกัด",
+      "body": "workflow แบบ **Standard** อย่าง PlaceOrder รันได้นานถึงหนึ่งปี ไม่รัน state ไหนซ้ำสองครั้ง ยกเว้น retrier สั่ง เก็บ history ไว้ 90 วัน และคิดเงิน $0.025 ต่อ 1,000 state transition รวม retry ด้วย (US East, N. Virginia, ตุลาคม 2026) ส่วน workflow แบบ **Express** รันได้ไม่เกิน 5 นาที แบบ at least once ถ้าเริ่มแบบ asynchronous และ at most once ถ้าเริ่มแบบ synchronous มันไม่เก็บ history ใน Step Functions (มีแค่ใน CloudWatch Logs) ไม่รองรับทั้ง `.sync` และ task token และคิดเงิน $1.00 ต่อล้าน request บวกค่า duration เลยเหมาะกับงาน process event ปริมาณมาก ข้อจำกัดที่ต้องออกแบบรอบ ๆ คือ 256 KiB สำหรับ input หรือ output ของ state ไหนก็ตาม (invoice ขนาด 2 MB ต้องส่งไปเป็น S3 key), 25,000 event ใน history ของ execution หนึ่ง และบิลที่โตตามทุก transition ใน workflow ที่มี step ถี่ ๆ ส่วนทางเลือกที่คนมักใช้แทนคือ Temporal (durable execution ในโค้ด) และ Apache Airflow (batch pipeline ที่ตั้งเวลาไว้)"
+    }
+  ]
+}

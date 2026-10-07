@@ -1,0 +1,21 @@
+{
+  "summary": "stream processor: operator ที่มี state ทำงานบน stream ที่ไม่มีวันจบ พร้อม event time, window และ checkpoint แบบ exactly-once",
+  "steps": [
+    {
+      "title": "Flink อยู่ตรงไหน",
+      "body": "ระบบตรวจ fraud ของ Acme Shop คือ Flink job ที่อยู่ระหว่าง Kafka topic **orders** กับระบบที่ทำงานตามผลของมัน job นี้อ่านทุก order ทันทีที่เข้ามา เก็บ state ของสิ่งที่เห็นไปแล้ว (นับจำนวนต่อบัตรในแต่ละ window 10 นาที) แล้วเขียน alert ลง topic **fraud-alerts** เมื่อบัตรใบไหนสั่งเกิน 5 order ใน window เดียว และส่งจำนวน order ต่อนาทีต่อประเทศออกไปให้ dashboard แบบ live ตัว job รันด้วย parallelism 3 บน Flink cluster (ที่นี่อยู่บน Kubernetes) และรันต่อเนื่องเป็นเดือน ๆ ส่วนบน AWS ก็มี Amazon Managed Service for Apache Flink รันให้"
+    },
+    {
+      "title": "Dataflow และ keyed state",
+      "body": "source subtask แต่ละตัวอ่าน partition หนึ่งของ **orders** แล้ว `keyBy(card)` ก็ hash บัตร C-9 ไปที่ key group 126 จาก 128 แล้ว key group นี้เป็นของ count subtask 3/3 ทำให้ทุก order ของ C-9 มาเจอกันที่นั่น ไม่ว่าจะเข้ามาทาง partition ไหน keyed state ของ subtask นี้เก็บจำนวนของ C-9 สำหรับ window [10:00, 10:10): order ที่หกที่สั่งตอน 10:07 ทำให้จำนวนเกิน 5 แล้ว alert ก็ไปที่ **fraud-alerts** ตัว state นี้อยู่กับการคำนวณ ใน RocksDB บน local disk ของ TaskManager ไม่ได้อยู่ใน database ข้างนอก"
+    },
+    {
+      "title": "Event time และ watermark",
+      "body": "order มาไม่เรียงลำดับ: order ของ C-9 ที่สั่งตอน 10:03 มาถึงหลังตัวที่สั่งตอน 10:04 แต่ก็ยังถูกนับ เพราะ Flink วัดเวลาด้วย timestamp ของ event เอง ตัว **watermark** (event time ที่มากที่สุดที่เห็นแล้ว ลบ 5 s) บอกแต่ละ window ว่าปิดได้เมื่อไร: พอ order ที่ประทับเวลา 10:10:05 เข้ามาครบทั้งสาม partition แล้ว watermark ก็ถึง 10:10 ทำให้ window [10:00, 10:10) ทุกตัวปิด และ state ของมันก็ถูกล้าง ส่วน order ที่ประทับเวลา 10:08:40 แต่มาถึงหลังจากนั้น ถือว่าช้าเกิน allowed lateness (default 0) มันเลยไปที่ side output **late-orders** แทนที่จะถูกทิ้งไปเงียบ ๆ"
+    },
+    {
+      "title": "Checkpoint และข้อจำกัด",
+      "body": "ทุก 30 s ตัว JobManager จะเริ่ม checkpoint: barrier ไหลจาก source ผ่านทั้ง job แล้ว operator แต่ละตัวก็ snapshot state ของตัวเองลง S3 พร้อม Kafka offset ที่อ่านไปแล้ว พอ TaskManager 2 หายไป job ก็ restart จาก checkpoint ล่าสุดที่เสร็จแล้ว (812) และ source ก็ถอยกลับไปที่ offset ของ checkpoint นั้น ทำให้ทุก order มีผลกับ state แค่ครั้งเดียวพอดี ส่วน Kafka sink จะ commit transaction ของมันเมื่อแต่ละ checkpoint เสร็จ ทำให้ reader ที่ใช้ `read_committed` เห็น alert แต่ละตัวแค่ครั้งเดียวพอดีด้วย ข้อจำกัดคือ state ที่ใหญ่ทำให้ checkpoint และ restart ช้า ส่วน backpressure จะออกมาในรูปของ lag การ upgrade job ที่รันอยู่ต้องใช้ savepoint และ state ที่ compatible และถ้าเป็น job ที่ไม่มี state หรือเล็ก ๆ การใช้ Kafka Streams หรือ Lambda function อ่าน stream จะง่ายกว่า"
+    }
+  ]
+}

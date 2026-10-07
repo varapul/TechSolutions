@@ -1,0 +1,21 @@
+{
+  "summary": "streaming แบบ managed: record ไปลง shard ตาม partition key แล้ว consumer ก็อ่านแต่ละ shard ตามลำดับ และ replay ย้อนหลังได้",
+  "steps": [
+    {
+      "title": "Kinesis Data Streams อยู่ตรงไหน",
+      "body": "web server และ mobile API ของ Acme Shop เรียก `PutRecords` ทุกครั้งที่มีคลิก ประมาณ 2,000 ครั้งต่อวินาที โดยใช้ session ID เป็น partition key ตัว stream **clicks** รันในโหมด provisioned ด้วย **4 shard** ส่วน AWS ดูแล server ให้และ replicate ทุก record แบบ synchronous ข้ามสาม Availability Zone แล้วก็มีสามแอปอ่าน record ชุดเดียวกันแยกกัน: Lambda function **live-metrics** คำนวณ metric แบบ live ตัว **Amazon Data Firehose** เขียนไฟล์ลง data lake บน S3 และแอป **Managed Service for Apache Flink** สร้าง session ส่วนการอ่านไม่ได้ลบอะไรออก และ retention period ที่ขยายจาก default 24 ชั่วโมงเป็น 7 วัน ก็ทำให้ reader ตัวไหนก็ replay ย้อนหลังได้ 7 วัน"
+    },
+    {
+      "title": "Shard และ partition key",
+      "body": "Kinesis เอา partition key ไป hash ด้วย **MD5** ได้เป็น **hash key** ขนาด 128-bit และแต่ละ shard เป็นเจ้าของช่วงของ hash key ที่ต่อเนื่องกัน ที่นี่ได้คนละหนึ่งในสี่ ตัว `s-41` hash ได้ `6e19676a…` (hex) อยู่ในช่วง `40…`–`7f…` ของ shard 1 ทำให้ทุกคลิกของ session นี้ไปลงที่ **shard 1** แล้ว shard ก็ให้ **sequence number** กับ record โดยในตัวอย่างนี้คือ 842 (ย่อไว้) ต่อจาก 837 ที่เป็นของ session นี้ก่อนหน้า และคำตอบที่ส่งกลับก็บอกทั้ง shard และ sequence number ส่วนลำดับจะรับประกันแค่ภายใน shard เดียว แต่ละ shard รับ write ได้ถึง **1 MB/s หรือ 1,000 record/s** และให้ read ได้ **2 MB/s**"
+    },
+    {
+      "title": "Consumer สองแบบ",
+      "body": "event source mapping ของ Lambda กับ Firehose poll ทุก shard ด้วย `GetRecords` และ **แชร์** 2 MB/s กับ 5 call ต่อวินาทีของ shard นั้นกัน ส่วนแอป Flink อ่านผ่าน consumer แบบ **enhanced fan-out**: Kinesis push record ไปให้มันผ่าน HTTP/2 (`SubscribeToShard`) ด้วย 2 MB/s ต่อ shard ที่เป็น **ของมันเอง** ส่วนเมื่อ live-metrics fail กับ batch หนึ่ง ตัว `BisectBatchOnFunctionError` จะผ่า batch เป็นสองส่วนแล้ว retry แต่ละครึ่ง และ mapping จะเลื่อนตำแหน่งของตัวเองผ่านไปแค่ record ที่สำเร็จแล้ว ส่วน `ParallelizationFactor` (1 ถึง 10) ทำให้รันหลาย batch ต่อ shard พร้อมกันได้ ตัว Firehose buffer ไว้ 5 MiB หรือ 300 s (default ของมันสำหรับ S3) แล้วแต่อย่างไหนถึงก่อน แล้วค่อยเขียนไฟล์ลง S3 ส่วน reader แต่ละตัวเก็บตำแหน่งของตัวเอง: mapping กับ Firehose ติดตามของตัวเอง ส่วน Flink เก็บไว้ใน checkpoint ของมัน และแอปที่สร้างด้วย KCL เก็บไว้ใน lease table บน DynamoDB"
+    },
+    {
+      "title": "Hot shard และข้อจำกัด",
+      "body": "scraper ใน session **s-90** เพิ่มคลิกเข้ามา 600 ครั้งต่อวินาที และทั้งหมด hash ไปลง shard 2 ทำให้ตอนนี้ shard 2 ต้องรับ 1,100 record/s ขณะที่ limit ของมันคือ 1,000 แล้ว `PutRecords` ก็คืน record ส่วนเกินกลับมาพร้อม `ProvisionedThroughputExceededException` ทั้งที่ shard 0, 1 และ 3 ใช้ capacity ไปแค่ครึ่งเดียว วิธีแก้คือ เปลี่ยน key หรือหยุด bot, split shard 2 (`SplitShard` หรือ `UpdateShardCount` สำหรับทุก shard) หรือเปลี่ยนไปใช้โหมด on-demand ที่ split shard ที่ยุ่งให้เอง แต่ไม่มีวิธีไหนทำให้ key เดียวเกิน limit ของหนึ่ง shard ได้ ข้อจำกัดคือ ลำดับมีแค่ภายใน shard เดียว การส่งเป็นแบบ at-least-once (producer ที่ retry จะเขียนซ้ำ) record ละไม่เกิน 1 MiB เป็น default (ขยายได้ถึง 10 MiB) retention ที่เกิน 24 ชั่วโมงต้องจ่ายเพิ่ม และ shard แบบ provisioned คิดเงินรายชั่วโมง ไม่ว่าจะใช้หรือไม่"
+    }
+  ]
+}

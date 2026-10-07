@@ -1,0 +1,21 @@
+{
+  "summary": "database แบบ wide-column ที่สร้างมารับการเขียนหนัก ๆ ข้ามหลาย data centre: มี token ring, consistency ที่ปรับได้ และ storage แบบ LSM",
+  "steps": [
+    {
+      "title": "Cassandra อยู่ตรงไหน",
+      "body": "service tracking ของ Acme Shop เขียน status event ของพัสดุทุกชิ้น (รับพัสดุแล้ว คัดแยกแล้ว กำลังนำส่ง…) วันละหลายล้าน event ทั้งที่กรุงเทพฯ และสิงคโปร์ ส่วนลูกค้าก็อ่าน event ล่าสุดของ shipment ตัวเอง cluster นี้มี 6 node อยู่ใน 2 data centre คือ **dc-bkk** กับ **dc-sgp** แต่ละ data centre ดูแล client ของตัวเองและเก็บทุก partition ไว้ 3 ชุด ส่วน node ทุกตัวรับทั้ง read และ write เลยไม่มี primary ตัว table `shipment_events` เก็บหนึ่ง partition ต่อหนึ่ง shipment โดยเรียง event จากใหม่ไปเก่า"
+    },
+    {
+      "title": "แบ่ง partition แล้ว replicate",
+      "body": "write มาถึง **bkk-1** แล้ว bkk-1 ก็เป็น coordinator ของ write นี้ ตัว partition key `S-77` hash (Murmur3) ได้ token 4480090637218407206 ที่ตกอยู่ในช่วงของ **bkk-2** พอเดินตาม ring ตามเข็มนาฬิกาก็ได้ replica เป็น bkk-2, bkk-3 และ bkk-1 (มี 3 node กับ 3 replica ทำให้ทุก node ใน data centre เก็บทุก partition) write ส่งไปที่ทุก replica เสมอ: bkk-1 ส่งให้ทั้งสามตัวใน dc-bkk และให้ node หนึ่งตัวใน dc-sgp แล้ว node นั้นก็ส่งต่อ ถ้าใช้ `LOCAL_QUORUM` client จะได้คำตอบเมื่อ replica 2 ใน 3 ตัวใน dc-bkk ได้ write นี้แล้ว ส่วน dc-sgp ตามมาทีหลังโดยที่ client ไม่ต้องรอ"
+    },
+    {
+      "title": "ข้างใน node",
+      "body": "ใน **bkk-2** ตัว write ถูกต่อท้าย commit log และใส่ลง memtable แล้วถึงจะ acknowledge ส่วน read ที่ขอ 10 event ล่าสุดของ S-77 จะ merge memtable เข้ากับ SSTable ที่ bloom filter บอกว่าอาจมี partition นี้อยู่ (SSTable 2 เลยถูกข้ามไป) แต่ละไฟล์เก็บ row ของ S-77 เรียงจากใหม่ไปเก่า ทำให้แต่ละไฟล์อ่านแค่ช่วงสั้น ๆ ช่วงเดียว และ tombstone ที่ `DELETE` เขียนไว้ก็ซ่อน row ของ 22:10 พอ memtable เต็ม มันก็ถูก flush เป็น SSTable ใหม่ที่แก้ไม่ได้ ส่วน compaction ก็ merge SSTable อยู่เบื้องหลัง โดยเก็บ tombstone ไว้จนกว่า `gc_grace_seconds` (default 10 วัน) จะผ่านไป"
+    },
+    {
+      "title": "Failure และข้อจำกัด",
+      "body": "**bkk-3** ล่ม แต่ event `delivered` ยังไปถึง replica 2 ใน 3 ตัวใน dc-bkk ทำให้ `LOCAL_QUORUM` ผ่าน ส่วน bkk-1 เก็บ hint ไว้แล้ว replay ให้ตอน bkk-3 กลับมา (hint ถูกเขียนแค่ในช่วง `max_hint_window` แรกของการล่ม default คือ 3 ชั่วโมง) แล้ว repair ที่รันเป็นประจำก็แก้ส่วนที่เก่ากว่านั้น ข้อจำกัดคือ ต้องออกแบบหนึ่ง table ต่อหนึ่ง query (ทุก query ต้องระบุ partition key แล้วก็ไม่มี join ส่วน `ALLOW FILTERING` แปลว่า scan) partition ที่ใหญ่มาก ๆ กับ tombstone ที่กองเยอะ ๆ ทำให้ read ช้า ตัว lightweight transaction ก็เสีย round trip เพิ่ม และการรัน cluster ก็มีงานต้องดูแล ส่วน Cassandra 5.0 (กันยายน 2024) เพิ่ม Storage-Attached Index, vector search, memtable กับ SSTable แบบ trie และ Unified Compaction Strategy แล้ว transaction แบบทั่วไป (Accord) ก็อยู่ใน 6.0 ที่ยังเป็น alpha release อยู่ ณ ตุลาคม 2026"
+    }
+  ]
+}

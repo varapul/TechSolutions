@@ -1,0 +1,21 @@
+{
+  "summary": "metric, log, alarm และ dashboard ของ AWS resource และแอปของเรา รวมอยู่ใน monitoring service ตัวเดียว",
+  "steps": [
+    {
+      "title": "CloudWatch อยู่ตรงไหน",
+      "body": "CloudWatch คือ monitoring service ที่ติดมากับ AWS ตัว ALB ของ Acme Shop publish `TargetResponseTime` และ `HTTPCode_Target_5XX_Count` ส่วน Lambda publish `Errors` และ `Duration` และ ECS publish `CPUUtilization` แต่ละตัวลง namespace ของตัวเองโดยไม่ต้องตั้งค่าอะไร ระหว่างนั้น Lambda และ Catalog service ก็ส่ง log ไปที่ log group `/aws/lambda/make-thumbnail` และ `/ecs/catalog` โดยที่บรรทัด JSON ของ Catalog ยังพา custom metric มาด้วย ส่วน **alarm** เปลี่ยน threshold ให้เป็น action (page ผ่าน Amazon SNS หรือเพิ่ม ECS task) แล้ว **dashboard** และ query ของ **Logs Insights** ก็ให้คนเข้ามาดูได้"
+    },
+    {
+      "title": "Metric และ log",
+      "body": "metric หนึ่งตัวประกอบด้วย **namespace**, **name** และชุดของ **dimension**: `AWS/ApplicationELB`, `TargetResponseTime`, `LoadBalancer=app/acme-shop/50dc6c495c0c9188` ทุก request เพิ่ม sample หนึ่งตัว แล้ว CloudWatch ก็เก็บ statistic ของทุกช่วงหนึ่งนาที (custom metric เป็นแบบ high-resolution ได้ ละเอียดถึงหนึ่งวินาที): ในนาที 10:41 มี 1,840 request ค่าเฉลี่ย 0.21 s และ **p99** 0.62 s ส่วนบรรทัด log ของ Catalog ที่อยู่ใน **embedded metric format** ยังอยู่ใน `/ecs/catalog` แล้ว CloudWatch ก็ดึง custom metric `OrderLatency` (namespace `AcmeShop`, dimension `Service=catalog`) ออกมาจากมัน ส่วน query ของ **Logs Insights** นับบรรทัด ERROR ใน `/ecs/catalog` ต่อช่วง 5 นาที"
+    },
+    {
+      "title": "Alarm และ action",
+      "body": "ตั้งแต่ 10:42 ค่า p99 ไต่ขึ้นไปถึง 1.4 s ตัว alarm `latency` (p99 เกิน 1 s, period 60 วินาที, 3 จาก 5 datapoint) เจอ 1.12, 1.31 และ 1.40 s ในห้านาทีล่าสุด แล้วก็เปลี่ยนจาก OK เป็น **ALARM** ส่วน `errors` (5xx response มากกว่า 50 ตัวต่อนาที) ก็เกิน threshold ด้วย ทำให้ **composite alarm** `impact` คือ `ALARM(\"latency\") AND ALARM(\"errors\")` แจ้งไปที่ SNS topic ที่ page หา on-call engineer ส่วนการ page เฉพาะจาก composite alarm ช่วยลด noise และ band ของ **anomaly detection** ที่เรียนจากประวัติของ metric ก็ใช้แทน threshold ตายตัว 1 s ได้ ส่วน CPU ขึ้นไปถึง 85% เทียบกับ 60% ของ target tracking ทำให้ alarm ที่ target tracking สร้างไว้สั่ง Application Auto Scaling ให้เพิ่ม service `catalog` จาก 3 task เป็น 5"
+    },
+    {
+      "title": "ข้อจำกัดและค่าใช้จ่าย",
+      "body": "ใน us-east-1 (ตุลาคม 2026) classic custom metric ราคา $0.30 ต่อเดือนสำหรับ 10,000 ตัวแรก และทุกชุดค่า dimension ที่ต่างกันนับเป็น metric แยกหนึ่งตัว: ถ้าเพิ่ม `userId` ของผู้ใช้ 50,000 คนเข้าไปใน `OrderLatency` จะได้ metric ถึง 50,000 ตัว และเสียเงินถึง $7,000 ต่อเดือน log คิด $0.50 ต่อ GB ที่ ingest และ $0.03 ต่อ GB-month ที่เก็บ ส่วน Logs Insights คิด $0.005 ต่อ GB ที่ scan, alarm $0.10 ต่อ metric ต่อเดือน และ dashboard $3 ต่อเดือน metric ถูกเก็บไว้ 15 เดือน และถูก roll up ตามอายุ (ข้อมูลรายนาทีเก็บ 15 วัน รายห้านาทีเก็บ 63 วัน รายชั่วโมงเก็บ 455 วัน) ส่วน log group ถ้าเราไม่ได้ตั้ง retention ก็จะเก็บทุกอย่างไว้ และ CloudWatch รันได้แค่บน AWS ส่วน OpenTelemetry metric แบบใหม่ที่ query ด้วย PromQL คิดเงินต่อ GB แทนที่จะคิดต่อ metric"
+    }
+  ]
+}

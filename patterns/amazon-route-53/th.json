@@ -1,0 +1,21 @@
+{
+  "summary": "DNS แบบ managed: hosted zone, routing policy (weighted, latency, failover, geolocation) และ health check",
+  "steps": [
+    {
+      "title": "Route 53 อยู่ตรงไหน",
+      "body": "ก่อนที่ request ไหนจะมาถึง Acme Shop ตัว recursive resolver ของมือถือ (ของ ISP หรือตัวสาธารณะ) จะถาม name server ของ Route 53 ก่อนว่าชื่อหนึ่งชี้ไปที่ไหน ใน public hosted zone `shop.example` ตัว zone apex เป็น **alias** ไปหา CloudFront distribution ส่วน `api.shop.example` พาไปหา Application Load Balancer ที่ใกล้ที่สุดและยัง healthy อยู่: สำหรับผู้ใช้ในเชียงใหม่คือตัวใน Asia Pacific (Thailand) `ap-southeast-7` โดยมี Asia Pacific (Singapore) `ap-southeast-1` เป็นตัวสำรอง ส่วนใน VPC ตัว **private hosted zone** `acme.internal` ตอบ `db.acme.internal` ด้วย RDS endpoint ผ่าน VPC Resolver ที่ `10.0.0.2` แต่ถ้าอยู่นอก VPC ที่ผูกกับ zone นี้ไว้ ชื่อนี้ก็จะ resolve ไม่ได้"
+    },
+    {
+      "title": "lookup หนึ่งครั้ง ตั้งแต่ต้นจนจบ",
+      "body": "ถ้า cache ยังว่าง resolver จะไล่ตาม delegation: root server ส่งต่อไปที่ server ของ `.example` แล้ว server พวกนั้นก็บอกชื่อ name server ของ Route 53 สี่ตัวของ zone นี้ (resolver มักเก็บพวกนี้ไว้สองวัน) จากนั้นสำเนาที่ใกล้ที่สุดของตัวใดตัวหนึ่งก็ตอบผ่าน anycast ตัว record แบบ **weighted** ของ `api` ส่ง lookup 90% ไปที่ `stable.api` และ 10% ไปที่ canary ส่วน record แบบ **latency** ใต้ `stable.api` คืน ALB ใน Region ที่ latency ต่ำที่สุดสำหรับ resolver ตัวนี้ คือ Thailand ส่วนทุก record ใน `shop.example` เป็น **alias**: Route 53 ตอบด้วย address ปัจจุบันของ target โดยที่ alias ใช้ที่ zone apex ได้ แต่ CNAME ใช้ไม่ได้ ส่วน query ไปหา target ของ AWS ก็ไม่เสียเงิน และ TTL เป็นของ target คือ 60 วินาทีสำหรับ load balancer ทำให้ resolver cache คำตอบไว้ 60 วินาที"
+    },
+    {
+      "title": "Health check และ failover",
+      "body": "**health checker** ของ Route 53 ในแปด AWS Region ส่ง `HTTPS /health` ไปหา ALB แต่ละตัวทุก 30 วินาที check จะผ่านเมื่อเปิด connection ได้ภายใน 4 วินาที และได้ status 2xx หรือ 3xx ภายใน 2 วินาที checker หนึ่งตัวจะนับว่า `api-th` ล่มหลังพังติดกัน 3 ครั้ง แล้วเมื่อ checker ที่ยังเห็นว่ามัน healthy เหลือไม่เกิน 18% Route 53 ก็จะตีว่ามัน **unhealthy** และเลิกส่งมันในคำตอบ: `stable.api` ตอบด้วยตัวที่ latency ต่ำรองลงมา คือ Singapore ส่วน `status.shop.example` ก็ **fail over** จาก primary ไปที่หน้า static ใน S3 ตัวคู่ weighted ยังส่ง lookup ของ `api` 10% ไปที่ canary เหมือนเดิม และ resolver ก็ยังใช้คำตอบ Thailand ที่ cache ไว้จนกว่า TTL 60 วินาทีจะหมด"
+    },
+    {
+      "title": "ข้อจำกัดและค่าใช้จ่าย",
+      "body": "DNS failover เร็วได้แค่เท่าที่ cache ยอม: ใช้เวลาตรวจเจอความล้มเหลวได้ถึงประมาณ 90 วินาที (3 check ห่างกัน 30 วินาที) บวก TTL อีกไม่เกิน 60 วินาที บวก resolver หรือ app ไหนก็ตามที่เก็บคำตอบไว้นานกว่าที่ถูกบอก ส่วน health checker ทำงานจาก internet เลย probe private IP address ไม่ได้ (health check ไปตาม **CloudWatch alarm** แทนได้) และ weight แบ่ง lookup ไม่ได้แบ่ง request ส่วนราคา (ตุลาคม 2026): $0.50 ต่อเดือนต่อ hosted zone, $0.40 ต่อล้าน standard query ($0.60 สำหรับ latency record) และไม่เสียเงินสำหรับ alias query ไปหา AWS resource, query ไปหา private zone หรือ health check บน AWS endpoint ไม่เกิน 50 ตัว (ถ้าเกินจะเป็น $0.50 ต่อเดือนต่อ check บวก $1.00 สำหรับ HTTPS) ส่วนถ้าจะสลับ Region ด้วยการตัดสินใจของเราเอง ก็มี routing control ของ **Amazon Application Recovery Controller** (ARC) ที่พลิก failover record ให้ และการ sign ด้วย **DNSSEC** ก็ทำให้ resolver ตรวจคำตอบได้"
+    }
+  ]
+}
