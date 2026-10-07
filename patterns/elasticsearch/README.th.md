@@ -101,7 +101,7 @@ log และ metric ถูกเขียนครั้งเดียวแ�
 | Index และ ranking | Lucene, BM25 เป็นค่าตั้งต้น | Lucene, BM25 เป็นค่าตั้งต้น | Lucene, BM25 เป็นค่าตั้งต้น | `tsvector` กับ GIN หรือ GiST index โดย `ts_rank` ไม่ใช้สถิติของข้อมูลทั้งชุด | engine ของตัวเอง มี typo tolerance ในตัว และ Meilisearch จัดอันดับด้วยกฎที่เรียงลำดับไว้ |
 | Scale out | shard และ replica มี master election ในตัว | แบบเดียวกัน และมี segment replication ให้เลือก | SolrCloud: shard และ replica ประสานงานด้วย ZooKeeper | ใช้ของ database เอง: read replica, partitioning | Meilisearch: sharding และ replication ใน Enterprise Edition ส่วน Typesense: Raft cluster ที่เก็บข้อมูลทั้งชุดไว้ใน memory ของทุก node |
 | Vector | `dense_vector`, HNSW | `knn_vector`, Faiss หรือ Lucene | `DenseVectorField`, HNSW | extension pgvector: HNSW, IVFFlat | semantic search ด้วย embedding |
-| Managed offering | Elastic Cloud บน AWS และ cloud อื่น | Amazon OpenSearch Service และ OpenSearch Serverless | ไม่มี Solr ที่ AWS ดูแลให้ | Amazon RDS, Amazon Aurora | Meilisearch Cloud, Typesense Cloud |
+| Managed offering | Elastic Cloud บน AWS และ cloud อื่น | Amazon OpenSearch Service และ OpenSearch Serverless | ไม่มี Solr ที่ AWS ดูแลให้ | Amazon RDS, [Amazon Aurora](../amazon-rds-aurora/) | Meilisearch Cloud, Typesense Cloud |
 | เลือกเมื่อ | อยากได้ฟีเจอร์และเครื่องมือของ Elastic จะดูแลเองหรือใช้ Elastic Cloud ก็ได้ | อยากได้ Apache 2.0 หรือ service ที่ AWS ดูแลให้ | รัน Solr อยู่แล้วหรือต้องพึ่งฟีเจอร์ของมัน | catalogue ไม่ใหญ่มากและข้อมูลอยู่ใน PostgreSQL อยู่แล้ว | index เล็กถึงกลางตัวเดียวที่ต้องการการค้นหาแบบทันทีและทนคำพิมพ์ผิด โดยแทบไม่ต้องดูแล |
 
 ข้อมูลจากเอกสารของ Elastic, OpenSearch, Solr, PostgreSQL 18, pgvector, Meilisearch และ Typesense เดือนตุลาคม 2026

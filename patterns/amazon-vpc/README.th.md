@@ -1,6 +1,6 @@
 ## ปัญหา
 
-application ของ Acme Shop มีบางส่วนที่ internet ต้องเข้าถึงได้ และบางส่วนที่ internet ต้องเข้าไม่ถึงเด็ดขาด คนซื้อต้องเข้าถึง load balancer ที่ port 443 ได้ ส่วน ECS task ที่อยู่ข้างหลังควรรับ traffic จาก load balancer ตัวนั้นเท่านั้น และ database PostgreSQL ก็ควรรับจาก task เท่านั้น แต่ task ยังต้องออกไปข้างนอกได้: ไปที่ API ของผู้ให้บริการ payment บน internet และไปที่ S3 bucket `acme-invoices` ที่ใช้เก็บ invoice ทุกอย่างต้องทำงานต่อได้ตอน Availability Zone หนึ่งล่ม และวันหลัง network นี้ก็ต้องต่อกับ VPC อื่นและกับออฟฟิศได้โดย address ไม่ชนกัน ถ้าเอา resource ทุกตัวไปไว้ใน network แบน ๆ ผืนเดียวที่มี public address ตัว database ก็จะห่างจาก internet แค่ rule ที่พิมพ์ผิดตัวเดียว และไม่มีทางบอกได้เลยว่า "รับเฉพาะจากชั้นที่อยู่ข้างหน้าฉัน"
+application ของ Acme Shop มีบางส่วนที่ internet ต้องเข้าถึงได้ และบางส่วนที่ internet ต้องเข้าไม่ถึงเด็ดขาด คนซื้อต้องเข้าถึง load balancer ที่ port 443 ได้ ส่วน [ECS](../amazon-ecs/) task ที่อยู่ข้างหลังควรรับ traffic จาก load balancer ตัวนั้นเท่านั้น และ database PostgreSQL ก็ควรรับจาก task เท่านั้น แต่ task ยังต้องออกไปข้างนอกได้: ไปที่ API ของผู้ให้บริการ payment บน internet และไปที่ S3 bucket `acme-invoices` ที่ใช้เก็บ invoice ทุกอย่างต้องทำงานต่อได้ตอน Availability Zone หนึ่งล่ม และวันหลัง network นี้ก็ต้องต่อกับ VPC อื่นและกับออฟฟิศได้โดย address ไม่ชนกัน ถ้าเอา resource ทุกตัวไปไว้ใน network แบน ๆ ผืนเดียวที่มี public address ตัว database ก็จะห่างจาก internet แค่ rule ที่พิมพ์ผิดตัวเดียว และไม่มีทางบอกได้เลยว่า "รับเฉพาะจากชั้นที่อยู่ข้างหน้าฉัน"
 
 ## ทำงานยังไง
 
@@ -20,7 +20,7 @@ subnet คือช่วงย่อยของช่วง address ของ 
 |---|---|---|---|---|
 | public | `10.0.0.0/24` | `10.0.1.0/24` | node ของ ALB, NAT gateway | internet gateway |
 | private app | `10.0.10.0/24` | `10.0.11.0/24` | ECS task | NAT gateway ใน zone เดียวกัน |
-| private data | `10.0.20.0/24` | `10.0.21.0/24` | RDS primary และ standby | ไม่ไปไหนเลย: มีแค่ traffic ภายใน |
+| private data | `10.0.20.0/24` | `10.0.21.0/24` | [RDS](../amazon-rds-aurora/) primary และ standby | ไม่ไปไหนเลย: มีแค่ traffic ภายใน |
 
 มีแค่ routing เท่านั้นที่ทำให้ subnet เป็น public หรือ private ตัว subnet จะเป็น **public** เมื่อ route table ของมันมี route ไปที่ internet gateway และเป็น **private** เมื่อไม่มี ส่วน private subnet ถ้าจะออก internet ได้ก็ต้องผ่าน NAT device ตัว subnet ที่ไม่มี route ออกนอก VPC เลย อย่าง data subnet สองตัวนี้ AWS เรียกว่า **isolated** ส่วน resource ใน public subnet ก็ยังต้องมี address ของตัวเองที่ internet route มาถึงได้ด้วย คือ public IPv4, Elastic IP address หรือ IPv6 address ถึงจะคุยกับ internet ได้ตรง ๆ
 
@@ -115,7 +115,7 @@ VPC และ route table ของมันครอบคลุมทั้ง
 
 ## อยู่ตรงไหนใน solution
 
-- **Solution** แทบทุกอย่างบน AWS ที่ไม่ได้เป็นแค่การเรียก API ล้วน ๆ จะรันอยู่ใน VPC: EC2 instance, container ของ ECS และ EKS, database RDS และ Aurora, ElastiCache ([Redis และ Valkey](../redis/)), OpenSearch domain ที่เข้าถึงผ่าน VPC, MSK cluster และ Lambda function เมื่อ attach กับ private subnet แล้ว ([AWS Lambda](../aws-lambda/)) layout สามชั้นสอง zone ของ Acme Shop คือจุดเริ่มต้นปกติของ web application
+- **Solution** แทบทุกอย่างบน AWS ที่ไม่ได้เป็นแค่การเรียก API ล้วน ๆ จะรันอยู่ใน VPC: EC2 instance, container ของ ECS และ EKS, database RDS และ Aurora, ElastiCache ([Redis และ Valkey](../redis/)), [OpenSearch](../elasticsearch/) domain ที่เข้าถึงผ่าน VPC, MSK cluster และ Lambda function เมื่อ attach กับ private subnet แล้ว ([AWS Lambda](../aws-lambda/)) layout สามชั้นสอง zone ของ Acme Shop คือจุดเริ่มต้นปกติของ web application
 - **Pattern ใน catalog นี้** VPC คือที่ที่เราสร้าง network pattern หลายตัว: [hub-and-spoke network](../hub-spoke-network/) ด้วย Transit Gateway หรือ Cloud WAN, [private endpoints](../private-endpoints/) ด้วย PrivateLink และ gateway endpoint และ [load balancing](../load-balancing/) ข้าม zone ด้วย ALB ส่วน security group, ACL และ Block Public Access เป็นชั้นหนึ่งของ [zero trust access](../zero-trust-access/): มันจำกัดว่า network ไหนคุยกันได้ แต่ identity และ authorisation ก็ยังต้องตรวจทุก request ถ้าข้าม Region ตัว [active-passive failover](../active-passive-failover/) และ [multi-Region active-active](../multi-region-active-active/) ต้องมี VPC ในทุก Region โดยช่วง address ไม่ทับกัน
 - **เพื่อนบ้านที่มักเจอ** Elastic Load Balancing, Amazon ECS และ EKS, Amazon RDS ([PostgreSQL](../postgresql/)), [Amazon S3](../amazon-s3/) และ DynamoDB ผ่าน gateway endpoint, Route 53 สำหรับ DNS ทั้ง public และ private, [AWS IAM](../aws-iam/) (ใครแก้ security group และ route ได้บ้าง), CloudWatch สำหรับ flow log และ metric และ AWS Network Firewall ตอนที่ subnet ต้องตรวจละเอียดกว่านั้น
 - **Managed offering** Amazon VPC เองก็คือ managed service และทุก AWS account มี default VPC ในทุก Region: มี public subnet ในทุก zone, internet gateway และเปิด DNS ไว้ เหมาะกับการทดลอง ส่วน workload ที่รัน production ปกติจะมี VPC ของตัวเองที่วางแผน address มาอย่างตั้งใจ บน cloud เจ้าอื่นตัวที่เทียบได้คือ Azure Virtual Network และ Google Cloud VPC
@@ -124,7 +124,7 @@ VPC และ route table ของมันครอบคลุมทั้ง
 
 workload บน AWS ทุกตัวที่รัน server, container หรือ database ของตัวเองจะใช้ VPC เรื่องที่ต้องตัดสินใจจริง ๆ คือจะมีกี่ VPC และจะวางแต่ละตัวยังไง การมี VPC หนึ่งตัวต่อ application และ environment บ่อยครั้งแยกไว้ใน account ของตัวเอง ทำให้ blast radius เล็ก แล้ว Transit Gateway หรือ Cloud WAN ก็ต่อตัวที่ต้องคุยกันเข้าด้วยกัน ส่วน VPC Lattice หรือ PrivateLink ก็ต่อ service เป็นตัว ๆ ได้โดยไม่ต้องรวม network ทั้งวง ภายใน VPC ให้ใช้ public subnet เฉพาะกับสิ่งที่ internet ต้องเข้าถึง วางทุกชั้นไว้ในทุก zone และตัดสินใจแต่เนิ่น ๆ ว่า network ของบริษัทจะใช้ช่วง address ไหน
 
-service ที่ไม่เคยแตะ network ของเรา (S3, DynamoDB, SQS หรือ Lambda ที่ไม่ได้ attach กับ VPC) ไม่ต้องใช้ VPC ส่วนถ้าจะเข้าถึงมันจากใน VPC ก็ใช้ endpoint
+service ที่ไม่เคยแตะ network ของเรา (S3, DynamoDB, [SQS](../amazon-sqs/) หรือ Lambda ที่ไม่ได้ attach กับ VPC) ไม่ต้องใช้ VPC ส่วนถ้าจะเข้าถึงมันจากใน VPC ก็ใช้ endpoint
 
 | | Amazon VPC | Azure Virtual Network | Google Cloud VPC |
 |---|---|---|---|

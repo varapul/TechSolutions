@@ -80,7 +80,7 @@ After a crash, recovery starts at the last checkpoint's redo point and replays t
 - **Query conflicts on a hot standby:** replaying the cleanup of old row versions can remove rows that a long standby query still needs. After `max_standby_streaming_delay` (30 s by default) the query is cancelled, unless `hot_standby_feedback = on`, which tells the primary to keep those rows instead, at the cost of bloat there.
 - **Logical replication** (`wal_level = logical`) decodes the WAL into row changes. Publications and subscriptions copy chosen tables between PostgreSQL servers, including across major versions, and **logical decoding** with an output plugin such as the built-in `pgoutput` feeds change data capture tools like Debezium.
 - A **replication slot** remembers how far its consumer has read, and the primary keeps every WAL file from that point (and, for logical slots, the catalog rows needed to decode it). A consumer that goes away leaves its slot behind and the WAL piles up until the disk is full. Cap it with `max_slot_wal_keep_size` (`-1`, unlimited, by default) or PostgreSQL 18's `idle_replication_slot_timeout` (`0`, off, by default), and alert on `pg_replication_slots`.
-- **Failover** promotes a standby with `pg_ctl promote` or `pg_promote()`. PostgreSQL itself does not decide when to do it: Patroni does, coordinating the nodes through etcd, Consul or ZooKeeper (the [Leader Election](../leader-election/) pattern), and managed services do it for you.
+- **Failover** promotes a standby with `pg_ctl promote` or `pg_promote()`. PostgreSQL itself does not decide when to do it: Patroni does, coordinating the nodes through [etcd](../etcd/), Consul or ZooKeeper (the [Leader Election](../leader-election/) pattern), and managed services do it for you.
 
 ### Partitioning and extensions
 
@@ -112,7 +112,7 @@ Released on 25 September 2025: the asynchronous I/O subsystem; `uuidv7()`, times
   This works for modest volumes kept next to the data they belong to. Every claimed job is an update or a delete that VACUUM has to clean up, workers must poll, and there is no fan-out or replay, so heavy or many-consumer messaging belongs in a broker such as [RabbitMQ](../rabbitmq/) or Kafka.
 - It is also the usual store behind [Database per Service](../database-per-service/), [Materialized View](../materialized-view/) (`REFRESH MATERIALIZED VIEW CONCURRENTLY` refreshes without locking out readers) and [Sharding](../sharding/) (with Citus or in the application).
 
-**Usual neighbours:** a connection pooler (PgBouncer, or Amazon RDS Proxy on AWS), a cache such as [Redis](../redis/) for hot reads, Kafka fed by Debezium, and object storage such as [Amazon S3](../amazon-s3/) for base backups and archived WAL, managed with pgBackRest, WAL-G or Barman.
+**Usual neighbours:** a connection pooler (PgBouncer, or [Amazon RDS](../amazon-rds-aurora/) Proxy on AWS), a cache such as [Redis](../redis/) for hot reads, Kafka fed by Debezium, and object storage such as [Amazon S3](../amazon-s3/) for base backups and archived WAL, managed with pgBackRest, WAL-G or Barman.
 
 **Managed offerings:**
 
@@ -203,7 +203,7 @@ ORDER BY n_dead_tup DESC LIMIT 5;
 - [Database per Service](../database-per-service/) — Each service owns its data; others go through its API or events, never its tables.
 - [Sharding](../sharding/) — Split data horizontally across databases using a shard key.
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
-- Amazon RDS & Aurora *(planned)* — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
+- [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 - [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
 - [Apache Kafka](../kafka/) — A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history.
 

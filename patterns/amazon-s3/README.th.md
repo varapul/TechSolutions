@@ -50,7 +50,7 @@ Intelligent-Tiering ย้าย object ไปที่ tier Infrequent Access �
 
 ### การอัปโหลด: presigned URL และ multipart
 
-**presigned URL** มี SigV4 signature, access key ของคนเซ็น และเวลาหมดอายุอยู่ใน query string ใครถือ URL ก็ทำ request นั้น request เดียวได้โดยไม่ต้องมี AWS credential มันทำได้แค่สิ่งที่คนเซ็นมีสิทธิ์ทำ URL ที่สร้างใน console อยู่ได้ตั้งแต่ 1 นาทีถึง 12 ชั่วโมง ส่วน CLI และ SDK ให้ได้ถึง 7 วันถ้าใช้ credential ระยะยาวของ IAM user แต่ URL ที่เซ็นด้วย credential ชั่วคราว อย่าง role ของ Lambda function จะใช้ไม่ได้ทันทีที่ credential นั้นหมดอายุ ไม่ว่า URL จะเขียนเวลาหมดอายุไว้เท่าไร ส่วน S3 เช็กเวลาหมดอายุตอน request เริ่ม การส่งไฟล์ที่กำลังวิ่งอยู่เลยไม่ถูกตัดกลางทาง ตัว API Lambda เซ็น URL สำหรับอัปโหลดแบบนี้ (boto3 1.43 โค้ดนี้แค่คำนวณ signature และไม่ได้เรียกอะไรออกไป):
+**presigned URL** มี SigV4 signature, access key ของคนเซ็น และเวลาหมดอายุอยู่ใน query string ใครถือ URL ก็ทำ request นั้น request เดียวได้โดยไม่ต้องมี AWS credential มันทำได้แค่สิ่งที่คนเซ็นมีสิทธิ์ทำ URL ที่สร้างใน console อยู่ได้ตั้งแต่ 1 นาทีถึง 12 ชั่วโมง ส่วน CLI และ SDK ให้ได้ถึง 7 วันถ้าใช้ credential ระยะยาวของ [IAM](../aws-iam/) user แต่ URL ที่เซ็นด้วย credential ชั่วคราว อย่าง role ของ Lambda function จะใช้ไม่ได้ทันทีที่ credential นั้นหมดอายุ ไม่ว่า URL จะเขียนเวลาหมดอายุไว้เท่าไร ส่วน S3 เช็กเวลาหมดอายุตอน request เริ่ม การส่งไฟล์ที่กำลังวิ่งอยู่เลยไม่ถูกตัดกลางทาง ตัว API Lambda เซ็น URL สำหรับอัปโหลดแบบนี้ (boto3 1.43 โค้ดนี้แค่คำนวณ signature และไม่ได้เรียกอะไรออกไป):
 
 ```python
 import boto3
@@ -77,7 +77,7 @@ PUT ครั้งเดียวรับได้ถึง 5 GB ไฟล์�
 
 ### Event
 
-**event notification** ส่ง message ไปที่ SNS topic หรือ SQS queue ใน Region เดียวกับ bucket หรือไปที่ Lambda function ตอนที่ object ถูกสร้าง ลบ restore ย้าย class หรือ replicate โดยกรองตามประเภท event และตาม prefix กับ suffix ของ key ได้ message มี bucket, key (แบบ URL-encoded), ขนาด, ETag, version ID และ `sequencer` ไว้เรียงลำดับ event ของ key เดียวกัน การส่งเป็นแบบ at least once ปกติถึงในไม่กี่วินาที แต่บางทีก็นานเป็นนาทีหรือมากกว่า และไม่เรียงลำดับ ส่วน SQS FIFO queue กับ SNS FIFO topic ใช้เป็นปลายทางไม่ได้ ถ้า consumer เขียนกลับไปที่ bucket เดิม ให้จำกัด notification ไว้ที่ prefix ขาเข้า (ในที่นี้คือ `u/`) ไม่อย่างนั้นมันจะปลุกตัวเองซ้ำ
+**event notification** ส่ง message ไปที่ [SNS](../amazon-sns/) topic หรือ SQS queue ใน Region เดียวกับ bucket หรือไปที่ Lambda function ตอนที่ object ถูกสร้าง ลบ restore ย้าย class หรือ replicate โดยกรองตามประเภท event และตาม prefix กับ suffix ของ key ได้ message มี bucket, key (แบบ URL-encoded), ขนาด, ETag, version ID และ `sequencer` ไว้เรียงลำดับ event ของ key เดียวกัน การส่งเป็นแบบ at least once ปกติถึงในไม่กี่วินาที แต่บางทีก็นานเป็นนาทีหรือมากกว่า และไม่เรียงลำดับ ส่วน SQS FIFO queue กับ SNS FIFO topic ใช้เป็นปลายทางไม่ได้ ถ้า consumer เขียนกลับไปที่ bucket เดิม ให้จำกัด notification ไว้ที่ prefix ขาเข้า (ในที่นี้คือ `u/`) ไม่อย่างนั้นมันจะปลุกตัวเองซ้ำ
 
 อีกทางคือเปิด **[Amazon EventBridge](../amazon-eventbridge/)** ให้ bucket แทน แบบนี้ S3 จะส่ง event ทุกประเภทไปที่ EventBridge แล้ว rule ก็ match ตาม field ของ event และส่งต่อไปที่ target ได้หลายแบบ รวมถึง SQS FIFO queue ด้วย
 

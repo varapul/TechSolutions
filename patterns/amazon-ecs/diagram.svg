@@ -1,0 +1,1533 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Amazon ECS &amp; Fargate</title>
+<desc id="dg-desc">Amazon ECS &amp; Fargate. Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate. Step 1, Where it sits: Catalog runs as 3 Fargate tasks in two zones behind an ALB; images from ECR, logs to CloudWatch. Step 2, Task definition to tasks: ECS registers catalog:7 and places 3 tasks; each gets an ENI, pulls the image, passes /health. Step 3, Heal, scale, deploy: A failed task is replaced, 85% CPU scales 3 tasks to 5, catalog:8 starts new tasks, then old drain. Step 4, Limits and trade-offs: ECS is AWS-only; Fargate has no daemons, privileged mode or GPUs. Steady load may cost less on EC2.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">AWS SERVICES</text>
+  <text class="title" x="40" y="64">Amazon ECS &amp; Fargate</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Task definition to tasks</text>
+  <text class="step on p2" x="262" y="518">2 · Task definition to tasks</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Heal, scale, deploy</text>
+  <text class="step on p3" x="484" y="518">3 · Heal, scale, deploy</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Limits and trade-offs</text>
+  <text class="step on p4" x="706" y="518">4 · Limits and trade-offs</text>
+  <text class="caption p1" x="40" y="552">Catalog runs as 3 Fargate tasks in two zones behind an ALB; images from ECR, logs to CloudWatch.</text>
+  <text class="caption p2" x="40" y="552">ECS registers catalog:7 and places 3 tasks; each gets an ENI, pulls the image, passes /health.</text>
+  <text class="caption p3" x="40" y="552">A failed task is replaced, 85% CPU scales 3 tasks to 5, catalog:8 starts new tasks, then old drain.</text>
+  <text class="caption p4" x="40" y="552">ECS is AWS-only; Fargate has no daemons, privileged mode or GPUs. Steady load may cost less on EC2.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Amazon ECS and Fargate. Acme Shop's service catalog (20 s loop, 1 s = 5%):
+   0-5 s    where it sits: 3 tasks of catalog:7 on Fargate in us-east-1a/b; three GET /products/42 via the ALB; logs to CloudWatch
+   5-10 s   rebuilt from scratch: RegisterTaskDefinition (5.35), placement a, b, a (6.35-6.55), ENIs and IPs (6.75),
+            PENDING (6.85), ACTIVATING + image pull with the execution role (7.25), RUNNING (7.95), one passed health check (8.4),
+            a request to 10.0.11.41 (8.6), deployment COMPLETED (9.05)
+   10-15 s  10.0.11.41 fails 2 checks (10.1-10.5) and is replaced first (10.65-11.05), then drained (11.1-11.65);
+            CPU 50% -> 85% (10.9-11.5), 3 x 85 / 60 = 4.25 -> desired 5 (11.85), two more tasks healthy at 12.35 (51%);
+            update-service catalog:8 (12.6): 5 new tasks (10 = 200%) healthy at 13.45, old 5 drain 13.55 and stop by 14.25
+   15-20 s  limits: ECS API only (15.3), Fargate limits (15.9), EC2 and Managed Instances (16.6), price (17.3);
+            the scene resets to step 1 in the last half-second
+   Generated by a scratch script with scripts/lib/motion.mjs. */
+.diagram .ecs-frame { fill: none; stroke: var(--wire); stroke-width: 1.5; }
+.diagram .ecs-band { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+.diagram .ecs-card { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .ecs-chip { fill: var(--panel-2); stroke: var(--line); stroke-width: 1; }
+.diagram .ecs-dash { stroke-dasharray: 4 3; }
+.diagram .ecs-y { font-size: 9.5px; fill: var(--ink); }
+.diagram .ecs-yk { fill: var(--muted); }
+.diagram .ecs-yc { fill: var(--faint); }
+.diagram .ecs-rv { font-size: 10.5px; font-weight: 600; fill: var(--ink); }
+.diagram .ecs-ip { font-size: 9.5px; fill: var(--ink); }
+.diagram .ecs-eni { font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em; fill: var(--faint); }
+.diagram .ecs-st { font-size: 9.5px; font-weight: 600; }
+.diagram .ecs-ct { font-size: 9.5px; font-weight: 600; fill: var(--ink); }
+.diagram .ecs-val { font-size: 12px; font-weight: 700; }
+.diagram .ecs-tg { font-size: 11px; font-weight: 700; }
+.diagram .ecs-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .ecs-bn { font-size: 10px; font-weight: 700; fill: var(--bg); }
+.diagram .ecs-bar { transform-box: fill-box; transform-origin: 0 50%; }
+.diagram .ecs-rev7 { animation: ecs-rev7 var(--T) linear infinite; }
+.diagram .ecs-rev8 { opacity: 0; animation: ecs-rev8 var(--T) linear infinite; }
+.diagram .ecs-hlReg { opacity: 0; animation: ecs-hlReg var(--T) linear infinite; }
+.diagram .ecs-hlImg { opacity: 0; animation: ecs-hlImg var(--T) linear infinite; }
+.diagram .ecs-hlExe { opacity: 0; animation: ecs-hlExe var(--T) linear infinite; }
+.diagram .ecs-img7 { animation: ecs-img7 var(--T) linear infinite; }
+.diagram .ecs-img8 { opacity: 0; animation: ecs-img8 var(--T) linear infinite; }
+.diagram .ecs-tag8 { opacity: 0; animation: ecs-tag8 var(--T) linear infinite; }
+.diagram .ecs-d3 { animation: ecs-d3 var(--T) linear infinite; }
+.diagram .ecs-d5 { opacity: 0; animation: ecs-d5 var(--T) linear infinite; }
+.diagram .ecs-r3 { animation: ecs-r3 var(--T) linear infinite; }
+.diagram .ecs-r0 { opacity: 0; animation: ecs-r0 var(--T) linear infinite; }
+.diagram .ecs-r4 { opacity: 0; animation: ecs-r4 var(--T) linear infinite; }
+.diagram .ecs-r5 { opacity: 0; animation: ecs-r5 var(--T) linear infinite; }
+.diagram .ecs-r10 { opacity: 0; animation: ecs-r10 var(--T) linear infinite; }
+.diagram .ecs-sN { animation: ecs-sN var(--T) linear infinite; }
+.diagram .ecs-sS { opacity: 0; animation: ecs-sS var(--T) linear infinite; }
+.diagram .ecs-sD { opacity: 0; animation: ecs-sD var(--T) linear infinite; }
+.diagram .ecs-dA { animation: ecs-dA var(--T) linear infinite; }
+.diagram .ecs-dB { opacity: 0; animation: ecs-dB var(--T) linear infinite; }
+.diagram .ecs-dC { opacity: 0; animation: ecs-dC var(--T) linear infinite; }
+.diagram .ecs-dE { opacity: 0; animation: ecs-dE var(--T) linear infinite; }
+.diagram .ecs-dD { opacity: 0; animation: ecs-dD var(--T) linear infinite; }
+.diagram .ecs-cpuHi { opacity: 0; animation: ecs-cpuHi var(--T) linear infinite; }
+.diagram .ecs-c50 { animation: ecs-c50 var(--T) linear infinite; }
+.diagram .ecs-c85 { opacity: 0; animation: ecs-c85 var(--T) linear infinite; }
+.diagram .ecs-c51 { opacity: 0; animation: ecs-c51 var(--T) linear infinite; }
+.diagram .ecs-cpu, .diagram .ecs-cpu2 { transform: scaleX(0.5); animation: ecs-cpu var(--T) linear infinite; }
+.diagram .ecs-capRow { animation: ecs-capRow var(--T) linear infinite; }
+.diagram .ecs-lcRow { opacity: 0; animation: ecs-lcRow var(--T) linear infinite; }
+.diagram .ecs-lc0 { opacity: 0; animation: ecs-lc0 var(--T) linear infinite; }
+.diagram .ecs-lc1 { opacity: 0; animation: ecs-lc1 var(--T) linear infinite; }
+.diagram .ecs-lc2 { opacity: 0; animation: ecs-lc2 var(--T) linear infinite; }
+.diagram .ecs-lc3 { opacity: 0; animation: ecs-lc3 var(--T) linear infinite; }
+.diagram .ecs-t3h { animation: ecs-t3h var(--T) linear infinite; }
+.diagram .ecs-t0 { opacity: 0; animation: ecs-t0 var(--T) linear infinite; }
+.diagram .ecs-t3i { opacity: 0; animation: ecs-t3i var(--T) linear infinite; }
+.diagram .ecs-t2u { opacity: 0; animation: ecs-t2u var(--T) linear infinite; }
+.diagram .ecs-t3d { opacity: 0; animation: ecs-t3d var(--T) linear infinite; }
+.diagram .ecs-t5h { opacity: 0; animation: ecs-t5h var(--T) linear infinite; }
+.diagram .ecs-t5i { opacity: 0; animation: ecs-t5i var(--T) linear infinite; }
+.diagram .ecs-t5d { opacity: 0; animation: ecs-t5d var(--T) linear infinite; }
+.diagram .ecs-hlRole { opacity: 0; animation: ecs-hlRole var(--T) linear infinite; }
+.diagram .ecs-T1st { opacity: 0; animation: ecs-T1st var(--T) linear infinite; }
+.diagram .ecs-olddr { opacity: 0; animation: ecs-olddr var(--T) linear infinite; }
+.diagram .ecs-T1g { animation: ecs-T1g var(--T) linear infinite; }
+.diagram .ecs-olda { opacity: 0; animation: ecs-olda var(--T) linear infinite; }
+.diagram .ecs-T1ip { animation: ecs-T1ip var(--T) linear infinite; }
+.diagram .ecs-T1wrun { animation: ecs-T1wrun var(--T) linear infinite; }
+.diagram .ecs-T1wpro { opacity: 0; animation: ecs-T1wpro var(--T) linear infinite; }
+.diagram .ecs-T1wpen { opacity: 0; animation: ecs-T1wpen var(--T) linear infinite; }
+.diagram .ecs-T1wact { opacity: 0; animation: ecs-T1wact var(--T) linear infinite; }
+.diagram .ecs-oldwdra { opacity: 0; animation: ecs-oldwdra var(--T) linear infinite; }
+.diagram .ecs-ok2 { opacity: 0; animation: ecs-ok2 var(--T) linear infinite; }
+.diagram .ecs-T1 { animation: ecs-T1 var(--T) linear infinite; }
+.diagram .ecs-T3st { opacity: 0; animation: ecs-T3st var(--T) linear infinite; }
+.diagram .ecs-T3g { animation: ecs-T3g var(--T) linear infinite; }
+.diagram .ecs-T3ip { animation: ecs-T3ip var(--T) linear infinite; }
+.diagram .ecs-T3wrun { animation: ecs-T3wrun var(--T) linear infinite; }
+.diagram .ecs-T3wpro { opacity: 0; animation: ecs-T3wpro var(--T) linear infinite; }
+.diagram .ecs-T3wpen { opacity: 0; animation: ecs-T3wpen var(--T) linear infinite; }
+.diagram .ecs-T3wact { opacity: 0; animation: ecs-T3wact var(--T) linear infinite; }
+.diagram .ecs-T3 { animation: ecs-T3 var(--T) linear infinite; }
+.diagram .ecs-T2st { opacity: 0; animation: ecs-T2st var(--T) linear infinite; }
+.diagram .ecs-T2bd { opacity: 0; animation: ecs-T2bd var(--T) linear infinite; }
+.diagram .ecs-T2dr { opacity: 0; animation: ecs-T2dr var(--T) linear infinite; }
+.diagram .ecs-T2g { animation: ecs-T2g var(--T) linear infinite; }
+.diagram .ecs-T2r { opacity: 0; animation: ecs-T2r var(--T) linear infinite; }
+.diagram .ecs-T2a { opacity: 0; animation: ecs-T2a var(--T) linear infinite; }
+.diagram .ecs-T2ip { animation: ecs-T2ip var(--T) linear infinite; }
+.diagram .ecs-T2wrun { animation: ecs-T2wrun var(--T) linear infinite; }
+.diagram .ecs-T2wpro { opacity: 0; animation: ecs-T2wpro var(--T) linear infinite; }
+.diagram .ecs-T2wpen { opacity: 0; animation: ecs-T2wpen var(--T) linear infinite; }
+.diagram .ecs-T2wact { opacity: 0; animation: ecs-T2wact var(--T) linear infinite; }
+.diagram .ecs-T2wunh { opacity: 0; animation: ecs-T2wunh var(--T) linear infinite; }
+.diagram .ecs-T2wdra { opacity: 0; animation: ecs-T2wdra var(--T) linear infinite; }
+.diagram .ecs-T2no { opacity: 0; animation: ecs-T2no var(--T) linear infinite; }
+.diagram .ecs-T2 { animation: ecs-T2 var(--T) linear infinite; }
+.diagram .ecs-T4st { opacity: 0; animation: ecs-T4st var(--T) linear infinite; }
+.diagram .ecs-T4g { opacity: 0; animation: ecs-T4g var(--T) linear infinite; }
+.diagram .ecs-T4ip { opacity: 0; animation: ecs-T4ip var(--T) linear infinite; }
+.diagram .ecs-T4wpen { opacity: 0; animation: ecs-T4wpen var(--T) linear infinite; }
+.diagram .ecs-T4wact { opacity: 0; animation: ecs-T4wact var(--T) linear infinite; }
+.diagram .ecs-T4wrun { opacity: 0; animation: ecs-T4wrun var(--T) linear infinite; }
+.diagram .ecs-T4ok { opacity: 0; animation: ecs-T4ok var(--T) linear infinite; }
+.diagram .ecs-T4 { opacity: 0; animation: ecs-T4 var(--T) linear infinite; }
+.diagram .ecs-Sst { opacity: 0; animation: ecs-Sst var(--T) linear infinite; }
+.diagram .ecs-Sg { opacity: 0; animation: ecs-Sg var(--T) linear infinite; }
+.diagram .ecs-Sip { opacity: 0; animation: ecs-Sip var(--T) linear infinite; }
+.diagram .ecs-Swpen { opacity: 0; animation: ecs-Swpen var(--T) linear infinite; }
+.diagram .ecs-Swact { opacity: 0; animation: ecs-Swact var(--T) linear infinite; }
+.diagram .ecs-Swrun { opacity: 0; animation: ecs-Swrun var(--T) linear infinite; }
+.diagram .ecs-Sok { opacity: 0; animation: ecs-Sok var(--T) linear infinite; }
+.diagram .ecs-S { opacity: 0; animation: ecs-S var(--T) linear infinite; }
+.diagram .ecs-Nst { opacity: 0; animation: ecs-Nst var(--T) linear infinite; }
+.diagram .ecs-Ng { opacity: 0; animation: ecs-Ng var(--T) linear infinite; }
+.diagram .ecs-Nip { opacity: 0; animation: ecs-Nip var(--T) linear infinite; }
+.diagram .ecs-Nwpen { opacity: 0; animation: ecs-Nwpen var(--T) linear infinite; }
+.diagram .ecs-Nwact { opacity: 0; animation: ecs-Nwact var(--T) linear infinite; }
+.diagram .ecs-Nwrun { opacity: 0; animation: ecs-Nwrun var(--T) linear infinite; }
+.diagram .ecs-Nok { opacity: 0; animation: ecs-Nok var(--T) linear infinite; }
+.diagram .ecs-N { opacity: 0; animation: ecs-N var(--T) linear infinite; }
+.diagram .ecs-b1 { opacity: 0; animation: ecs-b1 var(--T) linear infinite; }
+.diagram .ecs-b2 { opacity: 0; animation: ecs-b2 var(--T) linear infinite; }
+.diagram .ecs-b3 { opacity: 0; animation: ecs-b3 var(--T) linear infinite; }
+.diagram .ecs-b4 { opacity: 0; animation: ecs-b4 var(--T) linear infinite; }
+.diagram .ecs-b5 { opacity: 0; animation: ecs-b5 var(--T) linear infinite; }
+.diagram .ecs-s4a { opacity: 0; animation: ecs-s4a var(--T) linear infinite; }
+.diagram .ecs-s4b { opacity: 0; animation: ecs-s4b var(--T) linear infinite; }
+.diagram .ecs-s4c { opacity: 0; animation: ecs-s4c var(--T) linear infinite; }
+.diagram .ecs-s4d { opacity: 0; animation: ecs-s4d var(--T) linear infinite; }
+.diagram .ecs-qA { opacity: 0; animation: ecs-qA var(--T) linear infinite; }
+.diagram .ecs-qB { opacity: 0; animation: ecs-qB var(--T) linear infinite; }
+.diagram .ecs-aA { opacity: 0; animation: ecs-aA var(--T) linear infinite; }
+.diagram .ecs-aB { opacity: 0; animation: ecs-aB var(--T) linear infinite; }
+.diagram .ecs-log { opacity: 0; animation: ecs-log var(--T) linear infinite; }
+.diagram .ecs-reg { opacity: 0; animation: ecs-reg var(--T) linear infinite; }
+.diagram .ecs-p1 { opacity: 0; animation: ecs-p1 var(--T) linear infinite; }
+.diagram .ecs-p2 { opacity: 0; animation: ecs-p2 var(--T) linear infinite; }
+.diagram .ecs-p3 { opacity: 0; animation: ecs-p3 var(--T) linear infinite; }
+@keyframes ecs-rev7 {
+  0% { opacity: 1; }
+  63% { opacity: 1; }
+  63.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-rev8 {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-hlReg {
+  0% { opacity: 0; }
+  26.25% { opacity: 0; }
+  27.25% { opacity: 1; }
+  31.25% { opacity: 1; }
+  32.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-hlImg {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.75% { opacity: 1; }
+  71% { opacity: 1; }
+  72.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-hlExe {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  36.75% { opacity: 1; }
+  40.25% { opacity: 1; }
+  41.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-img7 {
+  0% { opacity: 1; }
+  63% { opacity: 1; }
+  63.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-img8 {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-tag8 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-d3 {
+  0% { opacity: 1; }
+  59.25% { opacity: 1; }
+  59.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-d5 {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  59.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-r3 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  25.5% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  53.25% { opacity: 1; }
+  53.75% { opacity: 0; }
+  58% { opacity: 0; }
+  58.5% { opacity: 1; }
+  61.75% { opacity: 1; }
+  62.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-r0 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.5% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-r4 {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  53.75% { opacity: 1; }
+  58% { opacity: 1; }
+  58.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-r5 {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.25% { opacity: 1; }
+  65% { opacity: 1; }
+  65.5% { opacity: 0; }
+  70.75% { opacity: 0; }
+  71.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-r10 {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  65.5% { opacity: 1; }
+  70.75% { opacity: 1; }
+  71.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-sN {
+  0% { opacity: 1; }
+  58% { opacity: 1; }
+  58.75% { opacity: 0; }
+  71.25% { opacity: 0; }
+  72% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-sS {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.75% { opacity: 1; }
+  63% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-sD {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.25% { opacity: 1; }
+  71% { opacity: 1; }
+  71.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-dA {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  25.75% { opacity: 0; }
+  45.25% { opacity: 0; }
+  46% { opacity: 1; }
+  64.25% { opacity: 1; }
+  65% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-dB {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  30.25% { opacity: 1; }
+  45.25% { opacity: 1; }
+  46% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-dC {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65% { opacity: 1; }
+  71% { opacity: 1; }
+  71.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-dE {
+  0% { opacity: 0; }
+  71% { opacity: 0; }
+  71.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-dD {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65% { opacity: 1; }
+  71% { opacity: 1; }
+  71.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-cpuHi {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  56% { opacity: 1; }
+  62.75% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-c50 {
+  0% { opacity: 1; }
+  54.5% { opacity: 1; }
+  55% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-c85 {
+  0% { opacity: 0; }
+  57.25% { opacity: 0; }
+  57.75% { opacity: 1; }
+  62% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-c51 {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-cpu {
+  0% { transform: scaleX(0.5); }
+  54.5% { transform: scaleX(0.5); }
+  57.5% { transform: scaleX(0.85); }
+  61.75% { transform: scaleX(0.85); }
+  62.75% { transform: scaleX(0.51); }
+  97.5% { transform: scaleX(0.51); }
+  99.5% { transform: scaleX(0.5); }
+  100% { transform: scaleX(0.5); }
+}
+@keyframes ecs-capRow {
+  0% { opacity: 1; }
+  25.75% { opacity: 1; }
+  26.75% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-lcRow {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-lc0 {
+  0% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.15% { opacity: 1; }
+  34.25% { opacity: 1; }
+  34.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-lc1 {
+  0% { opacity: 0; }
+  34.25% { opacity: 0; }
+  34.65% { opacity: 1; }
+  36.25% { opacity: 1; }
+  36.65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-lc2 {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  36.65% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-lc3 {
+  0% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.15% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-t3h {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  25.5% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  52.75% { opacity: 1; }
+  53.25% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  61.75% { opacity: 1; }
+  62.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-t0 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.5% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-t3i {
+  0% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  42% { opacity: 1; }
+  42.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-t2u {
+  0% { opacity: 0; }
+  52.75% { opacity: 0; }
+  53.25% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-t3d {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-t5h {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.25% { opacity: 1; }
+  64.75% { opacity: 1; }
+  65.25% { opacity: 0; }
+  70.5% { opacity: 0; }
+  71% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-t5i {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  65.25% { opacity: 1; }
+  67.5% { opacity: 1; }
+  68% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-t5d {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68% { opacity: 1; }
+  70.5% { opacity: 1; }
+  71% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-hlRole {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  36.75% { opacity: 1; }
+  40.25% { opacity: 1; }
+  41.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T1st {
+  0% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.25% { opacity: 1; }
+  42% { opacity: 1; }
+  42.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-olddr {
+  0% { opacity: 0; }
+  67.75% { opacity: 0; }
+  68.25% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T1g {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-olda {
+  0% { opacity: 0; }
+  67.75% { opacity: 0; }
+  68.25% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T1ip {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T1wrun {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  67.75% { opacity: 1; }
+  68.25% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T1wpro {
+  0% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.25% { opacity: 1; }
+  34.25% { opacity: 1; }
+  34.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T1wpen {
+  0% { opacity: 0; }
+  34.25% { opacity: 0; }
+  34.75% { opacity: 1; }
+  36.25% { opacity: 1; }
+  36.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T1wact {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  36.75% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-oldwdra {
+  0% { opacity: 0; }
+  67.75% { opacity: 0; }
+  68.25% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-ok2 {
+  0% { opacity: 0; }
+  41.25% { opacity: 0; }
+  41.55% { opacity: 1; }
+  42.75% { opacity: 1; }
+  43.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T1 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  31.75% { opacity: 0; }
+  32.75% { opacity: 1; }
+  70.25% { opacity: 1; }
+  71.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T3st {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.25% { opacity: 1; }
+  42% { opacity: 1; }
+  42.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T3g {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T3ip {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  34.25% { opacity: 0; }
+  35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T3wrun {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  67.75% { opacity: 1; }
+  68.25% { opacity: 0; }
+  71.5% { opacity: 0; }
+  72% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T3wpro {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.25% { opacity: 1; }
+  34.25% { opacity: 1; }
+  34.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T3wpen {
+  0% { opacity: 0; }
+  34.25% { opacity: 0; }
+  34.75% { opacity: 1; }
+  36.25% { opacity: 1; }
+  36.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T3wact {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  36.75% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T3 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.75% { opacity: 1; }
+  70.25% { opacity: 1; }
+  71.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T2st {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  42% { opacity: 1; }
+  42.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2bd {
+  0% { opacity: 0; }
+  52.75% { opacity: 0; }
+  53.25% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2dr {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2g {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  42% { opacity: 0; }
+  42.5% { opacity: 1; }
+  52.75% { opacity: 1; }
+  53.25% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T2r {
+  0% { opacity: 0; }
+  52.75% { opacity: 0; }
+  53.25% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2a {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2ip {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  34% { opacity: 0; }
+  34.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T2wrun {
+  0% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  52.75% { opacity: 1; }
+  53.25% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T2wpro {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  34.25% { opacity: 1; }
+  34.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2wpen {
+  0% { opacity: 0; }
+  34.25% { opacity: 0; }
+  34.75% { opacity: 1; }
+  36.25% { opacity: 1; }
+  36.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2wact {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  36.75% { opacity: 1; }
+  39.75% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2wunh {
+  0% { opacity: 0; }
+  52.75% { opacity: 0; }
+  53.25% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2wdra {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2no {
+  0% { opacity: 0; }
+  50.5% { opacity: 0; }
+  50.75% { opacity: 1; }
+  51.25% { opacity: 1; }
+  51.65% { opacity: 0; }
+  51.75% { opacity: 0; }
+  52% { opacity: 1; }
+  52.5% { opacity: 1; }
+  52.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T2 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  26.25% { opacity: 0; }
+  32.25% { opacity: 0; }
+  33.25% { opacity: 1; }
+  57.25% { opacity: 1; }
+  58.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes ecs-T4st {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  53.75% { opacity: 1; }
+  55.25% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T4g {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  55.75% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T4ip {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54.5% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T4wpen {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  53.75% { opacity: 1; }
+  54% { opacity: 1; }
+  54.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T4wact {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  54.5% { opacity: 1; }
+  55.25% { opacity: 1; }
+  55.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T4wrun {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  55.75% { opacity: 1; }
+  67.75% { opacity: 1; }
+  68.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T4ok {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.05% { opacity: 1; }
+  56% { opacity: 1; }
+  56.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-T4 {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  54% { opacity: 1; }
+  70.25% { opacity: 1; }
+  71.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Sst {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60% { opacity: 1; }
+  61.75% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Sg {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.25% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Sip {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  60.75% { opacity: 1; }
+  71.5% { opacity: 1; }
+  72% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Swpen {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60% { opacity: 1; }
+  60.25% { opacity: 1; }
+  60.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Swact {
+  0% { opacity: 0; }
+  60.25% { opacity: 0; }
+  60.75% { opacity: 1; }
+  61.75% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Swrun {
+  0% { opacity: 0; }
+  61.75% { opacity: 0; }
+  62.25% { opacity: 1; }
+  67.75% { opacity: 1; }
+  68.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Sok {
+  0% { opacity: 0; }
+  61.25% { opacity: 0; }
+  61.55% { opacity: 1; }
+  62.5% { opacity: 1; }
+  63.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-S {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60.25% { opacity: 1; }
+  70.25% { opacity: 1; }
+  71.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Nst {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  65.5% { opacity: 1; }
+  67.25% { opacity: 1; }
+  68% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Ng {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  67.75% { opacity: 1; }
+  99.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Nip {
+  0% { opacity: 0; }
+  65.5% { opacity: 0; }
+  66.25% { opacity: 1; }
+  99.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Nwpen {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  65.5% { opacity: 1; }
+  65.75% { opacity: 1; }
+  66.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Nwact {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  66.25% { opacity: 1; }
+  67.25% { opacity: 1; }
+  67.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Nwrun {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  67.75% { opacity: 1; }
+  99.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-Nok {
+  0% { opacity: 0; }
+  66.75% { opacity: 0; }
+  67.05% { opacity: 1; }
+  68% { opacity: 1; }
+  68.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-N {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  65.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-b1 {
+  0% { opacity: 0; }
+  26.75% { opacity: 0; }
+  27.5% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-b2 {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-b3 {
+  0% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.5% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-b4 {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  37% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-b5 {
+  0% { opacity: 0; }
+  41% { opacity: 0; }
+  41.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-s4a {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.25% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-s4b {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  81% { opacity: 1; }
+  97.25% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-s4c {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84.5% { opacity: 1; }
+  97.25% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-s4d {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  88% { opacity: 1; }
+  97.25% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ecs-qA {
+  0% { transform: translate(726px, 106px); opacity: 0; }
+  1.75% { transform: translate(726px, 106px); opacity: 0; }
+  2% { opacity: 1; }
+  2.533% { transform: translate(726px, 171px); }
+  5.75% { transform: translate(459px, 171px); }
+  6.292% { transform: translate(459px, 216px); }
+  7.75% { transform: translate(338px, 216px); opacity: 1; }
+  8% { transform: translate(338px, 216px); opacity: 0; }
+  9.5% { transform: translate(726px, 106px); opacity: 0; }
+  9.75% { opacity: 1; }
+  10.245% { transform: translate(726px, 171px); }
+  13.307% { transform: translate(459px, 171px); }
+  14.362% { transform: translate(459px, 263px); }
+  15.75% { transform: translate(338px, 263px); opacity: 1; }
+  16% { transform: translate(338px, 263px); opacity: 0; }
+  100% { transform: translate(338px, 263px); opacity: 0; }
+}
+@keyframes ecs-qB {
+  0% { transform: translate(726px, 106px); opacity: 0; }
+  5% { transform: translate(726px, 106px); opacity: 0; }
+  5.25% { opacity: 1; }
+  5.744% { transform: translate(726px, 171px); }
+  6.088% { transform: translate(696px, 171px); }
+  6.603% { transform: translate(696px, 216px); }
+  8% { transform: translate(574px, 216px); opacity: 1; }
+  8.25% { transform: translate(574px, 216px); opacity: 0; }
+  43% { transform: translate(726px, 106px); opacity: 0; }
+  43.25% { opacity: 1; }
+  43.558% { transform: translate(726px, 171px); }
+  43.816% { transform: translate(696px, 171px); }
+  44.202% { transform: translate(696px, 216px); }
+  45.25% { transform: translate(574px, 216px); opacity: 1; }
+  45.5% { transform: translate(574px, 216px); opacity: 0; }
+  100% { transform: translate(574px, 216px); opacity: 0; }
+}
+@keyframes ecs-aA {
+  0% { transform: translate(338px, 216px); opacity: 0; }
+  8% { transform: translate(338px, 216px); opacity: 0; }
+  8.25% { opacity: 1; }
+  9.458% { transform: translate(459px, 216px); }
+  10% { transform: translate(459px, 171px); }
+  13.217% { transform: translate(726px, 171px); }
+  14% { transform: translate(726px, 106px); opacity: 1; }
+  14.25% { transform: translate(726px, 106px); opacity: 0; }
+  16% { transform: translate(338px, 263px); opacity: 0; }
+  16.25% { opacity: 1; }
+  17.332% { transform: translate(459px, 263px); }
+  18.345% { transform: translate(459px, 171px); }
+  21.284% { transform: translate(726px, 171px); }
+  22% { transform: translate(726px, 106px); opacity: 1; }
+  22.25% { transform: translate(726px, 106px); opacity: 0; }
+  100% { transform: translate(726px, 106px); opacity: 0; }
+}
+@keyframes ecs-aB {
+  0% { transform: translate(574px, 216px); opacity: 0; }
+  8.25% { transform: translate(574px, 216px); opacity: 0; }
+  8.5% { opacity: 1; }
+  9.647% { transform: translate(696px, 216px); }
+  10.162% { transform: translate(696px, 171px); }
+  10.506% { transform: translate(726px, 171px); }
+  11.25% { transform: translate(726px, 106px); opacity: 1; }
+  11.5% { transform: translate(726px, 106px); opacity: 0; }
+  45.25% { transform: translate(574px, 216px); opacity: 0; }
+  45.5% { opacity: 1; }
+  46.298% { transform: translate(696px, 216px); }
+  46.684% { transform: translate(696px, 171px); }
+  46.942% { transform: translate(726px, 171px); }
+  47.5% { transform: translate(726px, 106px); opacity: 1; }
+  47.75% { transform: translate(726px, 106px); opacity: 0; }
+  100% { transform: translate(726px, 106px); opacity: 0; }
+}
+@keyframes ecs-log {
+  0% { transform: translate(692px, 302px); opacity: 0; }
+  8.75% { transform: translate(692px, 302px); opacity: 0; }
+  9% { opacity: 1; }
+  10.5% { transform: translate(738px, 302px); opacity: 1; }
+  10.75% { transform: translate(738px, 302px); opacity: 0; }
+  12.75% { transform: translate(692px, 302px); opacity: 0; }
+  13% { opacity: 1; }
+  14.5% { transform: translate(738px, 302px); opacity: 1; }
+  14.75% { transform: translate(738px, 302px); opacity: 0; }
+  18.25% { transform: translate(692px, 302px); opacity: 0; }
+  18.5% { opacity: 1; }
+  20% { transform: translate(738px, 302px); opacity: 1; }
+  20.25% { transform: translate(738px, 302px); opacity: 0; }
+  100% { transform: translate(738px, 302px); opacity: 0; }
+}
+@keyframes ecs-reg {
+  0% { transform: translate(194px, 144px); opacity: 0; }
+  26.75% { transform: translate(194px, 144px); opacity: 0; }
+  27% { opacity: 1; }
+  29.25% { transform: translate(240px, 144px); opacity: 1; }
+  29.5% { transform: translate(240px, 144px); opacity: 0; }
+  63% { transform: translate(194px, 144px); opacity: 0; }
+  63.25% { opacity: 1; }
+  64.5% { transform: translate(240px, 144px); opacity: 1; }
+  64.75% { transform: translate(240px, 144px); opacity: 0; }
+  100% { transform: translate(240px, 144px); opacity: 0; }
+}
+@keyframes ecs-p1 {
+  0% { transform: translate(204px, 367px); opacity: 0; }
+  36.5% { transform: translate(204px, 367px); opacity: 0; }
+  36.75% { opacity: 1; }
+  36.77% { transform: translate(222px, 367px); }
+  39.04% { transform: translate(222px, 216px); }
+  39.25% { transform: translate(236px, 216px); opacity: 1; }
+  39.5% { transform: translate(236px, 216px); opacity: 0; }
+  100% { transform: translate(236px, 216px); opacity: 0; }
+}
+@keyframes ecs-p2 {
+  0% { transform: translate(204px, 367px); opacity: 0; }
+  36.5% { transform: translate(204px, 367px); opacity: 0; }
+  36.629% { transform: translate(222px, 367px); }
+  36.75% { opacity: 1; }
+  36.815% { transform: translate(222px, 341px); }
+  38.512% { transform: translate(459px, 341px); }
+  39.407% { transform: translate(459px, 216px); }
+  39.5% { transform: translate(472px, 216px); opacity: 1; }
+  39.75% { transform: translate(472px, 216px); opacity: 0; }
+  100% { transform: translate(472px, 216px); opacity: 0; }
+}
+@keyframes ecs-p3 {
+  0% { transform: translate(204px, 367px); opacity: 0; }
+  36.75% { transform: translate(204px, 367px); opacity: 0; }
+  37% { opacity: 1; }
+  37.081% { transform: translate(222px, 367px); }
+  38.993% { transform: translate(222px, 263px); }
+  39.25% { transform: translate(236px, 263px); opacity: 1; }
+  39.5% { transform: translate(236px, 263px); opacity: 0; }
+  100% { transform: translate(236px, 263px); opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- left: the task definition and the image registry -->
+<rect class="box" x="36" y="94" width="168" height="238" rx="14"/>
+<text class="label" x="48" y="114">Task definition</text>
+<g class="ecs-rev7"><text class="ecs-rv mono" x="48" y="131">catalog:7</text></g>
+<g class="ecs-rev8"><text class="ecs-rv mono f-green" x="48" y="131">catalog:8</text></g>
+<text class="tiny end f-faint" x="192" y="131">abridged</text>
+<rect class="f-bg s-line" x="44" y="140" width="152" height="184" rx="6" stroke-width="1.2"/>
+<g class="ecs-hlReg"><rect class="f-blue-soft s-blue" x="47" y="143" width="146" height="178" rx="4" stroke-width="1.2"/></g>
+<g class="ecs-hlImg"><rect class="f-green-soft s-green" x="47" y="158" width="146" height="14" rx="3" stroke-width="1"/></g>
+<g class="ecs-hlExe"><rect class="f-orange-soft s-orange" x="47" y="288" width="146" height="29" rx="3" stroke-width="1"/></g>
+<text class="ecs-y mono" x="52" y="155"><tspan class="ecs-yk">family: </tspan>catalog</text>
+<g class="ecs-img7"><text class="ecs-y mono" x="52" y="168"><tspan class="ecs-yk">image: </tspan>…/catalog:1.4.2</text></g>
+<g class="ecs-img8"><text class="ecs-y mono" x="52" y="168"><tspan class="ecs-yk">image: </tspan>…/catalog:1.5.0</text></g>
+<text class="ecs-y mono" x="52" y="181"><tspan class="ecs-yk">cpu: </tspan>512<tspan class="ecs-yc">  0.5 vCPU</tspan></text>
+<text class="ecs-y mono" x="52" y="194"><tspan class="ecs-yk">memory: </tspan>1024<tspan class="ecs-yc">  1 GB</tspan></text>
+<text class="ecs-y mono" x="52" y="207"><tspan class="ecs-yk">networkMode: </tspan>awsvpc</text>
+<text class="ecs-y mono" x="52" y="220"><tspan class="ecs-yk">containerPort: </tspan>8080</text>
+<text class="ecs-y mono" x="52" y="233"><tspan class="ecs-yk">requiresCompatibilities:</tspan></text>
+<text class="ecs-y mono" x="52" y="246">&#160;&#160;FARGATE</text>
+<text class="ecs-y mono" x="52" y="259"><tspan class="ecs-yk">logDriver: </tspan>awslogs</text>
+<text class="ecs-y mono" x="52" y="272"><tspan class="ecs-yk">taskRoleArn:</tspan></text>
+<text class="ecs-y mono" x="52" y="285">&#160;&#160;catalog-task</text>
+<text class="ecs-y mono" x="52" y="298"><tspan class="ecs-yk">executionRoleArn:</tspan></text>
+<text class="ecs-y mono" x="52" y="311">&#160;&#160;catalog-execution</text>
+<rect class="box" x="36" y="340" width="168" height="56" rx="12"/>
+<text class="sub sb f-ink" x="48" y="358">Amazon ECR</text>
+<text class="tiny" x="48" y="373">repository catalog, tags:</text>
+<rect class="ecs-chip" x="48" y="379" width="38" height="13" rx="6.5"/>
+<text class="ecs-ct mono mid" x="67" y="389">1.4.2</text>
+<g class="ecs-tag8"><rect class="f-green-soft s-green" x="90" y="379" width="38" height="13" rx="6.5" stroke-width="1"/><text class="ecs-ct mono mid" x="109" y="389">1.5.0</text></g>
+<!-- wires -->
+<path class="wire" d="M204 144H226" marker-end="url(#ah)"/>
+<path class="wire" d="M204 367H226" marker-end="url(#ah)"/>
+<path class="wire" d="M726 118V171H706" marker-end="url(#ah)"/>
+<path class="wire" d="M702 302H712" marker-end="url(#ah)"/>
+<!-- the product: Amazon ECS -->
+<rect class="ecs-frame" x="216" y="94" width="486" height="302" rx="16"/>
+<text class="label" x="232" y="114">Amazon ECS</text>
+<text class="tiny mono" x="326" y="114">cluster acme-shop · us-east-1</text>
+<rect class="ecs-band" x="228" y="120" width="462" height="48" rx="10"/>
+<text class="sub sb f-ink" x="240" y="139">service catalog</text>
+<text class="tiny" x="352" y="139">desired</text>
+<text class="tiny" x="410" y="139">running</text>
+<g class="ecs-d3"><text class="ecs-val mono f-ink" x="393" y="139.5">3</text></g>
+<g class="ecs-d5"><text class="ecs-val mono f-amber-ink" x="393" y="139.5">5</text></g>
+<g class="ecs-r3"><text class="ecs-val mono f-ink" x="452" y="139.5">3</text></g>
+<g class="ecs-r0"><text class="ecs-val mono f-muted" x="452" y="139.5">0</text></g>
+<g class="ecs-r4"><text class="ecs-val mono f-amber-ink" x="452" y="139.5">4</text></g>
+<g class="ecs-r5"><text class="ecs-val mono f-ink" x="452" y="139.5">5</text></g>
+<g class="ecs-r10"><text class="ecs-val mono f-amber-ink" x="452" y="139.5">10</text></g>
+<g class="ecs-sN"><rect class="ecs-chip" x="482" y="127" width="202" height="16" rx="8" stroke-width="1"/><text class="ecs-ct mid f-muted" x="583" y="139">auto scaling: CPU 60% · 3 to 10 tasks</text></g>
+<g class="ecs-sS"><rect class="f-amber-soft s-amber" x="482" y="127" width="202" height="16" rx="8" stroke-width="1"/><text class="ecs-ct mid f-amber-ink" x="583" y="139">3 × 85% ÷ 60% = 4.25 → 5 tasks</text></g>
+<g class="ecs-sD"><rect class="f-blue-soft s-blue" x="482" y="127" width="202" height="16" rx="8" stroke-width="1"/><text class="ecs-ct mid f-blue" x="583" y="139">min healthy 100% · max 200%</text></g>
+<g class="ecs-dA"><rect class="ecs-chip" x="236" y="149" width="172" height="15" rx="7.5"/><text class="ecs-ct mono" x="244" y="160"><tspan class="f-muted">PRIMARY</tspan> catalog:7 <tspan class="f-green">COMPLETED</tspan></text></g>
+<g class="ecs-dB"><rect class="ecs-chip" x="236" y="149" width="172" height="15" rx="7.5"/><text class="ecs-ct mono" x="244" y="160"><tspan class="f-muted">PRIMARY</tspan> catalog:7 <tspan class="f-amber-ink">IN_PROGRESS</tspan></text></g>
+<g class="ecs-dC"><rect class="ecs-chip" x="236" y="149" width="172" height="15" rx="7.5"/><text class="ecs-ct mono" x="244" y="160"><tspan class="f-muted">PRIMARY</tspan> catalog:8 <tspan class="f-amber-ink">IN_PROGRESS</tspan></text></g>
+<g class="ecs-dE"><rect class="ecs-chip" x="236" y="149" width="172" height="15" rx="7.5"/><text class="ecs-ct mono" x="244" y="160"><tspan class="f-muted">PRIMARY</tspan> catalog:8 <tspan class="f-green">COMPLETED</tspan></text></g>
+<g class="ecs-dD"><rect class="f-amber-soft s-amber" x="412" y="149" width="106" height="15" rx="7.5" stroke-width="1"/><text class="ecs-ct mono" x="420" y="160"><tspan class="f-amber-ink">ACTIVE</tspan> catalog:7</text></g>
+<g class="p134"><text class="tiny" x="526" y="160">CPU</text><rect class="f-line" x="550" y="153" width="84" height="7" rx="3.5"/><rect class="f-blue ecs-bar ecs-cpu" x="550" y="153" width="84" height="7" rx="3.5"/><g class="ecs-cpuHi"><rect class="f-amber ecs-bar ecs-cpu2" x="550" y="153" width="84" height="7" rx="3.5"/></g><path class="s-ink" d="M600.4 150V163" stroke-width="1.5"/><g class="ecs-c50"><text class="ecs-ct" x="641" y="160">50%</text></g><g class="ecs-c85"><text class="ecs-ct f-amber-ink" x="641" y="160">85%</text></g><g class="ecs-c51"><text class="ecs-ct" x="641" y="160">51%</text></g></g>
+<rect class="zone" x="228" y="174" width="226" height="164" rx="10"/>
+<text class="tiny" x="238" y="188"><tspan class="f-ink sb">us-east-1a</tspan> · private 10.0.10.0/24</text>
+<rect class="zone" x="464" y="174" width="226" height="164" rx="10"/>
+<text class="tiny" x="474" y="188"><tspan class="f-ink sb">us-east-1b</tspan> · private 10.0.11.0/24</text>
+<rect class="ecs-band" x="228" y="344" width="462" height="46" rx="10"/>
+<text class="sub sb f-ink" x="240" y="360">AWS Fargate</text>
+<text class="tiny" x="322" y="360">each task in its own environment: own kernel, CPU, memory and ENI</text>
+<g class="ecs-capRow"><text class="tiny" x="240" y="382">capacity:</text><rect class="f-panel-2 s-ink" x="290" y="372" width="52" height="14" rx="7" stroke-width="1"/><text class="ecs-ct mid mono f-ink" x="316" y="382">FARGATE</text><rect class="ecs-chip" x="346" y="372" width="80" height="14" rx="7"/><text class="ecs-ct mid mono f-muted" x="386" y="382">FARGATE_SPOT</text><rect class="ecs-chip" x="430" y="372" width="126" height="14" rx="7"/><text class="ecs-ct mid f-muted" x="493" y="382">EC2 Auto Scaling group</text><rect class="ecs-chip" x="560" y="372" width="124" height="14" rx="7"/><text class="ecs-ct mid f-muted" x="622" y="382">ECS Managed Instances</text></g>
+<g class="ecs-lcRow"><text class="tiny" x="240" y="382">task:</text><rect class="ecs-chip" x="270" y="372" width="84" height="14" rx="7"/><text class="ecs-ct mid f-muted" x="312" y="382">PROVISIONING</text><text class="tiny mid" x="360" y="382">→</text><rect class="ecs-chip" x="366" y="372" width="56" height="14" rx="7"/><text class="ecs-ct mid f-muted" x="394" y="382">PENDING</text><text class="tiny mid" x="428" y="382">→</text><rect class="ecs-chip" x="434" y="372" width="74" height="14" rx="7"/><text class="ecs-ct mid f-muted" x="471" y="382">ACTIVATING</text><text class="tiny mid" x="514" y="382">→</text><rect class="ecs-chip" x="520" y="372" width="58" height="14" rx="7"/><text class="ecs-ct mid f-muted" x="549" y="382">RUNNING</text></g>
+<g class="ecs-lc0"><rect class="f-amber-soft s-amber" x="270" y="372" width="84" height="14" rx="7" stroke-width="1.2"/><text class="ecs-ct mid f-amber-ink" x="312" y="382">PROVISIONING</text></g>
+<g class="ecs-lc1"><rect class="f-amber-soft s-amber" x="366" y="372" width="56" height="14" rx="7" stroke-width="1.2"/><text class="ecs-ct mid f-amber-ink" x="394" y="382">PENDING</text></g>
+<g class="ecs-lc2"><rect class="f-amber-soft s-amber" x="434" y="372" width="74" height="14" rx="7" stroke-width="1.2"/><text class="ecs-ct mid f-amber-ink" x="471" y="382">ACTIVATING</text></g>
+<g class="ecs-lc3"><rect class="f-green-soft s-green" x="520" y="372" width="58" height="14" rx="7" stroke-width="1.2"/><text class="ecs-ct mid f-green" x="549" y="382">RUNNING</text></g>
+<!-- right: the load balancer, CloudWatch and the IAM roles -->
+<rect class="box" x="714" y="94" width="210" height="24" rx="10"/>
+<text class="sub sb f-ink" x="742" y="111">shoppers</text>
+<text class="tiny mono end" x="912" y="111">GET /products/42</text>
+<rect class="box" x="714" y="130" width="210" height="138" rx="12"/>
+<text class="sub sb f-ink" x="738" y="148">Application Load Balancer</text>
+<text class="tiny" x="738" y="163">listener HTTPS 443 → catalog-tg</text>
+<rect class="f-bg s-line" x="736" y="171" width="180" height="89" rx="8" stroke-width="1.2"/>
+<text class="tiny sb f-ink" x="746" y="186">target group catalog-tg</text>
+<text class="tiny mono" x="746" y="200">type ip · port 8080</text>
+<text class="tiny" x="746" y="214">health check GET /health</text>
+<text class="tiny" x="746" y="228">every 30 s · unhealthy at 2</text>
+<path class="s-line" d="M744 237H908" stroke-width="1"/>
+<g class="ecs-t3h"><text class="ecs-tg f-green" x="746" y="251">3 healthy targets</text></g>
+<g class="ecs-t0"><text class="ecs-tg f-muted" x="746" y="251">no targets registered</text></g>
+<g class="ecs-t3i"><text class="ecs-tg f-amber-ink" x="746" y="251">3 targets: initial</text></g>
+<g class="ecs-t2u"><text class="ecs-tg f-red" x="746" y="251">2 healthy · 1 unhealthy</text></g>
+<g class="ecs-t3d"><text class="ecs-tg f-amber-ink" x="746" y="251">3 healthy · 1 draining</text></g>
+<g class="ecs-t5h"><text class="ecs-tg f-green" x="746" y="251">5 healthy targets</text></g>
+<g class="ecs-t5i"><text class="ecs-tg f-amber-ink" x="746" y="251">5 healthy · 5 initial</text></g>
+<g class="ecs-t5d"><text class="ecs-tg f-amber-ink" x="746" y="251">5 healthy · 5 draining</text></g>
+<rect class="box" x="714" y="276" width="210" height="52" rx="12"/>
+<text class="sub sb f-ink" x="738" y="294">Amazon CloudWatch</text>
+<text class="tiny" x="738" y="308">Logs /ecs/catalog · awslogs</text>
+<text class="tiny" x="738" y="321">CPUUtilization → scaling alarms</text>
+<rect class="box" x="714" y="336" width="210" height="60" rx="12"/>
+<text class="tiny sb f-ink" x="726" y="350">IAM roles</text>
+<text class="tiny end" x="912" y="350">temporary credentials</text>
+<rect class="f-orange-soft s-orange" x="722" y="355" width="194" height="18" rx="9" stroke-width="1"/>
+<text class="ecs-ct f-orange" x="732" y="368">task role</text>
+<text class="ecs-ct mono end f-ink" x="906" y="368">catalog-task</text>
+<rect class="f-orange-soft s-orange" x="722" y="376" width="194" height="18" rx="9" stroke-width="1"/>
+<text class="ecs-ct f-orange" x="732" y="389">execution role</text>
+<text class="ecs-ct mono end f-ink" x="906" y="389">catalog-execution</text>
+<g class="ecs-hlRole"><rect class="none s-orange" x="722" y="376" width="194" height="18" rx="9" stroke-width="2.4"/></g>
+<!-- tasks: one card per task (revision, its ENI and private IP, state, health) -->
+<g class="ecs-T1"><rect class="ecs-card" x="236" y="194" width="102" height="44" rx="8"/><g class="ecs-T1st"><rect class="none s-amber ecs-dash" x="236" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><g class="ecs-olddr"><rect class="f-amber-soft s-amber" x="236" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono" x="244" y="209">catalog:7</text><circle class="f-line" cx="328" cy="205" r="3.5"/><g class="ecs-T1g"><circle class="f-green" cx="328" cy="205" r="3.5"/></g><g class="ecs-olda"><circle class="f-amber" cx="328" cy="205" r="3.5"/></g><g class="ecs-T1ip"><text class="ecs-eni" x="244" y="222">ENI</text><text class="ecs-ip mono" x="262" y="222">10.0.10.23</text></g><g class="ecs-T1wrun"><text class="ecs-st f-muted" x="244" y="233.5">running</text></g><g class="ecs-T1wpro"><text class="ecs-st f-amber-ink" x="244" y="233.5">provisioning</text></g><g class="ecs-T1wpen"><text class="ecs-st f-amber-ink" x="244" y="233.5">pending</text></g><g class="ecs-T1wact"><text class="ecs-st f-amber-ink" x="244" y="233.5">activating</text></g><g class="ecs-oldwdra"><text class="ecs-st f-amber-ink" x="244" y="233.5">draining</text></g><g class="ecs-ok2"><circle class="f-green" cx="328" cy="205" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M324.5 205l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-T3"><rect class="ecs-card" x="236" y="241" width="102" height="44" rx="8"/><g class="ecs-T3st"><rect class="none s-amber ecs-dash" x="236" y="241" width="102" height="44" rx="8" stroke-width="1.5"/></g><g class="ecs-olddr"><rect class="f-amber-soft s-amber" x="236" y="241" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono" x="244" y="256">catalog:7</text><circle class="f-line" cx="328" cy="252" r="3.5"/><g class="ecs-T3g"><circle class="f-green" cx="328" cy="252" r="3.5"/></g><g class="ecs-olda"><circle class="f-amber" cx="328" cy="252" r="3.5"/></g><g class="ecs-T3ip"><text class="ecs-eni" x="244" y="269">ENI</text><text class="ecs-ip mono" x="262" y="269">10.0.10.57</text></g><g class="ecs-T3wrun"><text class="ecs-st f-muted" x="244" y="280.5">running</text></g><g class="ecs-T3wpro"><text class="ecs-st f-amber-ink" x="244" y="280.5">provisioning</text></g><g class="ecs-T3wpen"><text class="ecs-st f-amber-ink" x="244" y="280.5">pending</text></g><g class="ecs-T3wact"><text class="ecs-st f-amber-ink" x="244" y="280.5">activating</text></g><g class="ecs-oldwdra"><text class="ecs-st f-amber-ink" x="244" y="280.5">draining</text></g><g class="ecs-ok2"><circle class="f-green" cx="328" cy="252" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M324.5 252l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-T2"><rect class="ecs-card" x="472" y="194" width="102" height="44" rx="8"/><g class="ecs-T2st"><rect class="none s-amber ecs-dash" x="472" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><g class="ecs-T2bd"><rect class="f-red-soft s-red" x="472" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><g class="ecs-T2dr"><rect class="f-amber-soft s-amber" x="472" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono" x="480" y="209">catalog:7</text><circle class="f-line" cx="564" cy="205" r="3.5"/><g class="ecs-T2g"><circle class="f-green" cx="564" cy="205" r="3.5"/></g><g class="ecs-T2r"><circle class="f-red" cx="564" cy="205" r="3.5"/></g><g class="ecs-T2a"><circle class="f-amber" cx="564" cy="205" r="3.5"/></g><g class="ecs-T2ip"><text class="ecs-eni" x="480" y="222">ENI</text><text class="ecs-ip mono" x="498" y="222">10.0.11.41</text></g><g class="ecs-T2wrun"><text class="ecs-st f-muted" x="480" y="233.5">running</text></g><g class="ecs-T2wpro"><text class="ecs-st f-amber-ink" x="480" y="233.5">provisioning</text></g><g class="ecs-T2wpen"><text class="ecs-st f-amber-ink" x="480" y="233.5">pending</text></g><g class="ecs-T2wact"><text class="ecs-st f-amber-ink" x="480" y="233.5">activating</text></g><g class="ecs-T2wunh"><text class="ecs-st f-red" x="480" y="233.5">unhealthy</text></g><g class="ecs-T2wdra"><text class="ecs-st f-amber-ink" x="480" y="233.5">draining</text></g><g class="ecs-ok2"><circle class="f-green" cx="564" cy="205" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M560.5 205l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g><g class="ecs-T2no"><circle class="f-red" cx="564" cy="205" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M561 202l6 6m0 -6l-6 6" stroke-width="1.8" stroke-linecap="round"/></g></g>
+<g class="ecs-T4"><rect class="ecs-card" x="472" y="241" width="102" height="44" rx="8"/><g class="ecs-T4st"><rect class="none s-amber ecs-dash" x="472" y="241" width="102" height="44" rx="8" stroke-width="1.5"/></g><g class="ecs-olddr"><rect class="f-amber-soft s-amber" x="472" y="241" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono" x="480" y="256">catalog:7</text><circle class="f-line" cx="564" cy="252" r="3.5"/><g class="ecs-T4g"><circle class="f-green" cx="564" cy="252" r="3.5"/></g><g class="ecs-olda"><circle class="f-amber" cx="564" cy="252" r="3.5"/></g><g class="ecs-T4ip"><text class="ecs-eni" x="480" y="269">ENI</text><text class="ecs-ip mono" x="498" y="269">10.0.11.68</text></g><g class="ecs-T4wpen"><text class="ecs-st f-amber-ink" x="480" y="280.5">pending</text></g><g class="ecs-T4wact"><text class="ecs-st f-amber-ink" x="480" y="280.5">activating</text></g><g class="ecs-T4wrun"><text class="ecs-st f-muted" x="480" y="280.5">running</text></g><g class="ecs-oldwdra"><text class="ecs-st f-amber-ink" x="480" y="280.5">draining</text></g><g class="ecs-T4ok"><circle class="f-green" cx="564" cy="252" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M560.5 252l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-S"><rect class="ecs-card" x="472" y="194" width="102" height="44" rx="8"/><g class="ecs-Sst"><rect class="none s-amber ecs-dash" x="472" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><g class="ecs-olddr"><rect class="f-amber-soft s-amber" x="472" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono" x="480" y="209">catalog:7</text><circle class="f-line" cx="564" cy="205" r="3.5"/><g class="ecs-Sg"><circle class="f-green" cx="564" cy="205" r="3.5"/></g><g class="ecs-olda"><circle class="f-amber" cx="564" cy="205" r="3.5"/></g><g class="ecs-Sip"><text class="ecs-eni" x="480" y="222">ENI</text><text class="ecs-ip mono" x="498" y="222">10.0.11.75</text></g><g class="ecs-Swpen"><text class="ecs-st f-amber-ink" x="480" y="233.5">pending</text></g><g class="ecs-Swact"><text class="ecs-st f-amber-ink" x="480" y="233.5">activating</text></g><g class="ecs-Swrun"><text class="ecs-st f-muted" x="480" y="233.5">running</text></g><g class="ecs-oldwdra"><text class="ecs-st f-amber-ink" x="480" y="233.5">draining</text></g><g class="ecs-Sok"><circle class="f-green" cx="564" cy="205" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M560.5 205l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-S"><rect class="ecs-card" x="236" y="288" width="102" height="44" rx="8"/><g class="ecs-Sst"><rect class="none s-amber ecs-dash" x="236" y="288" width="102" height="44" rx="8" stroke-width="1.5"/></g><g class="ecs-olddr"><rect class="f-amber-soft s-amber" x="236" y="288" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono" x="244" y="303">catalog:7</text><circle class="f-line" cx="328" cy="299" r="3.5"/><g class="ecs-Sg"><circle class="f-green" cx="328" cy="299" r="3.5"/></g><g class="ecs-olda"><circle class="f-amber" cx="328" cy="299" r="3.5"/></g><g class="ecs-Sip"><text class="ecs-eni" x="244" y="316">ENI</text><text class="ecs-ip mono" x="262" y="316">10.0.10.84</text></g><g class="ecs-Swpen"><text class="ecs-st f-amber-ink" x="244" y="327.5">pending</text></g><g class="ecs-Swact"><text class="ecs-st f-amber-ink" x="244" y="327.5">activating</text></g><g class="ecs-Swrun"><text class="ecs-st f-muted" x="244" y="327.5">running</text></g><g class="ecs-oldwdra"><text class="ecs-st f-amber-ink" x="244" y="327.5">draining</text></g><g class="ecs-Sok"><circle class="f-green" cx="328" cy="299" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M324.5 299l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-N"><rect class="ecs-card" x="580" y="194" width="102" height="44" rx="8"/><g class="ecs-Nst"><rect class="none s-amber ecs-dash" x="580" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono f-green" x="588" y="209">catalog:8</text><circle class="f-line" cx="672" cy="205" r="3.5"/><g class="ecs-Ng"><circle class="f-green" cx="672" cy="205" r="3.5"/></g><g class="ecs-Nip"><text class="ecs-eni" x="588" y="222">ENI</text><text class="ecs-ip mono" x="606" y="222">10.0.11.105</text></g><g class="ecs-Nwpen"><text class="ecs-st f-amber-ink" x="588" y="233.5">pending</text></g><g class="ecs-Nwact"><text class="ecs-st f-amber-ink" x="588" y="233.5">activating</text></g><g class="ecs-Nwrun"><text class="ecs-st f-muted" x="588" y="233.5">running</text></g><g class="ecs-Nok"><circle class="f-green" cx="672" cy="205" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M668.5 205l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-N"><rect class="ecs-card" x="344" y="194" width="102" height="44" rx="8"/><g class="ecs-Nst"><rect class="none s-amber ecs-dash" x="344" y="194" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono f-green" x="352" y="209">catalog:8</text><circle class="f-line" cx="436" cy="205" r="3.5"/><g class="ecs-Ng"><circle class="f-green" cx="436" cy="205" r="3.5"/></g><g class="ecs-Nip"><text class="ecs-eni" x="352" y="222">ENI</text><text class="ecs-ip mono" x="370" y="222">10.0.10.112</text></g><g class="ecs-Nwpen"><text class="ecs-st f-amber-ink" x="352" y="233.5">pending</text></g><g class="ecs-Nwact"><text class="ecs-st f-amber-ink" x="352" y="233.5">activating</text></g><g class="ecs-Nwrun"><text class="ecs-st f-muted" x="352" y="233.5">running</text></g><g class="ecs-Nok"><circle class="f-green" cx="436" cy="205" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M432.5 205l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-N"><rect class="ecs-card" x="580" y="241" width="102" height="44" rx="8"/><g class="ecs-Nst"><rect class="none s-amber ecs-dash" x="580" y="241" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono f-green" x="588" y="256">catalog:8</text><circle class="f-line" cx="672" cy="252" r="3.5"/><g class="ecs-Ng"><circle class="f-green" cx="672" cy="252" r="3.5"/></g><g class="ecs-Nip"><text class="ecs-eni" x="588" y="269">ENI</text><text class="ecs-ip mono" x="606" y="269">10.0.11.150</text></g><g class="ecs-Nwpen"><text class="ecs-st f-amber-ink" x="588" y="280.5">pending</text></g><g class="ecs-Nwact"><text class="ecs-st f-amber-ink" x="588" y="280.5">activating</text></g><g class="ecs-Nwrun"><text class="ecs-st f-muted" x="588" y="280.5">running</text></g><g class="ecs-Nok"><circle class="f-green" cx="672" cy="252" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M668.5 252l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-N"><rect class="ecs-card" x="344" y="241" width="102" height="44" rx="8"/><g class="ecs-Nst"><rect class="none s-amber ecs-dash" x="344" y="241" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono f-green" x="352" y="256">catalog:8</text><circle class="f-line" cx="436" cy="252" r="3.5"/><g class="ecs-Ng"><circle class="f-green" cx="436" cy="252" r="3.5"/></g><g class="ecs-Nip"><text class="ecs-eni" x="352" y="269">ENI</text><text class="ecs-ip mono" x="370" y="269">10.0.10.139</text></g><g class="ecs-Nwpen"><text class="ecs-st f-amber-ink" x="352" y="280.5">pending</text></g><g class="ecs-Nwact"><text class="ecs-st f-amber-ink" x="352" y="280.5">activating</text></g><g class="ecs-Nwrun"><text class="ecs-st f-muted" x="352" y="280.5">running</text></g><g class="ecs-Nok"><circle class="f-green" cx="436" cy="252" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M432.5 252l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g class="ecs-N"><rect class="ecs-card" x="580" y="288" width="102" height="44" rx="8"/><g class="ecs-Nst"><rect class="none s-amber ecs-dash" x="580" y="288" width="102" height="44" rx="8" stroke-width="1.5"/></g><text class="ecs-rv mono f-green" x="588" y="303">catalog:8</text><circle class="f-line" cx="672" cy="299" r="3.5"/><g class="ecs-Ng"><circle class="f-green" cx="672" cy="299" r="3.5"/></g><g class="ecs-Nip"><text class="ecs-eni" x="588" y="316">ENI</text><text class="ecs-ip mono" x="606" y="316">10.0.11.163</text></g><g class="ecs-Nwpen"><text class="ecs-st f-amber-ink" x="588" y="327.5">pending</text></g><g class="ecs-Nwact"><text class="ecs-st f-amber-ink" x="588" y="327.5">activating</text></g><g class="ecs-Nwrun"><text class="ecs-st f-muted" x="588" y="327.5">running</text></g><g class="ecs-Nok"><circle class="f-green" cx="672" cy="299" r="7" stroke="var(--bg)" stroke-width="1.5"/><path class="none s-bg" d="M668.5 299l2.5 2.5l4.5 -5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<!-- step 2 markers, numbered as in the notes -->
+<g class="ecs-b1"><circle class="f-blue" cx="204" cy="136" r="7.5" stroke="var(--bg)" stroke-width="2"/><text class="ecs-bn mid" x="204" y="139.5">1</text></g>
+<g class="ecs-b2"><circle class="f-blue" cx="451" cy="180" r="7.5" stroke="var(--bg)" stroke-width="2"/><text class="ecs-bn mid" x="451" y="183.5">2</text></g>
+<g class="ecs-b3"><circle class="f-blue" cx="236" cy="219" r="7.5" stroke="var(--bg)" stroke-width="2"/><text class="ecs-bn mid" x="236" y="222.5">3</text></g>
+<g class="ecs-b4"><circle class="f-blue" cx="198" cy="346" r="7.5" stroke="var(--bg)" stroke-width="2"/><text class="ecs-bn mid" x="198" y="349.5">4</text></g>
+<g class="ecs-b5"><circle class="f-blue" cx="916" cy="174" r="7.5" stroke="var(--bg)" stroke-width="2"/><text class="ecs-bn mid" x="916" y="177.5">5</text></g>
+<!-- step 4: limits and alternatives -->
+<g class="ecs-s4a"><rect class="none s-amber" x="36" y="94" width="168" height="238" rx="14" stroke-width="2"/><rect class="f-bg" x="118" y="121" width="80" height="15" rx="7.5"/><rect class="f-amber-soft s-amber" x="118" y="121" width="80" height="15" rx="7.5" stroke-width="1"/><text class="ecs-ct mid f-amber-ink" x="158" y="131.5">ECS API only</text></g>
+<g class="ecs-s4b"><rect class="f-bg" x="231" y="347" width="456" height="21" rx="6"/><rect class="f-amber-soft s-amber" x="231" y="347" width="456" height="21" rx="6" stroke-width="1.2"/><text class="ecs-ct f-amber-ink" x="240" y="361">Fargate: no DAEMON services, privileged containers or GPUs · max 32 vCPU, 244 GB</text></g>
+<g class="ecs-s4c"><rect class="f-green-soft s-green" x="430" y="372" width="126" height="14" rx="7" stroke-width="1"/><text class="ecs-ct mid f-green" x="493" y="382">EC2 Auto Scaling group</text><rect class="f-green-soft s-green" x="560" y="372" width="124" height="14" rx="7" stroke-width="1"/><text class="ecs-ct mid f-green" x="622" y="382">ECS Managed Instances</text></g>
+<g class="ecs-s4d"><rect class="f-panel" x="522" y="148" width="166" height="17"/><rect class="f-amber-soft s-amber" x="524" y="149" width="162" height="15" rx="7.5" stroke-width="1"/><text class="ecs-ct mid f-amber-ink" x="605" y="160">$0.0247 per task-hour</text></g>
+<!-- notes, one per step -->
+<rect class="box" x="36" y="404" width="888" height="64" rx="12"/>
+<g class="p1"><text class="ecs-hd" x="52" y="421">AWS’S OWN CONTAINER ORCHESTRATOR</text><text class="tiny end" x="908" y="421">no control plane to run · no charge for ECS itself: you pay for the capacity</text><text class="sub f-ink" x="52" y="440">The ECS service catalog keeps 3 tasks of task definition catalog:7 running on AWS Fargate, spread over two Availability Zones.</text><text class="sub f-ink" x="52" y="456">The ALB sends requests only to healthy tasks; the image comes from Amazon ECR, IAM roles grant permissions, logs go to CloudWatch.</text></g>
+<g class="p2"><text class="ecs-hd" x="52" y="421">TASK DEFINITION, SERVICE, TASKS</text><text class="tiny end" x="908" y="421">a task’s lastStatus: PROVISIONING → PENDING → ACTIVATING → RUNNING</text><text class="sub f-ink" x="52" y="440"><tspan class="f-blue b">1</tspan> RegisterTaskDefinition stores catalog:7. <tspan class="f-blue b">2</tspan> The scheduler places 3 tasks across both zones. <tspan class="f-blue b">3</tspan> Fargate gives each its own ENI and IP.</text><text class="sub f-ink" x="52" y="456"><tspan class="f-blue b">4</tspan> The execution role lets Fargate pull catalog:1.4.2 and write logs. <tspan class="f-blue b">5</tspan> One passed GET /health makes a target healthy; then it gets requests.</text></g>
+<g class="p3"><text class="ecs-hd" x="52" y="421">HEALING, SCALING, DEPLOYING</text><text class="tiny end" x="908" y="421">defaults: minimumHealthyPercent 100 · maximumPercent 200 · circuit breaker on</text><text class="sub f-ink" x="52" y="440">10.0.11.41 fails 2 health checks: ECS starts a replacement, then stops it. CPU 85% vs a 60% target: 3 × 85 ÷ 60 = 4.25, so 5 tasks (51%).</text><text class="sub f-ink" x="52" y="456">catalog:8 starts 5 new tasks (10 = 200%) before the ALB drains the old 5; the circuit breaker rolls back after 3 failures in a row.</text></g>
+<g class="p4"><rect class="f-amber-soft s-amber" x="486" y="408" width="432" height="56" rx="9" stroke-width="1.2"/><text class="ecs-hd" x="52" y="421">AWS-ONLY, AND FARGATE’S LIMITS</text><text class="tiny f-ink" x="52" y="436">Task definitions and services are ECS API objects: another cloud</text><text class="tiny f-ink" x="52" y="449">means rewriting them, unlike Kubernetes manifests. EC2 capacity</text><text class="tiny f-ink" x="52" y="462">allows DAEMON, privileged and GPU tasks; Managed Instances offer GPUs.</text><text class="ecs-hd f-amber-ink" x="498" y="421">PRICE (US-EAST-1, OCTOBER 2026)</text><text class="tiny f-ink" x="498" y="436">Fargate Linux/x86: $0.000011244/vCPU-s + $0.000001235/GB-s</text><text class="tiny f-ink" x="498" y="449">one catalog task (0.5 vCPU, 1 GB) ≈ $0.0247 an hour, $18 a month</text><text class="tiny f-ink" x="498" y="462">steady, heavy load can cost less on well-packed EC2 or on Spot</text></g>
+<!-- moving tokens -->
+<circle class="f-blue pkt ecs-qA" r="5.5"/>
+<circle class="f-blue pkt ecs-qB" r="5.5"/>
+<circle class="f-green pkt ecs-aA" r="5.5"/>
+<circle class="f-green pkt ecs-aB" r="5.5"/>
+<rect class="f-teal pkt ecs-log" x="-4.5" y="-4.5" width="9" height="9" rx="2"/>
+<g class="ecs-reg"><rect class="f-blue pkt" x="-7" y="-6" width="14" height="12" rx="2"/></g>
+<rect class="f-teal pkt ecs-p1" x="-4.5" y="-4.5" width="9" height="9" rx="2"/>
+<rect class="f-teal pkt ecs-p2" x="-4.5" y="-4.5" width="9" height="9" rx="2"/>
+<rect class="f-teal pkt ecs-p3" x="-4.5" y="-4.5" width="9" height="9" rx="2"/>
+</g>
+</svg>

@@ -62,7 +62,7 @@ version เก่าไม่ได้หายไปเอง **VACUUM** จะ
 - **Query conflict บน hot standby:** การ replay การเก็บกวาด row version เก่าอาจลบแถวที่ query ที่รันนานบน standby ยังต้องใช้อยู่ หลัง `max_standby_streaming_delay` (default 30 s) query นั้นจะถูกยกเลิก เว้นแต่จะตั้ง `hot_standby_feedback = on` ที่บอกให้ primary เก็บแถวพวกนั้นไว้แทน โดยแลกกับการบวมที่ฝั่ง primary
 - **Logical replication** (`wal_level = logical`) decode WAL ออกมาเป็นการเปลี่ยนแปลงระดับแถว ตัว publication กับ subscription ก็อป table ที่เลือกไว้ระหว่าง server ของ PostgreSQL ได้ รวมถึงข้าม major version ด้วย ส่วน **logical decoding** ที่ใช้ output plugin อย่าง `pgoutput` ที่มีมาในตัว ก็ป้อนข้อมูลให้เครื่องมือ change data capture อย่าง Debezium
 - **replication slot** จำว่า consumer ของมันอ่านไปถึงไหนแล้ว และ primary จะเก็บไฟล์ WAL ทุกไฟล์ตั้งแต่จุดนั้นไว้ (และสำหรับ logical slot ก็เก็บแถวใน catalog ที่ต้องใช้ decode ด้วย) ถ้า consumer หายไป มันก็จะทิ้ง slot ค้างไว้ แล้ว WAL ก็จะกองสูงขึ้นเรื่อย ๆ จน disk เต็ม ให้จำกัดมันด้วย `max_slot_wal_keep_size` (default `-1` คือไม่จำกัด) หรือ `idle_replication_slot_timeout` ของ PostgreSQL 18 (default `0` คือปิด) และตั้ง alert จาก `pg_replication_slots`
-- **Failover** promote standby ด้วย `pg_ctl promote` หรือ `pg_promote()` ตัว PostgreSQL เองไม่ได้ตัดสินว่าจะทำเมื่อไร: Patroni เป็นคนตัดสิน โดยประสานงานระหว่าง node ผ่าน etcd, Consul หรือ ZooKeeper (pattern [Leader Election](../leader-election/)) ส่วน managed service ก็ทำให้คุณเอง
+- **Failover** promote standby ด้วย `pg_ctl promote` หรือ `pg_promote()` ตัว PostgreSQL เองไม่ได้ตัดสินว่าจะทำเมื่อไร: Patroni เป็นคนตัดสิน โดยประสานงานระหว่าง node ผ่าน [etcd](../etcd/), Consul หรือ ZooKeeper (pattern [Leader Election](../leader-election/)) ส่วน managed service ก็ทำให้คุณเอง
 
 ### Partitioning และ extension
 
@@ -94,7 +94,7 @@ version เก่าไม่ได้หายไปเอง **VACUUM** จะ
   วิธีนี้ใช้ได้กับปริมาณงานไม่มาก ที่เก็บไว้ข้าง ๆ ข้อมูลที่มันเกี่ยวข้อง แต่ job ทุกตัวที่ถูก claim คือ update หรือ delete ที่ VACUUM ต้องตามเก็บกวาด, worker ต้อง poll และไม่มี fan-out หรือ replay เพราะฉะนั้น messaging ที่หนักหรือมี consumer หลายตัวควรไปอยู่ใน broker อย่าง [RabbitMQ](../rabbitmq/) หรือ Kafka
 - มันยังเป็น store ที่ใช้กันบ่อยหลัง [Database per Service](../database-per-service/), [Materialized View](../materialized-view/) (`REFRESH MATERIALIZED VIEW CONCURRENTLY` refresh ได้โดยไม่ล็อกไม่ให้ reader เข้า) และ [Sharding](../sharding/) (ด้วย Citus หรือทำในแอป)
 
-**เพื่อนบ้านที่มักเจอ:** connection pooler (PgBouncer หรือ Amazon RDS Proxy บน AWS), cache อย่าง [Redis](../redis/) สำหรับการอ่านที่ hot, Kafka ที่ Debezium ป้อนข้อมูลให้ และ object storage อย่าง [Amazon S3](../amazon-s3/) สำหรับ base backup และ WAL ที่ archive ไว้ โดยจัดการด้วย pgBackRest, WAL-G หรือ Barman
+**เพื่อนบ้านที่มักเจอ:** connection pooler (PgBouncer หรือ [Amazon RDS](../amazon-rds-aurora/) Proxy บน AWS), cache อย่าง [Redis](../redis/) สำหรับการอ่านที่ hot, Kafka ที่ Debezium ป้อนข้อมูลให้ และ object storage อย่าง [Amazon S3](../amazon-s3/) สำหรับ base backup และ WAL ที่ archive ไว้ โดยจัดการด้วย pgBackRest, WAL-G หรือ Barman
 
 **Managed offering:**
 

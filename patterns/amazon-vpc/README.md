@@ -18,7 +18,7 @@
 
 ## The problem
 
-Acme Shop's application has parts the internet must reach and parts it must never reach. Shoppers have to get to the load balancer on port 443. The ECS tasks behind it should accept traffic only from that load balancer, and the PostgreSQL database only from the tasks. The tasks still need to go out: to a payment provider's API on the internet, and to the S3 bucket `acme-invoices`, where they store invoices. Everything has to keep working when one Availability Zone fails, and later the network has to connect to other VPCs and to the office without address clashes. Put every resource in one flat network with public addresses and the database is a single mistyped rule away from the internet, with no way to say "only from the tier in front of me".
+Acme Shop's application has parts the internet must reach and parts it must never reach. Shoppers have to get to the load balancer on port 443. The [ECS](../amazon-ecs/) tasks behind it should accept traffic only from that load balancer, and the PostgreSQL database only from the tasks. The tasks still need to go out: to a payment provider's API on the internet, and to the S3 bucket `acme-invoices`, where they store invoices. Everything has to keep working when one Availability Zone fails, and later the network has to connect to other VPCs and to the office without address clashes. Put every resource in one flat network with public addresses and the database is a single mistyped rule away from the internet, with no way to say "only from the tier in front of me".
 
 ## How it works
 
@@ -38,7 +38,7 @@ A subnet is a slice of the VPC's range that lives entirely in one Availability Z
 |---|---|---|---|---|
 | public | `10.0.0.0/24` | `10.0.1.0/24` | ALB nodes, NAT gateways | the internet gateway |
 | private app | `10.0.10.0/24` | `10.0.11.0/24` | ECS tasks | the NAT gateway in the same zone |
-| private data | `10.0.20.0/24` | `10.0.21.0/24` | RDS primary and standby | nowhere: local traffic only |
+| private data | `10.0.20.0/24` | `10.0.21.0/24` | [RDS](../amazon-rds-aurora/) primary and standby | nowhere: local traffic only |
 
 Nothing but routing makes a subnet public or private. A subnet is **public** when its route table has a route to an internet gateway and **private** when it doesn't; a private subnet reaches the internet, if at all, through a NAT device. AWS calls a subnet with no route outside the VPC at all, like the two data subnets, **isolated**. A resource in a public subnet also needs an address of its own that the internet can route to, a public IPv4 or Elastic IP address or an IPv6 address, to talk to the internet directly.
 
@@ -133,7 +133,7 @@ The VPC and its route tables span the Region, and AWS runs the internet gateway 
 
 ## Where it fits
 
-- **Solutions.** Almost everything on AWS that isn't a pure API call runs in a VPC: EC2 instances, ECS and EKS containers, RDS and Aurora databases, ElastiCache ([Redis and Valkey](../redis/)), OpenSearch domains with VPC access, MSK clusters, and Lambda functions once they are attached to private subnets ([AWS Lambda](../aws-lambda/)). The three-tier, two-zone layout of Acme Shop is the usual starting point for a web application.
+- **Solutions.** Almost everything on AWS that isn't a pure API call runs in a VPC: EC2 instances, ECS and EKS containers, RDS and Aurora databases, ElastiCache ([Redis and Valkey](../redis/)), [OpenSearch](../elasticsearch/) domains with VPC access, MSK clusters, and Lambda functions once they are attached to private subnets ([AWS Lambda](../aws-lambda/)). The three-tier, two-zone layout of Acme Shop is the usual starting point for a web application.
 - **Patterns in this catalog.** The VPC is where several network patterns are built: [hub-and-spoke networks](../hub-spoke-network/) with a Transit Gateway or Cloud WAN, [private endpoints](../private-endpoints/) with PrivateLink and gateway endpoints, and [load balancing](../load-balancing/) across zones with an ALB. Security groups, ACLs and Block Public Access are one layer of [zero trust access](../zero-trust-access/): they limit which networks can talk, while identity and authorisation still have to be checked on every request. Across Regions, [active-passive failover](../active-passive-failover/) and [multi-Region active-active](../multi-region-active-active/) need a VPC in each Region, with ranges that don't overlap.
 - **Usual neighbours.** Elastic Load Balancing, Amazon ECS and EKS, Amazon RDS ([PostgreSQL](../postgresql/)), [Amazon S3](../amazon-s3/) and DynamoDB through gateway endpoints, Route 53 for public and private DNS, [AWS IAM](../aws-iam/) (who may change security groups and routes), CloudWatch for flow logs and metrics, and AWS Network Firewall when subnets need deeper inspection.
 - **Managed offerings.** Amazon VPC is itself the managed service, and every AWS account has a default VPC in each Region: a public subnet in each zone, an internet gateway and DNS turned on. It is fine for experiments; production workloads normally get their own VPC with a deliberate address plan. Azure Virtual Network and Google Cloud VPC are the equivalents on the other clouds.
@@ -142,7 +142,7 @@ The VPC and its route tables span the Region, and AWS runs the internet gateway 
 
 Any workload on AWS that runs servers, containers or databases of its own uses a VPC. The real decisions are how many VPCs to have and how to lay each one out. One VPC per application and environment, often in its own account, keeps the blast radius small; a Transit Gateway or Cloud WAN then connects the ones that must talk, and VPC Lattice or PrivateLink can connect individual services without merging whole networks. Within a VPC, use public subnets only for what the internet must reach, put each tier in every zone, and decide early which address ranges the company's networks will use.
 
-Services that never touch your network (S3, DynamoDB, SQS or Lambda without VPC attachment) don't need one; reach them from inside a VPC through endpoints.
+Services that never touch your network (S3, DynamoDB, [SQS](../amazon-sqs/) or Lambda without VPC attachment) don't need one; reach them from inside a VPC through endpoints.
 
 | | Amazon VPC | Azure Virtual Network | Google Cloud VPC |
 |---|---|---|---|
@@ -209,8 +209,8 @@ With a regional NAT gateway the per-zone routes collapse into one: `aws ec2 crea
 - [Private Endpoints](../private-endpoints/) — Reach managed cloud services over private IPs instead of the public internet.
 - [Zero Trust Access](../zero-trust-access/) — No implicit trust from network location: verify identity, device and context on every request.
 - [Load Balancing](../load-balancing/) — Spread requests across healthy instances and stop sending to unhealthy ones.
-- Amazon ECS & Fargate *(planned)* — Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate.
-- Amazon RDS & Aurora *(planned)* — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
+- [Amazon ECS & Fargate](../amazon-ecs/) — Run containers on AWS: task definitions, services that keep tasks running behind a load balancer, on EC2 or serverless Fargate.
+- [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 - Amazon Route 53 *(planned)* — Managed DNS: hosted zones, routing policies (weighted, latency, failover, geolocation) and health checks.
 - [AWS IAM](../aws-iam/) — Who may do what in AWS: principals, policies and roles that hand out temporary credentials, and how a request is evaluated.
 

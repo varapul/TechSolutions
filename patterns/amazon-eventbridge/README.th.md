@@ -49,12 +49,12 @@ rule หนึ่งตัวเป็นของ bus เดียว และ
 
 ### Target
 
-rule หนึ่งมี target ได้ถึง **ห้าตัว** แต่คำแนะนำของ AWS เองคือหนึ่ง target ต่อ rule และเพิ่ม rule ตัวที่สองเมื่อมี consumer อีกตัวต้องการ event ชุดเดียวกัน เพื่อให้แต่ละตัวเปลี่ยนได้อิสระ ส่วน target มีทั้ง Lambda function, SQS queue (standard, fair และ FIFO), [SNS](../amazon-sns/) topic, Step Functions state machine, Kinesis และ Firehose stream, ECS task, API Gateway, AWS AppSync, CloudWatch log group และอีกหลายตัว มีสองแบบที่ควรดูใกล้ ๆ:
+rule หนึ่งมี target ได้ถึง **ห้าตัว** แต่คำแนะนำของ AWS เองคือหนึ่ง target ต่อ rule และเพิ่ม rule ตัวที่สองเมื่อมี consumer อีกตัวต้องการ event ชุดเดียวกัน เพื่อให้แต่ละตัวเปลี่ยนได้อิสระ ส่วน target มีทั้ง Lambda function, SQS queue (standard, fair และ FIFO), [SNS](../amazon-sns/) topic, Step Functions state machine, Kinesis และ Firehose stream, [ECS](../amazon-ecs/) task, API Gateway, AWS AppSync, CloudWatch log group และอีกหลายตัว มีสองแบบที่ควรดูใกล้ ๆ:
 
 - **API destination** ทำให้ HTTPS endpoint ไหนก็ได้เป็น target ตัว *connection* เก็บ authorization ของ endpoint ไว้ (basic, OAuth หรือ API key โดยเก็บไว้ใน AWS Secrets Manager) ตัว EventBridge รอคำตอบไม่เกิน 5 วินาที, retry response 401, 407, 409, 429 และ 5xx และเรียกแต่ละ destination ไม่เกิน 300 ครั้งต่อวินาที เว้นแต่เราจะขอเพิ่ม quota นั้น
 - **Event bus** ทั้งใน account เดียวกัน ใน account อื่น หรือใน Region อื่น นี่คือวิธีที่ event ข้ามขอบเขตของ account ตัว account ฝั่งรับให้สิทธิ์ใน resource policy ของ bus ตัวเองและเขียน rule ของตัวเอง ส่วน account ฝั่งส่งจ่ายค่า event ที่ forward ไป และ event ที่มาจาก account อื่นจะไม่ถูก forward ต่อเป็นทอดที่สาม ตั้งแต่มกราคม 2025 ตัว rule ยังส่งตรงไปที่ SQS queue, Lambda function, Kinesis stream, SNS topic หรือ API Gateway API ใน account อื่นได้ด้วย ถ้า policy ของ resource นั้นยอมให้
 
-EventBridge เรียก Lambda function และ Step Functions state machine แบบ **asynchronous**: ส่งสำเร็จแปลว่า function หรือ execution เริ่มแล้ว ไม่ได้แปลว่ามันทำเสร็จแล้ว ถ้าจะเข้าถึง target ตัว EventBridge จะ assume IAM role ที่เราให้ไว้ (target แบบ Step Functions และ Kinesis ต้องมี) หรือถ้าเป็น Lambda, SNS และ SQS มันจะพึ่ง resource-based policy ของ target แทนก็ได้
+EventBridge เรียก Lambda function และ Step Functions state machine แบบ **asynchronous**: ส่งสำเร็จแปลว่า function หรือ execution เริ่มแล้ว ไม่ได้แปลว่ามันทำเสร็จแล้ว ถ้าจะเข้าถึง target ตัว EventBridge จะ assume [IAM](../aws-iam/) role ที่เราให้ไว้ (target แบบ Step Functions และ Kinesis ต้องมี) หรือถ้าเป็น Lambda, SNS และ SQS มันจะพึ่ง resource-based policy ของ target แทนก็ได้
 
 ### Input transformer
 

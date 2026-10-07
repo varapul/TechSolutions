@@ -68,7 +68,7 @@ Intelligent-Tiering moves an object to its Infrequent Access tier after 30 days 
 
 ### Uploads: presigned URLs and multipart
 
-A **presigned URL** carries a SigV4 signature, the signer's access key and an expiry in its query string, so whoever holds it can make that one request without AWS credentials. It can do only what its signer may do. URLs made in the console last between 1 minute and 12 hours, and the CLI and SDKs allow up to 7 days with long-term IAM user credentials. A URL signed with temporary credentials, such as a Lambda function's role, stops working when those credentials expire, whatever expiry it states. S3 checks the expiry when a request starts, so a transfer already running is not cut off. The API Lambda signs the upload URL like this (boto3 1.43; it only computes a signature and calls nothing):
+A **presigned URL** carries a SigV4 signature, the signer's access key and an expiry in its query string, so whoever holds it can make that one request without AWS credentials. It can do only what its signer may do. URLs made in the console last between 1 minute and 12 hours, and the CLI and SDKs allow up to 7 days with long-term [IAM](../aws-iam/) user credentials. A URL signed with temporary credentials, such as a Lambda function's role, stops working when those credentials expire, whatever expiry it states. S3 checks the expiry when a request starts, so a transfer already running is not cut off. The API Lambda signs the upload URL like this (boto3 1.43; it only computes a signature and calls nothing):
 
 ```python
 import boto3
@@ -95,7 +95,7 @@ A single PUT takes up to 5 GB. Larger files go up as a **multipart upload**: up 
 
 ### Events
 
-An **event notification** sends a message to an SNS topic or SQS queue in the bucket's Region, or to a Lambda function, when objects are created, deleted, restored, transitioned or replicated, filtered by event type and by key prefix and suffix. Messages carry the bucket, the key (URL-encoded), size, ETag, version ID and a `sequencer` for ordering events on the same key. Delivery is at least once, typically within seconds but sometimes a minute or more, and not in order. SQS FIFO queues and SNS FIFO topics are not supported as destinations. If the consumer writes back to the same bucket, scope the notification to the input prefix (here `u/`) or it triggers itself.
+An **event notification** sends a message to an [SNS](../amazon-sns/) topic or SQS queue in the bucket's Region, or to a Lambda function, when objects are created, deleted, restored, transitioned or replicated, filtered by event type and by key prefix and suffix. Messages carry the bucket, the key (URL-encoded), size, ETag, version ID and a `sequencer` for ordering events on the same key. Delivery is at least once, typically within seconds but sometimes a minute or more, and not in order. SQS FIFO queues and SNS FIFO topics are not supported as destinations. If the consumer writes back to the same bucket, scope the notification to the input prefix (here `u/`) or it triggers itself.
 
 Turning on **[Amazon EventBridge](../amazon-eventbridge/)** for a bucket instead sends every event type to EventBridge, where rules match on the event's fields and route it to many kinds of targets, including SQS FIFO queues.
 

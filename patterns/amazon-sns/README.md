@@ -130,7 +130,7 @@ Subscribing a queue for each consumer, as Acme does for the email sender and the
 ### Encryption, access and networks
 
 - **Encryption at rest.** With server-side encryption (`KmsMasterKeyId`: the AWS managed key `alias/aws/sns` or a customer managed symmetric key), SNS encrypts message bodies as soon as it receives them and decrypts them for delivery. Topic and message metadata (the subject, message ID, timestamp and attributes) stay unencrypted, and requests to an encrypted topic must use HTTPS and Signature Version 4. To deliver to an encrypted queue, the queue's customer managed key must allow the SNS service principal `kms:GenerateDataKey` and `kms:Decrypt`.
-- **Access.** IAM policies give your own roles `sns:Publish` or `sns:Subscribe`; the topic's access policy, a resource-based policy, admits other accounts and AWS services. By default only the topic owner can publish or subscribe. A queue in another account is best subscribed by the queue's owner, which needs no confirmation. SNS also delivers to SQS queues and Lambda functions in other Regions.
+- **Access.** [IAM](../aws-iam/) policies give your own roles `sns:Publish` or `sns:Subscribe`; the topic's access policy, a resource-based policy, admits other accounts and AWS services. By default only the topic owner can publish or subscribe. A queue in another account is best subscribed by the queue's owner, which needs no confirmation. SNS also delivers to SQS queues and Lambda functions in other Regions.
 - **Networks.** Interface VPC endpoints keep `Publish` calls from a VPC off the internet (see [Private Endpoints](../private-endpoints/)).
 - SNS message data protection, which audits or masks sensitive data in messages, has been closed to new customers since 30 April 2026.
 

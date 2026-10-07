@@ -202,7 +202,7 @@ Choose MongoDB when each record is naturally a nested document that the applicat
 | Transactions | Single-document atomic; multi-document ACID transactions | ACID transactions over any rows | `TransactWriteItems`: up to 100 actions, all or nothing | Conditional writes (`IF NOT EXISTS`), run through Paxos at extra cost |
 | Scaling writes | Sharding by shard key across replica sets | One primary; shard with Citus or in the application | Automatic, by partition key | Every node takes writes; consistent hashing over a token ring |
 | Consistency | Tunable with read and write concern; reads from the primary by default | Strong on the primary; replicas asynchronous by default | Eventually consistent reads by default, strongly consistent on request | Tunable per operation with consistency levels (`ONE`, `QUORUM`, `ALL` …) |
-| Where it runs | Anywhere; Community under the SSPL; MongoDB Atlas; Amazon DocumentDB implements its API | Anywhere; PostgreSQL License; RDS and Aurora on AWS | AWS only | Anywhere; Apache License 2.0; Amazon Keyspaces is a compatible AWS service |
+| Where it runs | Anywhere; Community under the SSPL; MongoDB Atlas; Amazon DocumentDB implements its API | Anywhere; PostgreSQL License; RDS and [Aurora](../amazon-rds-aurora/) on AWS | AWS only | Anywhere; Apache License 2.0; Amazon Keyspaces is a compatible AWS service |
 
 Figures and terms from the MongoDB 9.0, PostgreSQL 18, Amazon DynamoDB and Apache Cassandra 5.0 documentation, October 2026.
 

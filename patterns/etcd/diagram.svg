@@ -1,0 +1,1564 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">etcd</title>
+<desc id="dg-desc">etcd. A strongly consistent key-value store on Raft that clusters use for configuration, service discovery, locks and leader election. Step 1, Where it sits: Every Kubernetes object is a key in etcd; only the API server talks to it. 3 members, one per AZ. Step 2, A write through Raft: Leader etcd-1 appends entry 52340 in term 7; with 2 of 3 on disk it commits as revision 41872. Step 3, Watches and leases: A watch streams the change to the controllers; a Txn on mod_revision hands the Lease to scheduler-b. Step 4, Failure and limits: etcd-1 fails; etcd-2 wins term 8 and 2 of 3 still commit. Limits: 2 GiB quota, disk, compaction.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">etcd</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · A write through Raft</text>
+  <text class="step on p2" x="262" y="518">2 · A write through Raft</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Watches and leases</text>
+  <text class="step on p3" x="484" y="518">3 · Watches and leases</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Failure and limits</text>
+  <text class="step on p4" x="706" y="518">4 · Failure and limits</text>
+  <text class="caption p1" x="40" y="552">Every Kubernetes object is a key in etcd; only the API server talks to it. 3 members, one per AZ.</text>
+  <text class="caption p2" x="40" y="552">Leader etcd-1 appends entry 52340 in term 7; with 2 of 3 on disk it commits as revision 41872.</text>
+  <text class="caption p3" x="40" y="552">A watch streams the change to the controllers; a Txn on mod_revision hands the Lease to scheduler-b.</text>
+  <text class="caption p4" x="40" y="552">etcd-1 fails; etcd-2 wins term 8 and 2 of 3 still commit. Limits: 2 GiB quota, disk, compaction.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* etcd. Timeline (20s loop, 1s = 5%):
+   0-25%   step 1: kube-controller-manager, scheduler-a and kubectl all go through kube-apiserver, the only
+           client of the 3-member etcd cluster (leader etcd-1, term 7, revision 41871)
+   25-50%  step 2: kubectl apply (catalog:1.4.3) -> Txn to leader etcd-1 (6.0 s) -> entry 52340 t7 appended (6.1),
+           copied to etcd-2 (6.75) and etcd-3 (7.25), committed with 2 of 3 (7.35), applied as revision 41872 (7.5),
+           answered (8.2); followers learn the commit index (8.38, 8.72)
+   50-75%  step 3: logs dimmed; watch event PUT @41872 -> API server -> controller manager (11.05); scheduler-a stops
+           (11.5), scheduler-b waits 15 s, its Lease update becomes Txn if mod_revision = 41880 (13.3), revision 41903
+   75-100% step 4: etcd-1 fails (15.3); election timeout; etcd-2 term 8 candidate (16.5), etcd-3 votes (16.9), leader
+           (17.3); empty entry 52373, renewal 52374 committed with 2 of 3 (18.78), revision 41904; limits;
+           everything resets in the last half-second */
+.diagram .et-frame { fill: none; stroke: var(--wire); stroke-width: 1.5; }
+.diagram .et-band { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+.diagram .et-api { fill: var(--bg); stroke: var(--wire); stroke-width: 1.5; }
+.diagram .et-chip { fill: var(--panel-2); stroke: var(--line); stroke-width: 1; }
+.diagram .et-cell { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .et-slot { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.diagram .et-new { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 1.5; }
+.diagram .et-t { font-size: 9.5px; fill: var(--muted); }
+.diagram .et-k { font-size: 9.5px; }
+.diagram .et-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .et-bar { transform-box: fill-box; transform-origin: 0 50%; }
+.diagram .et-logA { animation: et-logA var(--T) linear infinite; }
+.diagram .et-logB { opacity: 0; animation: et-logB var(--T) linear infinite; }
+.diagram .et-kubT { animation: et-kubT var(--T) linear infinite; }
+.diagram .et-kubI { opacity: 0; animation: et-kubI var(--T) linear infinite; }
+.diagram .et-kubOk { opacity: 0; animation: et-kubOk var(--T) linear infinite; }
+.diagram .et-kcmT { animation: et-kcmT var(--T) linear infinite; }
+.diagram .et-kcmR { opacity: 0; animation: et-kcmR var(--T) linear infinite; }
+.diagram .et-kcmHl { opacity: 0; animation: et-kcmHl var(--T) linear infinite; }
+.diagram .et-aT { animation: et-aT var(--T) linear infinite; }
+.diagram .et-aX { opacity: 0; animation: et-aX var(--T) linear infinite; }
+.diagram .et-bT { animation: et-bT var(--T) linear infinite; }
+.diagram .et-bCd { opacity: 0; animation: et-bCd var(--T) linear infinite; }
+.diagram .et-cdBar { animation: et-cdBar var(--T) linear infinite; }
+.diagram .et-bU { opacity: 0; animation: et-bU var(--T) linear infinite; }
+.diagram .et-bL { opacity: 0; animation: et-bL var(--T) linear infinite; }
+.diagram .et-b3a { opacity: 0; animation: et-b3a var(--T) linear infinite; }
+.diagram .et-b3b { opacity: 0; animation: et-b3b var(--T) linear infinite; }
+.diagram .et-b4 { opacity: 0; animation: et-b4 var(--T) linear infinite; }
+.diagram .et-hs1 { animation: et-hs1 var(--T) linear infinite; }
+.diagram .et-hs2 { opacity: 0; animation: et-hs2 var(--T) linear infinite; }
+.diagram .et-hs3 { opacity: 0; animation: et-hs3 var(--T) linear infinite; }
+.diagram .et-r1L { animation: et-r1L var(--T) linear infinite; }
+.diagram .et-r1D { opacity: 0; animation: et-r1D var(--T) linear infinite; }
+.diagram .et-n1 { opacity: 0; animation: et-n1 var(--T) linear infinite; }
+.diagram .et-k1 { opacity: 0; animation: et-k1 var(--T) linear infinite; }
+.diagram .et-ca1 { animation: et-ca1 var(--T) linear infinite; }
+.diagram .et-cb1 { opacity: 0; animation: et-cb1 var(--T) linear infinite; }
+.diagram .et-cc1 { opacity: 0; animation: et-cc1 var(--T) linear infinite; }
+.diagram .et-rv10 { animation: et-rv10 var(--T) linear infinite; }
+.diagram .et-rv11 { opacity: 0; animation: et-rv11 var(--T) linear infinite; }
+.diagram .et-rv12 { opacity: 0; animation: et-rv12 var(--T) linear infinite; }
+.diagram .et-rv13 { opacity: 0; animation: et-rv13 var(--T) linear infinite; }
+.diagram .et-h1 { opacity: 0; animation: et-h1 var(--T) linear infinite; }
+.diagram .et-hev { opacity: 0; animation: et-hev var(--T) linear infinite; }
+.diagram .et-hl1 { opacity: 0; animation: et-hl1 var(--T) linear infinite; }
+.diagram .et-va1 { animation: et-va1 var(--T) linear infinite; }
+.diagram .et-vb1 { opacity: 0; animation: et-vb1 var(--T) linear infinite; }
+.diagram .et-l10 { animation: et-l10 var(--T) linear infinite; }
+.diagram .et-l11 { opacity: 0; animation: et-l11 var(--T) linear infinite; }
+.diagram .et-l12 { opacity: 0; animation: et-l12 var(--T) linear infinite; }
+.diagram .et-down { opacity: 0; animation: et-down var(--T) linear infinite; }
+.diagram .et-t2a { animation: et-t2a var(--T) linear infinite; }
+.diagram .et-t2b { opacity: 0; animation: et-t2b var(--T) linear infinite; }
+.diagram .et-r2F { animation: et-r2F var(--T) linear infinite; }
+.diagram .et-r2C { opacity: 0; animation: et-r2C var(--T) linear infinite; }
+.diagram .et-r2L { opacity: 0; animation: et-r2L var(--T) linear infinite; }
+.diagram .et-n2 { opacity: 0; animation: et-n2 var(--T) linear infinite; }
+.diagram .et-k2 { opacity: 0; animation: et-k2 var(--T) linear infinite; }
+.diagram .et-ca2 { animation: et-ca2 var(--T) linear infinite; }
+.diagram .et-cb2 { opacity: 0; animation: et-cb2 var(--T) linear infinite; }
+.diagram .et-cc2 { opacity: 0; animation: et-cc2 var(--T) linear infinite; }
+.diagram .et-e2a { opacity: 0; animation: et-e2a var(--T) linear infinite; }
+.diagram .et-e2b { opacity: 0; animation: et-e2b var(--T) linear infinite; }
+.diagram .et-k4 { opacity: 0; animation: et-k4 var(--T) linear infinite; }
+.diagram .et-c4a { opacity: 0; animation: et-c4a var(--T) linear infinite; }
+.diagram .et-tm2g { opacity: 0; animation: et-tm2g var(--T) linear infinite; }
+.diagram .et-tm2 { animation: et-tm2 var(--T) linear infinite; }
+.diagram .et-c4b { opacity: 0; animation: et-c4b var(--T) linear infinite; }
+.diagram .et-c4c { opacity: 0; animation: et-c4c var(--T) linear infinite; }
+.diagram .et-c4d { opacity: 0; animation: et-c4d var(--T) linear infinite; }
+.diagram .et-rv20 { animation: et-rv20 var(--T) linear infinite; }
+.diagram .et-rv21 { opacity: 0; animation: et-rv21 var(--T) linear infinite; }
+.diagram .et-rv22 { opacity: 0; animation: et-rv22 var(--T) linear infinite; }
+.diagram .et-rv23 { opacity: 0; animation: et-rv23 var(--T) linear infinite; }
+.diagram .et-rv24 { opacity: 0; animation: et-rv24 var(--T) linear infinite; }
+.diagram .et-h2 { opacity: 0; animation: et-h2 var(--T) linear infinite; }
+.diagram .et-hl2 { opacity: 0; animation: et-hl2 var(--T) linear infinite; }
+.diagram .et-hl4 { opacity: 0; animation: et-hl4 var(--T) linear infinite; }
+.diagram .et-va2 { animation: et-va2 var(--T) linear infinite; }
+.diagram .et-vb2 { opacity: 0; animation: et-vb2 var(--T) linear infinite; }
+.diagram .et-l20 { animation: et-l20 var(--T) linear infinite; }
+.diagram .et-l21 { opacity: 0; animation: et-l21 var(--T) linear infinite; }
+.diagram .et-l22 { opacity: 0; animation: et-l22 var(--T) linear infinite; }
+.diagram .et-l23 { opacity: 0; animation: et-l23 var(--T) linear infinite; }
+.diagram .et-t3a { animation: et-t3a var(--T) linear infinite; }
+.diagram .et-t3b { opacity: 0; animation: et-t3b var(--T) linear infinite; }
+.diagram .et-n3 { opacity: 0; animation: et-n3 var(--T) linear infinite; }
+.diagram .et-k3 { opacity: 0; animation: et-k3 var(--T) linear infinite; }
+.diagram .et-ca3 { animation: et-ca3 var(--T) linear infinite; }
+.diagram .et-cb3 { opacity: 0; animation: et-cb3 var(--T) linear infinite; }
+.diagram .et-cc3 { opacity: 0; animation: et-cc3 var(--T) linear infinite; }
+.diagram .et-e3a { opacity: 0; animation: et-e3a var(--T) linear infinite; }
+.diagram .et-e3b { opacity: 0; animation: et-e3b var(--T) linear infinite; }
+.diagram .et-c5a { opacity: 0; animation: et-c5a var(--T) linear infinite; }
+.diagram .et-tm3g { opacity: 0; animation: et-tm3g var(--T) linear infinite; }
+.diagram .et-tm3 { animation: et-tm3 var(--T) linear infinite; }
+.diagram .et-c5b { opacity: 0; animation: et-c5b var(--T) linear infinite; }
+.diagram .et-c5c { opacity: 0; animation: et-c5c var(--T) linear infinite; }
+.diagram .et-rv30 { animation: et-rv30 var(--T) linear infinite; }
+.diagram .et-rv31 { opacity: 0; animation: et-rv31 var(--T) linear infinite; }
+.diagram .et-rv32 { opacity: 0; animation: et-rv32 var(--T) linear infinite; }
+.diagram .et-rv33 { opacity: 0; animation: et-rv33 var(--T) linear infinite; }
+.diagram .et-h3 { opacity: 0; animation: et-h3 var(--T) linear infinite; }
+.diagram .et-hl3 { opacity: 0; animation: et-hl3 var(--T) linear infinite; }
+.diagram .et-va3 { animation: et-va3 var(--T) linear infinite; }
+.diagram .et-vb3 { opacity: 0; animation: et-vb3 var(--T) linear infinite; }
+.diagram .et-l30 { animation: et-l30 var(--T) linear infinite; }
+.diagram .et-l31 { opacity: 0; animation: et-l31 var(--T) linear infinite; }
+.diagram .et-l32 { opacity: 0; animation: et-l32 var(--T) linear infinite; }
+.diagram .et-s1a { opacity: 0; animation: et-s1a var(--T) linear infinite; }
+.diagram .et-s1b { opacity: 0; animation: et-s1b var(--T) linear infinite; }
+.diagram .et-s1c { opacity: 0; animation: et-s1c var(--T) linear infinite; }
+.diagram .et-s1d { opacity: 0; animation: et-s1d var(--T) linear infinite; }
+.diagram .et-s1e { opacity: 0; animation: et-s1e var(--T) linear infinite; }
+.diagram .et-w1 { opacity: 0; animation: et-w1 var(--T) linear infinite; }
+.diagram .et-w2 { opacity: 0; animation: et-w2 var(--T) linear infinite; }
+.diagram .et-p2 { opacity: 0; animation: et-p2 var(--T) linear infinite; }
+.diagram .et-p3 { opacity: 0; animation: et-p3 var(--T) linear infinite; }
+.diagram .et-a2 { opacity: 0; animation: et-a2 var(--T) linear infinite; }
+.diagram .et-o1 { opacity: 0; animation: et-o1 var(--T) linear infinite; }
+.diagram .et-o2 { opacity: 0; animation: et-o2 var(--T) linear infinite; }
+.diagram .et-c2 { opacity: 0; animation: et-c2 var(--T) linear infinite; }
+.diagram .et-c3 { opacity: 0; animation: et-c3 var(--T) linear infinite; }
+.diagram .et-v1 { opacity: 0; animation: et-v1 var(--T) linear infinite; }
+.diagram .et-v2 { opacity: 0; animation: et-v2 var(--T) linear infinite; }
+.diagram .et-u1 { opacity: 0; animation: et-u1 var(--T) linear infinite; }
+.diagram .et-u2 { opacity: 0; animation: et-u2 var(--T) linear infinite; }
+.diagram .et-u3 { opacity: 0; animation: et-u3 var(--T) linear infinite; }
+.diagram .et-u4 { opacity: 0; animation: et-u4 var(--T) linear infinite; }
+.diagram .et-q1 { opacity: 0; animation: et-q1 var(--T) linear infinite; }
+.diagram .et-q2 { opacity: 0; animation: et-q2 var(--T) linear infinite; }
+.diagram .et-x1 { opacity: 0; animation: et-x1 var(--T) linear infinite; }
+.diagram .et-x2 { opacity: 0; animation: et-x2 var(--T) linear infinite; }
+.diagram .et-x3 { opacity: 0; animation: et-x3 var(--T) linear infinite; }
+.diagram .et-x4 { opacity: 0; animation: et-x4 var(--T) linear infinite; }
+.diagram .et-x5 { opacity: 0; animation: et-x5 var(--T) linear infinite; }
+.diagram .et-okK { opacity: 0; animation: et-okK var(--T) linear infinite; }
+.diagram .et-okB { opacity: 0; animation: et-okB var(--T) linear infinite; }
+.diagram .et-okC { opacity: 0; animation: et-okC var(--T) linear infinite; }
+.diagram .et-lim0 { opacity: 0; animation: et-lim0 var(--T) linear infinite; }
+.diagram .et-lim1 { opacity: 0; animation: et-lim1 var(--T) linear infinite; }
+.diagram .et-lim2 { opacity: 0; animation: et-lim2 var(--T) linear infinite; }
+.diagram .et-lim3 { opacity: 0; animation: et-lim3 var(--T) linear infinite; }
+.diagram .et-lim4 { opacity: 0; animation: et-lim4 var(--T) linear infinite; }
+@keyframes et-logA {
+  0% { opacity: 1; }
+  50% { opacity: 1; }
+  51.5% { opacity: 0.3; }
+  75% { opacity: 0.3; }
+  76.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-logB {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-kubT {
+  0% { opacity: 1; }
+  25.5% { opacity: 1; }
+  26.75% { opacity: 0; }
+  49% { opacity: 0; }
+  50.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-kubI {
+  0% { opacity: 0; }
+  25.5% { opacity: 0; }
+  26.75% { opacity: 1; }
+  41.25% { opacity: 1; }
+  42.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-kubOk {
+  0% { opacity: 0; }
+  41.25% { opacity: 0; }
+  42.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-kcmT {
+  0% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.75% { opacity: 0; }
+  74.5% { opacity: 0; }
+  75.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-kcmR {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-kcmHl {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  56.25% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-aT {
+  0% { opacity: 1; }
+  57.5% { opacity: 1; }
+  58.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-aX {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  58.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-bT {
+  0% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-bCd {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.75% { opacity: 1; }
+  65% { opacity: 1; }
+  66.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-cdBar {
+  0% { transform: scaleX(1); }
+  58.5% { transform: scaleX(1); }
+  64.75% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes et-bU {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  66.25% { opacity: 1; }
+  71% { opacity: 1; }
+  72.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-bL {
+  0% { opacity: 0; }
+  71% { opacity: 0; }
+  72.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-b3a {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.5% { opacity: 1; }
+  64.75% { opacity: 1; }
+  66.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-b3b {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  66% { opacity: 1; }
+  75% { opacity: 1; }
+  76.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-b4 {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-hs1 {
+  0% { opacity: 1; }
+  76.5% { opacity: 1; }
+  77.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-hs2 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.75% { opacity: 1; }
+  86.5% { opacity: 1; }
+  87.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-hs3 {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-r1L {
+  0% { opacity: 1; }
+  76.5% { opacity: 1; }
+  77.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-r1D {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-n1 {
+  0% { opacity: 0; }
+  30.5% { opacity: 0; }
+  31.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-k1 {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  37.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-ca1 {
+  0% { opacity: 1; }
+  30.5% { opacity: 1; }
+  31.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-cb1 {
+  0% { opacity: 0; }
+  30.5% { opacity: 0; }
+  31.75% { opacity: 1; }
+  36.75% { opacity: 1; }
+  38% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-cc1 {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  38% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv10 {
+  0% { opacity: 1; }
+  37.5% { opacity: 1; }
+  38.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-rv11 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv12 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv13 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-h1 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-hev {
+  0% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52.75% { opacity: 1; }
+  56% { opacity: 1; }
+  57.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-hl1 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-va1 {
+  0% { opacity: 1; }
+  37.5% { opacity: 1; }
+  38.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-vb1 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-l10 {
+  0% { opacity: 1; }
+  50% { opacity: 1; }
+  51.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-l11 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-l12 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-down {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-t2a {
+  0% { opacity: 1; }
+  82.5% { opacity: 1; }
+  83.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-t2b {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-r2F {
+  0% { opacity: 1; }
+  82.5% { opacity: 1; }
+  83.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-r2C {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.75% { opacity: 1; }
+  86.5% { opacity: 1; }
+  87.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-r2L {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-n2 {
+  0% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-k2 {
+  0% { opacity: 0; }
+  41.9% { opacity: 0; }
+  42.9% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-ca2 {
+  0% { opacity: 1; }
+  33.75% { opacity: 1; }
+  35% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-cb2 {
+  0% { opacity: 0; }
+  33.75% { opacity: 0; }
+  35% { opacity: 1; }
+  41.9% { opacity: 1; }
+  43.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-cc2 {
+  0% { opacity: 0; }
+  41.9% { opacity: 0; }
+  43.15% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-e2a {
+  0% { opacity: 0; }
+  86.75% { opacity: 0; }
+  87.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-e2b {
+  0% { opacity: 0; }
+  88.75% { opacity: 0; }
+  89.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-k4 {
+  0% { opacity: 0; }
+  93.9% { opacity: 0; }
+  94.9% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-c4a {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  77.25% { opacity: 1; }
+  78.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-tm2g {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78% { opacity: 1; }
+  82.5% { opacity: 1; }
+  83.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-tm2 {
+  0% { transform: scaleX(0); }
+  77.25% { transform: scaleX(0); }
+  82.25% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes et-c4b {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.75% { opacity: 1; }
+  88.75% { opacity: 1; }
+  90% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-c4c {
+  0% { opacity: 0; }
+  88.75% { opacity: 0; }
+  90% { opacity: 1; }
+  93.9% { opacity: 1; }
+  95.15% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-c4d {
+  0% { opacity: 0; }
+  93.9% { opacity: 0; }
+  95.15% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv20 {
+  0% { opacity: 1; }
+  42.15% { opacity: 1; }
+  43.4% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-rv21 {
+  0% { opacity: 0; }
+  42.15% { opacity: 0; }
+  43.4% { opacity: 1; }
+  50% { opacity: 1; }
+  51.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv22 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  69.5% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv23 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  94.25% { opacity: 1; }
+  95.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv24 {
+  0% { opacity: 0; }
+  94.25% { opacity: 0; }
+  95.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-h2 {
+  0% { opacity: 0; }
+  42.15% { opacity: 0; }
+  43.4% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-hl2 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-hl4 {
+  0% { opacity: 0; }
+  94.25% { opacity: 0; }
+  95.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-va2 {
+  0% { opacity: 1; }
+  42.15% { opacity: 1; }
+  43.4% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-vb2 {
+  0% { opacity: 0; }
+  42.15% { opacity: 0; }
+  43.4% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-l20 {
+  0% { opacity: 1; }
+  50% { opacity: 1; }
+  51.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-l21 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  69.5% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-l22 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  94.25% { opacity: 1; }
+  95.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-l23 {
+  0% { opacity: 0; }
+  94.25% { opacity: 0; }
+  95.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-t3a {
+  0% { opacity: 1; }
+  84.5% { opacity: 1; }
+  85.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-t3b {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-n3 {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  37.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-k3 {
+  0% { opacity: 0; }
+  43.6% { opacity: 0; }
+  44.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-ca3 {
+  0% { opacity: 1; }
+  36.25% { opacity: 1; }
+  37.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-cb3 {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  37.5% { opacity: 1; }
+  43.6% { opacity: 1; }
+  44.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-cc3 {
+  0% { opacity: 0; }
+  43.6% { opacity: 0; }
+  44.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-e3a {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  92.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-e3b {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  92.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-c5a {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76.25% { opacity: 1; }
+  77.25% { opacity: 1; }
+  78.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-tm3g {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78% { opacity: 1; }
+  84.5% { opacity: 1; }
+  85.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-tm3 {
+  0% { transform: scaleX(0); }
+  77.25% { transform: scaleX(0); }
+  84.5% { transform: scaleX(0.82); }
+  100% { transform: scaleX(0.82); }
+}
+@keyframes et-c5b {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.75% { opacity: 1; }
+  91.25% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-c5c {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  92.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv30 {
+  0% { opacity: 1; }
+  43.85% { opacity: 1; }
+  45.1% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-rv31 {
+  0% { opacity: 0; }
+  43.85% { opacity: 0; }
+  45.1% { opacity: 1; }
+  50% { opacity: 1; }
+  51.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv32 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  69.5% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-rv33 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-h3 {
+  0% { opacity: 0; }
+  43.85% { opacity: 0; }
+  45.1% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-hl3 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-va3 {
+  0% { opacity: 1; }
+  43.85% { opacity: 1; }
+  45.1% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-vb3 {
+  0% { opacity: 0; }
+  43.85% { opacity: 0; }
+  45.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-l30 {
+  0% { opacity: 1; }
+  50% { opacity: 1; }
+  51.25% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes et-l31 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  69.5% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-l32 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-s1a {
+  0% { transform: translate(243px, 126px); opacity: 0; }
+  4% { transform: translate(243px, 126px); opacity: 0; }
+  4.25% { opacity: 1; }
+  5.042% { transform: translate(243px, 151px); opacity: 1; }
+  5.292% { transform: translate(243px, 151px); opacity: 0; }
+  100% { transform: translate(243px, 151px); opacity: 0; }
+}
+@keyframes et-s1b {
+  0% { transform: translate(426px, 126px); opacity: 0; }
+  5.25% { transform: translate(426px, 126px); opacity: 0; }
+  5.5% { opacity: 1; }
+  6.292% { transform: translate(426px, 151px); opacity: 1; }
+  6.542% { transform: translate(426px, 151px); opacity: 0; }
+  100% { transform: translate(426px, 151px); opacity: 0; }
+}
+@keyframes et-s1c {
+  0% { transform: translate(88px, 126px); opacity: 0; }
+  6.5% { transform: translate(88px, 126px); opacity: 0; }
+  6.75% { opacity: 1; }
+  7.542% { transform: translate(88px, 151px); opacity: 1; }
+  7.792% { transform: translate(88px, 151px); opacity: 0; }
+  100% { transform: translate(88px, 151px); opacity: 0; }
+}
+@keyframes et-s1d {
+  0% { transform: translate(60px, 164px); opacity: 0; }
+  8.5% { transform: translate(60px, 164px); opacity: 0; }
+  8.75% { opacity: 1; }
+  9.455% { transform: translate(60px, 206px); opacity: 1; }
+  9.705% { transform: translate(60px, 206px); opacity: 0; }
+  100% { transform: translate(60px, 206px); opacity: 0; }
+}
+@keyframes et-s1e {
+  0% { transform: translate(60px, 206px); opacity: 0; }
+  11.75% { transform: translate(60px, 206px); opacity: 0; }
+  12% { opacity: 1; }
+  12.705% { transform: translate(60px, 164px); opacity: 1; }
+  12.955% { transform: translate(60px, 164px); opacity: 0; }
+  100% { transform: translate(60px, 164px); opacity: 0; }
+}
+@keyframes et-w1 {
+  0% { transform: translate(88px, 126px); opacity: 0; }
+  26.5% { transform: translate(88px, 126px); opacity: 0; }
+  26.75% { opacity: 1; }
+  27.542% { transform: translate(88px, 151px); opacity: 1; }
+  27.792% { transform: translate(88px, 151px); opacity: 0; }
+  100% { transform: translate(88px, 151px); opacity: 0; }
+}
+@keyframes et-w2 {
+  0% { transform: translate(60px, 164px); opacity: 0; }
+  28.75% { transform: translate(60px, 164px); opacity: 0; }
+  29% { opacity: 1; }
+  29.705% { transform: translate(60px, 206px); opacity: 1; }
+  29.955% { transform: translate(60px, 206px); opacity: 0; }
+  100% { transform: translate(60px, 206px); opacity: 0; }
+}
+@keyframes et-p2 {
+  0% { transform: translate(242px, 262px); opacity: 0; }
+  31% { transform: translate(242px, 262px); opacity: 0; }
+  31.073% { transform: translate(242px, 271px); }
+  31.25% { opacity: 1; }
+  33.419% { transform: translate(533px, 271px); }
+  33.492% { transform: translate(533px, 262px); opacity: 1; }
+  33.742% { transform: translate(533px, 262px); opacity: 0; }
+  100% { transform: translate(533px, 262px); opacity: 0; }
+}
+@keyframes et-p3 {
+  0% { transform: translate(242px, 262px); opacity: 0; }
+  31% { transform: translate(242px, 262px); opacity: 0; }
+  31.073% { transform: translate(242px, 271px); }
+  31.25% { opacity: 1; }
+  35.766% { transform: translate(824px, 271px); }
+  35.839% { transform: translate(824px, 262px); opacity: 1; }
+  36.089% { transform: translate(824px, 262px); opacity: 0; }
+  100% { transform: translate(824px, 262px); opacity: 0; }
+}
+@keyframes et-a2 {
+  0% { transform: translate(533px, 262px); opacity: 0; }
+  34% { transform: translate(533px, 262px); opacity: 0; }
+  34.073% { transform: translate(533px, 271px); }
+  34.25% { opacity: 1; }
+  36.419% { transform: translate(242px, 271px); }
+  36.492% { transform: translate(242px, 262px); opacity: 1; }
+  36.742% { transform: translate(242px, 262px); opacity: 0; }
+  100% { transform: translate(242px, 262px); opacity: 0; }
+}
+@keyframes et-o1 {
+  0% { transform: translate(60px, 206px); opacity: 0; }
+  38% { transform: translate(60px, 206px); opacity: 0; }
+  38.25% { opacity: 1; }
+  38.955% { transform: translate(60px, 164px); opacity: 1; }
+  39.205% { transform: translate(60px, 164px); opacity: 0; }
+  100% { transform: translate(60px, 164px); opacity: 0; }
+}
+@keyframes et-o2 {
+  0% { transform: translate(88px, 151px); opacity: 0; }
+  39.75% { transform: translate(88px, 151px); opacity: 0; }
+  40% { opacity: 1; }
+  40.792% { transform: translate(88px, 126px); opacity: 1; }
+  41.042% { transform: translate(88px, 126px); opacity: 0; }
+  100% { transform: translate(88px, 126px); opacity: 0; }
+}
+@keyframes et-c2 {
+  0% { transform: translate(242px, 262px); opacity: 0; }
+  40% { transform: translate(242px, 262px); opacity: 0; }
+  40.05% { transform: translate(242px, 271px); }
+  40.25% { opacity: 1; }
+  41.667% { transform: translate(533px, 271px); }
+  41.717% { transform: translate(533px, 262px); opacity: 1; }
+  41.967% { transform: translate(533px, 262px); opacity: 0; }
+  100% { transform: translate(533px, 262px); opacity: 0; }
+}
+@keyframes et-c3 {
+  0% { transform: translate(242px, 262px); opacity: 0; }
+  40% { transform: translate(242px, 262px); opacity: 0; }
+  40.05% { transform: translate(242px, 271px); }
+  40.25% { opacity: 1; }
+  43.283% { transform: translate(824px, 271px); }
+  43.333% { transform: translate(824px, 262px); opacity: 1; }
+  43.583% { transform: translate(824px, 262px); opacity: 0; }
+  100% { transform: translate(824px, 262px); opacity: 0; }
+}
+@keyframes et-v1 {
+  0% { transform: translate(60px, 206px); opacity: 0; }
+  52.25% { transform: translate(60px, 206px); opacity: 0; }
+  52.5% { opacity: 1; }
+  53.205% { transform: translate(60px, 164px); opacity: 1; }
+  53.455% { transform: translate(60px, 164px); opacity: 0; }
+  100% { transform: translate(60px, 164px); opacity: 0; }
+}
+@keyframes et-v2 {
+  0% { transform: translate(243px, 151px); opacity: 0; }
+  54% { transform: translate(243px, 151px); opacity: 0; }
+  54.25% { opacity: 1; }
+  55.042% { transform: translate(243px, 126px); opacity: 1; }
+  55.292% { transform: translate(243px, 126px); opacity: 0; }
+  100% { transform: translate(243px, 126px); opacity: 0; }
+}
+@keyframes et-u1 {
+  0% { transform: translate(596px, 126px); opacity: 0; }
+  65% { transform: translate(596px, 126px); opacity: 0; }
+  65.25% { opacity: 1; }
+  66.042% { transform: translate(596px, 151px); opacity: 1; }
+  66.292% { transform: translate(596px, 151px); opacity: 0; }
+  100% { transform: translate(596px, 151px); opacity: 0; }
+}
+@keyframes et-u2 {
+  0% { transform: translate(60px, 164px); opacity: 0; }
+  66.5% { transform: translate(60px, 164px); opacity: 0; }
+  66.75% { opacity: 1; }
+  67.455% { transform: translate(60px, 206px); opacity: 1; }
+  67.705% { transform: translate(60px, 206px); opacity: 0; }
+  100% { transform: translate(60px, 206px); opacity: 0; }
+}
+@keyframes et-u3 {
+  0% { transform: translate(60px, 206px); opacity: 0; }
+  68.75% { transform: translate(60px, 206px); opacity: 0; }
+  69% { opacity: 1; }
+  69.705% { transform: translate(60px, 164px); opacity: 1; }
+  69.955% { transform: translate(60px, 164px); opacity: 0; }
+  100% { transform: translate(60px, 164px); opacity: 0; }
+}
+@keyframes et-u4 {
+  0% { transform: translate(596px, 151px); opacity: 0; }
+  69.85% { transform: translate(596px, 151px); opacity: 0; }
+  70.1% { opacity: 1; }
+  70.892% { transform: translate(596px, 126px); opacity: 1; }
+  71.142% { transform: translate(596px, 126px); opacity: 0; }
+  100% { transform: translate(596px, 126px); opacity: 0; }
+}
+@keyframes et-q1 {
+  0% { transform: translate(427px, 262px); opacity: 0; }
+  82.6% { transform: translate(427px, 262px); opacity: 0; }
+  82.652% { transform: translate(427px, 271px); }
+  82.85% { opacity: 1; }
+  84.344% { transform: translate(718px, 271px); }
+  84.397% { transform: translate(718px, 262px); opacity: 1; }
+  84.647% { transform: translate(718px, 262px); opacity: 0; }
+  100% { transform: translate(718px, 262px); opacity: 0; }
+}
+@keyframes et-q2 {
+  0% { transform: translate(718px, 262px); opacity: 0; }
+  84.6% { transform: translate(718px, 262px); opacity: 0; }
+  84.652% { transform: translate(718px, 271px); }
+  84.85% { opacity: 1; }
+  86.344% { transform: translate(427px, 271px); }
+  86.397% { transform: translate(427px, 262px); opacity: 1; }
+  86.647% { transform: translate(427px, 262px); opacity: 0; }
+  100% { transform: translate(427px, 262px); opacity: 0; }
+}
+@keyframes et-x1 {
+  0% { transform: translate(596px, 126px); opacity: 0; }
+  86% { transform: translate(596px, 126px); opacity: 0; }
+  86.25% { opacity: 1; }
+  87.042% { transform: translate(596px, 151px); opacity: 1; }
+  87.292% { transform: translate(596px, 151px); opacity: 0; }
+  100% { transform: translate(596px, 151px); opacity: 0; }
+}
+@keyframes et-x2 {
+  0% { transform: translate(351px, 164px); opacity: 0; }
+  87.25% { transform: translate(351px, 164px); opacity: 0; }
+  87.5% { opacity: 1; }
+  88.205% { transform: translate(351px, 206px); opacity: 1; }
+  88.455% { transform: translate(351px, 206px); opacity: 0; }
+  100% { transform: translate(351px, 206px); opacity: 0; }
+}
+@keyframes et-x3 {
+  0% { transform: translate(586px, 262px); opacity: 0; }
+  89% { transform: translate(586px, 262px); opacity: 0; }
+  89.064% { transform: translate(586px, 271px); }
+  89.25% { opacity: 1; }
+  91.143% { transform: translate(877px, 271px); }
+  91.207% { transform: translate(877px, 262px); opacity: 1; }
+  91.457% { transform: translate(877px, 262px); opacity: 0; }
+  100% { transform: translate(877px, 262px); opacity: 0; }
+}
+@keyframes et-x4 {
+  0% { transform: translate(877px, 262px); opacity: 0; }
+  91.5% { transform: translate(877px, 262px); opacity: 0; }
+  91.564% { transform: translate(877px, 271px); }
+  91.75% { opacity: 1; }
+  93.643% { transform: translate(586px, 271px); }
+  93.707% { transform: translate(586px, 262px); opacity: 1; }
+  93.957% { transform: translate(586px, 262px); opacity: 0; }
+  100% { transform: translate(586px, 262px); opacity: 0; }
+}
+@keyframes et-x5 {
+  0% { transform: translate(351px, 206px); opacity: 0; }
+  94.25% { transform: translate(351px, 206px); opacity: 0; }
+  94.5% { opacity: 1; }
+  95.205% { transform: translate(351px, 164px); opacity: 1; }
+  95.455% { transform: translate(351px, 164px); opacity: 0; }
+  100% { transform: translate(351px, 164px); opacity: 0; }
+}
+@keyframes et-okK {
+  0% { opacity: 0; }
+  41.25% { opacity: 0; }
+  42.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-okB {
+  0% { opacity: 0; }
+  71% { opacity: 0; }
+  72.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-okC {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-lim0 {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-lim1 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-lim2 {
+  0% { opacity: 0; }
+  87.5% { opacity: 0; }
+  88.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-lim3 {
+  0% { opacity: 0; }
+  89% { opacity: 0; }
+  90.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes et-lim4 {
+  0% { opacity: 0; }
+  90.5% { opacity: 0; }
+  91.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<rect class="box" x="36" y="94" width="104" height="32" rx="8"/>
+<rect class="box" x="150" y="94" width="186" height="32" rx="8"/>
+<rect class="box" x="346" y="94" width="160" height="32" rx="8"/>
+<rect class="box" x="516" y="94" width="160" height="32" rx="8"/>
+<text class="sub sb mid f-ink" x="88" y="108">kubectl apply</text>
+<g class="et-kubT"><text class="tiny mid" x="88" y="121">Catalog team</text></g>
+<g class="et-kubI"><text class="tiny mono sb mid f-blue" x="88" y="121">catalog:1.4.3</text></g>
+<g class="et-kubOk"><text class="tiny sb mid f-green" x="88" y="121">configured</text></g>
+<text class="sub sb mid f-ink" x="243" y="108">kube-controller-manager</text>
+<g class="et-kcmT"><text class="tiny mid" x="243" y="121">watches Deployments</text></g>
+<g class="et-kcmR"><text class="tiny sb mid f-purple" x="243" y="121">event 41872 → new ReplicaSet</text></g>
+<rect class="none s-purple et-kcmHl" x="150" y="94" width="186" height="32" rx="8" stroke-width="2"/>
+<text class="sub sb f-ink" x="358" y="108">scheduler-a</text>
+<g class="et-aT"><text class="tiny" x="358" y="121">kube-scheduler · leader</text></g>
+<g class="et-aX"><rect class="f-red-soft s-red" x="346" y="94" width="160" height="32" rx="8" stroke-width="1.5"/><text class="tiny sb f-red" x="358" y="121">stopped: no renewals</text><path class="none s-red" d="M486 104l8 8m0 -8l-8 8" stroke-width="2.2" stroke-linecap="round"/></g>
+<text class="sub sb f-ink" x="528" y="108">scheduler-b</text>
+<g class="et-bT"><text class="tiny" x="528" y="121">kube-scheduler · standby</text></g>
+<g class="et-bCd"><rect class="f-panel-2" x="528" y="115" width="70" height="6" rx="3"/><rect class="f-amber et-bar et-cdBar" x="528" y="115" width="70" height="6" rx="3"/><text class="tiny sb f-amber-ink" x="604" y="121">waits 15 s</text></g>
+<g class="et-bU"><text class="tiny sb f-blue" x="528" y="121">updates the Lease</text></g>
+<g class="et-bL"><text class="tiny sb f-green" x="528" y="121">kube-scheduler · leader</text></g>
+<rect class="zone" x="690" y="94" width="234" height="70" rx="12"/>
+<text class="sub sb f-ink" x="704" y="112">other systems</text>
+<text class="tiny" x="704" y="128">run their own etcd clusters</text>
+<text class="tiny" x="704" y="142">for config, discovery and locks:</text>
+<text class="tiny" x="704" y="156">Patroni, CoreDNS, APISIX …</text>
+<path class="wire" d="M88 126V138"/>
+<path class="wire" d="M243 126V138"/>
+<path class="wire" d="M426 126V138"/>
+<path class="wire" d="M596 126V138"/>
+<rect class="et-api" x="36" y="138" width="640" height="26" rx="8"/>
+<text class="sub sb f-ink" x="48" y="155">kube-apiserver</text>
+<rect class="et-chip" x="196" y="143" width="94" height="16" rx="8"/>
+<text class="tiny sb mid f-ink" x="243" y="154.5">watch cache</text>
+<g class="p1"><text class="tiny" x="300" y="155">the only Kubernetes component that should reach etcd</text></g>
+<g class="p2"><text class="tiny mono sb f-blue" x="300" y="155">Txn: if mod_revision = 41250, put …/default/catalog</text></g>
+<g class="et-b3a"><text class="tiny mono sb f-purple" x="300" y="155">watch /registry/deployments/ from rev 41850</text></g>
+<g class="et-b3b"><text class="tiny mono sb f-blue" x="300" y="155">Txn: if mod_revision = 41880, put holder scheduler-b</text></g>
+<g class="et-b4"><text class="tiny sb f-red" x="300" y="155">etcd-1 unreachable: the client switches to etcd-2</text></g>
+<path class="wire" d="M60 164V200"/>
+<path class="wire" d="M351 164V200"/>
+<path class="wire" d="M642 164V200"/>
+<rect class="et-frame" x="36" y="172" width="888" height="220" rx="16"/>
+<text class="label" x="72" y="190">etcd cluster</text>
+<text class="tiny mono" x="170" y="190">v3.7 · 3 members</text>
+<text class="tiny" x="366" y="190">one per Availability Zone · quorum 2</text>
+<g class="et-hs1"><rect class="et-chip" x="696" y="178" width="216" height="18" rx="9"/><text class="tiny sb mid f-ink" x="804" y="190.5">Raft leader etcd-1 · term 7</text></g>
+<g class="et-hs2"><rect class="f-amber-soft s-amber" x="696" y="178" width="216" height="18" rx="9"/><text class="tiny sb mid f-amber-ink" x="804" y="190.5">no leader: election under way</text></g>
+<g class="et-hs3"><rect class="f-green-soft s-green" x="696" y="178" width="216" height="18" rx="9"/><text class="tiny sb mid f-green" x="804" y="190.5">Raft leader etcd-2 · term 8</text></g>
+<!-- etcd-1 -->
+<rect class="et-band" x="48" y="200" width="282" height="186" rx="12"/>
+<text class="label" x="70" y="221">etcd-1</text>
+<text class="tiny" x="124" y="221">AZ a</text>
+<text class="tiny mono end" x="254" y="221">term 7</text>
+<g class="et-r1L"><rect class="et-chip" x="260" y="208" width="58" height="18" rx="9"/><text class="tiny sb mid f-ink" x="289" y="221">leader</text></g>
+<g class="et-r1D"><rect class="f-red-soft s-red" x="260" y="208" width="58" height="18" rx="9"/><text class="tiny sb mid f-red" x="289" y="221">down</text></g>
+<g class="et-logA"><rect class="et-cell" x="59" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="83" y="243">52337</text><text class="et-t mid" x="83" y="256">t7</text><rect class="et-cell" x="112" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="136" y="243">52338</text><text class="et-t mid" x="136" y="256">t7</text><rect class="et-cell" x="165" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="189" y="243">52339</text><text class="et-t mid" x="189" y="256">t7</text><rect class="et-slot" x="218" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="242" y="243">52340</text><rect class="et-slot" x="271" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="295" y="243">52341</text><g class="et-n1"><rect class="f-bg" x="218" y="230" width="48" height="32" rx="4"/><rect class="et-new" x="218" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid b f-ink" x="242" y="243">52340</text><text class="et-t mid" x="242" y="256">t7</text></g><rect class="none s-green et-k1" x="216" y="228" width="52" height="36" rx="6" stroke-width="2"/><g class="et-ca1"><text class="tiny mono" x="60" y="287">commit index 52339</text></g><g class="et-cb1"><text class="tiny mono sb f-teal" x="60" y="287">52340 on disk (fsync)</text></g><g class="et-cc1"><text class="tiny mono sb f-green" x="60" y="287">commit index 52340 · 2 of 3 have it</text></g></g>
+<g class="et-logB"><rect class="et-cell" x="59" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="83" y="243">52370</text><text class="et-t mid" x="83" y="256">t7</text><rect class="et-cell" x="112" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="136" y="243">52371</text><text class="et-t mid" x="136" y="256">t7</text><rect class="et-cell" x="165" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="189" y="243">52372</text><text class="et-t mid" x="189" y="256">t7</text><rect class="et-slot" x="218" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="242" y="243">52373</text><rect class="et-slot" x="271" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="295" y="243">52374</text><text class="tiny mono" x="60" y="287">commit index 52372</text></g>
+<rect class="f-bg s-line" x="54" y="294" width="270" height="86" rx="8" stroke-width="1.2"/>
+<text class="tiny sb f-ink" x="64" y="309">kv store (MVCC)</text>
+<g class="et-rv10"><text class="tiny mono sb end f-ink" x="314" y="309">revision 41871</text></g>
+<g class="et-rv11"><text class="tiny mono sb end f-teal" x="314" y="309">revision 41872</text></g>
+<g class="et-rv12"><text class="tiny mono sb end f-teal" x="314" y="309">revision 41880</text></g>
+<g class="et-rv13"><text class="tiny mono sb end f-teal" x="314" y="309">revision 41903</text></g>
+<rect class="f-teal-soft s-teal et-h1" x="58" y="314" width="262" height="30" rx="5" stroke-width="1.2"/>
+<rect class="f-purple-soft s-purple et-hev" x="58" y="314" width="262" height="30" rx="5" stroke-width="1.5"/>
+<rect class="f-green-soft s-green et-hl1" x="58" y="345" width="262" height="30" rx="5" stroke-width="1.2"/>
+<text class="et-k mono f-ink" x="64" y="325">/registry/deployments/default/catalog</text>
+<g class="et-va1"><text class="tiny" x="72" y="339">mod 41250 · image catalog:1.4.2</text></g>
+<g class="et-vb1"><text class="tiny sb f-teal" x="72" y="339">mod 41872 · image catalog:1.4.3</text></g>
+<text class="et-k mono f-ink" x="64" y="356">/registry/leases/kube-system/kube-scheduler</text>
+<g class="et-l10"><text class="tiny" x="72" y="370">mod 41869 · holder scheduler-a</text></g>
+<g class="et-l11"><text class="tiny" x="72" y="370">mod 41880 · holder scheduler-a</text></g>
+<g class="et-l12"><text class="tiny sb f-green" x="72" y="370">mod 41903 · holder scheduler-b</text></g>
+<g class="et-down"><rect class="f-red-soft s-red" x="48" y="200" width="282" height="186" rx="12" stroke-width="1.5"/></g>
+<!-- etcd-2 -->
+<rect class="et-band" x="339" y="200" width="282" height="186" rx="12"/>
+<text class="label" x="361" y="221">etcd-2</text>
+<text class="tiny" x="415" y="221">AZ b</text>
+<g class="et-t2a"><text class="tiny mono end" x="545" y="221">term 7</text></g>
+<g class="et-t2b"><text class="tiny mono sb end f-ink" x="545" y="221">term 8</text></g>
+<g class="et-r2F"><rect class="f-panel s-line" x="551" y="208" width="58" height="18" rx="9"/><text class="tiny sb mid f-muted" x="580" y="221">follower</text></g>
+<g class="et-r2C"><rect class="f-amber-soft s-amber" x="551" y="208" width="58" height="18" rx="9"/><text class="tiny sb mid f-amber-ink" x="580" y="221">candidate</text></g>
+<g class="et-r2L"><rect class="et-chip" x="551" y="208" width="58" height="18" rx="9"/><text class="tiny sb mid f-ink" x="580" y="221">leader</text></g>
+<g class="et-logA"><rect class="et-cell" x="350" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="374" y="243">52337</text><text class="et-t mid" x="374" y="256">t7</text><rect class="et-cell" x="403" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="427" y="243">52338</text><text class="et-t mid" x="427" y="256">t7</text><rect class="et-cell" x="456" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="480" y="243">52339</text><text class="et-t mid" x="480" y="256">t7</text><rect class="et-slot" x="509" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="533" y="243">52340</text><rect class="et-slot" x="562" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="586" y="243">52341</text><g class="et-n2"><rect class="f-bg" x="509" y="230" width="48" height="32" rx="4"/><rect class="et-new" x="509" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid b f-ink" x="533" y="243">52340</text><text class="et-t mid" x="533" y="256">t7</text></g><rect class="none s-green et-k2" x="507" y="228" width="52" height="36" rx="6" stroke-width="2"/><g class="et-ca2"><text class="tiny mono" x="351" y="287">commit index 52339</text></g><g class="et-cb2"><text class="tiny mono sb f-teal" x="351" y="287">52340 on disk (fsync)</text></g><g class="et-cc2"><text class="tiny mono sb f-green" x="351" y="287">commit index 52340</text></g></g>
+<g class="et-logB"><rect class="et-cell" x="350" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="374" y="243">52370</text><text class="et-t mid" x="374" y="256">t7</text><rect class="et-cell" x="403" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="427" y="243">52371</text><text class="et-t mid" x="427" y="256">t7</text><rect class="et-cell" x="456" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="480" y="243">52372</text><text class="et-t mid" x="480" y="256">t7</text><rect class="et-slot" x="509" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="533" y="243">52373</text><rect class="et-slot" x="562" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="586" y="243">52374</text><g class="et-e2a"><rect class="f-bg" x="509" y="230" width="48" height="32" rx="4"/><rect class="et-new" x="509" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid b f-ink" x="533" y="243">52373</text><text class="et-t mid" x="533" y="256">t8</text></g><g class="et-e2b"><rect class="f-bg" x="562" y="230" width="48" height="32" rx="4"/><rect class="et-new" x="562" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid b f-ink" x="586" y="243">52374</text><text class="et-t mid" x="586" y="256">t8</text></g><rect class="none s-green et-k4" x="507" y="228" width="105" height="36" rx="6" stroke-width="2"/><g class="et-c4a"><text class="tiny mono" x="351" y="287">commit index 52372</text></g><g class="et-tm2g"><rect class="f-panel-2" x="351" y="281" width="60" height="6" rx="3"/><rect class="f-amber et-bar et-tm2" x="351" y="281" width="60" height="6" rx="3"/><text class="tiny sb f-amber-ink" x="419" y="287">no heartbeat: election timeout</text></g><g class="et-c4b"><text class="tiny sb f-amber-ink" x="351" y="287">term 8: asks etcd-3 for its vote</text></g><g class="et-c4c"><text class="tiny mono sb f-teal" x="351" y="287">52373–52374 on disk (fsync)</text></g><g class="et-c4d"><text class="tiny mono sb f-green" x="351" y="287">commit index 52374 · 2 of 3 have it</text></g></g>
+<rect class="f-bg s-line" x="345" y="294" width="270" height="86" rx="8" stroke-width="1.2"/>
+<text class="tiny sb f-ink" x="355" y="309">kv store (MVCC)</text>
+<g class="et-rv20"><text class="tiny mono sb end f-ink" x="605" y="309">revision 41871</text></g>
+<g class="et-rv21"><text class="tiny mono sb end f-teal" x="605" y="309">revision 41872</text></g>
+<g class="et-rv22"><text class="tiny mono sb end f-teal" x="605" y="309">revision 41880</text></g>
+<g class="et-rv23"><text class="tiny mono sb end f-teal" x="605" y="309">revision 41903</text></g>
+<g class="et-rv24"><text class="tiny mono sb end f-teal" x="605" y="309">revision 41904</text></g>
+<rect class="f-teal-soft s-teal et-h2" x="349" y="314" width="262" height="30" rx="5" stroke-width="1.2"/>
+<rect class="f-green-soft s-green et-hl2" x="349" y="345" width="262" height="30" rx="5" stroke-width="1.2"/>
+<rect class="f-green-soft s-green et-hl4" x="349" y="345" width="262" height="30" rx="5" stroke-width="1.2"/>
+<text class="et-k mono f-ink" x="355" y="325">/registry/deployments/default/catalog</text>
+<g class="et-va2"><text class="tiny" x="363" y="339">mod 41250 · image catalog:1.4.2</text></g>
+<g class="et-vb2"><text class="tiny sb f-teal" x="363" y="339">mod 41872 · image catalog:1.4.3</text></g>
+<text class="et-k mono f-ink" x="355" y="356">/registry/leases/kube-system/kube-scheduler</text>
+<g class="et-l20"><text class="tiny" x="363" y="370">mod 41869 · holder scheduler-a</text></g>
+<g class="et-l21"><text class="tiny" x="363" y="370">mod 41880 · holder scheduler-a</text></g>
+<g class="et-l22"><text class="tiny sb f-green" x="363" y="370">mod 41903 · holder scheduler-b</text></g>
+<g class="et-l23"><text class="tiny sb f-green" x="363" y="370">mod 41904 · holder scheduler-b</text></g>
+<!-- etcd-3 -->
+<rect class="et-band" x="630" y="200" width="282" height="186" rx="12"/>
+<text class="label" x="652" y="221">etcd-3</text>
+<text class="tiny" x="706" y="221">AZ c</text>
+<g class="et-t3a"><text class="tiny mono end" x="836" y="221">term 7</text></g>
+<g class="et-t3b"><text class="tiny mono sb end f-ink" x="836" y="221">term 8</text></g>
+<g class=""><rect class="f-panel s-line" x="842" y="208" width="58" height="18" rx="9"/><text class="tiny sb mid f-muted" x="871" y="221">follower</text></g>
+<g class="et-logA"><rect class="et-cell" x="641" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="665" y="243">52337</text><text class="et-t mid" x="665" y="256">t7</text><rect class="et-cell" x="694" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="718" y="243">52338</text><text class="et-t mid" x="718" y="256">t7</text><rect class="et-cell" x="747" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="771" y="243">52339</text><text class="et-t mid" x="771" y="256">t7</text><rect class="et-slot" x="800" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="824" y="243">52340</text><rect class="et-slot" x="853" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="877" y="243">52341</text><g class="et-n3"><rect class="f-bg" x="800" y="230" width="48" height="32" rx="4"/><rect class="et-new" x="800" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid b f-ink" x="824" y="243">52340</text><text class="et-t mid" x="824" y="256">t7</text></g><rect class="none s-green et-k3" x="798" y="228" width="52" height="36" rx="6" stroke-width="2"/><g class="et-ca3"><text class="tiny mono" x="642" y="287">commit index 52339</text></g><g class="et-cb3"><text class="tiny mono sb f-teal" x="642" y="287">52340 on disk (fsync)</text></g><g class="et-cc3"><text class="tiny mono sb f-green" x="642" y="287">commit index 52340</text></g></g>
+<g class="et-logB"><rect class="et-cell" x="641" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="665" y="243">52370</text><text class="et-t mid" x="665" y="256">t7</text><rect class="et-cell" x="694" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="718" y="243">52371</text><text class="et-t mid" x="718" y="256">t7</text><rect class="et-cell" x="747" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-ink" x="771" y="243">52372</text><text class="et-t mid" x="771" y="256">t7</text><rect class="et-slot" x="800" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="824" y="243">52373</text><rect class="et-slot" x="853" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid f-faint" x="877" y="243">52374</text><g class="et-e3a"><rect class="f-bg" x="800" y="230" width="48" height="32" rx="4"/><rect class="et-new" x="800" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid b f-ink" x="824" y="243">52373</text><text class="et-t mid" x="824" y="256">t8</text></g><g class="et-e3b"><rect class="f-bg" x="853" y="230" width="48" height="32" rx="4"/><rect class="et-new" x="853" y="230" width="48" height="32" rx="4"/><text class="tiny mono mid b f-ink" x="877" y="243">52374</text><text class="et-t mid" x="877" y="256">t8</text></g><g class="et-c5a"><text class="tiny mono" x="642" y="287">commit index 52372</text></g><g class="et-tm3g"><rect class="f-panel-2" x="642" y="281" width="60" height="6" rx="3"/><rect class="f-amber et-bar et-tm3" x="642" y="281" width="60" height="6" rx="3"/><text class="tiny sb f-amber-ink" x="710" y="287">no heartbeat: election timeout</text></g><g class="et-c5b"><text class="tiny sb f-ink" x="642" y="287">votes for etcd-2 in term 8</text></g><g class="et-c5c"><text class="tiny mono sb f-teal" x="642" y="287">52373–52374 on disk (fsync)</text></g></g>
+<rect class="f-bg s-line" x="636" y="294" width="270" height="86" rx="8" stroke-width="1.2"/>
+<text class="tiny sb f-ink" x="646" y="309">kv store (MVCC)</text>
+<g class="et-rv30"><text class="tiny mono sb end f-ink" x="896" y="309">revision 41871</text></g>
+<g class="et-rv31"><text class="tiny mono sb end f-teal" x="896" y="309">revision 41872</text></g>
+<g class="et-rv32"><text class="tiny mono sb end f-teal" x="896" y="309">revision 41880</text></g>
+<g class="et-rv33"><text class="tiny mono sb end f-teal" x="896" y="309">revision 41903</text></g>
+<rect class="f-teal-soft s-teal et-h3" x="640" y="314" width="262" height="30" rx="5" stroke-width="1.2"/>
+<rect class="f-green-soft s-green et-hl3" x="640" y="345" width="262" height="30" rx="5" stroke-width="1.2"/>
+<text class="et-k mono f-ink" x="646" y="325">/registry/deployments/default/catalog</text>
+<g class="et-va3"><text class="tiny" x="654" y="339">mod 41250 · image catalog:1.4.2</text></g>
+<g class="et-vb3"><text class="tiny sb f-teal" x="654" y="339">mod 41872 · image catalog:1.4.3</text></g>
+<text class="et-k mono f-ink" x="646" y="356">/registry/leases/kube-system/kube-scheduler</text>
+<g class="et-l30"><text class="tiny" x="654" y="370">mod 41869 · holder scheduler-a</text></g>
+<g class="et-l31"><text class="tiny" x="654" y="370">mod 41880 · holder scheduler-a</text></g>
+<g class="et-l32"><text class="tiny sb f-green" x="654" y="370">mod 41903 · holder scheduler-b</text></g>
+<!-- tokens -->
+<circle class="et-s1a f-blue pkt" r="6"/>
+<circle class="et-s1b f-blue pkt" r="6"/>
+<circle class="et-s1c f-blue pkt" r="6"/>
+<circle class="et-s1d f-blue pkt" r="6"/>
+<circle class="et-s1e f-green pkt" r="6"/>
+<circle class="et-w1 f-blue pkt" r="6"/>
+<circle class="et-w2 f-blue pkt" r="6"/>
+<circle class="et-p2 f-teal pkt" r="6"/>
+<circle class="et-p3 f-teal pkt" r="6"/>
+<circle class="et-a2 f-green pkt" r="6"/>
+<circle class="et-o1 f-green pkt" r="6"/>
+<circle class="et-o2 f-green pkt" r="6"/>
+<circle class="et-c2 f-green pkt" r="6"/>
+<circle class="et-c3 f-green pkt" r="6"/>
+<circle class="et-v1 f-purple pkt" r="6"/>
+<circle class="et-v2 f-purple pkt" r="6"/>
+<circle class="et-u1 f-blue pkt" r="6"/>
+<circle class="et-u2 f-blue pkt" r="6"/>
+<circle class="et-u3 f-green pkt" r="6"/>
+<circle class="et-u4 f-green pkt" r="6"/>
+<circle class="et-q1 f-blue pkt" r="6"/>
+<circle class="et-q2 f-green pkt" r="6"/>
+<circle class="et-x1 f-blue pkt" r="6"/>
+<circle class="et-x2 f-blue pkt" r="6"/>
+<circle class="et-x3 f-teal pkt" r="6"/>
+<circle class="et-x4 f-green pkt" r="6"/>
+<circle class="et-x5 f-green pkt" r="6"/>
+<g class="et-okK"><circle class="f-green" cx="138" cy="96" r="8"/><path class="none s-bg" d="M134 96l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="et-okB"><circle class="f-green" cx="674" cy="96" r="8"/><path class="none s-bg" d="M670 96l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="et-okC"><circle class="f-purple" cx="334" cy="96" r="8"/><path class="none s-bg" d="M330 96l3 3 5-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect class="box" x="36" y="400" width="888" height="66" rx="12"/>
+<g class="p1"><text class="et-hd" x="52" y="418">WHERE ETCD SITS</text><text class="sub f-ink" x="52" y="437">Every Kubernetes object (Deployments, Pods, Leases, Secrets) is a key under /registry/ in etcd, and only kube-apiserver talks to it.</text><text class="sub f-ink" x="52" y="455">Three members, one per Availability Zone, survive one failure; Kubernetes recommends five in production.</text></g>
+<g class="p2"><text class="et-hd" x="52" y="418">A WRITE THROUGH RAFT</text><text class="sub f-ink" x="52" y="437">The API server sends a Txn (if mod_revision = 41250, put) to the leader etcd-1, which appends entry 52340 in term 7 and sends it on.</text><text class="sub f-ink" x="52" y="455">With 2 of 3 on disk the entry is committed: etcd-1 applies it as revision 41872 and answers; followers apply it on the next heartbeat.</text></g>
+<g class="p3"><text class="et-hd" x="52" y="418">WATCHES, TRANSACTIONS AND LEASES</text><text class="sub f-ink" x="52" y="437">The API server watches /registry/deployments/ from a revision, so the change arrives as an event and the controllers react at once.</text><text class="sub f-ink" x="52" y="455">The scheduler Lease is an ordinary key: 15 s after scheduler-a's last renewal, scheduler-b takes it with a Txn on mod_revision.</text></g>
+<g class="p4"><text class="et-hd" x="52" y="418">FAILURE, THEN THE LIMITS</text><text class="sub f-ink" x="52" y="437">etcd-1 fails: when etcd-2's election timeout (1 s by default) runs out, it wins term 8 with etcd-3's vote. Lose two: no writes.</text><g class="et-lim0"><rect class="f-amber-soft s-amber" x="52" y="444" width="205" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="63" y="456.5">2 GiB quota, ≤ 8 GiB suggested</text></g><g class="et-lim1"><rect class="f-amber-soft s-amber" x="265" y="444" width="150" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="276" y="456.5">≤ 1.5 MiB per request</text></g><g class="et-lim2"><rect class="f-amber-soft s-amber" x="423" y="444" width="181" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="434" y="456.5">writes wait for disk fsync</text></g><g class="et-lim3"><rect class="f-amber-soft s-amber" x="612" y="444" width="168" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="623" y="456.5">compact + defrag history</text></g><g class="et-lim4"><rect class="f-amber-soft s-amber" x="788" y="444" width="126" height="17" rx="8.5" stroke-width="1.2"/><text class="tiny sb f-amber-ink" x="799" y="456.5">odd sizes: 3 or 5</text></g></g>
+</g>
+</svg>

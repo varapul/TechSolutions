@@ -1,0 +1,75 @@
+{
+  "aka": ["Red Hat build of Keycloak"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Apps send people to Keycloak to sign in; orders-api trusts its tokens; Google and AD supply users.",
+      "body": "Keycloak is Acme Shop's identity provider: realm **acme** holds the users, roles, sign-in flows and signing keys, and three clients, **shop-web** (the shop's single-page app, a public client), **back-office** (the staff app, a confidential client) and **orders-api** (the resource server). The apps send people to Keycloak to sign in and get tokens back, and orders-api checks each access token's RS256 signature against the realm's public keys, so it never sees a password. Customers can also sign in with Google (identity brokering), and staff accounts stay in Active Directory, which Keycloak reads over LDAP (user federation)."
+    },
+    {
+      "title": "Sign-in with PKCE",
+      "caption": "shop-web redirects with a PKCE challenge; password, then OTP; the code is swapped for three tokens.",
+      "body": "The customer clicks **Sign in** on shop.example, and shop-web sends the browser to the realm's `/auth` endpoint with a `code_challenge`, the S256 hash of a random `code_verifier`. There is no SSO cookie yet, so the realm's **browser flow** asks for the password and then a 6-digit OTP (a passkey would replace both), creates an **SSO session**, stores it in the database and redirects back with a one-time code. shop-web posts the code and the `code_verifier` to `/token` and gets an ID token, an access token (RS256, 5 minutes) and a refresh token (30 minutes)."
+    },
+    {
+      "title": "Tokens and single sign-on",
+      "caption": "orders-api checks tokens with cached keys; shop-web refreshes; back-office reuses the SSO session.",
+      "body": "orders-api fetched the realm's JWKS once and caches it, so it checks each access token itself: the signature, `iss`, `aud` (an audience mapper adds orders-api), `exp` and the realm role **customer** in `realm_access.roles`. Before the 5 minutes run out, shop-web refreshes, which also resets the session's 30-minute idle timer. A staff member who signed in to the wiki earlier opens back-office: the **Cookie** step finds their SSO session, so Keycloak returns a code without a login form, and back-office redeems it at `/token` with its client secret."
+    },
+    {
+      "title": "Revocation and limits",
+      "caption": "A disabled customer's refresh fails, but the access token works until exp. You run the DB and nodes.",
+      "body": "Support switches the customer's **Enabled** off. The next refresh fails with `400 invalid_grant`, but orders-api keeps accepting the access token it already holds until `exp`, up to 5 minutes later, which is why access tokens are short; token introspection would see the change at once, at the cost of a call to Keycloak per request. Keycloak is also a stateful service to run: PostgreSQL holds realms, users and sessions, the nodes share embedded Infinispan caches, a multi-cluster setup needs a synchronously replicated database, and upgrades and themes are your work, which managed services such as Amazon Cognito, Auth0 and Microsoft Entra ID take on in exchange for control."
+    }
+  ],
+  "related": ["openid-connect", "oauth2-authorization-code-pkce", "saml-sso", "federated-identity", "oauth2-client-credentials", "token-exchange", "jwt-validation", "amazon-cognito"],
+  "references": [
+    { "title": "Keycloak — Server Administration Guide", "url": "https://www.keycloak.org/docs/latest/server_admin/index.html" },
+    { "title": "Keycloak — Release notes", "url": "https://www.keycloak.org/docs/latest/release_notes/index.html" },
+    { "title": "Keycloak on GitHub — Release 26.8.0 (1 October 2026)", "url": "https://github.com/keycloak/keycloak/releases/tag/26.8.0" },
+    { "title": "Keycloak — Securing applications and services with OpenID Connect (endpoints)", "url": "https://www.keycloak.org/securing-apps/oidc-layers" },
+    { "title": "Keycloak — Specifications implemented", "url": "https://www.keycloak.org/securing-apps/specifications" },
+    { "title": "Keycloak — Configuring and using token exchange", "url": "https://www.keycloak.org/securing-apps/token-exchange" },
+    { "title": "Keycloak — Enabling and disabling features", "url": "https://www.keycloak.org/server/features" },
+    { "title": "Keycloak — Configuring distributed caches", "url": "https://www.keycloak.org/server/caching" },
+    { "title": "Keycloak — Configuring the database", "url": "https://www.keycloak.org/server/db" },
+    { "title": "Keycloak — High availability overview", "url": "https://www.keycloak.org/high-availability/introduction" },
+    { "title": "Keycloak — Single-cluster deployments", "url": "https://www.keycloak.org/high-availability/single-cluster/introduction" },
+    { "title": "Keycloak — Multi-cluster deployments (v2)", "url": "https://www.keycloak.org/high-availability/multi-cluster-v2/introduction" },
+    { "title": "Keycloak — Basic Keycloak deployment (Operator)", "url": "https://www.keycloak.org/operator/basic-deployment" },
+    { "title": "Keycloak — Working with themes", "url": "https://www.keycloak.org/ui-customization/themes" },
+    { "title": "Keycloak — Configuring the management interface", "url": "https://www.keycloak.org/server/management-interface" },
+    { "title": "Keycloak — Configuring Keycloak (build and start --optimized)", "url": "https://www.keycloak.org/server/configuration" },
+    { "title": "Keycloak — Configuring Keycloak for production", "url": "https://www.keycloak.org/server/configuration-production" },
+    { "title": "Keycloak — Configuring the hostname (v2)", "url": "https://www.keycloak.org/server/hostname" },
+    { "title": "Keycloak — Configuring a reverse proxy", "url": "https://www.keycloak.org/server/reverseproxy" },
+    { "title": "Keycloak — Admin REST API", "url": "https://www.keycloak.org/docs-api/latest/rest-api/index.html" },
+    { "title": "Keycloak source, 26.8.0 — Constants.java (realm defaults: token lifespan, session timeouts, RS256)", "url": "https://github.com/keycloak/keycloak/blob/26.8.0/server-spi-private/src/main/java/org/keycloak/models/Constants.java" },
+    { "title": "Keycloak source, 26.8.0 — DefaultRefreshTokenProvider.java (refresh token expiry)", "url": "https://github.com/keycloak/keycloak/blob/26.8.0/services/src/main/java/org/keycloak/protocol/oidc/refresh/DefaultRefreshTokenProvider.java" },
+    { "title": "Keycloak source, 26.8.0 — CookieType.java (KEYCLOAK_IDENTITY and the other cookie names)", "url": "https://github.com/keycloak/keycloak/blob/26.8.0/server-spi-private/src/main/java/org/keycloak/cookie/CookieType.java" },
+    { "title": "CNCF — Keycloak (incubating project)", "url": "https://www.cncf.io/projects/keycloak/" },
+    { "title": "Red Hat — Red Hat build of Keycloak", "url": "https://access.redhat.com/products/red-hat-build-keycloak/" },
+    { "title": "OpenID Connect Core 1.0 incorporating errata set 2", "url": "https://openid.net/specs/openid-connect-core-1_0.html" },
+    { "title": "RFC 7636 — Proof Key for Code Exchange by OAuth Public Clients (PKCE)", "url": "https://www.rfc-editor.org/rfc/rfc7636" },
+    { "title": "RFC 7662 — OAuth 2.0 Token Introspection", "url": "https://www.rfc-editor.org/rfc/rfc7662" },
+    { "title": "RFC 8628 — OAuth 2.0 Device Authorization Grant", "url": "https://www.rfc-editor.org/rfc/rfc8628" },
+    { "title": "RFC 8693 — OAuth 2.0 Token Exchange", "url": "https://www.rfc-editor.org/rfc/rfc8693" },
+    { "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security", "url": "https://www.rfc-editor.org/rfc/rfc9700" },
+    { "title": "Amazon Cognito Developer Guide — User pool sign-in with third party identity providers", "url": "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-identity-federation.html" },
+    { "title": "Amazon Cognito API Reference — CreateUserPoolClient (token validity)", "url": "https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_CreateUserPoolClient.html" },
+    { "title": "Amazon Cognito Developer Guide — User pool feature plans", "url": "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-sign-in-feature-plans.html" },
+    { "title": "Amazon Cognito Developer Guide — Customizing user pool workflows with Lambda triggers", "url": "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-working-with-lambda-triggers.html" },
+    { "title": "Amazon Cognito pricing", "url": "https://aws.amazon.com/cognito/pricing/" },
+    { "title": "Auth0 Docs — Authentication and Authorization Protocols", "url": "https://auth0.com/docs/authenticate/protocols" },
+    { "title": "Auth0 Docs — Access Tokens (token lifetime)", "url": "https://auth0.com/docs/secure/tokens/access-tokens" },
+    { "title": "Auth0 Docs — Understand How Auth0 Actions Work", "url": "https://auth0.com/docs/customize/actions/actions-overview" },
+    { "title": "Auth0 Docs — Connect Your App to Active Directory using LDAP", "url": "https://auth0.com/docs/authenticate/identity-providers/enterprise-identity-providers/active-directory-ldap" },
+    { "title": "Auth0 — Pricing", "url": "https://auth0.com/pricing" },
+    { "title": "Microsoft Learn — Access tokens in the Microsoft identity platform", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens" },
+    { "title": "Microsoft Learn — How the Microsoft identity platform uses the SAML protocol", "url": "https://learn.microsoft.com/en-us/entra/identity-platform/saml-protocol-reference" },
+    { "title": "Microsoft Learn — What is hybrid identity with Microsoft Entra ID?", "url": "https://learn.microsoft.com/en-us/entra/identity/hybrid/whatis-hybrid-identity" },
+    { "title": "Microsoft Learn — Microsoft Entra External ID overview", "url": "https://learn.microsoft.com/en-us/entra/external-id/external-identities-overview" },
+    { "title": "Microsoft Learn — Microsoft Entra licensing", "url": "https://learn.microsoft.com/en-us/entra/fundamentals/licensing" },
+    { "title": "Microsoft Learn — External ID pricing", "url": "https://learn.microsoft.com/en-us/entra/external-id/external-identities-pricing" }
+  ]
+}

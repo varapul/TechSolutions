@@ -1,0 +1,992 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Keycloak</title>
+<desc id="dg-desc">Keycloak. An open-source identity provider: user sign-in, federation and single sign-on, issuing OpenID Connect and SAML tokens. Step 1, Where it sits: Apps send people to Keycloak to sign in; orders-api trusts its tokens; Google and AD supply users. Step 2, Sign-in with PKCE: shop-web redirects with a PKCE challenge; password, then OTP; the code is swapped for three tokens. Step 3, Tokens and single sign-on: orders-api checks tokens with cached keys; shop-web refreshes; back-office reuses the SSO session. Step 4, Revocation and limits: A disabled customer's refresh fails, but the access token works until exp. You run the DB and nodes.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">SYSTEM COMPONENTS</text>
+  <text class="title" x="40" y="64">Keycloak</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Where it sits</text>
+  <text class="step on p1" x="40" y="518">1 · Where it sits</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Sign-in with PKCE</text>
+  <text class="step on p2" x="262" y="518">2 · Sign-in with PKCE</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Tokens and single sign-on</text>
+  <text class="step on p3" x="484" y="518">3 · Tokens and single sign-on</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Revocation and limits</text>
+  <text class="step on p4" x="706" y="518">4 · Revocation and limits</text>
+  <text class="caption p1" x="40" y="552">Apps send people to Keycloak to sign in; orders-api trusts its tokens; Google and AD supply users.</text>
+  <text class="caption p2" x="40" y="552">shop-web redirects with a PKCE challenge; password, then OTP; the code is swapped for three tokens.</text>
+  <text class="caption p3" x="40" y="552">orders-api checks tokens with cached keys; shop-web refreshes; back-office reuses the SSO session.</text>
+  <text class="caption p4" x="40" y="552">A disabled customer's refresh fails, but the access token works until exp. You run the DB and nodes.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Keycloak. Acme Shop's identity provider, realm acme (20 s loop, 1 s = 5%):
+   0-5 s    where it sits: shop-web and back-office send people to sign in, orders-api trusts the tokens, Google and AD plug in
+   5-10 s   sign in: /auth with a PKCE challenge, browser flow (no cookie, password, OTP), SSO session, code, /token -> 3 tokens
+   10-15 s  orders-api validates with cached JWKS; shop-web refreshes; back-office gets a code from the SSO session, no form
+   15-20 s  customer disabled: old access token still accepted until exp, refresh -> 400 invalid_grant; operating limits
+   Generated by a scratch script with scripts/lib/motion.mjs. */
+.diagram .kc-l13 { font-size: 13px; font-weight: 600; }
+.diagram .kc-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .kc-n { font-size: 11.5px; }
+.diagram .kc-t10 { font-size: 10px; fill: var(--muted); }
+.diagram .kc-m10 { font-size: 10px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; fill: var(--muted); }
+.diagram .kc-or { fill: var(--orange); }
+.diagram .kc-card { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .kc-tk { font-size: 9px; font-weight: 700; fill: var(--bg); }
+.diagram .kc-mk { font-size: 12px; font-weight: 700; }
+.diagram .kc-lbl { font-size: 10.5px; font-weight: 700; }
+.diagram .kc-a1 { opacity: 0; animation: kc-a1 var(--T) linear infinite; }
+.diagram .kc-a2 { opacity: 0; animation: kc-a2 var(--T) linear infinite; }
+.diagram .kc-a3 { opacity: 0; animation: kc-a3 var(--T) linear infinite; }
+.diagram .kc-a4 { opacity: 0; animation: kc-a4 var(--T) linear infinite; }
+.diagram .kc-a5 { opacity: 0; animation: kc-a5 var(--T) linear infinite; }
+.diagram .kc-a6 { opacity: 0; animation: kc-a6 var(--T) linear infinite; }
+.diagram .kc-b1 { opacity: 0; animation: kc-b1 var(--T) linear infinite; }
+.diagram .kc-b3 { opacity: 0; animation: kc-b3 var(--T) linear infinite; }
+.diagram .kc-b4 { opacity: 0; animation: kc-b4 var(--T) linear infinite; }
+.diagram .kc-b5 { opacity: 0; animation: kc-b5 var(--T) linear infinite; }
+.diagram .kc-b6 { opacity: 0; animation: kc-b6 var(--T) linear infinite; }
+.diagram .kc-b7 { opacity: 0; animation: kc-b7 var(--T) linear infinite; }
+.diagram .kc-d1 { opacity: 0; animation: kc-d1 var(--T) linear infinite; }
+.diagram .kc-d2 { opacity: 0; animation: kc-d2 var(--T) linear infinite; }
+.diagram .kc-d3 { opacity: 0; animation: kc-d3 var(--T) linear infinite; }
+.diagram .kc-d4 { opacity: 0; animation: kc-d4 var(--T) linear infinite; }
+.diagram .kc-d5 { opacity: 0; animation: kc-d5 var(--T) linear infinite; }
+.diagram .kc-d6 { opacity: 0; animation: kc-d6 var(--T) linear infinite; }
+.diagram .kc-e1 { opacity: 0; animation: kc-e1 var(--T) linear infinite; }
+.diagram .kc-e2 { opacity: 0; animation: kc-e2 var(--T) linear infinite; }
+.diagram .kc-e3 { opacity: 0; animation: kc-e3 var(--T) linear infinite; }
+.diagram .kc-h-gl { opacity: 0; animation: kc-h-gl var(--T) linear infinite; }
+.diagram .kc-h-ad { opacity: 0; animation: kc-h-ad var(--T) linear infinite; }
+.diagram .kc-jw { opacity: 0; animation: kc-jw var(--T) linear infinite; }
+.diagram .kc-c0 { opacity: 0; animation: kc-c0 var(--T) linear infinite; }
+.diagram .kc-c1 { opacity: 0; animation: kc-c1 var(--T) linear infinite; }
+.diagram .kc-c2 { opacity: 0; animation: kc-c2 var(--T) linear infinite; }
+.diagram .kc-c3 { opacity: 0; animation: kc-c3 var(--T) linear infinite; }
+.diagram .kc-c4 { opacity: 0; animation: kc-c4 var(--T) linear infinite; }
+.diagram .kc-ok1 { opacity: 0; animation: kc-ok1 var(--T) linear infinite; }
+.diagram .kc-ok4 { opacity: 0; animation: kc-ok4 var(--T) linear infinite; }
+.diagram .kc-x4 { opacity: 0; animation: kc-x4 var(--T) linear infinite; }
+.diagram .kc-x4n { animation: kc-x4n var(--T) linear infinite; }
+.diagram .kc-sb { opacity: 0; animation: kc-sb var(--T) linear infinite; }
+.diagram .kc-pk { opacity: 0; animation: kc-pk var(--T) linear infinite; }
+.diagram .kc-au { opacity: 0; animation: kc-au var(--T) linear infinite; }
+.diagram .kc-r1 { opacity: 0; animation: kc-r1 var(--T) linear infinite; }
+.diagram .kc-r2 { opacity: 0; animation: kc-r2 var(--T) linear infinite; }
+.diagram .kc-r3 { opacity: 0; animation: kc-r3 var(--T) linear infinite; }
+.diagram .kc-m1 { opacity: 0; animation: kc-m1 var(--T) linear infinite; }
+.diagram .kc-m2 { opacity: 0; animation: kc-m2 var(--T) linear infinite; }
+.diagram .kc-m3 { opacity: 0; animation: kc-m3 var(--T) linear infinite; }
+.diagram .kc-m4 { opacity: 0; animation: kc-m4 var(--T) linear infinite; }
+.diagram .kc-m5 { opacity: 0; animation: kc-m5 var(--T) linear infinite; }
+.diagram .kc-s1 { opacity: 0; animation: kc-s1 var(--T) linear infinite; }
+.diagram .kc-s1x { opacity: 0; animation: kc-s1x var(--T) linear infinite; }
+.diagram .kc-s2 { opacity: 0; animation: kc-s2 var(--T) linear infinite; }
+.diagram .kc-ck { opacity: 0; animation: kc-ck var(--T) linear infinite; }
+.diagram .kc-vf { opacity: 0; animation: kc-vf var(--T) linear infinite; }
+.diagram .kc-tf { opacity: 0; animation: kc-tf var(--T) linear infinite; }
+.diagram .kc-held { opacity: 0; animation: kc-held var(--T) linear infinite; }
+.diagram .kc-rf { opacity: 0; animation: kc-rf var(--T) linear infinite; }
+.diagram .kc-ux { opacity: 0; animation: kc-ux var(--T) linear infinite; }
+.diagram .kc-tx { opacity: 0; animation: kc-tx var(--T) linear infinite; }
+.diagram .kc-rx { opacity: 0; animation: kc-rx var(--T) linear infinite; }
+.diagram .kc-ex { opacity: 0; animation: kc-ex var(--T) linear infinite; }
+.diagram .kc-sso { opacity: 0; animation: kc-sso var(--T) linear infinite; }
+.diagram .kc-idl { opacity: 0; animation: kc-idl var(--T) linear infinite; }
+.diagram .kc-bar { transform-box: fill-box; transform-origin: 0 50%; animation: kc-bar var(--T) linear infinite; }
+@keyframes kc-a1 {
+  0% { transform: translate(162px, 300px); opacity: 0; }
+  2% { transform: translate(162px, 300px); opacity: 0; }
+  2.19% { transform: translate(178px, 300px); }
+  2.25% { opacity: 1; }
+  3.976% { transform: translate(178px, 150px); }
+  4.167% { transform: translate(194px, 150px); opacity: 1; }
+  4.417% { transform: translate(194px, 150px); opacity: 0; }
+  100% { transform: translate(194px, 150px); opacity: 0; }
+}
+@keyframes kc-a2 {
+  0% { transform: translate(170px, 150px); opacity: 0; }
+  4.75% { transform: translate(170px, 150px); opacity: 0; }
+  5% { opacity: 1; }
+  6.083% { transform: translate(194px, 150px); opacity: 1; }
+  6.333% { transform: translate(194px, 150px); opacity: 0; }
+  100% { transform: translate(194px, 150px); opacity: 0; }
+}
+@keyframes kc-a3 {
+  0% { transform: translate(702px, 166px); opacity: 0; }
+  7.25% { transform: translate(702px, 166px); opacity: 0; }
+  7.5% { opacity: 1; }
+  7.603% { transform: translate(714px, 166px); }
+  8.544% { transform: translate(714px, 134px); }
+  8.897% { transform: translate(726px, 134px); opacity: 1; }
+  9.147% { transform: translate(726px, 134px); opacity: 0; }
+  100% { transform: translate(726px, 134px); opacity: 0; }
+}
+@keyframes kc-a4 {
+  0% { transform: translate(702px, 180px); opacity: 0; }
+  7.25% { transform: translate(702px, 180px); opacity: 0; }
+  7.5% { opacity: 1; }
+  7.603% { transform: translate(714px, 180px); }
+  8.309% { transform: translate(714px, 204px); }
+  8.662% { transform: translate(726px, 204px); opacity: 1; }
+  8.912% { transform: translate(726px, 204px); opacity: 0; }
+  100% { transform: translate(726px, 204px); opacity: 0; }
+}
+@keyframes kc-a5 {
+  0% { transform: translate(194px, 262px); opacity: 0; }
+  10.25% { transform: translate(194px, 262px); opacity: 0; }
+  10.5% { opacity: 1; }
+  10.65% { transform: translate(178px, 262px); }
+  11.6% { transform: translate(178px, 300px); }
+  12% { transform: translate(162px, 300px); opacity: 1; }
+  12.25% { transform: translate(162px, 300px); opacity: 0; }
+  100% { transform: translate(162px, 300px); opacity: 0; }
+}
+@keyframes kc-a6 {
+  0% { transform: translate(162px, 380px); opacity: 0; }
+  13% { transform: translate(162px, 380px); opacity: 0; }
+  13.25% { opacity: 1; }
+  16.917% { transform: translate(726px, 380px); opacity: 1; }
+  17.167% { transform: translate(726px, 380px); opacity: 0; }
+  100% { transform: translate(726px, 380px); opacity: 0; }
+}
+@keyframes kc-b1 {
+  0% { transform: translate(162px, 300px); opacity: 0; }
+  27% { transform: translate(162px, 300px); opacity: 0; }
+  27.19% { transform: translate(178px, 300px); }
+  27.25% { opacity: 1; }
+  28.976% { transform: translate(178px, 150px); }
+  29.167% { transform: translate(194px, 150px); opacity: 1; }
+  29.417% { transform: translate(194px, 150px); opacity: 0; }
+  100% { transform: translate(194px, 150px); opacity: 0; }
+}
+@keyframes kc-b3 {
+  0% { transform: translate(194px, 150px); opacity: 0; }
+  39% { transform: translate(194px, 150px); opacity: 0; }
+  39.19% { transform: translate(178px, 150px); }
+  39.25% { opacity: 1; }
+  40.976% { transform: translate(178px, 300px); }
+  41.167% { transform: translate(162px, 300px); opacity: 1; }
+  41.417% { transform: translate(162px, 300px); opacity: 0; }
+  100% { transform: translate(162px, 300px); opacity: 0; }
+}
+@keyframes kc-b4 {
+  0% { transform: translate(162px, 300px); opacity: 0; }
+  41.75% { transform: translate(162px, 300px); opacity: 0; }
+  42% { opacity: 1; }
+  42.15% { transform: translate(178px, 300px); }
+  43.1% { transform: translate(178px, 262px); }
+  43.5% { transform: translate(194px, 262px); opacity: 1; }
+  43.75% { transform: translate(194px, 262px); opacity: 0; }
+  100% { transform: translate(194px, 262px); opacity: 0; }
+}
+@keyframes kc-b5 {
+  0% { transform: translate(194px, 262px); opacity: 0; }
+  44.75% { transform: translate(194px, 262px); opacity: 0; }
+  45% { opacity: 1; }
+  45.15% { transform: translate(178px, 262px); }
+  46.1% { transform: translate(178px, 300px); }
+  46.5% { transform: translate(162px, 300px); opacity: 1; }
+  46.75% { transform: translate(162px, 300px); opacity: 0; }
+  100% { transform: translate(162px, 300px); opacity: 0; }
+}
+@keyframes kc-b6 {
+  0% { transform: translate(440px, 274px); opacity: 0; }
+  36.75% { transform: translate(440px, 274px); opacity: 0; }
+  37% { opacity: 1; }
+  38.4% { transform: translate(440px, 340px); opacity: 1; }
+  38.65% { transform: translate(440px, 340px); opacity: 0; }
+  100% { transform: translate(440px, 340px); opacity: 0; }
+}
+@keyframes kc-b7 {
+  0% { transform: translate(502px, 264px); opacity: 0; }
+  36.75% { transform: translate(502px, 264px); opacity: 0; }
+  37% { opacity: 1; }
+  37.107% { transform: translate(512px, 264px); }
+  39.321% { transform: translate(512px, 326px); opacity: 1; }
+  39.571% { transform: translate(512px, 326px); opacity: 0; }
+  100% { transform: translate(512px, 326px); opacity: 0; }
+}
+@keyframes kc-d1 {
+  0% { transform: translate(162px, 380px); opacity: 0; }
+  51% { transform: translate(162px, 380px); opacity: 0; }
+  51.25% { opacity: 1; }
+  54.525% { transform: translate(726px, 380px); opacity: 1; }
+  54.775% { transform: translate(726px, 380px); opacity: 0; }
+  100% { transform: translate(726px, 380px); opacity: 0; }
+}
+@keyframes kc-d2 {
+  0% { transform: translate(726px, 380px); opacity: 0; }
+  58% { transform: translate(726px, 380px); opacity: 0; }
+  58.25% { opacity: 1; }
+  61.525% { transform: translate(162px, 380px); opacity: 1; }
+  61.775% { transform: translate(162px, 380px); opacity: 0; }
+  100% { transform: translate(162px, 380px); opacity: 0; }
+}
+@keyframes kc-d3 {
+  0% { transform: translate(162px, 300px); opacity: 0; }
+  61.75% { transform: translate(162px, 300px); opacity: 0; }
+  62% { opacity: 1; }
+  62.15% { transform: translate(178px, 300px); }
+  63.1% { transform: translate(178px, 262px); }
+  63.5% { transform: translate(194px, 262px); opacity: 1; }
+  63.75% { transform: translate(194px, 262px); opacity: 0; }
+  100% { transform: translate(194px, 262px); opacity: 0; }
+}
+@keyframes kc-d4 {
+  0% { transform: translate(194px, 262px); opacity: 0; }
+  63.75% { transform: translate(194px, 262px); opacity: 0; }
+  64% { opacity: 1; }
+  64.15% { transform: translate(178px, 262px); }
+  65.1% { transform: translate(178px, 300px); }
+  65.5% { transform: translate(162px, 300px); opacity: 1; }
+  65.75% { transform: translate(162px, 300px); opacity: 0; }
+  100% { transform: translate(162px, 300px); opacity: 0; }
+}
+@keyframes kc-d5 {
+  0% { transform: translate(170px, 150px); opacity: 0; }
+  66% { transform: translate(170px, 150px); opacity: 0; }
+  66.25% { opacity: 1; }
+  67.5% { transform: translate(194px, 150px); opacity: 1; }
+  67.75% { transform: translate(194px, 150px); opacity: 0; }
+  100% { transform: translate(194px, 150px); opacity: 0; }
+}
+@keyframes kc-d6 {
+  0% { transform: translate(194px, 150px); opacity: 0; }
+  69.75% { transform: translate(194px, 150px); opacity: 0; }
+  70% { opacity: 1; }
+  71.25% { transform: translate(170px, 150px); opacity: 1; }
+  71.5% { transform: translate(170px, 150px); opacity: 0; }
+  100% { transform: translate(170px, 150px); opacity: 0; }
+}
+@keyframes kc-e1 {
+  0% { transform: translate(162px, 380px); opacity: 0; }
+  77% { transform: translate(162px, 380px); opacity: 0; }
+  77.25% { opacity: 1; }
+  80.525% { transform: translate(726px, 380px); opacity: 1; }
+  80.775% { transform: translate(726px, 380px); opacity: 0; }
+  100% { transform: translate(726px, 380px); opacity: 0; }
+}
+@keyframes kc-e2 {
+  0% { transform: translate(162px, 300px); opacity: 0; }
+  84.5% { transform: translate(162px, 300px); opacity: 0; }
+  84.75% { opacity: 1; }
+  84.9% { transform: translate(178px, 300px); }
+  85.85% { transform: translate(178px, 262px); }
+  86.25% { transform: translate(194px, 262px); opacity: 1; }
+  86.5% { transform: translate(194px, 262px); opacity: 0; }
+  100% { transform: translate(194px, 262px); opacity: 0; }
+}
+@keyframes kc-e3 {
+  0% { transform: translate(194px, 262px); opacity: 0; }
+  87% { transform: translate(194px, 262px); opacity: 0; }
+  87.25% { opacity: 1; }
+  87.4% { transform: translate(178px, 262px); }
+  88.35% { transform: translate(178px, 300px); }
+  88.75% { transform: translate(162px, 300px); opacity: 1; }
+  89% { transform: translate(162px, 300px); opacity: 0; }
+  100% { transform: translate(162px, 300px); opacity: 0; }
+}
+@keyframes kc-h-gl {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  9.75% { opacity: 1; }
+  13% { opacity: 1; }
+  14% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-h-ad {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  9.75% { opacity: 1; }
+  13% { opacity: 1; }
+  14% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-jw {
+  0% { opacity: 0; }
+  16.75% { opacity: 0; }
+  17.75% { opacity: 1; }
+  19% { opacity: 1; }
+  20% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55.5% { opacity: 1; }
+  56.5% { opacity: 1; }
+  57.5% { opacity: 0; }
+  80.5% { opacity: 0; }
+  81.5% { opacity: 1; }
+  82.25% { opacity: 1; }
+  83.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-c0 {
+  0% { opacity: 0; }
+  17.25% { opacity: 0; }
+  18.25% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25.5% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  80.75% { opacity: 0; }
+  81.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-c1 {
+  0% { opacity: 0; }
+  17.9% { opacity: 0; }
+  18.9% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25.5% { opacity: 0; }
+  55.4% { opacity: 0; }
+  56.4% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  81.25% { opacity: 0; }
+  82.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-c2 {
+  0% { opacity: 0; }
+  18.55% { opacity: 0; }
+  19.55% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25.5% { opacity: 0; }
+  56.05% { opacity: 0; }
+  57.05% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  81.75% { opacity: 0; }
+  82.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-c3 {
+  0% { opacity: 0; }
+  19.2% { opacity: 0; }
+  20.2% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25.5% { opacity: 0; }
+  56.7% { opacity: 0; }
+  57.7% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  82.25% { opacity: 0; }
+  83.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-c4 {
+  0% { opacity: 0; }
+  19.85% { opacity: 0; }
+  20.85% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25.5% { opacity: 0; }
+  57.35% { opacity: 0; }
+  58.35% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-ok1 {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  21.5% { opacity: 1; }
+  24.5% { opacity: 1; }
+  25.5% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-ok4 {
+  0% { opacity: 0; }
+  83.25% { opacity: 0; }
+  84.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-x4 {
+  0% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-x4n {
+  0% { opacity: 1; }
+  82.75% { opacity: 1; }
+  83.75% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes kc-sb {
+  0% { opacity: 0; }
+  25.25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  27.5% { opacity: 1; }
+  28% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-pk {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  45.5% { opacity: 1; }
+  46.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-au {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.25% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-r1 {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  30.25% { opacity: 1; }
+  31.5% { opacity: 1; }
+  32% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68% { opacity: 1; }
+  69.5% { opacity: 1; }
+  70% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-r2 {
+  0% { opacity: 0; }
+  31.5% { opacity: 0; }
+  32% { opacity: 1; }
+  33.75% { opacity: 1; }
+  34.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-r3 {
+  0% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.25% { opacity: 1; }
+  36% { opacity: 1; }
+  36.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-m1 {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  32% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-m2 {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34.25% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-m3 {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.5% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-m4 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-m5 {
+  0% { opacity: 0; }
+  68.75% { opacity: 0; }
+  69.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-s1 {
+  0% { opacity: 0; }
+  36.5% { opacity: 0; }
+  37.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-s1x {
+  0% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-s2 {
+  0% { opacity: 0; }
+  68.75% { opacity: 0; }
+  69.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-ck {
+  0% { opacity: 0; }
+  40.25% { opacity: 0; }
+  41.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-vf {
+  0% { opacity: 0; }
+  43.6% { opacity: 0; }
+  44.6% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-tf {
+  0% { opacity: 0; }
+  44% { opacity: 0; }
+  44.5% { opacity: 1; }
+  46.25% { opacity: 1; }
+  46.75% { opacity: 0; }
+  63.1% { opacity: 0; }
+  63.6% { opacity: 1; }
+  64.75% { opacity: 1; }
+  65.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-held {
+  0% { opacity: 0; }
+  46.5% { opacity: 0; }
+  47.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-rf {
+  0% { opacity: 0; }
+  63.1% { opacity: 0; }
+  64.1% { opacity: 1; }
+  67% { opacity: 1; }
+  68% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-ux {
+  0% { opacity: 0; }
+  75.75% { opacity: 0; }
+  76.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-tx {
+  0% { opacity: 0; }
+  86.25% { opacity: 0; }
+  87.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-rx {
+  0% { opacity: 0; }
+  88.75% { opacity: 0; }
+  89.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-ex {
+  0% { opacity: 0; }
+  92.25% { opacity: 0; }
+  93.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-sso {
+  0% { opacity: 0; }
+  71% { opacity: 0; }
+  72% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-idl {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.5% { opacity: 1; }
+  66% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kc-bar {
+  0% { transform: scaleX(1); }
+  46.5% { transform: scaleX(1); }
+  65.25% { transform: scaleX(0.318); }
+  65.5% { transform: scaleX(1); }
+  93% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+</style>
+<g class="stage">
+<!-- wires: apps -> endpoints (bus), API lane, federation, JWKS, storage -->
+<path class="wire" d="M170 150H194" marker-end="url(#ah)"/>
+<path class="wire" d="M178 150V300H162"/>
+<path class="wire" d="M178 262H194" marker-end="url(#ah)"/>
+<path class="wire" d="M162 380H726" marker-end="url(#ah)"/>
+<path class="wire" d="M702 166H714V134H726" marker-end="url(#ah)"/>
+<path class="wire" d="M702 180H714V204H726" marker-end="url(#ah)"/>
+<path class="wire" d="M728 292H704" marker-end="url(#ah)"/>
+<path class="wire dash" d="M502 264H512V326" marker-end="url(#ah)"/>
+<text class="kc-t10 mid" x="444" y="375">HTTPS · Authorization: Bearer &lt;access token&gt;</text>
+
+<!-- left: back-office (staff) -->
+<rect class="box" x="34" y="98" width="136" height="92" rx="10"/>
+<text class="label" x="46" y="118">back-office</text>
+<text class="tiny" x="46" y="134">staff app, server-side</text>
+<text class="tiny" x="46" y="148">confidential client:</text>
+<text class="tiny" x="46" y="162">has a <tspan class="kc-or">client secret</tspan></text>
+<g class="p124"><text class="kc-t10" x="46" y="180">staff sign in with AD</text></g>
+<g class="kc-sso"><rect class="f-green-soft s-green" x="42" y="170" width="120" height="16" rx="8" stroke-width="1"/><text class="kc-lbl mid f-green" x="102" y="181.5">SSO: no login form</text></g>
+
+<!-- left: the customer's browser, running shop-web -->
+<rect class="box" x="34" y="198" width="136" height="194" rx="10"/>
+<text class="label" x="46" y="218">browser</text>
+<text class="tiny end" x="160" y="218">customer</text>
+<g class="kc-ck"><rect class="f-orange-soft s-orange" x="42" y="226" width="120" height="16" rx="8" stroke-width="1"/><text class="kc-m10 mid kc-or" x="102" y="237.5">KEYCLOAK_IDENTITY</text></g>
+<rect class="kc-card" x="42" y="248" width="120" height="138" rx="8"/>
+<text class="kc-l13" x="52" y="266">shop-web</text>
+<text class="kc-m10" x="52" y="280">shop.example</text>
+<text class="tiny" x="52" y="295">SPA, public client</text>
+<text class="tiny" x="52" y="309">PKCE, no secret</text>
+<g class="p1"><rect class="f-panel-2 s-line" x="52" y="320" width="62" height="18" rx="9" stroke-width="1"/><text class="kc-lbl mid" x="83" y="332.5">Sign in</text></g>
+<g class="kc-sb"><rect class="f-blue s-blue" x="52" y="320" width="62" height="18" rx="9" stroke-width="1"/><text class="kc-lbl mid f-bg" x="83" y="332.5">Sign in</text></g>
+<g class="kc-pk"><text class="kc-t10" x="52" y="352">code_verifier: random</text><text class="kc-t10" x="52" y="366">challenge = S256(it)</text></g>
+<g class="kc-held">
+<rect class="f-orange" x="52" y="318" width="22" height="15" rx="4"/><text class="kc-tk mid" x="63" y="328.5">ID</text>
+<rect class="f-orange" x="77" y="318" width="38" height="15" rx="4"/><text class="kc-tk mid" x="96" y="328.5">access</text>
+<rect class="f-orange" x="118" y="318" width="40" height="15" rx="4"/><text class="kc-tk mid" x="138" y="328.5">refresh</text>
+<text class="kc-t10" x="52" y="350">access token, 5 min</text>
+<rect class="f-line" x="52" y="356" width="104" height="5" rx="2.5"/>
+<rect class="f-orange kc-bar" x="52" y="356" width="104" height="5" rx="2.5"/>
+</g>
+<g class="kc-rx"><line class="s-red" x1="120" y1="320" x2="156" y2="331" stroke-width="2"/><line class="s-red" x1="120" y1="331" x2="156" y2="320" stroke-width="2"/></g>
+<g class="kc-ex"><text class="kc-lbl f-red" x="52" y="377">expired: next call 401</text></g>
+
+<!-- the product: Keycloak, with its embedded caches in a tab underneath -->
+<path class="box" d="M202 96H696Q712 96 712 112V302Q712 318 696 318H502Q486 318 486 334V348Q486 364 470 364H316Q300 364 300 348V334Q300 318 284 318H202Q186 318 186 302V112Q186 96 202 96Z" stroke-width="2"/>
+<text class="label" x="200" y="116">Keycloak</text>
+<text class="sub" x="272" y="116">26.8 · realm <tspan class="mono b" style="fill: var(--ink)">acme</tspan></text>
+<text class="tiny end" x="463" y="116">issuer</text>
+<text class="tiny mono end" x="700" y="116">https://id.shop.example/realms/acme</text>
+
+<!-- /auth -->
+<rect class="kc-card" x="196" y="126" width="110" height="72" rx="8"/>
+<text class="kc-l13 mono" x="206" y="143">/auth</text>
+<text class="tiny" x="206" y="158">authorization</text>
+<text class="tiny" x="206" y="171">endpoint</text>
+<g class="kc-au"><text class="kc-t10 f-green" x="206" y="188">✓ shop-web · S256</text></g>
+
+<!-- /token -->
+<rect class="kc-card" x="196" y="206" width="110" height="106" rx="8"/>
+<text class="kc-l13 mono" x="206" y="223">/token</text>
+<text class="tiny" x="206" y="238">token endpoint</text>
+<rect class="none s-orange" x="204" y="247" width="94" height="15" rx="4" stroke-width="1"/>
+<text class="kc-t10 kc-or" x="210" y="258">ID token</text>
+<rect class="none s-orange" x="204" y="266" width="94" height="15" rx="4" stroke-width="1"/>
+<text class="kc-t10 kc-or" x="210" y="277">access · 5 min</text>
+<rect class="none s-orange" x="204" y="285" width="94" height="15" rx="4" stroke-width="1"/>
+<text class="kc-t10 kc-or" x="210" y="296">refresh · 30 min</text>
+<g class="kc-tf"><rect class="f-orange-soft s-orange" x="204" y="247" width="94" height="15" rx="4" stroke-width="1.5"/><rect class="f-orange-soft s-orange" x="204" y="266" width="94" height="15" rx="4" stroke-width="1.5"/><rect class="f-orange-soft s-orange" x="204" y="285" width="94" height="15" rx="4" stroke-width="1.5"/></g>
+<g class="kc-vf"><rect class="f-bg" x="204" y="228" width="98" height="14"/><text class="kc-lbl f-green" x="206" y="238">✓ verifier ok</text></g>
+<g class="kc-rf"><rect class="f-bg" x="204" y="228" width="98" height="14"/><text class="kc-lbl f-green" x="206" y="238">✓ session alive</text></g>
+<g class="kc-tx"><rect class="f-bg" x="204" y="228" width="98" height="14"/><text class="kc-lbl f-red" x="206" y="238">✕ user disabled</text></g>
+
+<!-- authentication flow -->
+<rect class="kc-card" x="314" y="126" width="194" height="100" rx="8"/>
+<text class="kc-hd" x="324" y="141">AUTHENTICATION FLOW</text>
+<rect class="box" x="320" y="148" width="182" height="18" rx="4" stroke-width="1"/>
+<rect class="box" x="320" y="170" width="182" height="29" rx="4" stroke-width="1"/>
+<rect class="box" x="320" y="203" width="182" height="18" rx="4" stroke-width="1"/>
+<g class="kc-r1"><rect class="f-blue-soft s-blue" x="320" y="148" width="182" height="18" rx="4" stroke-width="1.5"/></g>
+<g class="kc-r2"><rect class="f-blue-soft s-blue" x="320" y="170" width="182" height="29" rx="4" stroke-width="1.5"/></g>
+<g class="kc-r3"><rect class="f-blue-soft s-blue" x="320" y="203" width="182" height="18" rx="4" stroke-width="1.5"/></g>
+<text class="tiny sb" x="328" y="161">Cookie</text>
+<text class="kc-t10" x="372" y="161">SSO session?</text>
+<text class="tiny sb" x="328" y="183">Username Password Form</text>
+<text class="kc-t10" x="328" y="195">or a passkey · or Google</text>
+<text class="tiny sb" x="328" y="216">Conditional 2FA: OTP</text>
+<g class="kc-m1"><text class="kc-t10 end" x="494" y="161">none</text></g>
+<g class="kc-m2"><text class="kc-mk f-green end" x="494" y="184">✓</text></g>
+<g class="kc-m3"><text class="kc-mk f-green end" x="494" y="217">✓</text></g>
+<g class="kc-m4"><text class="kc-lbl f-green end" x="494" y="161">✓ found</text></g>
+<g class="kc-m5"><rect class="f-bg" x="321" y="171" width="180" height="27" rx="3" style="fill-opacity: 0.6"/><rect class="f-bg" x="321" y="204" width="180" height="16" rx="3" style="fill-opacity: 0.6"/><text class="kc-lbl end" x="494" y="195">skipped</text><text class="kc-lbl end" x="494" y="216">skipped</text></g>
+
+<!-- SSO sessions -->
+<rect class="kc-card" x="314" y="232" width="194" height="80" rx="8"/>
+<text class="kc-hd" x="324" y="247">SSO SESSIONS</text>
+<rect class="box" x="320" y="254" width="182" height="20" rx="4" stroke-width="1"/>
+<text class="kc-t10" x="328" y="268">no session yet</text>
+<g class="kc-s1"><rect class="f-bg" x="320" y="254" width="182" height="20" rx="4"/><rect class="f-teal-soft s-teal" x="320" y="254" width="182" height="20" rx="4" stroke-width="1"/><text class="tiny sb" x="328" y="268">customer</text><text class="kc-t10" x="390" y="268">shop-web</text><rect class="f-teal" x="452" y="261" width="42" height="6" rx="3"/></g>
+<g class="kc-s1x"><rect class="f-bg" x="320" y="254" width="182" height="20" rx="4"/><rect class="f-red-soft s-red" x="320" y="254" width="182" height="20" rx="4" stroke-width="1"/><text class="tiny sb" x="328" y="268">customer</text><text class="kc-lbl f-red end" x="494" y="268">user disabled</text></g>
+<g class="kc-idl"><rect class="none s-teal" x="449" y="258" width="48" height="12" rx="6" stroke-width="1.5"/></g>
+<rect class="f-teal-soft s-teal" x="320" y="278" width="182" height="20" rx="4" stroke-width="1"/>
+<text class="tiny sb" x="328" y="292">staff</text>
+<text class="kc-t10" x="390" y="292">wiki</text>
+<g class="kc-s2"><text class="kc-t10" x="414" y="292">· back-office</text></g>
+<text class="kc-t10" x="324" y="308">idle 30 min · max 10 h (defaults)</text>
+
+<!-- users, clients, keys -->
+<rect class="kc-card" x="516" y="126" width="186" height="60" rx="8"/>
+<text class="kc-hd" x="526" y="141">USERS · ROLES</text>
+<text class="tiny sb" x="526" y="156">customers</text>
+<text class="kc-t10 end" x="694" y="156">realm role customer</text>
+<text class="tiny sb" x="526" y="169">via Google</text>
+<text class="kc-t10 end" x="694" y="169">brokered</text>
+<text class="tiny sb" x="526" y="182">staff</text>
+<text class="kc-t10 end" x="694" y="182">LDAP federation</text>
+<g class="kc-ux"><rect class="f-bg" x="520" y="146" width="178" height="14" rx="3"/><rect class="f-red-soft s-red" x="520" y="146" width="178" height="14" rx="3" stroke-width="1"/><text class="tiny sb f-red" x="526" y="156">customer</text><text class="kc-lbl f-red end" x="694" y="156">Enabled: off</text></g>
+
+<rect class="kc-card" x="516" y="192" width="186" height="74" rx="8"/>
+<text class="kc-hd" x="526" y="207">CLIENTS · MAPPERS</text>
+<text class="tiny sb" x="526" y="222">shop-web</text>
+<text class="kc-t10 end" x="694" y="222">public · PKCE S256</text>
+<text class="tiny sb" x="526" y="235">back-office</text>
+<text class="kc-t10 end" x="694" y="235">confidential</text>
+<text class="tiny sb" x="526" y="248">orders-api</text>
+<text class="kc-t10 end" x="694" y="248">resource server</text>
+<text class="kc-t10" x="526" y="261">mappers add <tspan class="mono">aud</tspan>, <tspan class="mono">realm_access</tspan></text>
+
+<rect class="kc-card" x="516" y="272" width="186" height="40" rx="8"/>
+<text class="kc-hd" x="526" y="287">KEYS · JWKS</text>
+<text class="kc-m10 end" x="694" y="287">/certs</text>
+<text class="kc-t10" x="526" y="303">RS256 key pair · kid <tspan class="mono">3f9c</tspan></text>
+
+<!-- underneath: embedded caches (inside the frame's tab) and the database -->
+<text class="kc-l13" x="312" y="338">Infinispan caches</text>
+<text class="kc-t10" x="312" y="353">embedded in every node</text>
+<rect class="box" x="500" y="328" width="202" height="36" rx="8"/>
+<text class="kc-l13" x="522" y="343">PostgreSQL</text>
+<text class="kc-t10" x="522" y="357">realms, users, sessions</text>
+<g class="p4"><path class="none s-amber" d="M300 334V348Q300 364 316 364H470Q486 364 486 348V334" stroke-width="2"/><rect class="none s-amber" x="500" y="328" width="202" height="36" rx="8" stroke-width="2"/></g>
+
+<!-- right: Google, Active Directory, orders-api -->
+<rect class="box" x="728" y="98" width="198" height="64" rx="10"/>
+<g class="kc-h-gl"><rect class="f-green-soft s-green" x="728" y="98" width="198" height="64" rx="10" stroke-width="1.5"/></g>
+<text class="label" x="740" y="118">Google</text>
+<text class="tiny" x="740" y="134">OpenID Connect provider</text>
+<text class="tiny" x="740" y="149">customers' social sign-in</text>
+<rect class="box" x="728" y="170" width="198" height="66" rx="10"/>
+<g class="kc-h-ad"><rect class="f-green-soft s-green" x="728" y="170" width="198" height="66" rx="10" stroke-width="1.5"/></g>
+<text class="label" x="740" y="190">Active Directory</text>
+<text class="tiny" x="740" y="206">staff accounts, read over LDAP</text>
+<text class="tiny" x="740" y="221">checks staff passwords (bind)</text>
+
+<rect class="box" x="728" y="244" width="198" height="148" rx="10"/>
+<text class="label" x="740" y="264">orders-api</text>
+<text class="tiny end" x="914" y="264">resource server</text>
+<rect class="f-orange-soft s-orange" x="740" y="274" width="174" height="16" rx="8" stroke-width="1"/>
+<text class="kc-m10 kc-or" x="750" y="285.5">JWKS cached · kid 3f9c</text>
+<g class="kc-jw"><rect class="none s-orange" x="737" y="271" width="180" height="22" rx="11" stroke-width="2"/></g>
+<text class="tiny sb" x="742" y="309">signature</text><text class="tiny mono" x="806" y="309">RS256</text>
+<text class="tiny sb" x="742" y="324">iss</text><text class="tiny mono" x="806" y="324">…/realms/acme</text>
+<text class="tiny sb" x="742" y="339">aud</text><text class="tiny mono" x="806" y="339">orders-api</text>
+<text class="tiny sb" x="742" y="354">exp</text><g class="kc-x4n"><text class="tiny mono" x="806" y="354">not passed</text></g>
+<text class="tiny sb" x="742" y="369">role</text><text class="tiny mono" x="806" y="369">customer</text>
+<g class="kc-c0"><text class="kc-mk f-green end" x="912" y="310">✓</text></g>
+<g class="kc-c1"><text class="kc-mk f-green end" x="912" y="325">✓</text></g>
+<g class="kc-c2"><text class="kc-mk f-green end" x="912" y="340">✓</text></g>
+<g class="kc-c3"><text class="kc-mk f-green end" x="912" y="355">✓</text></g>
+<g class="kc-c4"><text class="kc-mk f-green end" x="912" y="370">✓</text></g>
+<g class="kc-x4"><text class="tiny mono f-amber-ink b" x="806" y="354">in 2 min</text></g>
+<g class="kc-ok1"><text class="kc-lbl f-green end" x="914" y="386">200 OK</text></g>
+<g class="kc-ok4"><text class="kc-lbl f-amber-ink end" x="914" y="386">200 OK: still valid</text></g>
+
+<!-- notes, one per step -->
+<g class="p1"><rect class="box" x="34" y="400" width="892" height="68" rx="10"/><text class="kc-hd" x="48" y="416">ONE REALM FOR ACME'S PEOPLE AND APPS</text><text class="kc-n" x="48" y="432">Realm acme holds the users, roles, sign-in flows, keys and three clients. shop-web and back-office send people here to sign in and</text><text class="kc-n" x="48" y="446">get tokens back; orders-api checks each access token's RS256 signature with the realm's public keys and never sees a password.</text><text class="kc-n" x="48" y="460">Customers can also use Google (identity brokering); staff accounts stay in Active Directory, read over LDAP (user federation).</text></g>
+<g class="p2"><rect class="box" x="34" y="400" width="442" height="68" rx="10"/><text class="kc-hd" x="48" y="416">AUTHORIZATION CODE + PKCE</text><text class="kc-n" x="48" y="432">shop-web runs in the browser and can't keep a secret, so it is a</text><text class="kc-n" x="48" y="446">public client: /auth gets S256(code_verifier), /token the verifier.</text><text class="kc-n" x="48" y="460">The code works once and expires in 60 s (Client login timeout).</text><rect class="box" x="486" y="400" width="440" height="68" rx="10"/><text class="kc-hd" x="500" y="416">THE REALM'S BROWSER FLOW</text><text class="kc-n" x="500" y="432">No SSO cookie yet, so the forms run: password, then a 6-digit OTP.</text><text class="kc-n" x="500" y="446">A passkey would replace both. Keycloak creates the SSO session,</text><text class="kc-n" x="500" y="460">stores it in PostgreSQL, and sets the cookie in the browser.</text></g>
+<g class="p3"><rect class="box" x="34" y="400" width="442" height="68" rx="10"/><text class="kc-hd" x="48" y="416">CHECKED WHERE THE TOKEN ARRIVES</text><text class="kc-n" x="48" y="432">orders-api checks signature, iss, aud, exp and the customer role</text><text class="kc-n" x="48" y="446">in realm_access.roles with cached keys: no call per request. shop-web</text><text class="kc-n" x="48" y="460">refreshes before 5 min pass, which also resets the 30-min idle timer.</text><rect class="box" x="486" y="400" width="440" height="68" rx="10"/><text class="kc-hd" x="500" y="416">SINGLE SIGN-ON</text><text class="kc-n" x="500" y="432">The staff member signed in to the wiki earlier. back-office sends them</text><text class="kc-n" x="500" y="446">to /auth, the Cookie step finds the SSO session, and a code comes back</text><text class="kc-n" x="500" y="460">without a form; back-office redeems it at /token with its secret.</text></g>
+<g class="p4"><rect class="box" x="34" y="400" width="442" height="68" rx="10"/><text class="kc-hd" x="48" y="416">DISABLED, BUT THE ACCESS TOKEN LIVES ON</text><text class="kc-n" x="48" y="432">Support switches the customer's Enabled off. The next refresh fails</text><text class="kc-n" x="48" y="446">(400 invalid_grant), but orders-api accepts the access token it has</text><text class="kc-n" x="48" y="460">until exp, up to 5 min. Introspection would see the change at once.</text><rect class="f-amber-soft s-amber" x="486" y="400" width="440" height="68" rx="10" stroke-width="1.5"/><text class="kc-hd f-amber-ink" x="500" y="416">A STATEFUL SERVICE TO RUN (KEYCLOAK 26.8)</text><text class="kc-n" x="500" y="432">PostgreSQL keeps realms, users and sessions; nodes share embedded</text><text class="kc-n" x="500" y="446">caches; multi-cluster needs a synchronously replicated database.</text><text class="kc-n" x="500" y="460">Upgrades and themes are yours; Cognito, Auth0, Entra ID are managed.</text></g>
+
+<!-- moving tokens -->
+<g class="kc-a1"><rect class="f-bg" x="-59" y="-8" width="53" height="16" rx="4" style="fill-opacity: 0.85"/><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue end" x="-10" y="4">sign in</text></g>
+<g class="kc-a2"><rect class="f-bg" x="-26.5" y="-21" width="53" height="15" rx="4" style="fill-opacity: 0.85"/><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">sign in</text></g>
+<g class="kc-a3"><circle class="f-blue pkt" r="5"/></g>
+<g class="kc-a4"><circle class="f-blue pkt" r="5"/></g>
+<g class="kc-a5"><rect class="f-orange pkt" x="-17" y="-7" width="34" height="14" rx="4"/><text class="kc-tk mid" y="3">tokens</text></g>
+<g class="kc-a6"><rect class="f-blue pkt" x="-36" y="-8" width="72" height="16" rx="8"/><text class="kc-tk mid" y="3">GET /orders</text></g>
+<g class="kc-b1"><rect class="f-bg" x="-72" y="-8" width="66" height="16" rx="4" style="fill-opacity: 0.85"/><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue end" x="-10" y="4">challenge</text></g>
+<g class="kc-b3"><rect class="f-bg" x="-41" y="-8" width="35" height="16" rx="4" style="fill-opacity: 0.85"/><circle class="f-green pkt" r="6"/><text class="tiny b f-green end" x="-10" y="4">code</text></g>
+<g class="kc-b4"><rect class="f-bg" x="-109" y="-8" width="103" height="16" rx="4" style="fill-opacity: 0.85"/><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue end" x="-10" y="4">code + verifier</text></g>
+<g class="kc-b5"><rect class="f-orange pkt" x="-17" y="-7" width="34" height="14" rx="4"/><text class="kc-tk mid" y="3">3 tokens</text></g>
+<circle class="f-teal pkt kc-b6" r="5"/>
+<circle class="f-teal pkt kc-b7" r="5"/>
+<g class="kc-d1"><rect class="f-blue pkt" x="-36" y="-8" width="72" height="16" rx="8"/><text class="kc-tk mid" y="3">GET /orders</text></g>
+<g class="kc-d2"><rect class="f-green pkt" x="-30" y="-8" width="60" height="16" rx="8"/><text class="kc-tk mid" y="3">200 OK</text></g>
+<g class="kc-d3"><rect class="f-bg" x="-97" y="-8" width="91" height="16" rx="4" style="fill-opacity: 0.85"/><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue end" x="-10" y="4">refresh token</text></g>
+<g class="kc-d4"><rect class="f-orange pkt" x="-17" y="-7" width="34" height="14" rx="4"/><text class="kc-tk mid" y="3">new</text></g>
+<g class="kc-d5"><rect class="f-bg" x="-20.5" y="-21" width="41" height="15" rx="4" style="fill-opacity: 0.85"/><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue mid" y="-10">staff</text></g>
+<g class="kc-d6"><rect class="f-bg" x="-17.5" y="-21" width="35" height="15" rx="4" style="fill-opacity: 0.85"/><circle class="f-green pkt" r="6"/><text class="tiny b f-green mid" y="-10">code</text></g>
+<g class="kc-e1"><rect class="f-blue pkt" x="-36" y="-8" width="72" height="16" rx="8"/><text class="kc-tk mid" y="3">GET /orders</text></g>
+<g class="kc-e2"><rect class="f-bg" x="-97" y="-8" width="91" height="16" rx="4" style="fill-opacity: 0.85"/><circle class="f-blue pkt" r="6"/><text class="tiny b f-blue end" x="-10" y="4">refresh token</text></g>
+<g class="kc-e3"><rect class="f-red pkt" x="-14" y="-7" width="28" height="14" rx="4"/><text class="kc-tk mid" y="3">400</text></g>
+</g>
+</svg>

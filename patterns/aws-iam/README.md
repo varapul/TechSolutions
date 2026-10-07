@@ -30,8 +30,8 @@ AWS Identity and Access Management (IAM) authenticates and authorizes requests t
 
 - **The root user** is the identity created with the account, and it has full access to everything in it. AWS recommends using it only for the few tasks that require it, and enforces MFA for it. In AWS Organizations, centralized root access lets you delete the root credentials of member accounts altogether.
 - **IAM users** have long-term credentials: a console password and at most two access keys, whose IDs start with `AKIA`. A key keeps working until it is deactivated or deleted, which is why AWS recommends IAM users only for the cases that federation can't serve.
-- **Roles** have no long-term credentials. A role has a **trust policy**, naming who may assume it, and **permissions policies**, saying what its sessions may do. Whoever assumes it gets temporary credentials from AWS STS. Workloads receive roles from the service that runs them: a Lambda execution role, an ECS task role, an EC2 instance profile. Service-linked roles are predefined by an AWS service for its own work.
-- **Federated identities** come from an identity provider outside IAM and use a role while they work: people through IAM Identity Center, CI systems and other workloads through OpenID Connect (`AssumeRoleWithWebIdentity`) or SAML 2.0 (`AssumeRoleWithSAML`), and an application's own end users through Amazon Cognito identity pools.
+- **Roles** have no long-term credentials. A role has a **trust policy**, naming who may assume it, and **permissions policies**, saying what its sessions may do. Whoever assumes it gets temporary credentials from AWS STS. Workloads receive roles from the service that runs them: a Lambda execution role, an [ECS](../amazon-ecs/) task role, an EC2 instance profile. Service-linked roles are predefined by an AWS service for its own work.
+- **Federated identities** come from an identity provider outside IAM and use a role while they work: people through IAM Identity Center, CI systems and other workloads through OpenID Connect (`AssumeRoleWithWebIdentity`) or SAML 2.0 (`AssumeRoleWithSAML`), and an application's own end users through [Amazon Cognito](../amazon-cognito/) identity pools.
 
 ### Authentication: proving it
 
@@ -254,7 +254,7 @@ s3:DeleteObject	implicitDeny
 - [Valet Key](../valet-key/) — Give clients a short-lived, narrowly scoped URL to read or write storage directly.
 - [Amazon S3](../amazon-s3/) — Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events.
 - [AWS Lambda](../aws-lambda/) — Functions as a service: code runs per event in managed execution environments that scale out with concurrency.
-- Amazon Cognito *(planned)* — Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials.
+- [Amazon Cognito](../amazon-cognito/) — Sign-up and sign-in for your app's users: user pools issue OpenID Connect tokens, identity pools trade them for AWS credentials.
 
 ## References
 

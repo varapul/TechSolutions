@@ -1,0 +1,90 @@
+{
+  "aka": [],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Every Kubernetes object is a key in etcd; only the API server talks to it. 3 members, one per AZ.",
+      "body": "Acme Shop's Kubernetes control plane keeps all of its state in an **etcd** cluster of three members, **etcd-1**, **etcd-2** and **etcd-3**, one per Availability Zone. Every object the API server stores (the catalog Deployment, its Pods, the scheduler's Lease) is a key under `/registry/`, and only **kube-apiserver** talks to etcd: the controller manager, the schedulers, the kubelets and `kubectl` all go through the API server. Three members keep working with one of them down, and the Kubernetes documentation recommends five in production; other systems that use etcd for configuration, service discovery and locks, such as Patroni, CoreDNS and Apache APISIX, should run their own clusters."
+    },
+    {
+      "title": "A write through Raft",
+      "caption": "Leader etcd-1 appends entry 52340 in term 7; with 2 of 3 on disk it commits as revision 41872.",
+      "body": "`kubectl apply` moves the catalog Deployment to image `catalog:1.4.3`, and the API server writes `/registry/deployments/default/catalog` in a **transaction**: put the new value only if the key's `mod_revision` is still 41250. The Raft leader **etcd-1** appends the request to its log as entry **52340 in term 7**, writes it to disk and sends it to etcd-2 and etcd-3. Once **2 of 3** members have it on disk the entry is committed: etcd-1 applies it to its key-value store as **revision 41872** and answers, and the followers apply it when the leader's next message carries the new commit index. Reads are linearizable by default: the leader first confirms with a majority that it is still the leader (Raft's ReadIndex), while a serializable read skips that round and may return stale data."
+    },
+    {
+      "title": "Watches and leases",
+      "caption": "A watch streams the change to the controllers; a Txn on mod_revision hands the Lease to scheduler-b.",
+      "body": "Nothing polls. The API server holds a **watch** on the prefix `/registry/deployments/`, opened from a revision, so etcd streams the change at revision 41872 as an event, and the API server's watch cache passes it on to the **controller manager**, whose Deployment controller starts a new ReplicaSet. The schedulers elect their leader with a Kubernetes **Lease** object, which the API server stores as an ordinary key. scheduler-a stops renewing it, and 15 s (`leaseDurationSeconds`) after the last renewal it saw, scheduler-b updates the Lease; the API server sends that as a Txn that succeeds only if `mod_revision` is still 41880, and it commits as revision 41903, after other writes such as node heartbeats. Programs that use etcd directly attach such a key to an etcd **lease** with a TTL instead: etcd deletes the key when the keepalives stop, and the next candidate's create-if-absent Txn wins."
+    },
+    {
+      "title": "Failure and limits",
+      "caption": "etcd-1 fails; etcd-2 wins term 8 and 2 of 3 still commit. Limits: 2 GiB quota, disk, compaction.",
+      "body": "**etcd-1** fails. The followers stop receiving its heartbeats (sent every 100 ms by default), and when **etcd-2**'s election timeout (1,000 ms by default, randomized up to twice that) runs out, it starts **term 8**, gets etcd-3's vote and becomes the leader. It appends an empty entry for its term, the API server's etcd client switches to a working member, and writes commit with **2 of 3**; lose a second member and there is no majority, so writes stop until one is back. The limits: the store is small (a 2 GiB quota by default, 8 GiB suggested as the maximum), a request may be at most 1.5 MiB, every write waits for disk fsyncs, old revisions must be compacted and the database defragmented, and member counts should be odd, 3 or 5."
+    }
+  ],
+  "related": [
+    "kubernetes",
+    "leader-election",
+    "external-configuration-store",
+    "kafka",
+    "redis",
+    "mongodb"
+  ],
+  "references": [
+    { "title": "etcd v3.7 documentation — etcd API", "url": "https://etcd.io/docs/v3.7/learning/api/" },
+    { "title": "etcd v3.7 documentation — etcd API guarantees", "url": "https://etcd.io/docs/v3.7/learning/api_guarantees/" },
+    { "title": "etcd v3.7 documentation — Data model", "url": "https://etcd.io/docs/v3.7/learning/data_model/" },
+    { "title": "etcd v3.7 documentation — FAQ", "url": "https://etcd.io/docs/v3.7/faq/" },
+    { "title": "etcd v3.7 documentation — Tuning", "url": "https://etcd.io/docs/v3.7/tuning/" },
+    { "title": "etcd v3.7 documentation — System limits", "url": "https://etcd.io/docs/v3.7/dev-guide/limit/" },
+    { "title": "etcd v3.7 documentation — Configuration options", "url": "https://etcd.io/docs/v3.7/op-guide/configuration/" },
+    { "title": "etcd v3.7 documentation — Hardware recommendations", "url": "https://etcd.io/docs/v3.7/op-guide/hardware/" },
+    { "title": "etcd v3.7 documentation — Failure modes", "url": "https://etcd.io/docs/v3.7/op-guide/failures/" },
+    { "title": "etcd v3.7 documentation — Maintenance", "url": "https://etcd.io/docs/v3.7/op-guide/maintenance/" },
+    { "title": "etcd v3.7 documentation — Disaster recovery", "url": "https://etcd.io/docs/v3.7/op-guide/recovery/" },
+    { "title": "etcd v3.7 documentation — Runtime reconfiguration", "url": "https://etcd.io/docs/v3.7/op-guide/runtime-configuration/" },
+    { "title": "etcd v3.7 documentation — etcd learner design", "url": "https://etcd.io/docs/v3.7/learning/design-learner/" },
+    { "title": "etcd v3.7 documentation — Transport security model", "url": "https://etcd.io/docs/v3.7/op-guide/security/" },
+    { "title": "etcd v3.7 documentation — Role-based access control", "url": "https://etcd.io/docs/v3.7/op-guide/authentication/rbac/" },
+    { "title": "etcd v3.7 documentation — Monitoring etcd", "url": "https://etcd.io/docs/v3.7/op-guide/monitoring/" },
+    { "title": "etcd v3.7 documentation — Interacting with etcd", "url": "https://etcd.io/docs/v3.7/dev-guide/interacting_v3/" },
+    { "title": "etcd v3.7 documentation — API reference: concurrency", "url": "https://etcd.io/docs/v3.7/dev-guide/api_concurrency_reference_v3/" },
+    { "title": "etcd v3.7 documentation — etcd versus other key-value stores", "url": "https://etcd.io/docs/v3.7/learning/why/" },
+    { "title": "etcd v3.7 documentation — Upgrade etcd from v3.6 to v3.7", "url": "https://etcd.io/docs/v3.7/upgrades/upgrade_3_7/" },
+    { "title": "etcd blog — Announcing etcd v3.7.0 (July 2026)", "url": "https://etcd.io/blog/2026/announcing-etcd-3.7/" },
+    { "title": "etcd-io/etcd — Releases", "url": "https://github.com/etcd-io/etcd/releases" },
+    { "title": "etcd-io/etcd — etcdctl README (release-3.7)", "url": "https://github.com/etcd-io/etcd/blob/release-3.7/etcdctl/README.md" },
+    { "title": "etcd-io/raft — Raft library for maintaining a replicated state machine", "url": "https://github.com/etcd-io/raft" },
+    { "title": "Diego Ongaro and John Ousterhout — In Search of an Understandable Consensus Algorithm (USENIX ATC 2014)", "url": "https://www.usenix.org/conference/atc14/technical-sessions/presentation/ongaro" },
+    { "title": "The Raft Consensus Algorithm", "url": "https://raft.github.io/" },
+    { "title": "CNCF — etcd project", "url": "https://www.cncf.io/projects/etcd/" },
+    { "title": "Kubernetes documentation — Operating etcd clusters for Kubernetes", "url": "https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/" },
+    { "title": "Kubernetes documentation — Options for Highly Available Topology", "url": "https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/ha-topology/" },
+    { "title": "Kubernetes documentation — kube-apiserver", "url": "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/" },
+    { "title": "Kubernetes documentation — kube-scheduler", "url": "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/" },
+    { "title": "Kubernetes documentation — Leases", "url": "https://kubernetes.io/docs/concepts/architecture/leases/" },
+    { "title": "Kubernetes documentation — Kubernetes API Concepts", "url": "https://kubernetes.io/docs/reference/using-api/api-concepts/" },
+    { "title": "Kubernetes source — apiserver etcd3 storage (store.go, release-1.37)", "url": "https://github.com/kubernetes/kubernetes/blob/release-1.37/staging/src/k8s.io/apiserver/pkg/storage/etcd3/store.go" },
+    { "title": "Martin Kleppmann — How to do distributed locking (2016)", "url": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" },
+    { "title": "Apache ZooKeeper — Programmer's Guide", "url": "https://zookeeper.apache.org/doc/current/zookeeperProgrammers.html" },
+    { "title": "Apache ZooKeeper — Internals", "url": "https://zookeeper.apache.org/doc/current/zookeeperInternals.html" },
+    { "title": "Apache ZooKeeper — Recipes and Solutions", "url": "https://zookeeper.apache.org/doc/current/recipes.html" },
+    { "title": "Apache ZooKeeper wiki — Zab 1.0", "url": "https://cwiki.apache.org/confluence/display/ZOOKEEPER/Zab1.0" },
+    { "title": "Apache ZooKeeper — Releases", "url": "https://zookeeper.apache.org/releases.html" },
+    { "title": "HashiCorp Consul — What is Consul?", "url": "https://developer.hashicorp.com/consul/docs/intro" },
+    { "title": "HashiCorp Consul — Consensus", "url": "https://developer.hashicorp.com/consul/docs/concept/consensus" },
+    { "title": "HashiCorp Consul — Consistency Modes", "url": "https://developer.hashicorp.com/consul/api-docs/features/consistency" },
+    { "title": "HashiCorp Consul — Blocking Queries", "url": "https://developer.hashicorp.com/consul/api-docs/features/blocking" },
+    { "title": "HashiCorp Consul — Sessions and distributed locks overview", "url": "https://developer.hashicorp.com/consul/docs/automate/session" },
+    { "title": "HashiCorp Consul — Key/value (KV) store overview", "url": "https://developer.hashicorp.com/consul/docs/automate/kv" },
+    { "title": "hashicorp/consul — LICENSE (Business Source License 1.1)", "url": "https://github.com/hashicorp/consul/blob/main/LICENSE" },
+    { "title": "Amazon EKS User Guide — Amazon EKS architecture", "url": "https://docs.aws.amazon.com/eks/latest/userguide/eks-architecture.html" },
+    { "title": "Amazon EKS Best Practices Guide — EKS Control Plane", "url": "https://docs.aws.amazon.com/eks/latest/best-practices/control-plane.html" },
+    { "title": "AWS Containers blog — Under the hood: Amazon EKS ultra scale clusters (July 2025)", "url": "https://aws.amazon.com/blogs/containers/under-the-hood-amazon-eks-ultra-scale-clusters/" },
+    { "title": "Microsoft Learn — Azure Kubernetes Service (AKS) core concepts", "url": "https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts" },
+    { "title": "Google Kubernetes Engine — GKE cluster architecture", "url": "https://docs.cloud.google.com/kubernetes-engine/docs/concepts/cluster-architecture" },
+    { "title": "Patroni documentation — A Template for PostgreSQL HA with ZooKeeper, etcd or Consul", "url": "https://patroni.readthedocs.io/en/latest/" },
+    { "title": "CoreDNS — etcd plugin", "url": "https://coredns.io/plugins/etcd/" },
+    { "title": "Apache APISIX — Getting Started", "url": "https://apisix.apache.org/docs/apisix/getting-started/README/" }
+  ]
+}

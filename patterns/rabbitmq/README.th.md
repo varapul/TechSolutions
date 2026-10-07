@@ -37,7 +37,7 @@ quorum queue ยังนับการส่งที่ fail ไว้ใน 
 
 มันยัง implement หรือช่วยรองรับ [Dead-Letter Queue](../dead-letter-queue/) (DLX บวกกับ delivery limit), [Priority Queue](../priority-queue/), [Idempotent Consumer](../idempotent-consumer/) (ต้องมีเพราะ delivery เป็นแบบ at least once), [Retry with Backoff](../retry-with-backoff/) (delayed retry ของ quorum queue ใน 4.3), [Claim Check](../claim-check/) สำหรับ payload ที่ใหญ่เกินขนาด message สูงสุด (default 16 MiB ตั้งแต่ 4.0) และ [Transactional Outbox](../transactional-outbox/) สำหรับ publish อย่างเชื่อถือได้จาก database transaction
 
-เพื่อนบ้านที่มักเจอคือ service ที่ publish, worker deployment ที่ consume และมัก scale ตามความยาวของ queue (เช่นใช้ RabbitMQ scaler ของ KEDA บน [Kubernetes](../kubernetes/)), Prometheus กับ Grafana ผ่าน plugin `rabbitmq_prometheus` ที่แถมมากับ server และ load balancer ที่อยู่หน้า node
+เพื่อนบ้านที่มักเจอคือ service ที่ publish, worker deployment ที่ consume และมัก scale ตามความยาวของ queue (เช่นใช้ RabbitMQ scaler ของ KEDA บน [Kubernetes](../kubernetes/)), [Prometheus](../prometheus/) กับ Grafana ผ่าน plugin `rabbitmq_prometheus` ที่แถมมากับ server และ load balancer ที่อยู่หน้า node
 
 Managed offering: **Amazon MQ for RabbitMQ** รองรับ RabbitMQ 4.3 และ 4.2 (บน instance mq.m7g) และ 3.13 ณ ตุลาคม 2026 โดยจะเป็น broker แบบ single-instance ใน Availability Zone เดียว หรือ cluster สาม node ข้าม Availability Zone ก็ได้ โดยทั้งสองแบบอยู่หลัง Network Load Balancer และมันไม่รองรับ stream ส่วน **CloudAMQP** เป็น RabbitMQ service แบบ hosted
 
@@ -50,7 +50,7 @@ Managed offering: **Amazon MQ for RabbitMQ** รองรับ RabbitMQ 4.3 แ
 | โมเดล | exchange route message เข้า queue | log ของ record ที่แบ่ง partition และมี replica | managed queue |
 | Consumer | ถูก push ให้ได้ถึง prefetch limit แล้ว ack ทีละ message | pull record และจำตำแหน่งของตัวเอง (offset) | poll แล้วลบ message แต่ละตัวเมื่อเสร็จ |
 | หลังประมวลผล | ลบเมื่อ ack (ส่วน stream เก็บไว้) | เก็บไว้จนหมด retention (default 7 วัน) และอ่านซ้ำได้ | consumer เป็นคนลบ |
-| Routing | exchange แบบ direct, topic, fanout และ headers | topic และ partition ที่ producer เป็นคนเลือก | ใน queue ไม่มี ต้อง fan out ด้วย SNS หรือ [EventBridge](../amazon-eventbridge/) |
+| Routing | exchange แบบ direct, topic, fanout และ headers | topic และ partition ที่ producer เป็นคนเลือก | ใน queue ไม่มี ต้อง fan out ด้วย [SNS](../amazon-sns/) หรือ [EventBridge](../amazon-eventbridge/) |
 | ลำดับ | ต่อ queue จนกว่าจะมี consumer หลายตัวหรือมีการ redeliver | ต่อ partition | best effort (standard) และต่อ message group (FIFO) |
 | Poison message | quorum queue: delivery limit (default 20) แล้วไปที่ dead-letter exchange | แล้วแต่แอป ส่วน share group จำกัดจำนวนครั้งที่ลองได้ | `maxReceiveCount` แล้วไปที่ dead-letter queue |
 | การรัน | cluster ของคุณเอง, Amazon MQ หรือ CloudAMQP | broker ของคุณเอง หรือ service อย่าง Amazon MSK | AWS ดูแลให้ทั้งหมด |

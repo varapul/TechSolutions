@@ -31,7 +31,7 @@ How a function is invoked decides who waits, who retries and where a failed even
 | Invocation | Used by | Who waits | When the handler fails |
 |---|---|---|---|
 | **Synchronous** (`InvocationType` `RequestResponse`) | API Gateway, function URLs, the SDKs and CLI | the caller, until the handler returns | The error goes back to the caller. Lambda doesn't retry, and API Gateway passes the error on to its client. |
-| **Asynchronous** (`InvocationType` `Event`) | S3 and SNS notifications, [EventBridge](../amazon-eventbridge/) rules, EventBridge Scheduler | nobody: Lambda puts the event on its internal queue and answers 202 at once | Lambda retries twice, waiting 1 minute and then 2, and then sends a record to an on-failure destination, or the event to a dead-letter queue, or drops it. |
+| **Asynchronous** (`InvocationType` `Event`) | S3 and [SNS](../amazon-sns/) notifications, [EventBridge](../amazon-eventbridge/) rules, EventBridge Scheduler | nobody: Lambda puts the event on its internal queue and answers 202 at once | Lambda retries twice, waiting 1 minute and then 2, and then sends a record to an on-failure destination, or the event to a dead-letter queue, or drops it. |
 | **Event source mapping** (polling) | SQS, Kinesis, DynamoDB Streams, Amazon MSK and self-managed [Kafka](../kafka/), Amazon MQ, Amazon DocumentDB | Lambda's pollers, which read a batch and invoke the function synchronously with it | From a queue, the batch becomes visible again after the visibility timeout, and the queue's redrive policy moves repeat failures to its own dead-letter queue. From a stream, the batch is retried and holds up its shard until it succeeds or the records expire. |
 
 S3 could invoke `make-thumbnail` directly, asynchronously. The photo app sends the `ObjectCreated` events to `thumbnail-jobs` instead, so the queue absorbs bursts and the event source mapping decides batching, concurrency and retries.
@@ -74,7 +74,7 @@ Every path delivers **at least once**. S3 notifications can arrive more than onc
 
 - **Solutions.** Serverless APIs (API Gateway or a function URL in front, DynamoDB behind); processing files as they land in S3; consumers of queues and streams; glue between AWS services, where an EventBridge rule or SNS topic invokes a function; scheduled jobs, which EventBridge Scheduler invokes asynchronously; and the individual steps of an AWS Step Functions workflow.
 - **Patterns in this catalog.** Lambda is the usual way to build [serverless](../serverless/) functions and the consumers of an [event-driven architecture](../event-driven-architecture/). With SQS in front it gives [queue-based load leveling](../queue-based-load-leveling/) and [competing consumers](../competing-consumers/) without managing workers, which is [web-queue-worker](../web-queue-worker/) without the worker fleet; the queue's [dead-letter queue](../dead-letter-queue/) and an [idempotent](../idempotent-consumer/) handler complete it. Behind an [API gateway](../api-gateway/) it serves request and response APIs.
-- **Usual neighbours.** API Gateway, [Amazon SQS](../amazon-sqs/), SNS, EventBridge, [Amazon S3](../amazon-s3/), [Amazon DynamoDB](../amazon-dynamodb/), AWS Step Functions, CloudWatch and X-Ray, and IAM: each function runs with an execution role that holds its permissions.
+- **Usual neighbours.** API Gateway, [Amazon SQS](../amazon-sqs/), SNS, EventBridge, [Amazon S3](../amazon-s3/), [Amazon DynamoDB](../amazon-dynamodb/), AWS Step Functions, CloudWatch and X-Ray, and [IAM](../aws-iam/): each function runs with an execution role that holds its permissions.
 - **Managed offerings.** Lambda is itself the managed service. The closest equivalents are Azure Functions and Google Cloud Run functions.
 
 ## When to use it
@@ -83,7 +83,7 @@ Use Lambda when work arrives as separate requests or events, finishes within sec
 
 Look elsewhere for work that runs longer than 15 minutes in one go (split it into Step Functions steps, or use durable functions, below), for steady heavy load where always-on capacity is cheaper (see the costs below), for latency-critical paths that can't absorb a cold start and won't pay for provisioned concurrency, and for software that needs long-lived connections or large in-memory state.
 
-| | AWS Lambda | Amazon ECS on Fargate | [Kubernetes](../kubernetes/) Deployment | Azure Functions (Flex Consumption) | Google Cloud Run functions |
+| | AWS Lambda | [Amazon ECS](../amazon-ecs/) on Fargate | [Kubernetes](../kubernetes/) Deployment | Azure Functions (Flex Consumption) | Google Cloud Run functions |
 |---|---|---|---|---|---|
 | You deploy | a function (.zip or container image) | a task definition (containers) | a pod template, on a cluster you run | a function app | a function, built into a Cloud Run service |
 | Requests per instance | 1 per environment (several on Managed Instances) | as many as your app handles | as many as your app handles | several, set per function | up to 1,000 |

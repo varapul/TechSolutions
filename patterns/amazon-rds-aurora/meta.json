@@ -1,0 +1,57 @@
+{
+  "aka": ["Amazon RDS", "Amazon Aurora", "RDS for PostgreSQL", "Aurora PostgreSQL"],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Orders, reports and a Lambda (via RDS Proxy) use DNS endpoints; AWS patches, backs up, fails over.",
+      "body": "Acme Shop's orders database moves to AWS, and the diagram puts the two managed ways to run it side by side. Both sit in private subnets of the shop's VPC behind DNS endpoints on port 5432: **Orders** and the nightly **reports** job connect directly, while the bursty **pay-webhook** Lambda function goes through **RDS Proxy**, which lets many invocations share a pool of database connections. Option A is **Amazon RDS for PostgreSQL** with a Multi-AZ standby and a read replica, option B an **Amazon Aurora PostgreSQL** cluster with a writer and two readers on one shared volume, and in both AWS provisions the hosts, patches the operating system and the engine, takes the backups and runs the failover."
+    },
+    {
+      "title": "RDS Multi-AZ",
+      "caption": "Multi-AZ: COMMIT waits for the standby, the replica lags. The primary fails: DNS moves in 60–120 s.",
+      "body": "Orders runs `INSERT o-981`: the primary in AZ a writes it to its own volume and synchronously to the standby's volume in AZ b, and only then does COMMIT return, so a failover loses no committed transaction (the standby serves no reads). The read replica gets the change asynchronously, so a report that reads it a moment too early still sees `o-980`; meanwhile automated backups (a daily snapshot plus transaction logs copied to S3 every 5 minutes, kept 7 days here and up to 35) can restore the database to any second up to about 5 minutes ago. When the primary fails, RDS promotes the standby and points the endpoint's DNS name at it, typically within 60–120 seconds, and clients reconnect to the same name."
+    },
+    {
+      "title": "Aurora's shared storage",
+      "caption": "Aurora sends log records to 6 copies in 3 AZs, durable at 4; readers share them. Failover: < 60 s.",
+      "body": "Aurora sends the same `INSERT o-981` to the cluster volume as log records, never as pages: the volume keeps six copies of each segment, two in each of three AZs, and counts the write as durable once four of them have it (the design in the 2017 SIGMOD paper). The readers use the same volume, so the report through the reader endpoint already sees `o-981`; AWS documents reader lag as usually well under 100 ms. When the writer fails, Aurora promotes a reader and moves the cluster endpoint to it, usually within 60 seconds and often within 30, with no data to copy, and the volume grows by itself up to 128 TiB (256 TiB on recent engine versions)."
+    },
+    {
+      "title": "Choosing, and the limits",
+      "caption": "Aurora fails over faster, at a higher price; RDS is simpler. Both: AWS's versions, no OS access.",
+      "body": "Aurora fails over faster and its readers share the volume, so they lag less and double as failover targets; RDS for PostgreSQL is simpler and costs less per instance-hour (us-east-1, October 2026: a db.r7g.large is $0.239 an hour, or $0.478 as Multi-AZ, against $0.276 per Aurora instance plus I/O charges, or $0.359 with I/O-Optimized and no I/O charges). Both run only the engine versions AWS offers, give no operating-system access, take settings through parameter groups and bill backup storage beyond a free allowance. For spiky loads **Aurora Serverless v2** sizes instances in ACUs (0–256 on recent versions) and can pause at 0, and for active-active writes across Regions **Aurora DSQL** is a separate, distributed PostgreSQL-compatible service."
+    }
+  ],
+  "related": ["postgresql", "read-replicas", "disaster-recovery-strategies", "active-passive-failover", "database-per-service", "amazon-dynamodb", "change-data-capture", "amazon-vpc", "aws-lambda"],
+  "references": [
+    { "title": "Amazon RDS User Guide — What is Amazon Relational Database Service (Amazon RDS)?", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html" },
+    { "title": "Amazon RDS User Guide — Multi-AZ DB instance deployments for Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZSingleStandby.html" },
+    { "title": "Amazon RDS User Guide — Failing over a Multi-AZ DB instance for Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.Failover.html" },
+    { "title": "Amazon RDS User Guide — Multi-AZ DB cluster deployments for Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/multi-az-db-clusters-concepts.html" },
+    { "title": "Amazon RDS User Guide — Backup retention period", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.BackupRetention.html" },
+    { "title": "Amazon RDS User Guide — Restoring a DB instance to a specified time for Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.html" },
+    { "title": "Amazon RDS User Guide — Working with DB instance read replicas", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html" },
+    { "title": "Amazon RDS User Guide — Amazon RDS Proxy", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html" },
+    { "title": "Amazon RDS User Guide — Avoiding pinning an RDS Proxy", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy-pinning.html" },
+    { "title": "Amazon RDS User Guide — Amazon RDS DB instance storage", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html" },
+    { "title": "Amazon RDS User Guide — Quotas and constraints for Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html" },
+    { "title": "Amazon RDS User Guide — Parameter groups for Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html" },
+    { "title": "Amazon RDS User Guide — IAM database authentication for MariaDB, MySQL, and PostgreSQL", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html" },
+    { "title": "Amazon RDS User Guide — Encrypting Amazon RDS resources", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html" },
+    { "title": "Amazon CloudWatch User Guide — CloudWatch Database Insights", "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Database-Insights.html" },
+    { "title": "Amazon RDS User Guide — Overview of Amazon RDS Blue/Green Deployments", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/blue-green-deployments-overview.html" },
+    { "title": "Amazon RDS User Guide — Amazon RDS Extended Support with Amazon RDS", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/extended-support.html" },
+    { "title": "Amazon Aurora User Guide — Amazon Aurora storage", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.StorageReliability.html" },
+    { "title": "Amazon Aurora User Guide — High availability for Amazon Aurora", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.AuroraHighAvailability.html" },
+    { "title": "Amazon Aurora User Guide — Replication with Amazon Aurora", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Replication.html" },
+    { "title": "Amazon Aurora User Guide — Amazon Aurora endpoint connections", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html" },
+    { "title": "Amazon Aurora User Guide — Quotas and constraints for Amazon Aurora (size limits)", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_Limits.html" },
+    { "title": "Amazon Aurora User Guide — Using Aurora serverless", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html" },
+    { "title": "Amazon Aurora User Guide — Scaling to Zero ACUs with automatic pause and resume for Aurora serverless", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2-auto-pause.html" },
+    { "title": "Amazon Aurora User Guide — Using Amazon Aurora Global Database", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html" },
+    { "title": "Amazon Aurora DSQL User Guide — What is Amazon Aurora DSQL?", "url": "https://docs.aws.amazon.com/aurora-dsql/latest/userguide/what-is-aurora-dsql.html" },
+    { "title": "Amazon RDS for PostgreSQL pricing", "url": "https://aws.amazon.com/rds/postgresql/pricing/" },
+    { "title": "Amazon Aurora pricing", "url": "https://aws.amazon.com/rds/aurora/pricing/" },
+    { "title": "Verbitski et al. — Amazon Aurora: Design Considerations for High Throughput Cloud-Native Relational Databases (SIGMOD 2017)", "url": "https://www.amazon.science/publications/amazon-aurora-design-considerations-for-high-throughput-cloud-native-relational-databases" }
+  ]
+}

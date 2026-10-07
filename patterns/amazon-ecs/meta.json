@@ -1,0 +1,213 @@
+{
+  "aka": [
+    "ECS",
+    "Fargate",
+    "Elastic Container Service"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Catalog runs as 3 Fargate tasks in two zones behind an ALB; images from ECR, logs to CloudWatch.",
+      "body": "Acme Shop's **Catalog** service runs on Amazon ECS in the cluster `acme-shop` (us-east-1). The ECS **service** `catalog` keeps 3 **tasks** of the **task definition** `catalog:7` running on **AWS Fargate**, spread over two Availability Zones in private subnets, and registers each one with the target group of an **Application Load Balancer**, which sends shoppers' requests only to healthy tasks. The image `catalog:1.4.2` comes from Amazon ECR, two IAM roles carry the permissions and the logs go to CloudWatch. There are no servers to manage, and ECS itself costs nothing: you pay for the Fargate capacity, or for EC2 instances if the service runs on those instead."
+    },
+    {
+      "title": "Task definition to tasks",
+      "caption": "ECS registers catalog:7 and places 3 tasks; each gets an ENI, pulls the image, passes /health.",
+      "body": "`RegisterTaskDefinition` stores revision **7** of the family `catalog`: the image, 0.5 vCPU and 1 GB, port 8080, the `awsvpc` network mode, the `awslogs` log driver and two roles. The service scheduler places 3 tasks and keeps the two zones balanced, and Fargate starts each one in its own isolated environment: while the task is `PROVISIONING` it gets an **elastic network interface** with a private IP from its zone's subnet, and while it is `ACTIVATING` Fargate pulls the image with the **task execution role**, which also lets it send the logs to CloudWatch, and the IP is registered with the target group. A newly registered target needs one passed health check (`GET /health`) to count as healthy; from then on the ALB sends it requests."
+    },
+    {
+      "title": "Heal, scale, deploy",
+      "caption": "A failed task is replaced, 85% CPU scales 3 tasks to 5, catalog:8 starts new tasks, then old drain.",
+      "body": "The task at 10.0.11.41 fails 2 health checks in a row, so its target turns unhealthy and ECS replaces the task: it starts the replacement first, as `maximumPercent` allows, and stops the old one once the new one is healthy. Then average CPU reaches 85% against the 60% target of a **target tracking** policy, which adds tasks in proportion: 3 × 85 ÷ 60 = 4.25, rounded up to **5**, and the same load averages 51%. Finally `update-service` rolls out `catalog:8` with the defaults (`minimumHealthyPercent` 100, `maximumPercent` 200): ECS starts 5 new tasks, 10 in all, and stops the old ones only after the new ones are healthy, while the ALB **drains** them. The **deployment circuit breaker** would mark the rollout failed after 3 failures in a row and roll back to `catalog:7`; ECS also has built-in blue/green, linear and canary deployments."
+    },
+    {
+      "title": "Limits and trade-offs",
+      "caption": "ECS is AWS-only; Fargate has no daemons, privileged mode or GPUs. Steady load may cost less on EC2.",
+      "body": "ECS is AWS's own API: task definitions, services and capacity providers don't move to another cloud the way Kubernetes manifests move between clusters. Fargate trades control for convenience: no `DAEMON` services, no privileged containers, no GPUs, and CPU and memory only in set combinations, up to 32 vCPU and 244 GB per task (October 2026). EC2 capacity providers cover all three, and **ECS Managed Instances** (since September 2025) offer GPUs and privileged capabilities on EC2 instances that AWS runs for you. Fargate bills each second for the vCPU and memory a task asks for, $0.000011244 per vCPU-second and $0.000001235 per GB-second in us-east-1 (Linux/x86), so one `catalog` task costs about $0.0247 an hour; a steady, heavy load can cost less on EC2 instances that are kept full, bought with Savings Plans or run as Spot."
+    }
+  ],
+  "related": [
+    "docker",
+    "kubernetes",
+    "aws-lambda",
+    "rolling-update",
+    "blue-green-deployment",
+    "autoscaling",
+    "amazon-vpc",
+    "load-balancing"
+  ],
+  "references": [
+    {
+      "title": "Amazon ECS Developer Guide — What is Amazon Elastic Container Service?",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html"
+    },
+    {
+      "title": "Amazon ECS — Architect your solution for Amazon ECS (launch types and capacity providers)",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-configuration.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS task definition parameters for Fargate",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS task definition differences for Fargate",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-tasks-services.html"
+    },
+    {
+      "title": "Amazon ECS — Architect for AWS Fargate for Amazon ECS",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS task lifecycle",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-lifecycle-explanation.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS services",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS service deployment controllers and strategies",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_service-options.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS service definition parameters",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html"
+    },
+    {
+      "title": "Amazon ECS — Deploy Amazon ECS services by replacing tasks (rolling update)",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html"
+    },
+    {
+      "title": "Amazon ECS — How the Amazon ECS deployment circuit breaker detects failures",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-circuit-breaker.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS blue/green deployments",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-blue-green.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS linear deployments",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-linear.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS canary deployments",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/canary-deployment.html"
+    },
+    {
+      "title": "Amazon ECS — Allocate a network interface for an Amazon ECS task (awsvpc)",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking-awsvpc.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS task networking options for EC2",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html"
+    },
+    {
+      "title": "Amazon ECS — Use Service Connect to connect Amazon ECS services with short names",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html"
+    },
+    {
+      "title": "Amazon ECS — Use an Application Load Balancer for Amazon ECS",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/alb.html"
+    },
+    {
+      "title": "Amazon ECS — Optimize load balancer health check parameters for Amazon ECS",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/load-balancer-healthcheck.html"
+    },
+    {
+      "title": "Amazon ECS — Optimize load balancer connection draining parameters for Amazon ECS",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/load-balancer-connection-draining.html"
+    },
+    {
+      "title": "Elastic Load Balancing — Health checks for Application Load Balancer target groups",
+      "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS task IAM role",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS task execution IAM role",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html"
+    },
+    {
+      "title": "Amazon ECS — Pass sensitive data to an Amazon ECS container",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data.html"
+    },
+    {
+      "title": "Amazon ECS — Send Amazon ECS logs to CloudWatch",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html"
+    },
+    {
+      "title": "Amazon ECS — Send Amazon ECS logs to an AWS service or AWS Partner (FireLens)",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html"
+    },
+    {
+      "title": "Amazon ECS — Automatically scale your Amazon ECS service",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-auto-scaling.html"
+    },
+    {
+      "title": "Amazon ECS — Use a target metric to scale Amazon ECS services",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-autoscaling-targettracking.html"
+    },
+    {
+      "title": "Application Auto Scaling — How target tracking scaling for Application Auto Scaling works",
+      "url": "https://docs.aws.amazon.com/autoscaling/application/userguide/target-tracking-scaling-policy-overview.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS service utilization metrics",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_utilization.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS clusters for Fargate (Fargate and Fargate Spot capacity providers)",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html"
+    },
+    {
+      "title": "Amazon ECS — Amazon ECS capacity providers for EC2 workloads",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/asg-capacity-providers.html"
+    },
+    {
+      "title": "Amazon ECS — Architect for Amazon ECS Managed Instances",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ManagedInstances.html"
+    },
+    {
+      "title": "Amazon ECS — Balancing an Amazon ECS service across Availability Zones",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-rebalancing.html"
+    },
+    {
+      "title": "Amazon ECS — Monitor Amazon ECS containers with ECS Exec",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html"
+    },
+    {
+      "title": "Amazon ECS — Document history",
+      "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/document_history.html"
+    },
+    {
+      "title": "Amazon ECR — Amazon ECR interface VPC endpoints (AWS PrivateLink)",
+      "url": "https://docs.aws.amazon.com/AmazonECR/latest/userguide/vpc-endpoints.html"
+    },
+    {
+      "title": "AWS General Reference — Amazon ECS endpoints and quotas",
+      "url": "https://docs.aws.amazon.com/general/latest/gr/ecs-service.html"
+    },
+    {
+      "title": "AWS Fargate Pricing",
+      "url": "https://aws.amazon.com/fargate/pricing/"
+    },
+    {
+      "title": "Amazon ECS Pricing",
+      "url": "https://aws.amazon.com/ecs/pricing/"
+    },
+    {
+      "title": "Amazon EC2 On-Demand Instance Pricing",
+      "url": "https://aws.amazon.com/ec2/pricing/on-demand/"
+    },
+    {
+      "title": "Amazon EKS Pricing",
+      "url": "https://aws.amazon.com/eks/pricing/"
+    },
+    {
+      "title": "Amazon EKS User Guide — Simplify compute management with AWS Fargate",
+      "url": "https://docs.aws.amazon.com/eks/latest/userguide/fargate.html"
+    }
+  ]
+}

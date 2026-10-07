@@ -123,7 +123,7 @@ AWS ให้ SLA ด้าน availability 99.999% สำหรับ global ta
 ### Backup, export และ caching
 
 - **Backup:** on-demand backup รวมถึง **point-in-time recovery** (PITR) ย้อนไปได้ทุกวินาทีในช่วง 1 ถึง 35 วันล่าสุด ตั้งด้วย `RecoveryPeriodInDays` การ restore จะสร้างตารางใหม่เสมอ
-- **Export ไป S3:** export แบบเต็มหรือแบบ incremental จากข้อมูล PITR ในรูป DynamoDB JSON หรือ Amazon Ion โดยไม่ใช้ read capacity แล้ว Athena, Glue หรือ EMR ก็ query มันได้
+- **Export ไป [S3](../amazon-s3/):** export แบบเต็มหรือแบบ incremental จากข้อมูล PITR ในรูป DynamoDB JSON หรือ Amazon Ion โดยไม่ใช้ read capacity แล้ว Athena, Glue หรือ EMR ก็ query มันได้
 - **DAX** (DynamoDB Accelerator) คือ in-memory cache ที่อยู่หน้าตาราง ตอบการอ่านแบบ eventually consistent ในระดับ microsecond แต่ไม่ช่วยโค้ดที่ต้องอ่านแบบ strongly consistent
 
 ### Single-table design
@@ -140,8 +140,8 @@ DynamoDB ที่เปิดเป็น public service ตั้งแต่�
 
 - **Solution:** back end ของเว็บและแอปมือถือแบบ serverless (API Gateway, Lambda และ DynamoDB อย่างใน diagram), ตะกร้าสินค้าและ user session ที่หมดอายุผ่าน TTL, idempotency record ที่ใช้ request id เป็น key, metadata store อย่าง product catalogue, registry ของอุปกรณ์ หรือ index ของ object ที่เก็บใน S3 และ key-value lookup ปริมาณสูงอย่าง profile, game state หรือ feature setting
 - **Pattern ใน catalog นี้:** data store ของ back end แบบ [Serverless](../serverless/) ที่สร้างบน [AWS Lambda](../aws-lambda/), [Sharding](../sharding/) ที่ DynamoDB ทำให้เอง โดย route แต่ละ key แบบเดียวกับที่ [Hash Table](../hash-table/) เลือก bucket, [Change Data Capture](../change-data-capture/) ผ่าน Streams ที่ป้อน [Materialized View](../materialized-view/) อย่าง order-views และฝั่งอ่านของ [CQRS](../cqrs/), record ของ [Idempotent Consumer](../idempotent-consumer/) ที่เขียนด้วย conditional put และ [Claim Check](../claim-check/) สำหรับ payload ที่ใหญ่เกิน 400 KB โดยเก็บไว้ใน S3 แล้วเก็บ key ไว้ใน item
-- **ของที่อยู่ข้าง ๆ บ่อย ๆ:** API Gateway, Lambda, Kinesis Data Streams, S3 และ Athena (export), Amazon OpenSearch Service (zero-ETL integration สำหรับ search), DAX, IAM, KMS และ CloudWatch
-- **Managed offering:** DynamoDB ก็คือ managed service อยู่แล้ว และรันได้แค่บน AWS ส่วน DynamoDB local เป็นเวอร์ชันที่ดาวน์โหลดมาใช้ตอน dev และเทสต์ ถ้าอยากได้ API ที่ย้ายไปที่อื่นได้ AWS ก็มี database ที่ compatible กับ Cassandra (Amazon Keyspaces) และกับ [MongoDB](../mongodb/) (Amazon DocumentDB) รวมถึง [PostgreSQL](../postgresql/) บน Amazon RDS และ Aurora
+- **ของที่อยู่ข้าง ๆ บ่อย ๆ:** API Gateway, Lambda, Kinesis Data Streams, S3 และ Athena (export), Amazon OpenSearch Service (zero-ETL integration สำหรับ search), DAX, [IAM](../aws-iam/), KMS และ CloudWatch
+- **Managed offering:** DynamoDB ก็คือ managed service อยู่แล้ว และรันได้แค่บน AWS ส่วน DynamoDB local เป็นเวอร์ชันที่ดาวน์โหลดมาใช้ตอน dev และเทสต์ ถ้าอยากได้ API ที่ย้ายไปที่อื่นได้ AWS ก็มี database ที่ compatible กับ Cassandra (Amazon Keyspaces) และกับ [MongoDB](../mongodb/) (Amazon DocumentDB) รวมถึง [PostgreSQL](../postgresql/) บน [Amazon RDS](../amazon-rds-aurora/) และ Aurora
 
 ## ใช้ตอนไหนดี
 

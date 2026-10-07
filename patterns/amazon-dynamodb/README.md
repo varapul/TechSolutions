@@ -141,7 +141,7 @@ AWS offers a 99.999% availability SLA for global tables, against 99.99% for a ta
 ### Backups, export and caching
 
 - **Backups:** on-demand backups, plus **point-in-time recovery** (PITR) to any second of the last 1 to 35 days, set with `RecoveryPeriodInDays`. A restore always creates a new table.
-- **Export to S3:** a full or incremental export from the PITR data, in DynamoDB JSON or Amazon Ion, without using read capacity. Athena, Glue or EMR can then query it.
+- **Export to [S3](../amazon-s3/):** a full or incremental export from the PITR data, in DynamoDB JSON or Amazon Ion, without using read capacity. Athena, Glue or EMR can then query it.
 - **DAX** (DynamoDB Accelerator) is an in-memory cache in front of a table that answers eventually consistent reads in microseconds. It doesn't help code that needs strongly consistent reads.
 
 ### Single-table design
@@ -158,8 +158,8 @@ DynamoDB, a public service since 2012, is a different system. The 2022 USENIX AT
 
 - **Solutions:** serverless web and mobile back ends (API Gateway, Lambda and DynamoDB, as in the diagram); shopping carts and user sessions that expire through TTL; idempotency records keyed by request id; metadata stores such as product catalogues, device registries or an index of objects kept in S3; and high-volume key-value lookups such as profiles, game state or feature settings.
 - **Patterns in this catalog:** the data store of [Serverless](../serverless/) back ends built on [AWS Lambda](../aws-lambda/); [Sharding](../sharding/) done for you, routing each key the way a [Hash Table](../hash-table/) picks a bucket; [Change Data Capture](../change-data-capture/) through Streams, feeding a [Materialized View](../materialized-view/) such as order-views and the read side of [CQRS](../cqrs/); [Idempotent Consumer](../idempotent-consumer/) records written with conditional puts; and [Claim Check](../claim-check/) for payloads above 400 KB, stored in S3 with the key kept in the item.
-- **Usual neighbours:** API Gateway, Lambda, Kinesis Data Streams, S3 and Athena (export), Amazon OpenSearch Service (a zero-ETL integration for search), DAX, IAM, KMS and CloudWatch.
-- **Managed offerings:** DynamoDB is itself the managed service and runs only on AWS; DynamoDB local is a downloadable version for development and tests. If you need a portable API instead, AWS also runs Cassandra-compatible (Amazon Keyspaces) and MongoDB-compatible (Amazon DocumentDB) databases, and [PostgreSQL](../postgresql/) on Amazon RDS and Aurora.
+- **Usual neighbours:** API Gateway, Lambda, Kinesis Data Streams, S3 and Athena (export), Amazon OpenSearch Service (a zero-ETL integration for search), DAX, [IAM](../aws-iam/), KMS and CloudWatch.
+- **Managed offerings:** DynamoDB is itself the managed service and runs only on AWS; DynamoDB local is a downloadable version for development and tests. If you need a portable API instead, AWS also runs Cassandra-compatible (Amazon Keyspaces) and MongoDB-compatible (Amazon DocumentDB) databases, and [PostgreSQL](../postgresql/) on [Amazon RDS](../amazon-rds-aurora/) and Aurora.
 
 ## When to use it
 
@@ -209,7 +209,7 @@ Look elsewhere when the queries are ad hoc or relational (joins, reports, flexib
 - [Change Data Capture (CDC)](../change-data-capture/) — Stream every committed change from the database log to other systems.
 - [Idempotent Consumer](../idempotent-consumer/) — Remember processed message IDs so a redelivered message has no extra effect.
 - Apache Cassandra *(planned)* — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
-- Amazon RDS & Aurora *(planned)* — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
+- [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 
 ## References

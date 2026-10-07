@@ -184,7 +184,7 @@ storage engine **WiredTiger** ใช้ concurrency control ระดับ docu
 | Transaction | atomic ระดับ document เดียว และมี multi-document ACID transaction | ACID transaction บน row ไหนก็ได้ | `TransactWriteItems`: ได้ถึง 100 action สำเร็จหมดหรือไม่ก็ไม่ทำเลย | conditional write (`IF NOT EXISTS`) ที่รันผ่าน Paxos โดยมีต้นทุนเพิ่ม |
 | Scale การเขียน | sharding ตาม shard key ข้ามหลาย replica set | primary ตัวเดียว ต้อง shard ด้วย Citus หรือในแอป | อัตโนมัติ ตาม partition key | ทุก node รับการเขียน ใช้ consistent hashing บน token ring |
 | Consistency | ปรับได้ด้วย read และ write concern อ่านจาก primary เป็นค่าตั้งต้น | strong บน primary และ replica เป็น asynchronous เป็นค่าตั้งต้น | อ่านแบบ eventually consistent เป็นค่าตั้งต้น และขอแบบ strongly consistent ได้ | ปรับได้ต่อ operation ด้วย consistency level (`ONE`, `QUORUM`, `ALL` …) |
-| รันที่ไหน | ที่ไหนก็ได้ Community ใช้ SSPL มี MongoDB Atlas และ Amazon DocumentDB implement API ของมัน | ที่ไหนก็ได้ ใช้ PostgreSQL License มี RDS และ Aurora บน AWS | บน AWS เท่านั้น | ที่ไหนก็ได้ ใช้ Apache License 2.0 และ Amazon Keyspaces เป็น service ของ AWS ที่เข้ากันได้ |
+| รันที่ไหน | ที่ไหนก็ได้ Community ใช้ SSPL มี MongoDB Atlas และ Amazon DocumentDB implement API ของมัน | ที่ไหนก็ได้ ใช้ PostgreSQL License มี RDS และ [Aurora](../amazon-rds-aurora/) บน AWS | บน AWS เท่านั้น | ที่ไหนก็ได้ ใช้ Apache License 2.0 และ Amazon Keyspaces เป็น service ของ AWS ที่เข้ากันได้ |
 
 ตัวเลขและคำศัพท์จากเอกสารของ MongoDB 9.0, PostgreSQL 18, Amazon DynamoDB และ Apache Cassandra 5.0 เดือนตุลาคม 2026
 

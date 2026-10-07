@@ -12,8 +12,8 @@ AWS Identity and Access Management (IAM) ทำ authentication และ authori
 
 - **root user** คือ identity ที่ถูกสร้างมาพร้อม account และเข้าถึงทุกอย่างใน account ได้เต็มที่ AWS แนะนำให้ใช้มันแค่กับงานไม่กี่อย่างที่ต้องใช้มันจริง ๆ และบังคับ MFA ให้มัน ใน AWS Organizations ตัว centralized root access ทำให้เราลบ root credential ของ member account ทิ้งไปเลยได้
 - **IAM user** มี credential แบบอายุยาว: password ของ console และ access key ได้ไม่เกินสองตัว โดยที่ ID ของ key ขึ้นต้นด้วย `AKIA` ตัว key ใช้ได้ไปเรื่อย ๆ จนกว่าจะถูก deactivate หรือลบ นี่คือเหตุผลที่ AWS แนะนำให้ใช้ IAM user แค่ตอนที่ federation ช่วยไม่ได้
-- **Role** ไม่มี credential แบบอายุยาว ตัว role มี **trust policy** ที่บอกว่าใคร assume มันได้ และ **permissions policy** ที่บอกว่า session ของมันทำอะไรได้ ใครที่ assume มันจะได้ credential แบบชั่วคราวจาก AWS STS ส่วน workload จะได้ role จาก service ที่รันมัน: Lambda execution role, ECS task role, EC2 instance profile ส่วน service-linked role คือ role ที่ AWS service นิยามไว้ล่วงหน้าสำหรับงานของตัวเอง
-- **Federated identity** มาจาก identity provider นอก IAM และใช้ role ระหว่างทำงาน: คนเข้ามาผ่าน IAM Identity Center ส่วนระบบ CI และ workload อื่นเข้ามาผ่าน OpenID Connect (`AssumeRoleWithWebIdentity`) หรือ SAML 2.0 (`AssumeRoleWithSAML`) และ end user ของ application เองเข้ามาผ่าน Amazon Cognito identity pool
+- **Role** ไม่มี credential แบบอายุยาว ตัว role มี **trust policy** ที่บอกว่าใคร assume มันได้ และ **permissions policy** ที่บอกว่า session ของมันทำอะไรได้ ใครที่ assume มันจะได้ credential แบบชั่วคราวจาก AWS STS ส่วน workload จะได้ role จาก service ที่รันมัน: Lambda execution role, [ECS](../amazon-ecs/) task role, EC2 instance profile ส่วน service-linked role คือ role ที่ AWS service นิยามไว้ล่วงหน้าสำหรับงานของตัวเอง
+- **Federated identity** มาจาก identity provider นอก IAM และใช้ role ระหว่างทำงาน: คนเข้ามาผ่าน IAM Identity Center ส่วนระบบ CI และ workload อื่นเข้ามาผ่าน OpenID Connect (`AssumeRoleWithWebIdentity`) หรือ SAML 2.0 (`AssumeRoleWithSAML`) และ end user ของ application เองเข้ามาผ่าน [Amazon Cognito](../amazon-cognito/) identity pool
 
 ### Authentication: พิสูจน์ตัวตน
 

@@ -55,7 +55,7 @@ The rest of the model, briefly:
 
 It also implements or supports [Dead-Letter Queue](../dead-letter-queue/) (a DLX plus the delivery limit), [Priority Queue](../priority-queue/), [Idempotent Consumer](../idempotent-consumer/) (needed because delivery is at least once), [Retry with Backoff](../retry-with-backoff/) (the delayed retry of quorum queues in 4.3), [Claim Check](../claim-check/) for payloads above the maximum message size (16 MiB by default since 4.0) and [Transactional Outbox](../transactional-outbox/) for publishing reliably from a database transaction.
 
-Its usual neighbours are the services that publish; the worker deployments that consume, often scaled on queue length (for example by KEDA's RabbitMQ scaler on [Kubernetes](../kubernetes/)); Prometheus and Grafana, through the `rabbitmq_prometheus` plugin that ships with the server; and a load balancer in front of the nodes.
+Its usual neighbours are the services that publish; the worker deployments that consume, often scaled on queue length (for example by KEDA's RabbitMQ scaler on [Kubernetes](../kubernetes/)); [Prometheus](../prometheus/) and Grafana, through the `rabbitmq_prometheus` plugin that ships with the server; and a load balancer in front of the nodes.
 
 Managed offerings: **Amazon MQ for RabbitMQ** supports RabbitMQ 4.3 and 4.2 (on mq.m7g instances) and 3.13 as of October 2026, either as a single-instance broker in one Availability Zone or as a cluster of three nodes across Availability Zones, behind a Network Load Balancer in both cases; it doesn't support streams. **CloudAMQP** is a hosted RabbitMQ service.
 
@@ -68,7 +68,7 @@ Choose RabbitMQ when each message is a task or a notification that is finished o
 | Model | Exchanges route messages into queues | A partitioned, replicated log of records | A managed queue |
 | Consumers | Pushed up to the prefetch limit, ack each message | Pull records and track their position (offset) | Poll, then delete each message when done |
 | After processing | Deleted on ack (a stream keeps it) | Kept until retention ends (7 days by default) and can be re-read | Deleted by the consumer |
-| Routing | Direct, topic, fanout and headers exchanges | Topic and partition, chosen by the producer | None in the queue; fan out with SNS or [EventBridge](../amazon-eventbridge/) |
+| Routing | Direct, topic, fanout and headers exchanges | Topic and partition, chosen by the producer | None in the queue; fan out with [SNS](../amazon-sns/) or [EventBridge](../amazon-eventbridge/) |
 | Order | Per queue, until several consumers or redeliveries | Per partition | Best effort (standard), per message group (FIFO) |
 | Poison messages | Quorum queues: delivery limit (20 by default), then a dead-letter exchange | Up to the application; share groups cap the attempts | `maxReceiveCount`, then a dead-letter queue |
 | Running it | Your cluster, Amazon MQ or CloudAMQP | Your brokers, or a service such as Amazon MSK | Fully managed by AWS |

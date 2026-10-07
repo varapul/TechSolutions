@@ -1,0 +1,186 @@
+{
+  "aka": [
+    "Prometheus",
+    "Grafana",
+    "Alertmanager",
+    "PromQL"
+  ],
+  "steps": [
+    {
+      "title": "Where it sits",
+      "caption": "Prometheus pulls /metrics every 15 s, stores samples, alerts via Alertmanager and serves Grafana.",
+      "body": "Acme Shop's Catalog service runs as three pods on Kubernetes, and each serves its metrics at `/metrics`. Prometheus discovers them, along with `node_exporter` and `kube-state-metrics`, through the Kubernetes API and **pulls** their metrics every 15 seconds (`scrape_interval: 15s`; the default is 1 minute). It stores the samples in its own time-series database, evaluates rules on them, sends firing alerts to **Alertmanager**, and answers **Grafana**'s PromQL queries."
+    },
+    {
+      "title": "Scrape and store",
+      "caption": "Each /metrics line is one sample of one series: into the head and WAL, then 2-hour blocks on disk.",
+      "body": "A scrape returns text, one sample per line, such as `http_requests_total{service=\"catalog\",status=\"200\"} 18420`. Prometheus adds the target's labels (`job`, `instance`, and `pod` through relabeling): the metric name and the whole label set identify one **time series**, and the value with the scrape's timestamp is one **sample**. Samples are written to the **write-ahead log** and the in-memory **head**; once the head spans 3 hours, its oldest 2 hours go to disk as an immutable **block**, and blocks are later **compacted**, three 2-hour blocks into one 6-hour block."
+    },
+    {
+      "title": "Query and alert",
+      "caption": "rate() turns counters into rates. 6% errors for 10 min fires the alert; Alertmanager pages on-call.",
+      "body": "`rate()` turns a counter's running total into a per-second rate and treats any drop as a restart: catalog-x2m's counter falls from 1226 to 36, and its rate still reads 2.4 errors/s. The recording rule divides the 5xx rate by the total, 7.2/s of 120/s, which is **6%**. `CatalogHighErrorRate` turns **pending** above 5% and **firing** once that has held for 10 minutes (`for: 10m`); Alertmanager groups it, waits `group_wait` (30 s) and pages the on-call engineer, and Grafana plots the same expression. `histogram_quantile(0.99, …)` reads the p99 latency, 0.67 s, off the histogram's buckets."
+    },
+    {
+      "title": "Limits and trade-offs",
+      "caption": "Each label value is a series in memory; one server keeps 15 days locally; remote_write keeps more.",
+      "body": "Every distinct label value creates another series, and the head holds each one in memory: a `user_id` label with 50,000 users would turn 12 series (3 pods × 4 status codes) into up to 600,000. One server keeps its data on local disk, 15 days by default, and isn't highly available on its own: run two identical servers, and Alertmanager de-duplicates their alerts. For long-term or global views, `remote_write` streams samples from the WAL to Thanos, Grafana Mimir or a managed service. Pull needs reachable targets (the Pushgateway is only for batch jobs), and metrics are aggregates: per-request detail comes from logs and traces."
+    }
+  ],
+  "related": [
+    "slo-error-budgets",
+    "health-endpoint-monitoring",
+    "telemetry-pipeline",
+    "distributed-tracing",
+    "centralized-logging",
+    "kubernetes",
+    "autoscaling",
+    "amazon-cloudwatch"
+  ],
+  "references": [
+    {
+      "title": "Prometheus documentation — Overview",
+      "url": "https://prometheus.io/docs/introduction/overview/"
+    },
+    {
+      "title": "Prometheus documentation — Data model",
+      "url": "https://prometheus.io/docs/concepts/data_model/"
+    },
+    {
+      "title": "Prometheus documentation — Metric types",
+      "url": "https://prometheus.io/docs/concepts/metric_types/"
+    },
+    {
+      "title": "Prometheus documentation — Storage",
+      "url": "https://prometheus.io/docs/prometheus/latest/storage/"
+    },
+    {
+      "title": "Prometheus documentation — Configuration (scrape, kubernetes_sd_config, relabeling, storage)",
+      "url": "https://prometheus.io/docs/prometheus/latest/configuration/configuration/"
+    },
+    {
+      "title": "Prometheus documentation — Querying basics",
+      "url": "https://prometheus.io/docs/prometheus/latest/querying/basics/"
+    },
+    {
+      "title": "Prometheus documentation — Query functions",
+      "url": "https://prometheus.io/docs/prometheus/latest/querying/functions/"
+    },
+    {
+      "title": "Prometheus documentation — Alerting rules",
+      "url": "https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/"
+    },
+    {
+      "title": "Prometheus documentation — Alertmanager",
+      "url": "https://prometheus.io/docs/alerting/latest/alertmanager/"
+    },
+    {
+      "title": "Prometheus documentation — Alertmanager configuration",
+      "url": "https://prometheus.io/docs/alerting/latest/configuration/"
+    },
+    {
+      "title": "Prometheus documentation — Metric and label naming",
+      "url": "https://prometheus.io/docs/practices/naming/"
+    },
+    {
+      "title": "Prometheus documentation — When to use the Pushgateway",
+      "url": "https://prometheus.io/docs/practices/pushing/"
+    },
+    {
+      "title": "Prometheus documentation — Remote write tuning",
+      "url": "https://prometheus.io/docs/practices/remote_write/"
+    },
+    {
+      "title": "Prometheus documentation — Agent Mode",
+      "url": "https://prometheus.io/docs/prometheus/latest/prometheus_agent/"
+    },
+    {
+      "title": "Prometheus documentation — Federation",
+      "url": "https://prometheus.io/docs/prometheus/latest/federation/"
+    },
+    {
+      "title": "Prometheus documentation — Exporters and integrations",
+      "url": "https://prometheus.io/docs/instrumenting/exporters/"
+    },
+    {
+      "title": "Prometheus documentation — Using Prometheus as your OpenTelemetry backend",
+      "url": "https://prometheus.io/docs/guides/opentelemetry/"
+    },
+    {
+      "title": "Prometheus documentation — Long-term support",
+      "url": "https://prometheus.io/docs/introduction/release-cycle/"
+    },
+    {
+      "title": "Announcing Prometheus 3.0 (November 2024)",
+      "url": "https://prometheus.io/blog/2024/11/14/prometheus-3-0/"
+    },
+    {
+      "title": "Prometheus CHANGELOG",
+      "url": "https://github.com/prometheus/prometheus/blob/main/CHANGELOG.md"
+    },
+    {
+      "title": "Grafana documentation — Prometheus data source",
+      "url": "https://grafana.com/docs/grafana/latest/datasources/prometheus/"
+    },
+    {
+      "title": "Grafana Labs — Grafana, Loki, and Tempo will be relicensed to AGPLv3 (April 2021)",
+      "url": "https://grafana.com/blog/2021/04/20/grafana-loki-tempo-relicensing-to-agplv3/"
+    },
+    {
+      "title": "Google SRE Workbook — Alerting on SLOs",
+      "url": "https://sre.google/workbook/alerting-on-slos/"
+    },
+    {
+      "title": "Amazon Managed Service for Prometheus User Guide — What is Amazon Managed Service for Prometheus?",
+      "url": "https://docs.aws.amazon.com/prometheus/latest/userguide/what-is-Amazon-Managed-Service-Prometheus.html"
+    },
+    {
+      "title": "Amazon Managed Grafana User Guide — What is Amazon Managed Grafana?",
+      "url": "https://docs.aws.amazon.com/grafana/latest/userguide/what-is-Amazon-Managed-Service-Grafana.html"
+    },
+    {
+      "title": "Amazon CloudWatch User Guide — Query metrics with PromQL",
+      "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-PromQL.html"
+    },
+    {
+      "title": "Amazon CloudWatch User Guide — Metrics concepts (retention)",
+      "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html"
+    },
+    {
+      "title": "Amazon CloudWatch pricing",
+      "url": "https://aws.amazon.com/cloudwatch/pricing/"
+    },
+    {
+      "title": "Datadog documentation — OpenMetrics integration",
+      "url": "https://docs.datadoghq.com/integrations/openmetrics/"
+    },
+    {
+      "title": "Datadog documentation — Custom metrics billing",
+      "url": "https://docs.datadoghq.com/account_management/billing/custom_metrics/"
+    },
+    {
+      "title": "Datadog pricing",
+      "url": "https://www.datadoghq.com/pricing/"
+    },
+    {
+      "title": "Thanos",
+      "url": "https://thanos.io/"
+    },
+    {
+      "title": "Grafana Mimir documentation",
+      "url": "https://grafana.com/docs/mimir/latest/"
+    },
+    {
+      "title": "VictoriaMetrics documentation — Single-node version",
+      "url": "https://docs.victoriametrics.com/victoriametrics/single-server-victoriametrics/"
+    },
+    {
+      "title": "KEDA — Prometheus scaler",
+      "url": "https://keda.sh/docs/latest/scalers/prometheus/"
+    },
+    {
+      "title": "Prometheus Adapter for Kubernetes Metrics APIs",
+      "url": "https://github.com/kubernetes-sigs/prometheus-adapter"
+    }
+  ]
+}

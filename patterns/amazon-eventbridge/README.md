@@ -67,12 +67,12 @@ Every rule sees every event on its bus, and each rule that matches delivers its 
 
 ### Targets
 
-A rule can have up to **five targets**, although AWS's own advice is one target per rule and a second rule when another consumer needs the same events, so that each can change on its own. Targets include Lambda functions, SQS queues (standard, fair and FIFO), [SNS](../amazon-sns/) topics, Step Functions state machines, Kinesis and Firehose streams, ECS tasks, API Gateway, AWS AppSync, CloudWatch log groups and several more. Two kinds deserve a closer look:
+A rule can have up to **five targets**, although AWS's own advice is one target per rule and a second rule when another consumer needs the same events, so that each can change on its own. Targets include Lambda functions, SQS queues (standard, fair and FIFO), [SNS](../amazon-sns/) topics, Step Functions state machines, Kinesis and Firehose streams, [ECS](../amazon-ecs/) tasks, API Gateway, AWS AppSync, CloudWatch log groups and several more. Two kinds deserve a closer look:
 
 - **API destinations** make any HTTPS endpoint a target. A *connection* holds the endpoint's authorization (basic, OAuth or an API key, stored in AWS Secrets Manager). EventBridge waits at most 5 seconds for an answer, retries 401, 407, 409, 429 and 5xx responses, and calls each destination at most 300 times a second unless you raise that quota.
 - **Event buses**, in the same account, in another account or in another Region, which is how events cross account boundaries. The receiving account grants access in its bus's resource policy and writes its own rules, the sending account pays for the forwarded events, and an event that arrived from another account isn't forwarded a third time. Since January 2025 a rule can also deliver straight to an SQS queue, Lambda function, Kinesis stream, SNS topic or API Gateway API in another account, if that resource's policy allows it.
 
-EventBridge invokes Lambda functions and Step Functions state machines **asynchronously**: a successful delivery means the function or execution started, not that it finished. To reach a target, EventBridge assumes an IAM role you give it (Step Functions and Kinesis targets need one), or, for Lambda, SNS and SQS, it can rely on the target's resource-based policy instead.
+EventBridge invokes Lambda functions and Step Functions state machines **asynchronously**: a successful delivery means the function or execution started, not that it finished. To reach a target, EventBridge assumes an [IAM](../aws-iam/) role you give it (Step Functions and Kinesis targets need one), or, for Lambda, SNS and SQS, it can rely on the target's resource-based policy instead.
 
 ### Input transformers
 
