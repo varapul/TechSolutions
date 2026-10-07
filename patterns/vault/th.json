@@ -1,0 +1,21 @@
+{
+  "summary": "secrets manager: ยืนยันตัวตน workload แจก credential อายุสั้น เข้ารหัสข้อมูล และเก็บ audit ทุกการเข้าถึง",
+  "steps": [
+    {
+      "title": "Vault อยู่ตรงไหน",
+      "body": "service **Orders** ของ Acme Shop รันบน Kubernetes และ pod ของมันไม่ได้ถือ password อะไรเลย ตัว sidecar **Vault Agent** login เข้า HashiCorp Vault ด้วย service-account token ของ pod แล้วได้ secret ที่มีวันหมดอายุกลับมา: PostgreSQL user ที่ Vault สร้างให้ตอนต้องใช้ และการเข้ารหัสที่ engine **transit** ของ Vault เป็นคนทำ ส่วนทีม platform เขียน **policy** และ role ที่กำหนดว่าใครอ่านอะไรได้ และ **audit device** ก็บันทึกทุก request และ response ตัว Vault เองรันเป็น cluster สาม node บน **integrated storage (Raft)** และ AWS KMS เป็นคน unseal แต่ละ node ตอนมัน start"
+    },
+    {
+      "title": "Login แล้วได้ DB user",
+      "body": "agent ส่ง service-account token ของ pod ไปที่ **Kubernetes auth method** (`auth/kubernetes/login`, role `orders`) แล้ว Vault ก็ถาม Kubernetes API ผ่าน **TokenReview** API ว่า token นี้ใช้ได้ไหมและเป็นของใคร มันเป็นของ service account `orders` ใน namespace `shop` ที่ role อนุญาตไว้ Vault เลยคืน token (`hvs.…`) ที่มี policy `orders-app` และ TTL 1 ชั่วโมงมาให้ แล้ว agent ก็ใช้ token นั้นอ่าน `database/creds/orders-rw`: policy อนุญาต `read` ตัว **database secrets engine** ก็รัน statement `CREATE ROLE … VALID UNTIL` ของ role ใน PostgreSQL แล้ว Vault ก็คืน user ใหม่ `v-orders-rw-8f2kq7xm` พร้อม password ของมันภายใต้ **lease** 1 ชั่วโมง"
+    },
+    {
+      "title": "Lease และการเข้ารหัส",
+      "body": "agent renew lease เมื่อผ่านไปสองในสามของอายุ (นาทีที่ 40) และการ renew แต่ละครั้งได้อีกหนึ่งชั่วโมง แต่จะไม่เกิน `max_ttl` ของ role ที่ 24 ชั่วโมง พอถึงขีดนั้น agent ก็อ่าน user ใหม่ `v-orders-rw-k3m9x2pd` แล้ว lease เก่าก็หมดอายุ: Vault ลบ `v-orders-rw-8f2kq7xm` ออกจาก PostgreSQL ทำให้ password ของมันที่หลุดออกไปใช้ไม่ได้อีก (ถ้าสงสัยว่าหลุด ก็ใช้ `vault lease revoke` จบ lease ได้ทันที) จากนั้นแอป Orders ก็ส่ง card token ไปที่ `transit/encrypt/orders-key` แล้วเก็บ ciphertext ไว้ โดยที่ key เพิ่งถูก rotate ไป ทำให้ค่าใหม่ขึ้นต้นด้วย `vault:v2:` ส่วนแถวเก่าที่เป็น `vault:v1:` ก็ยัง decrypt ได้ ตัว key เองไม่เคยออกจาก Vault และมีแค่ผู้เรียกที่ policy ให้ `transit/decrypt/orders-key` เท่านั้นที่ได้ plaintext กลับไป ส่วน audit log เก็บ hash แบบ HMAC-SHA256 ของค่าแทนตัวค่าจริง"
+    },
+    {
+      "title": "ข้อจำกัดและ license",
+      "body": "Vault อยู่บน critical path แล้วในตัวอย่างนี้ node ก็ restart ตอนที่ติดต่อ AWS KMS ไม่ได้ เลยค้างอยู่ในสถานะ **sealed**: การ login ของ pod ใหม่ได้ HTTP 503 ส่วน pod ที่รันอยู่ยังทำงานต่อได้ด้วย token และ database user ที่ cache ไว้จนกว่า lease จะหมด พอ KMS ตอบกลับมา node ก็ unseal ได้เอง ให้วางแผนรับเรื่องนี้ด้วย node สามหรือห้าตัว (Raft ยังมี quorum ถ้าล่มไปหนึ่งในสาม) การ cache ของ Vault Agent และดูแล KMS key ให้ดีมาก ๆ (ถ้ามันถูกลบ ข้อมูลจะกู้คืนไม่ได้ แม้จาก backup) หรือดูแล Shamir key share ส่วน Vault 1.15 ขึ้นไปอยู่ภายใต้ **Business Source License 1.1** (ประกาศเมื่อสิงหาคม 2023) แล้ว IBM ก็ซื้อ HashiCorp เสร็จในเดือนกุมภาพันธ์ 2025 และ **OpenBao** เป็น fork แบบ MPL 2.0 ที่อยู่ภายใต้ OpenSSF ของ Linux Foundation ถ้าเป็น static secret และการ rotate ตัว AWS Secrets Manager, Azure Key Vault หรือ Google Secret Manager มีชิ้นส่วนให้ดูแลน้อยกว่า"
+    }
+  ]
+}

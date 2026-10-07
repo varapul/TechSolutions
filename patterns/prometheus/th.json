@@ -1,0 +1,21 @@
+{
+  "summary": "monitoring แบบ pull: scrape metric เข้า time-series database แล้ว query ด้วย PromQL ตั้ง alert และทำกราฟใน Grafana",
+  "steps": [
+    {
+      "title": "Prometheus อยู่ตรงไหน",
+      "body": "service Catalog ของ Acme Shop รันเป็นสาม pod บน Kubernetes และแต่ละ pod ให้ metric ของตัวเองที่ `/metrics` ตัว Prometheus หา pod พวกนี้เจอผ่าน Kubernetes API พร้อมกับ `node_exporter` และ `kube-state-metrics` แล้ว **pull** metric ของมันทุก 15 วินาที (`scrape_interval: 15s` ส่วน default คือ 1 นาที) มันเก็บ sample ไว้ใน time-series database ของตัวเอง evaluate rule บนข้อมูลนั้น ส่ง alert ที่ firing ไปให้ **Alertmanager** และตอบ PromQL query ของ **Grafana**"
+    },
+    {
+      "title": "Scrape แล้วเก็บ",
+      "body": "การ scrape หนึ่งครั้งได้ข้อความกลับมา บรรทัดละหนึ่ง sample เช่น `http_requests_total{service=\"catalog\",status=\"200\"} 18420` แล้ว Prometheus ก็เติม label ของ target เข้าไป (`job`, `instance` และ `pod` ผ่าน relabeling): ชื่อ metric กับชุด label ทั้งหมดรวมกันระบุ **time series** หนึ่งเส้น ส่วนค่ากับ timestamp ของการ scrape คือหนึ่ง **sample** ตัว sample ถูกเขียนลง **write-ahead log** และ **head** ที่อยู่ใน memory พอ head ครอบช่วงเวลาครบ 3 ชั่วโมง ข้อมูล 2 ชั่วโมงที่เก่าที่สุดของมันก็ลง disk เป็น **block** ที่แก้ไม่ได้ แล้ว block ก็ถูก **compact** ทีหลัง โดยรวม block 2 ชั่วโมงสามก้อนเป็น block 6 ชั่วโมงก้อนเดียว"
+    },
+    {
+      "title": "Query และ alert",
+      "body": "`rate()` แปลงยอดสะสมของ counter เป็นอัตราต่อวินาที และถือว่าทุกครั้งที่ค่าลดลงคือการ restart: counter ของ catalog-x2m ตกจาก 1226 เหลือ 36 แต่ rate ของมันก็ยังอ่านได้ 2.4 errors/s ตัว recording rule เอา rate ของ 5xx หารด้วยยอดรวม ได้ 7.2/s จาก 120/s คือ **6%** ส่วน `CatalogHighErrorRate` เปลี่ยนเป็น **pending** เมื่อเกิน 5% และเป็น **firing** เมื่อเกินแบบนั้นต่อเนื่องครบ 10 นาที (`for: 10m`) แล้ว Alertmanager ก็จัดกลุ่มมัน รอ `group_wait` (30 s) แล้ว page หา on-call engineer ส่วน Grafana ก็ plot expression เดียวกัน ตัว `histogram_quantile(0.99, …)` อ่าน p99 latency ได้ 0.67 s จาก bucket ของ histogram"
+    },
+    {
+      "title": "ข้อจำกัดและสิ่งที่ต้องแลก",
+      "body": "label value ที่ต่างกันแต่ละค่าสร้าง series เพิ่มอีกเส้น และ head ก็ถือทุกเส้นไว้ใน memory: label `user_id` ที่มีผู้ใช้ 50,000 คนจะเปลี่ยน 12 series (3 pod × 4 status code) ให้กลายเป็นได้ถึง 600,000 เส้น ส่วน server ตัวเดียวเก็บข้อมูลบน disk ของตัวเอง default 15 วัน และตัวมันเองไม่ได้ highly available: ต้องรัน server ที่เหมือนกันสองตัว แล้ว Alertmanager ก็ตัด alert ที่ซ้ำกันของทั้งคู่ออก ถ้าอยากได้ข้อมูลระยะยาวหรือมุมมองรวมทั้งหมด `remote_write` จะ stream sample จาก WAL ไปที่ Thanos, Grafana Mimir หรือ managed service ส่วนการ pull ต้องเข้าถึง target ได้ (Pushgateway มีไว้สำหรับ batch job เท่านั้น) และ metric เป็นค่ารวม: รายละเอียดราย request ต้องมาจาก log และ trace"
+    }
+  ]
+}

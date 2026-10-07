@@ -1,0 +1,21 @@
+{
+  "summary": "รัน container บน AWS: task definition และ service ที่คอยให้ task รันอยู่หลัง load balancer บน EC2 หรือบน Fargate แบบ serverless",
+  "steps": [
+    {
+      "title": "ECS อยู่ตรงไหน",
+      "body": "service **Catalog** ของ Acme Shop รันบน Amazon ECS ใน cluster `acme-shop` (us-east-1) ตัว ECS **service** `catalog` คอยให้ **task** ของ **task definition** `catalog:7` รันอยู่ 3 ตัวบน **AWS Fargate** โดยกระจายอยู่ในสอง Availability Zone ใน private subnet และ register แต่ละตัวเข้า target group ของ **Application Load Balancer** แล้ว load balancer ตัวนี้ก็ส่ง request ของคนซื้อไปให้เฉพาะ task ที่ healthy ส่วน image `catalog:1.4.2` มาจาก Amazon ECR แล้วก็มี IAM role สองตัวถือสิทธิ์ต่าง ๆ ไว้ และ log ไปอยู่ที่ CloudWatch โดยที่ไม่มี server ให้ดูแลเลย และตัว ECS เองก็ไม่คิดเงิน: เราจ่ายค่า capacity ของ Fargate หรือจ่ายค่า EC2 instance ถ้า service ไปรันบนนั้นแทน"
+    },
+    {
+      "title": "จาก task definition เป็น task",
+      "body": "`RegisterTaskDefinition` เก็บ revision **7** ของ family `catalog` ไว้: image, 0.5 vCPU กับ 1 GB, port 8080, network mode `awsvpc`, log driver `awslogs` และ role สองตัว ตัว service scheduler วาง task 3 ตัวและคอยให้สอง zone สมดุลกัน แล้ว Fargate ก็เริ่มแต่ละตัวใน environment แยกของมันเอง: ระหว่างที่ task เป็น `PROVISIONING` มันจะได้ **elastic network interface** ที่มี private IP จาก subnet ของ zone นั้น ส่วนระหว่างที่เป็น `ACTIVATING` ตัว Fargate ดึง image ด้วย **task execution role** (role นี้ยังให้มันส่ง log ไปที่ CloudWatch ได้ด้วย) และ IP ของ task ก็ถูก register เข้า target group ตัว target ที่เพิ่ง register ต้องผ่าน health check (`GET /health`) หนึ่งครั้งก่อนถึงจะนับว่า healthy แล้วจากนั้น ALB ก็ส่ง request ไปให้มัน"
+    },
+    {
+      "title": "ซ่อมตัวเอง, scale และ deploy",
+      "body": "task ที่ 10.0.11.41 ไม่ผ่าน health check 2 ครั้งติดกัน ทำให้ target ของมันกลายเป็น unhealthy แล้ว ECS ก็เปลี่ยน task ตัวนั้น: มันเริ่มตัวใหม่ก่อนตามที่ `maximumPercent` ยอมให้ แล้วค่อยหยุดตัวเก่าเมื่อตัวใหม่ healthy แล้ว ต่อมา CPU เฉลี่ยขึ้นไปถึง 85% ขณะที่ target ของ policy แบบ **target tracking** คือ 60% ตัว policy เลยเพิ่ม task ตามสัดส่วน: 3 × 85 ÷ 60 = 4.25 ปัดขึ้นเป็น **5** แล้วโหลดเท่าเดิมก็เฉลี่ยเหลือ 51% สุดท้าย `update-service` ก็ roll out `catalog:8` ด้วยค่า default (`minimumHealthyPercent` 100, `maximumPercent` 200): ECS เริ่ม task ใหม่ 5 ตัว รวมเป็น 10 ตัว และหยุดตัวเก่าก็ต่อเมื่อตัวใหม่ healthy แล้วเท่านั้น ระหว่างนั้น ALB ก็ **drain** ตัวเก่าออก ถ้า fail ติดกัน 3 ครั้ง **deployment circuit breaker** จะตัดสินว่าการ rollout นี้ fail แล้ว rollback กลับไปที่ `catalog:7` นอกจากนี้ ECS ยังมี deployment แบบ blue/green, linear และ canary ในตัวด้วย"
+    },
+    {
+      "title": "ข้อจำกัดและสิ่งที่ต้องแลก",
+      "body": "ECS เป็น API ของ AWS เอง: task definition, service และ capacity provider ย้ายไป cloud อื่นไม่ได้ แบบที่ Kubernetes manifest ย้ายข้าม cluster ได้ ส่วน Fargate ยอมเสีย control เพื่อแลกกับความสะดวก: ไม่มี service แบบ `DAEMON` ไม่มี privileged container ไม่มี GPU และเลือก CPU กับ memory ได้แค่ตามคู่ที่กำหนดไว้ สูงสุด 32 vCPU และ 244 GB ต่อ task (ตุลาคม 2026) ส่วน EC2 capacity provider ทำได้ครบทั้งสามอย่าง และ **ECS Managed Instances** (ตั้งแต่กันยายน 2025) ก็ให้ GPU และความสามารถแบบ privileged บน EC2 instance ที่ AWS รันให้ ส่วน Fargate คิดเงินรายวินาทีตาม vCPU และ memory ที่ task ขอไว้ คือ $0.000011244 ต่อ vCPU-second และ $0.000001235 ต่อ GB-second ใน us-east-1 (Linux/x86) ทำให้ task `catalog` หนึ่งตัวตกราว $0.0247 ต่อชั่วโมง ถ้าโหลดหนักและสม่ำเสมอ การรันบน EC2 instance ที่ใช้เต็มตลอด ซื้อผ่าน Savings Plans หรือรันเป็น Spot อาจถูกกว่า"
+    }
+  ]
+}

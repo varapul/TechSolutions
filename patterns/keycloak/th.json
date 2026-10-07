@@ -1,0 +1,21 @@
+{
+  "summary": "identity provider แบบ open source: ให้ผู้ใช้ sign in ทำ federation และ single sign-on แล้วออก token แบบ OpenID Connect และ SAML",
+  "steps": [
+    {
+      "title": "Keycloak อยู่ตรงไหน",
+      "body": "Keycloak เป็น identity provider ของ Acme Shop: realm **acme** เก็บ user, role, sign-in flow และ signing key ไว้ พร้อมกับ client สามตัว คือ **shop-web** (single-page app ของร้าน เป็น public client), **back-office** (แอปของพนักงาน เป็น confidential client) และ **orders-api** (resource server) แอปพวกนี้ส่งคนไปที่ Keycloak เพื่อ sign in แล้วได้ token กลับมา ส่วน orders-api เช็ก signature แบบ RS256 ของ access token แต่ละตัวกับ public key ของ realm ทำให้มันไม่เคยเห็น password เลย ลูกค้ายัง sign in ด้วย Google ได้ด้วย (identity brokering) ส่วน account ของพนักงานยังอยู่ใน Active Directory โดยที่ Keycloak อ่านผ่าน LDAP (user federation)"
+    },
+    {
+      "title": "Sign in ด้วย PKCE",
+      "body": "ลูกค้ากด **Sign in** บน shop.example แล้ว shop-web ก็ส่ง browser ไปที่ endpoint `/auth` ของ realm พร้อม `code_challenge` ที่เป็น hash แบบ S256 ของ `code_verifier` ที่สุ่มขึ้นมา ตอนนี้ยังไม่มี SSO cookie ตัว **browser flow** ของ realm เลยถาม password แล้วตามด้วย OTP 6 หลัก (ถ้าใช้ passkey ก็แทนได้ทั้งสองอย่าง) สร้าง **SSO session** เก็บมันลง database แล้ว redirect กลับพร้อม code ที่ใช้ได้ครั้งเดียว จากนั้น shop-web ก็ post code กับ `code_verifier` ไปที่ `/token` แล้วได้ ID token, access token (RS256, 5 นาที) และ refresh token (30 นาที) กลับมา"
+    },
+    {
+      "title": "Token และ single sign-on",
+      "body": "orders-api ดึง JWKS ของ realm มาครั้งเดียวแล้ว cache ไว้ ทำให้มันเช็ก access token แต่ละตัวได้เอง: signature, `iss`, `aud` (audience mapper เติม orders-api เข้าไป), `exp` และ realm role **customer** ใน `realm_access.roles` ก่อน 5 นาทีจะหมด shop-web ก็ refresh ทำให้ idle timer 30 นาทีของ session เริ่มนับใหม่ด้วย ส่วนพนักงานที่ sign in เข้า wiki ไว้ก่อนแล้ว เปิด back-office: ขั้น **Cookie** เจอ SSO session ของเขา Keycloak เลยคืน code มาให้โดยไม่ต้องมีหน้า login แล้ว back-office ก็เอา code ไปแลกที่ `/token` ด้วย client secret ของตัวเอง"
+    },
+    {
+      "title": "การเพิกถอนและข้อจำกัด",
+      "body": "ฝ่าย support ปิด **Enabled** ของลูกค้าคนนี้ การ refresh ครั้งถัดไปล้มเหลวด้วย `400 invalid_grant` แต่ orders-api ยังรับ access token ที่ถืออยู่แล้วต่อไปจนถึง `exp` คืออีกได้ถึง 5 นาที นี่คือเหตุผลที่ access token มีอายุสั้น ส่วน token introspection จะเห็นการเปลี่ยนแปลงทันที แต่ต้องแลกด้วยการเรียก Keycloak หนึ่งครั้งต่อ request อีกอย่าง Keycloak ก็เป็น service แบบ stateful ที่ต้องรันเอง: PostgreSQL เก็บ realm, user และ session ตัว node ต่าง ๆ ใช้ Infinispan cache แบบ embedded ร่วมกัน setup แบบ multi-cluster ต้องใช้ database ที่ replicate แบบ synchronous และการ upgrade กับ theme ก็เป็นงานของคุณ ส่วน managed service อย่าง Amazon Cognito, Auth0 และ Microsoft Entra ID รับงานพวกนี้ไปแทน โดยแลกกับการที่คุณคุมได้น้อยลง"
+    }
+  ]
+}

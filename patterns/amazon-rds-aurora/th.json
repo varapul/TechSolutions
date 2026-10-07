@@ -1,0 +1,21 @@
+{
+  "summary": "relational database แบบ managed: backup, Multi-AZ failover และ read replica รวมถึง storage ของ Aurora ที่ใช้ร่วมกันข้ามสาม zone",
+  "steps": [
+    {
+      "title": "RDS กับ Aurora อยู่ตรงไหน",
+      "body": "database ของ order ของ Acme Shop ย้ายมาที่ AWS และ diagram ก็วางสองวิธีแบบ managed ที่ใช้รันมันไว้เทียบกัน ทั้งสองแบบอยู่ใน private subnet ของ VPC ของร้าน หลัง DNS endpoint ที่ port 5432: **Orders** และ job **reports** ที่รันทุกคืนต่อเข้าไปตรง ๆ ส่วน Lambda function **pay-webhook** ที่ traffic มาเป็นระลอกจะผ่าน **RDS Proxy** แล้ว proxy ตัวนี้ก็ทำให้ invocation จำนวนมากใช้ pool ของ database connection ร่วมกันได้ ตัวเลือก A คือ **Amazon RDS for PostgreSQL** ที่มี Multi-AZ standby และ read replica ส่วนตัวเลือก B คือ cluster **Amazon Aurora PostgreSQL** ที่มี writer หนึ่งตัวและ reader สองตัวบน volume เดียวที่ใช้ร่วมกัน และในทั้งสองแบบ AWS เป็นคนจัดเตรียม host, patch operating system และ engine, ทำ backup และจัดการ failover ให้"
+    },
+    {
+      "title": "RDS Multi-AZ",
+      "body": "Orders รัน `INSERT o-981`: primary ใน AZ a เขียนมันลง volume ของตัวเอง และเขียนแบบ synchronous ลง volume ของ standby ใน AZ b ด้วย แล้ว COMMIT ถึงจะ return ทำให้ failover ไม่ทำ transaction ที่ commit แล้วหาย (ตัว standby ไม่รับ read) ส่วน read replica ได้การเปลี่ยนแปลงแบบ asynchronous ทำให้ report ที่อ่านจากมันเร็วไปนิดเดียวยังเห็นแค่ `o-980` ระหว่างนั้น automated backup (snapshot รายวัน บวก transaction log ที่ copy ไป S3 ทุก 5 นาที เก็บไว้ 7 วันในตัวอย่างนี้ และได้นานสุด 35 วัน) ใช้ restore database กลับไปที่วินาทีไหนก็ได้ จนถึงประมาณ 5 นาทีที่แล้ว เมื่อ primary ล่ม RDS จะ promote standby และชี้ DNS name ของ endpoint ไปที่มัน ปกติภายใน 60–120 วินาที แล้ว client ก็ reconnect ไปที่ชื่อเดิม"
+    },
+    {
+      "title": "Storage ที่แชร์กันของ Aurora",
+      "body": "Aurora ส่ง `INSERT o-981` ตัวเดียวกันไปที่ cluster volume เป็น log record และไม่เคยส่งเป็น page: volume เก็บแต่ละ segment ไว้หก copy โดยมี AZ ละสอง copy ในสาม AZ และนับว่าการเขียน durable แล้วเมื่อมีสี่ copy ได้รับมัน (ตาม design ใน paper ของ SIGMOD ปี 2017) ตัว reader ใช้ volume เดียวกัน ทำให้ report ที่อ่านผ่าน reader endpoint เห็น `o-981` แล้ว ส่วน AWS ระบุว่า reader lag ปกติต่ำกว่า 100 ms อยู่มาก เมื่อ writer ล่ม Aurora จะ promote reader ตัวหนึ่งและย้าย cluster endpoint ไปที่มัน ปกติภายใน 60 วินาที และบ่อยครั้งภายใน 30 วินาที โดยไม่มีข้อมูลต้อง copy และ volume ก็โตเองได้ถึง 128 TiB (256 TiB บน engine version ใหม่ ๆ)"
+    },
+    {
+      "title": "เลือกตัวไหน และข้อจำกัด",
+      "body": "Aurora failover เร็วกว่า และ reader ของมันใช้ volume ร่วมกัน ทำให้ lag น้อยกว่าและใช้เป็นเป้าของ failover ได้ด้วย ส่วน RDS for PostgreSQL ง่ายกว่าและถูกกว่าเมื่อคิดต่อ instance-hour (us-east-1, ตุลาคม 2026: db.r7g.large ราคา $0.239 ต่อชั่วโมง หรือ $0.478 ถ้าเป็น Multi-AZ เทียบกับ $0.276 ต่อ instance ของ Aurora บวกค่า I/O หรือ $0.359 ถ้าใช้ I/O-Optimized ที่ไม่มีค่า I/O) ทั้งสองตัวรันได้แค่ engine version ที่ AWS มีให้ ไม่ให้เข้าถึง operating system, รับ setting ผ่าน parameter group และคิดค่า backup storage ส่วนที่เกินโควตาฟรี ถ้าโหลดกระชาก **Aurora Serverless v2** จะปรับขนาด instance เป็นหน่วย ACU (0–256 บน version ใหม่ ๆ) และ pause ที่ 0 ได้ ส่วนถ้าต้องการ write แบบ active-active ข้าม Region ตัว **Aurora DSQL** เป็นอีก service หนึ่งแยกต่างหาก แบบ distributed ที่ compatible กับ PostgreSQL"
+    }
+  ]
+}

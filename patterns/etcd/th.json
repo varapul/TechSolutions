@@ -1,0 +1,21 @@
+{
+  "summary": "key-value store บน Raft ที่ consistent แบบเข้มงวด ให้ cluster ต่าง ๆ ใช้เก็บ configuration, ทำ service discovery, lock และ leader election",
+  "steps": [
+    {
+      "title": "etcd อยู่ตรงไหน",
+      "body": "Kubernetes control plane ของ Acme Shop เก็บ state ทั้งหมดของมันไว้ใน **etcd** cluster ที่มีสาม member คือ **etcd-1**, **etcd-2** และ **etcd-3** อยู่ Availability Zone ละตัว ทุก object ที่ API server เก็บ (Deployment ของ catalog, Pod ของมัน และ Lease ของ scheduler) เป็น key หนึ่งตัวใต้ `/registry/` และมีแค่ **kube-apiserver** ที่คุยกับ etcd: ทั้ง controller manager, scheduler, kubelet และ `kubectl` ต้องผ่าน API server หมด สาม member ยังทำงานต่อได้ถ้าล่มไปหนึ่งตัว และเอกสารของ Kubernetes แนะนำให้ใช้ห้าตัวใน production ส่วนระบบอื่นที่ใช้ etcd เก็บ configuration, ทำ service discovery และ lock เช่น Patroni, CoreDNS และ Apache APISIX ก็ควรมี cluster ของตัวเองแยกไป"
+    },
+    {
+      "title": "การเขียนผ่าน Raft",
+      "body": "`kubectl apply` เปลี่ยน Deployment ของ catalog ไปใช้ image `catalog:1.4.3` แล้ว API server ก็เขียน `/registry/deployments/default/catalog` ใน **transaction**: ใส่ค่าใหม่ก็ต่อเมื่อ `mod_revision` ของ key ยังเป็น 41250 อยู่ ตัว Raft leader **etcd-1** ต่อ request นี้ท้าย log ของมันเป็น entry **52340 ใน term 7** เขียนลง disk แล้วส่งไปให้ etcd-2 กับ etcd-3 พอ member **2 ใน 3** ตัวมี entry นี้บน disk แล้ว entry ก็ถือว่า committed: etcd-1 apply มันลง key-value store เป็น **revision 41872** แล้วตอบกลับ ส่วน follower จะ apply ตอนที่ message ถัดไปของ leader ส่ง commit index ใหม่มาด้วย การอ่านเป็นแบบ linearizable โดย default: leader ต้องเช็กกับเสียงข้างมากก่อนว่าตัวเองยังเป็น leader อยู่ (ReadIndex ของ Raft) ส่วนการอ่านแบบ serializable ข้ามรอบนี้ไป เลยอาจได้ข้อมูลเก่า"
+    },
+    {
+      "title": "Watch และ lease",
+      "body": "ไม่มีใคร poll เลย ตัว API server ถือ **watch** บน prefix `/registry/deployments/` ที่เปิดไว้ตั้งแต่ revision หนึ่ง ทำให้ etcd stream การเปลี่ยนแปลงที่ revision 41872 ออกมาเป็น event แล้ว watch cache ของ API server ก็ส่งต่อให้ **controller manager** ตรงนั้น Deployment controller ก็เริ่มสร้าง ReplicaSet ใหม่ ส่วน scheduler เลือก leader กันด้วย object **Lease** ของ Kubernetes ที่ API server เก็บเป็น key ธรรมดาตัวหนึ่ง แล้ว scheduler-a ก็หยุด renew มัน พอผ่านไป 15 s (`leaseDurationSeconds`) นับจากการ renew ครั้งล่าสุดที่ scheduler-b เห็น scheduler-b ก็อัปเดต Lease ตัว API server ส่งการอัปเดตนี้เป็น Txn ที่สำเร็จก็ต่อเมื่อ `mod_revision` ยังเป็น 41880 อยู่ แล้วมันก็ commit เป็น revision 41903 ตามหลังการเขียนอื่น ๆ เช่น heartbeat ของ node ส่วนโปรแกรมที่ใช้ etcd ตรง ๆ จะผูก key แบบนี้กับ **lease** ของ etcd ที่มี TTL แทน: etcd ลบ key ทิ้งเมื่อ keepalive หยุด แล้ว Txn แบบ create-if-absent ของ candidate ตัวถัดไปก็ชนะ"
+    },
+    {
+      "title": "เมื่อพัง และข้อจำกัด",
+      "body": "**etcd-1** พัง แล้ว follower ก็ไม่ได้รับ heartbeat ของมันอีก (default ส่งทุก 100 ms) แล้วพอ election timeout ของ **etcd-2** (default 1,000 ms สุ่มได้ถึงสองเท่า) หมด มันก็เริ่ม **term 8** ได้โหวตจาก etcd-3 แล้วขึ้นเป็น leader มันต่อ entry ว่างหนึ่งตัวสำหรับ term ของตัวเอง ตัว etcd client ของ API server ก็สลับไปใช้ member ที่ยังทำงานอยู่ แล้วการเขียนก็ commit ด้วย **2 ใน 3** ถ้าเสีย member ตัวที่สองไปอีกก็จะไม่มีเสียงข้างมาก การเขียนเลยหยุดจนกว่าจะมีตัวหนึ่งกลับมา ข้อจำกัดคือ store มีขนาดเล็ก (quota default 2 GiB และแนะนำให้ไม่เกิน 8 GiB) request หนึ่งใหญ่ได้ไม่เกิน 1.5 MiB การเขียนทุกครั้งต้องรอ fsync ของ disk ต้อง compact revision เก่าและ defragment database และจำนวน member ควรเป็นเลขคี่ คือ 3 หรือ 5"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "sign-up และ sign-in สำหรับ user ของแอป: user pool ออก token แบบ OpenID Connect ส่วน identity pool เอา token นั้นไปแลกเป็น AWS credential",
+  "steps": [
+    {
+      "title": "Cognito อยู่ตรงไหน",
+      "body": "ลูกค้าของ Acme Shop sign up และ sign in ผ่าน user pool **acme-customers** (us-east-1, แผน Essentials): หน้า managed login บน `auth.shop.example`, ใช้อีเมลเป็น username, บังคับ MFA, **Sign in with Google** และ Lambda trigger ที่คัดกรองการ sign-up และเพิ่ม claim ลงใน token ตัว single-page app **shop-web** ได้รับ token แบบ OpenID Connect แล้ว API Gateway ก็ตรวจ access token ก่อนที่ orders API จะทำงาน (AppSync และ Application Load Balancer ก็ใช้กับ user pool ได้) ส่วน identity pool **acme-shop** ที่ไม่มีค่าใช้จ่าย เอา ID token ไปแลกเป็น AWS credential แบบชั่วคราว ทำให้ browser อัปโหลดรูปตรงไปที่ S3 ได้เลย"
+    },
+    {
+      "title": "Sign in ด้วย managed login",
+      "body": "shop-web เก็บ `code_verifier` แบบสุ่มไว้ แล้วส่ง Ana ไปที่ `/oauth2/authorize` พร้อม SHA-256 hash ของมัน (`S256` คือ PKCE method เดียวที่ Cognito รับ) บนหน้า managed login เธอใส่อีเมล, password และ TOTP code (passkey ที่มี user verification หรือ Continue with Google ก็ใช้ได้เหมือนกัน) แล้ว trigger **pre token generation** บน event version `V2_0` ก็เพิ่ม claim `tier: gold` ลงใน token ของเธอ จากนั้น Cognito ก็ redirect กลับมาพร้อม authorization code แล้ว shop-web ก็เอา code นั้นพร้อม verifier ไปแลกที่ `/oauth2/token` เป็น ID token กับ access token (ค่า default อายุ 1 ชั่วโมงทั้งคู่) และ refresh token (ค่า default 30 วัน)"
+    },
+    {
+      "title": "ใช้ token",
+      "body": "shop-web เรียก `GET /orders` พร้อม access token ตัว authorizer **COGNITO_USER_POOLS** ของ REST API รับเฉพาะ token ที่ยังไม่หมดอายุและ pool เป็นคน sign (public key ของ pool อยู่ใน JWKS ของมัน) และเพราะ method นี้ประกาศ scope `orders/read` ไว้ มันเลยรับเฉพาะ access token ที่มี scope นี้ อย่างอื่นจะได้ 401 ส่วน claim ต่าง ๆ รวมถึง `tier` ก็ส่งไปถึง backend ตอนอัปโหลด ตัว identity pool รับ ID token: `GetId` คืน identity ID ของ Ana คือ `us-east-1:9f3c…` แล้ว `GetCredentialsForIdentity` ก็ให้ STS ออก credential อายุหนึ่งชั่วโมงสำหรับ role **photo-uploader** จากนั้น browser ก็ sign `PutObject` ใต้ `photos-prod/u/us-east-1:9f3c…/` ที่เป็น prefix เดียวที่ role ยอมให้เธอใช้"
+    },
+    {
+      "title": "ข้อจำกัดและ lock-in",
+      "body": "การ revoke refresh token ของ Ana (`RevokeToken` หรือ `/oauth2/revoke`) ทำให้ refresh ต่อไม่ได้ และทำให้ API ของ Cognito เองปฏิเสธ access token ที่ออกจาก refresh token นั้น แต่ API ที่ verify JWT เองจะยังรับ token พวกนั้นจนกว่าจะหมดอายุ อัตรา request เป็น quota แยกตาม category ที่ทุก user pool ใน account และ Region เดียวกันใช้ร่วมกัน (ตุลาคม 2026: `UserAuthentication` 120 ต่อวินาที, `UserCreation` 50, `UserFederation` 25) และบิลคิดต่อ monthly active user ตามแผน (US East: Lite $0.0055 ลดลงเหลือ $0.0025 และ Essentials $0.015 ทั้งคู่หลังฟรี 10,000 ราย ส่วน Plus $0.02) ตัว managed login ปรับโลโก้ สี และ layout ได้ แต่ใส่ข้อความของเราเองไม่ได้ ไม่มี API ไหนคืน password hash (การย้าย user เข้ามาง่ายกว่า ด้วย migrate user trigger หรือ CSV import) และ pool อยู่ใน Region เดียว โดยมี replica แบบจำกัดได้หนึ่งตัวถ้าเพิ่ม multi-Region replication ส่วนทางเลือกที่ใช้กันบ่อยคือ Keycloak (self-hosted), Auth0 และ Microsoft Entra External ID"
+    }
+  ]
+}
