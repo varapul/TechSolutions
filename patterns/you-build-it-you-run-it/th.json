@@ -1,0 +1,21 @@
+{
+  "summary": "ทีมที่สร้าง service คือทีมที่ดูแลมันใน production และอยู่ on-call เอง ทำให้คนที่แก้ปัญหาได้รู้เรื่องก่อนใคร",
+  "steps": [
+    {
+      "title": "โยนข้ามกำแพง",
+      "body": "developer ฝั่ง payments ของ Acme ส่งทุก release ไปให้ **operations team** ส่วนกลาง ตัว release 2.8.0 มี memory leak ทำให้ pod โดน OOMKilled ทุกคืน แล้ว payment ก็ล้มเหลว ทีม operations restart pod ด้วยมือตอน 02:10 แล้วเปิด ticket OPS-4127 ส่วน developer มาเห็น ticket นี้ครั้งแรกสี่วันต่อมา จากนั้นมันก็เด้งไปเด้งมาอยู่สามสัปดาห์ คนที่แก้ leak ได้ไม่เคยโดน page เลย ส่วนคนที่โดน page ทุกคืนก็แก้โค้ดไม่ได้"
+    },
+    {
+      "title": "ทีมรับ pager ไปเอง",
+      "body": "ตอนนี้ **payments team** (engineer 7 คน) เป็นเจ้าของ service ใน production: ทั้ง pipeline, dashboard, alert rule, runbook และ on-call rotation ทั้งหมดสร้างอยู่บน shared tooling ของ platform team ตอน 02:10 alert ก็ page หา Mia ที่เป็น on-call engineer ของ payments แล้ว dashboard ของทีมเองก็แสดงว่า memory ไต่ขึ้นมาตั้งแต่ deploy 2.8.0 เธอเลย rollback กลับไป 2.7.4 ตอน 02:21 แล้วเช้าวันต่อมาทีมก็แก้ leak และ ship 2.8.1 เพราะ page ครั้งต่อไปจะไปปลุกหนึ่งในพวกเขาเอง"
+    },
+    {
+      "title": "ทำ on-call ให้ยั่งยืน",
+      "body": "engineer 7 คนของ payments ผลัดกันรับ primary shift รายสัปดาห์ และแชร์ secondary กับ engineer 7 คนของ checkout แต่ละคนเลยอยู่ on-call ราว 21% ของสัปดาห์ทั้งหมด ต่ำกว่าเพดาน 25% ใน *SRE book* ของ Google หนังสือเล่มนี้ตั้งขนาด rotation แบบ primary และ secondary ในไซต์เดียวไว้ที่ engineer แปดคนขึ้นไป ทีมคุม page ให้อยู่ใต้เพดานของหนังสือ คือสอง incident ต่อ shift 12 ชั่วโมง ผ่าน **production readiness review** ก่อน go-live ตั้งให้ page ตาม SLO และกันเวลา 20% ของทุก sprint (ตัวเลขของ Acme เอง) ไว้แก้สิ่งที่ page เผยให้เห็น ส่วน platform team ก็ดูแลให้ pipeline, observability, runbook template และ on-call tooling ใช้ง่าย"
+    },
+    {
+      "title": "ข้อจำกัดและกับดัก",
+      "body": "ทีม 3 คนจะต้องอยู่ on-call ทุก ๆ สามสัปดาห์ ทีมเล็กเลยรวม rotation กับทีมอื่น ถ้ามี regulation ที่ต้องการ separation of duties ตัว approver คนที่สองและ audit log ใน pipeline ก็ตอบโจทย์ได้โดยไม่ต้องส่งงานต่อให้ทีมอื่น ส่วน shared infrastructure และงานที่ต้องใช้ความเชี่ยวชาญลึก ๆ อย่าง cluster และ database ก็ยังมีทีมผู้เชี่ยวชาญของตัวเอง และถ้า on-call มี alert ที่ noisy และไม่มีเวลาแก้อะไรเลย คนก็จะ burn out: ในที่นี้มี 5 page ต่อ shift เกินเพดานไปไกล"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "ควรวัดและ alert อะไร: latency, traffic, errors และ saturation ส่วน RED ใช้กับ service ที่ขับด้วย request และ USE ใช้กับ resource",
+  "steps": [
+    {
+      "title": "Alert ที่ดูแต่ต้นเหตุ",
+      "body": "search service ของ Acme (คือช่อง search บนทุกหน้า catalog โดยตอน peak มี 1,200 request ต่อวินาที) มี alert rule ราว 140 ตัว ทั้งหมดดูที่ **ต้นเหตุ (cause)**: CPU เกิน 80%, disk, GC pause และ pod restart แล้ว rule พวกนี้ก็ page หาใครสักคนทุกคืน ขณะที่ลูกค้าไม่รู้สึกอะไรเลย (CPU 85% บน pod 3 ไม่ได้ทำร้ายใคร) ตัว on-call engineer เลย ack ทุก page แล้วเลิกอ่าน วันเสาร์ search ช้าลงจน p99 อยู่ที่ 2.4 s นาน 40 นาที แต่ไม่มี rule ไหนดังเลย เพราะไม่มีตัวไหนดูสิ่งที่ผู้ใช้รู้สึก"
+    },
+    {
+      "title": "Golden signal ทั้งสี่",
+      "body": "หนังสือ SRE ของ Google (บทที่ 6 *Monitoring Distributed Systems*) ระบุ signal สี่ตัวที่ต้องดูในทุกระบบที่ผู้ใช้เจอโดยตรง แล้วทีมก็สร้าง dashboard ของ search ใหม่รอบ signal สี่ตัวนี้ ตอน peak วันเสาร์ถัดมา ค่าที่อ่านได้คือ **latency** p50 140 ms และ p99 850 ms สำหรับ request ที่สำเร็จ (request ที่ fail จับเวลาแยกไว้ ทำให้ error ที่เร็วบัง service ที่ช้าไม่ได้), **traffic** 1,200 request ต่อวินาที, **errors** 0.4% (HTTP 5xx *และ* คำตอบที่ผิด เช่น ผลลัพธ์ว่างจาก index ที่พัง) และ **saturation** 92%: connection 46 จาก 50 ตัวใน database pool กำลังถูกใช้ เกิน target 80%"
+    },
+    {
+      "title": "ใช้ RED และ USE จริง",
+      "body": "ทุก service ที่ขับด้วย request ได้ view แบบ **RED** (rate, errors และ duration ต่อ endpoint: method ของ Tom Wilkie) และทุก resource ได้ view แบบ **USE** (utilisation, saturation และ errors: method ของ Brendan Gregg) ตัว page ดังตามอาการ คือ p99 ของ search เกิน 800 ms นาน 10 นาที (พอ search มี SLO แล้ว burn-rate alert แบบใน [SLOs & Error Budgets](../slo-error-budgets/) ก็แทน threshold ตายตัวได้) แล้ว on-call engineer ก็ไล่จากแถว RED (search ช้า) ไปแถว USE (DB pool ไม่ว่าง 92% และมี 12 request รอ connection) ไปจนถึงต้นเหตุ: ตั้งแต่ deploy เมื่อวันศุกร์ ตัว price query ใช้เวลา 38 ms แทนที่จะเป็น 30 ทำให้เขา rollback กลับ"
+    },
+    {
+      "title": "กับดักที่เจอบ่อย",
+      "body": "**ค่าเฉลี่ยบัง tail**: ค่า mean 190 ms ดูปกติดี ขณะที่ search 1 ใน 100 ครั้งใช้เวลาเกิน 850 ms เลยต้องอ่าน percentile จาก histogram ส่วน **error อาจกลับมาเป็น HTTP 200**: ถ้านับแค่ 5xx จะเห็น 0.3% และพลาดผลลัพธ์ว่างจาก index shard ที่พัง **saturation ต้องรู้ limit** (connection ที่ไม่ว่าง 46 ตัวไม่มีความหมายถ้าไม่รู้ว่ามี 50) และ **dashboard ที่มี 60 กราฟ** ก็กลบ signal ทั้งสี่ไว้ **ทุก page ต้อง actionable**: CPU 85% ควรอยู่บน dashboard, disk ที่จะเต็มใน 9 วันเป็น ticket และมีแค่อาการที่ต้องให้คนจัดการตอนนี้เท่านั้นที่ page"
+    }
+  ]
+}

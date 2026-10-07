@@ -1,0 +1,21 @@
+{
+  "summary": "วิธีรับมือที่ซ้อมไว้แล้วสำหรับตอน production พัง: ประกาศ incident ให้เร็ว แบ่งบทบาท mitigate ก่อน และให้ทุกคนรู้ความคืบหน้าตลอด",
+  "steps": [
+    {
+      "title": "ถ้าไม่มี process",
+      "body": "ลองนึกภาพวันเสาร์ที่ 3 ตุลาคม 2026 ที่ Acme Shop แบบไม่มี process ตัว checkout `1.43.0` roll out ตอน 20:05 แล้วตั้งแต่ราว 20:09 request ของ checkout ก็เริ่ม fail: คนเก้าคน debug พร้อมกันใน channel `#checkout` ที่ใช้ร่วมกัน สองคนในนั้น restart pod ของ checkout ในนาทีเดียวกัน ไม่มีใครบอก support หรือลูกค้า ส่วน manager ก็ถามหาความคืบหน้าไม่หยุด และไม่มีใครรู้ว่าใครเป็นคนตัดสินใจ"
+    },
+    {
+      "title": "ประกาศ incident แล้วจัดทีม",
+      "body": "สิ่งที่เกิดขึ้นจริงคือ ตอน 20:14 alert ตาม burn rate ของ SLO ก็ page หา Mai วิศวกร on-call ของ checkout โดยตอนนั้น error อยู่ที่ 12% เทียบกับเป้า 99.9% พอตอน 20:17 Mai ก็กด acknowledge แล้ว **ประกาศ SEV-2** ใน `#inc-checkout-1003` และรับบท **incident commander**: Tom เป็น operations lead, Ploy (หัวหน้าทีม support) เป็น communications lead และมี scribe คอยจด timeline ไว้ใน incident document ตัว commander ประสานงานและตัดสินใจ แต่ปล่อยงาน debug ให้คนอื่น"
+    },
+    {
+      "title": "Mitigate ก่อน",
+      "body": "Mai ถามว่าอะไรเปลี่ยนไป: checkout `1.43.0` ที่ออกไปตอน 20:05 จากนั้น Tom ก็ rollback กลับไป `1.42.0` ตอน 20:24 และเพราะ payment provider ก็ช้าด้วย Tom เลยเปิด flag `payments.fallback` ที่มีอยู่แล้วตอน 20:31 เพื่อส่ง payment ไปที่ provider ตัวที่สอง ตอน 20:36 error ลดลงเหลือ 0.3% คือ **mitigate ได้แล้ว** ใน 22 นาทีหลัง page ส่วน Ploy ก็ update status page, ทีม support และ manager ทุก 30 นาที (จังหวะที่ Acme เลือกเอง) แล้ว root cause ก็รอไปก่อนจนกว่า incident จะจบ"
+    },
+    {
+      "title": "Resolve แล้วส่งต่องาน",
+      "body": "ฝั่ง provider กลับมาปกติตอน 21:10 แล้วตอน 21:30 Mai ก็ resolve incident (checkout ที่ fail ราว 1,240 ครั้ง และลูกค้าลองใหม่ได้) พร้อม handoff note ใน incident document และนัด blameless postmortem ไว้ กับดักที่เจอกันประจำ: ฮีโร่ที่แก้คนเดียว commander ที่ลง debug เอง severity ที่เอามาเถียงกันแทนที่จะประกาศไปเลย (ประกาศสูงไว้ก่อน แล้วค่อยลดทีหลัง) และการใช้ mean time to recover เป็นเป้า"
+    }
+  ]
+}

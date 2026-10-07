@@ -1,0 +1,21 @@
+{
+  "summary": "ทุกคน merge การเปลี่ยนแปลงเล็ก ๆ เข้า main branch เดียวกันอย่างน้อยวันละครั้ง แล้วใช้ feature flag ซ่อนงานที่ยังไม่เสร็จแทนการแยก branch ยาว ๆ",
+  "steps": [
+    {
+      "title": "ค้างอยู่บน branch สามสัปดาห์",
+      "body": "ทีม catalog เคยใช้ GitFlow: search filter ตัวใหม่อยู่บน `feature/search-filters` นานสามสัปดาห์ ระหว่างนั้น `feature/sort-options` ก็แก้โค้ด query ชุดเดียวกัน และ `develop` ก็เดินหน้าไปเรื่อย ๆ แต่ละ branch build ผ่านเป็นสีเขียวตอนอยู่แยกกัน แต่ตอน merge ต้องแตะ 214 ไฟล์และใช้เวลาแก้ conflict สองวัน ส่วน bug ที่โผล่เฉพาะตอนสอง feature ทำงานด้วยกันก็ไปโผล่ที่ staging ในสัปดาห์ release จากนั้น release branch ก็ยังต้อง merge อีกสองรอบ คือเข้า `main` และกลับเข้า `develop`"
+    },
+    {
+      "title": "Merge กลับในวันเดียวกัน",
+      "body": "ตอนนี้ทุกการเปลี่ยนแปลงเริ่มจาก `main` และกลับเข้ามาภายในวันเดียวกัน Mai แตก branch ตอน 09:10 เพื่อทำ filter ชิ้นถัดไป แล้วเปิด pull request #1287 ตอน 10:00 ที่เปลี่ยนไป 98 บรรทัด ตัว CI ผ่านใน 8 นาที จากนั้น Ben approve ตอน 10:40 แล้วก็ merge ตอน 10:50 และลบ branch ทิ้ง ตัว filter ยังไม่เสร็จ โค้ดใหม่เลยอยู่หลัง flag `filters.v2` ที่ยัง off อยู่ใน production: build สีเขียวตัวนี้ deploy ตอน 11:00 และลูกค้าก็ยังได้ filter แบบเดิม (ดู [Feature Flags](../feature-flags/))"
+    },
+    {
+      "title": "วันเดียว merge เก้าครั้ง",
+      "body": "พอถึง 18:00 developer หกคนก็ merge pull request ไปแล้วเก้าตัว แต่ละตัวตามด้วย build 8 นาทีบน `main` ที่ผ่านเป็นสีเขียว และ catalog service ก็ deploy ครบทุกตัว โดยงานที่ยังไม่เสร็จซ่อนอยู่หลัง flag ส่วน refactor ก้อนใหญ่ของ Kai ก็เข้าไปเป็น merge เล็ก ๆ สามครั้งด้วย [Branch by Abstraction](../branch-by-abstraction/) ทีมที่ ship ตามรอบเวลาอย่าง mobile app จะตัด release branch จาก `main` แทน แล้ว cherry-pick fix ที่แก้บน `main` มาก่อนแล้ว และพอ build บน `main` กลายเป็นสีแดง ทีมก็แก้หรือ revert การเปลี่ยนแปลงนั้นทันที"
+    },
+    {
+      "title": "ข้อจำกัดและกับดัก",
+      "body": "Trunk-based development พึ่ง CI ที่เร็วและเชื่อถือได้ กับ automated test ที่ดี: ถ้า build ใช้เวลา 45 นาที หรือพังแบบสุ่ม คนก็จะเก็บการเปลี่ยนแปลงไว้รวมเป็นก้อนใหญ่ และ `main` ก็แดงค้างอยู่อย่างนั้น ส่วน flag ที่ทิ้งไว้ในโค้ดหลัง release ไปแล้ว (`sort.v2`, `promo.bf`) จะกลายเป็นหนี้ เลยต้องลบทิ้ง และ pull request ที่รอ review สามวันอย่าง #1312 ก็ดันให้คนกลับไปทำ branch ใหญ่ ๆ อีก ส่วนโปรเจกต์ open-source ที่มีคนนอกมา contribute จะทำงานผ่าน fork และ pull request ที่ maintainer เป็นคน review ซึ่งเป็นบริบทที่ต่างจากทีมเดียวที่ใช้ repository ร่วมกัน"
+    }
+  ]
+}

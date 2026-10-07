@@ -1,0 +1,21 @@
+{
+  "summary": "ทำให้ทุก change พร้อม release เสมอ: deployment pipeline จะ build ครั้งเดียว test ทีละ stage แล้ว promote artifact ตัวเดิมไปถึง production",
+  "steps": [
+    {
+      "title": "Release ที่ทุกคนกลัว",
+      "body": "ก่อนหน้านี้: ทีม checkout ตัด release branch ทุกสี่สัปดาห์ แล้ว ship ราว 140 commit ออกไปในรอบเดียว แต่ละ environment ทั้ง test, staging และ production ได้ build ของตัวเอง ทำให้ staging ไม่เคย test binary ตัวที่รันอยู่ใน production และ runbook 40 ขั้นก็ต้องไล่ทำด้วยมือในคืนวันเสาร์ ส่วน hotfix ก็ข้าม test แล้วลง production ตรง ๆ เลย"
+    },
+    {
+      "title": "Deployment pipeline",
+      "body": "ทุก commit เข้า `main` จะเริ่ม **deployment pipeline** ขั้นแรกคือ commit stage ที่ compile, รัน unit test กับ static analysis แล้ว build image `checkout:1.42.0` แค่ครั้งเดียว ทำให้ developer ได้ feedback หลังผ่านไป 6 นาที แล้ว registry ก็เก็บ image ไว้ตาม digest ของมัน ส่วน acceptance stage (14 นาที) กับ staging (5 นาที) จะ deploy image ตัวเดียวกันนั้นด้วย script เดียวกัน พอผ่านไป 25 นาทีหลัง commit ก็เอา build ไหนก็ได้ที่เขียวขึ้น production ได้ด้วยการคลิกครั้งเดียว แล้วตามด้วย canary"
+    },
+    {
+      "title": "หยุดไลน์ แล้ว ship ทีละน้อย",
+      "body": "Commit `8d41e0` ไม่ผ่าน acceptance test ตัว `1.43.0` เลยไม่เคยถูก promote และทีมก็ revert มันก่อนจะเริ่มงานอื่น: revert ถูก push 4 นาทีหลังขึ้นสีแดง การ deploy กลายเป็นเรื่องเล็กและเป็นงานประจำ ราววันละหกครั้ง ครั้งละหนึ่งถึงสาม commit (ตัวเลขของ Acme) และ feature ที่ยังไม่เสร็จก็ ship แบบ dark อยู่หลัง feature flag ถ้าเป็น **continuous delivery** คนจะเป็นคนคลิก Deploy ส่วนถ้าเป็น **continuous deployment** ทุก build ที่เขียวจะขึ้น production เองโดยอัตโนมัติ"
+    },
+    {
+      "title": "กับดักและข้อจำกัด",
+      "body": "Pipeline ที่ใช้เวลาเป็นชั่วโมงหรือนานกว่านั้น กับ flaky test ที่สอนให้คนเมินสีแดง จะดันทีมกลับไปทำ batch ใหญ่ ส่วน staging ที่ patch ด้วยมือจะค่อย ๆ เพี้ยนไปจาก production และ schema change ต้องใช้ expand and contract เพื่อให้เวอร์ชันเก่ากับเวอร์ชันใหม่รันคู่กันได้ ทีมที่ต้องทำตามกฎระเบียบก็ยังเก็บ approval ไว้ แต่ทำเป็นขั้นที่บันทึกไว้ใน pipeline แทนการประชุม"
+    }
+  ]
+}
