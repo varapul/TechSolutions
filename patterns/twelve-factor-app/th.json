@@ -1,0 +1,21 @@
+{
+  "summary": "กฎสิบสองข้อสำหรับ app ที่ deploy ได้เรียบร้อยทุกที่: เก็บ config ไว้ใน environment, ใช้ process แบบ stateless และแยก build, release กับ run ออกจากกัน",
+  "steps": [
+    {
+      "title": "Server แบบ pet",
+      "body": "ก่อนย้าย ตัว catalog service ของ Acme รันอยู่บน **catalog-01** server ที่สร้างและ patch ด้วยมือ: password ของ database production อยู่ใน `config/prod.yml` ใน Git, staging กับ production ต่างก็ได้ build ของตัวเอง (#88 และ #91) และ log ก็ลงเป็นไฟล์บน disk ของมันโดยมี cron คอย rotate ส่วน session ของลูกค้า 1,800 คนที่ login อยู่ก็เก็บอยู่ใน memory ของมัน ทำให้ server ตัวที่สองช่วยอะไรไม่ได้: request ที่ไปตกที่ catalog-02 จะหา session ไม่เจอ แล้วลูกค้าก็โดน logout ส่วน migration ก็ต้องรันด้วยมือผ่าน SSH และทางเดียวที่จะ scale ได้คือเปลี่ยนไปใช้ server ที่ใหญ่ขึ้น จาก 8 เป็น 32 vCPU"
+    },
+    {
+      "title": "Code กับ config (I–V)",
+      "body": "Factor I ถึง V แยกโค้ดออกจาก configuration ของมัน ตัว repository เดียว build ได้ image เดียวคือ `catalog:2.3.0` โดยประกาศ dependency ไว้ใน `requirements.txt` และติดตั้งไว้ใน image (I, II) ทุกอย่างที่ต่างกันไปในแต่ละ deploy อย่าง `DATABASE_URL` จะเข้ามาถึง app เป็น environment variable ที่ Kubernetes เติมให้จาก ConfigMap กับ Secret (III) ส่วน PostgreSQL, Redis และ S3 เป็น attached resource ที่ app หาเจอผ่าน URL (IV) แล้ว build, release กับ run ก็เป็น stage ที่แยกกัน: image บวก config ของ environment หนึ่งได้เป็น release ที่มี ID คือ `v41-staging` หรือ `v41-prod` และพอเปลี่ยนอย่างใดอย่างหนึ่งก็จะได้ release ใหม่ แทนที่จะไปแก้ release ตัวนี้ (V)"
+    },
+    {
+      "title": "ตอนรัน (VI–IX)",
+      "body": "Factor VI ถึง IX ทำให้ process ทิ้งได้ (disposable): session ย้ายไปอยู่ใน Redis ทำให้ web pod ตัวไหนก็ serve ลูกค้าคนไหนก็ได้ (VI) ตัว app serve HTTP เองบน port ที่ได้รับมาคือ 8080 โดยอยู่หลัง Service (VII) แล้ว process แต่ละ type ก็ scale แยกกัน โดย web เป็น 6 pod และ worker เป็น 2 pod (VIII) ส่วน pod ก็พร้อมใช้ 2 วินาทีหลัง start และพอได้ SIGTERM ก็ทำ request 3 ตัวที่ค้างอยู่ให้เสร็จก่อนจะ exit (IX) ตอนนี้ Kubernetes เลยเพิ่ม ย้าย และแทนที่ pod ได้ทุกเมื่อที่ต้องการ (ตัวเลขของ Acme เป็นตัวเลขของตัวอย่างนี้เอง)"
+    },
+    {
+      "title": "ตอน operate และข้อจำกัด",
+      "body": "developer รัน PostgreSQL 16 ตัวเดียวกันใน container (X) ทุก pod เขียน log ออก stdout เป็น event stream ที่ log agent ของ platform ส่งต่อไป (XI) และ schema migration ก็รันครั้งเดียวเป็น Kubernetes Job จาก release `v41-prod` ด้วย image และ config ชุดเดียวกัน (XII) ส่วนข้อจำกัด (สีเหลืองอำพัน) คือ factor พวกนี้เขียนไว้ตั้งแต่ปี 2011 สำหรับ web app สไตล์ Heroku, environment variable ไม่ใช่ที่ที่ดีสำหรับเก็บ secret เลยควร mount password มาจาก secrets manager, database เป็นระบบ stateful และอยู่นอก model นี้ และ telemetry กับ security ก็ไม่อยู่ในสิบสองข้อ แล้ว community revision ที่เริ่มตอน Heroku เปิด text เป็น open source ในเดือนพฤศจิกายน 2024 ก็ยังไม่ได้เปลี่ยนเรื่องนี้"
+    }
+  ]
+}

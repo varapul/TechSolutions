@@ -1,0 +1,21 @@
+{
+  "summary": "เอา workload มา review เทียบกับหก pillar ตั้งแต่ operational excellence ไปจนถึง sustainability แล้วตัดสินใจเรื่อง trade-off ระหว่าง pillar เหล่านั้น",
+  "steps": [
+    {
+      "title": "เจอความเสี่ยงแบบไม่ทันตั้งตัว",
+      "body": "checkout ของ Acme Shop รันอยู่บน AWS: Application Load Balancer, service checkout กับ payments บน EKS cluster ที่ใช้ร่วมกัน, SQS, S3 และ database Aurora PostgreSQL ที่มี instance เดียว ไม่มีใครเก็บรายการความเสี่ยงไว้ ความเสี่ยงเลยโผล่ขึ้นมาแบบเจ็บตัว: วันที่ 15 พฤศจิกายน Availability Zone ตัวหนึ่งมีปัญหา ทำให้ checkout ล่มไป 52 นาทีระหว่างที่มีคนสร้าง database instance ใหม่ด้วยมือ เดือนธันวาคม audit เจอ access key อายุสามปีของ administrator คนหนึ่งอยู่บน laptop และบิลเดือนมกราคมก็ขึ้นไป 18% โดยที่ node 40% ว่างอยู่ตอนกลางคืน แต่ละทีมแก้ส่วนของตัวเอง และไม่มีใครถามว่ายังมีอะไรรออยู่อีก"
+    },
+    {
+      "title": "หก pillar หนึ่ง workload",
+      "body": "ในเดือนมีนาคม ทีม checkout, platform team และ AWS solutions architect หนึ่งคนใช้เวลาสองครึ่งวันไล่ตอบคำถามของ framework ทีละ pillar: เป็นการคุยกัน ไม่ใช่การ audit คำตอบไหนที่ขาด best practice ก็ทำให้คำถามข้อนั้นกลายเป็นความเสี่ยง: database instance เดียวใน zone เดียว (**reliability**, REL 10) และ access key อายุยาว (**security**, SEC 2) เป็น high risk ส่วนการไม่มี runbook (**operational excellence**), size ที่เลือกด้วยการเดา (**performance efficiency**), การไม่มี cost tag (**cost optimization**) และ node ที่ใหญ่เกินจำเป็น (**sustainability**) เป็น medium และพอรวมทั้งหมด 57 คำถาม review นี้ก็เจอ high risk 7 ข้อและ medium risk 12 ข้อ"
+    },
+    {
+      "title": "จาก review สู่ milestone",
+      "body": "AWS Well-Architected Tool บันทึกคำตอบและ list ความเสี่ยงออกมาเป็น improvement plan ทีมเริ่มจาก high risk ก่อน ให้แต่ละ item มีเจ้าของและเดือนที่ต้องเสร็จ แล้ว sync item พวกนี้ไปที่ Jira ส่วน lens ก็เพิ่มคำถามสำหรับ workload บางประเภท: Acme เพิ่ม Container Build lens และใน catalog ก็มี lens อย่าง Serverless Applications และ SaaS ด้วย จากนั้น plan ก็ค่อย ๆ เป็นจริงทีละ fix ตั้งแต่ SSO กับ MFA แทน access key ในเดือนเมษายน ไปจนถึง node autoscaling ในเดือนสิงหาคม แล้ว milestone ที่ save ไว้วันที่ 15 กันยายนก็แสดงว่า high risk ลดจาก 7 เหลือ 2 และ medium risk จาก 12 เหลือ 5 (ตัวเลขของตัวอย่างนี้เอง)"
+    },
+    {
+      "title": "Trade-off และข้อจำกัด",
+      "body": "pillar ต่าง ๆ ดึงกันไปคนละทาง: Aurora reader ซื้อ failover ที่ใช้เวลาไม่ถึงหนึ่งนาทีมาด้วยราคา $201 ต่อเดือน (`db.r7g.large` ใน us-east-1) บวกกับ instance ที่รันทั้งวันเพิ่มอีกหนึ่งตัว ทีมเลยตัดสินใจอย่างตั้งใจ เขียนไว้ใน ADR-031 และให้ staging ใช้ instance เดียวต่อไป แนวทางของ AWS คือ security กับ operational excellence โดยทั่วไปจะไม่ถูกเอาไปแลก ขั้น sign-in ของ SSO ที่เพิ่มมาเลยยังอยู่ ส่วนตัว framework เองก็มีข้อจำกัด: มันถามคำถามแต่ไม่ได้ออกแบบระบบให้, best practice ของมันเขียนมาสำหรับ AWS service, review จะกลายเป็นแค่การติ๊ก checkbox ถ้าไม่มีอะไรตามมา และ Azure กับ Google Cloud ก็ publish Well-Architected framework ของตัวเอง ที่มีห้าและหก pillar"
+    }
+  ]
+}

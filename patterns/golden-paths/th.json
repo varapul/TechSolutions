@@ -1,0 +1,21 @@
+{
+  "summary": "เส้นทางที่ปูไว้และมีคนดูแล สำหรับงานที่ทำบ่อย: template ตัวเดียวสร้าง service พร้อม pipeline, infrastructure และ monitoring ของมัน",
+  "steps": [
+    {
+      "title": "40 service, 40 แบบ",
+      "body": "ก่อนมี Launchpad ทั้ง 40 service ของ Acme ถูกสร้างคนละแบบ บน base image ต่างกัน 12 ตัว และมี 7 ตัวที่ไม่มีใครรู้ว่าใครเป็นเจ้าของ ทีม delivery (engineer 8 คน) เริ่ม service ตัวใหม่ชื่อ **returns** ด้วยการก๊อป `carrier-sync` เลยได้ของติดมาสองอย่าง: base image `openjdk:11` ที่ deprecated แล้วและผล scan เจอ critical CVE 3 ตัว กับ Jenkinsfile ที่แก้ด้วยมือ แต่ไม่ได้ dashboard ไม่ได้ alert และไม่มี entry ใน catalog ส่วน ticket ขอ namespace, database และ queue พร้อม Vault secret ก็รออยู่ในคิวของทีมอื่น ทำให้ deploy แรกไปถึง staging หลังผ่านไป 9 วันทำการ และตอนที่ `gift-cards` page มาตอน 02:14 ก็ไม่มีใครบอกได้ว่าใครเป็นเจ้าของ"
+    },
+    {
+      "title": "Golden path ทำงานจริง",
+      "body": "ทีม delivery เปิด **Launchpad** ตัว developer portal ของ Acme ที่สร้างบน Backstage แล้วเลือก template ของ HTTP service และกรอกสี่ช่อง: ชื่อ `returns`, owner `delivery-team`, database PostgreSQL และ SQS queue การรันครั้งเดียวสร้างทั้ง repository (code skeleton, test, Dockerfile บน image `java-base` ที่มีคนดูแล), CI/CD pipeline ที่ใช้ร่วมกัน, Kubernetes deployment, database กับ queue ผ่าน Terraform module ของ platform พร้อม credential จาก Vault, Grafana dashboard กับ alert บน golden signal ที่ route ไปหา on-call ของทีม และ catalog entry ที่ระบุ owner ฟอร์มถูกส่งตอน 10:02 แล้ว build แรกก็เขียวตอน 10:11 ส่วน database พร้อมตอน 10:17 และ deploy แรกไปถึง staging ตอน 10:22: รวม 20 นาที"
+    },
+    {
+      "title": "อัปเดตอยู่เสมอ และไม่บังคับ",
+      "body": "template ถูกก๊อปแค่ครั้งเดียว service ที่อยู่บน path เลยอ้างถึง base image, pipeline, Helm chart และ Terraform module ตาม version และนั่นคือสิ่งที่ทำให้ upgrade พวกมันได้ พอ platform team (engineer 6 คน) ออก template v4 ที่มี base image ใหม่ (`java-base:21-2026.10`) และ OpenTelemetry tracing (chart `acme-service` 4.0) ตัว Renovate ก็เปิด upgrade pull request ใน repository ทั้ง 32 ตัวที่อยู่บน path (PR #31 สำหรับ returns) แล้วทีมเจ้าของก็ merge เมื่อ check ผ่าน: 27 ตัวภายใน 7 วัน ส่วน catalog แสดง owner, docs และ template version ของทุก service และ 8 จาก 40 service อยู่นอก path เช่น `payments-ledger` ที่มีกฎ PCI โดยทีมของ service เหล่านี้เป็นเจ้าของ pipeline และการ upgrade เอง"
+    },
+    {
+      "title": "กับดักและข้อจำกัด",
+      "body": "**Golden cage** ทำให้ path กลายเป็นของบังคับ ทีมที่มีความจำเป็นจริงเลยต้องหาทางอ้อม เช่นรัน `kubectl apply` ด้วยมือ ควรให้ path เป็นทางเลือก และให้ทีมที่ออกไปเป็นเจ้าของงานที่เพิ่มขึ้นเอง ส่วน template ที่ **scaffold ครั้งเดียวแล้วปล่อยให้เน่า** ทำให้ทุก service ค้างอยู่ที่ version ที่เริ่มต้น และ **path ที่มากเกินไป** (14 template สำหรับ journey ไม่กี่แบบเดิม ๆ มีแค่ 3 ตัวที่อัปเดตอยู่) ทำให้ทีมต้องเดาว่าตัวไหนยังมีคน support อยู่ แล้ว path ที่จบแค่ deploy แรกก็ทิ้ง **day two** (upgrade, deprecation, decommissioning) ไว้ให้ทุกทีม และ **การนับจำนวนครั้งที่รัน template** (120 ครั้งในไตรมาสนี้) วัดแค่กิจกรรม ไม่ใช่ผลลัพธ์: ให้ติดตามเวลาจนถึง deploy แรก, incident และ upgrade lag"
+    }
+  ]
+}

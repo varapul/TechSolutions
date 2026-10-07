@@ -1,0 +1,21 @@
+{
+  "summary": "เขียน infrastructure เป็นโค้ดที่อยู่ใน version control: review plan แล้ว apply แบบเดียวกันในทุก environment และจับ drift ได้",
+  "steps": [
+    {
+      "title": "สร้างด้วยมือ",
+      "body": "ก่อนหน้านี้: delivery team คลิกประกอบ database, queue และ bucket ของ returns service ขึ้นมาใน AWS console ทีละ environment ตาม wiki page 31 ขั้นที่แก้ล่าสุดเมื่อ 14 เดือนก่อน ส่วน database ของ staging encrypt ไว้และเก็บ backup 7 วัน แต่ของ production ไม่มีทั้งสองอย่าง แถมยังมี inbound rule ที่เปิด port 5432 ให้ 198.51.100.0/24 โผล่ขึ้นมาโดยไม่มีใครอธิบายได้ ไม่มีอะไรผ่านการ review เลย และถ้าจะ rebuild production ด้วยมือก็ต้องใช้เวลาราว 3 วัน"
+    },
+    {
+      "title": "Declare แล้ว plan",
+      "body": "`returns.tf` declare resource ทั้งสามตัวผ่าน versioned module ของ platform team โดย module พวกนี้ฝัง encryption, backup, deletion protection และ dead-letter queue ไว้ในตัว แล้ว pull request #418 ก็รัน `terraform plan` ใน CI ให้แต่ละ environment: **Plan: 10 to add, 0 to change, 0 to destroy** เพราะ module ยังสร้าง subnet group, security group กับ rule ของมัน, dead-letter queue และ setting ของ bucket ให้ด้วย ส่วน policy rule ทั้ง 12 ข้อก็ผ่านบน plan และ reviewer ก็ approve ทั้งตัว plan และตัวโค้ด"
+    },
+    {
+      "title": "Apply แบบเดียวกันทุกที่",
+      "body": "หลัง merge ตัว pipeline run #57 ก็ apply โค้ดชุดเดียวกันไปที่ staging แล้วต่อด้วย production โดยต่างกันแค่ `.tfvars` (instance class, Multi-AZ, backup 7 หรือ 14 วัน) แต่ละ environment มี state file ของตัวเองใน S3 พร้อม lock และ pipeline ก็ retry เพื่อรอ lock ด้วย `-lock-timeout` ทำให้ run #58 รอจนกว่า #57 จะเสร็จ ส่วนการซ้อมทุกไตรมาสก็ rebuild production ใน us-west-2 จากโค้ดชุดเดียวกันได้ใน 40 นาที แล้ว restore data จาก snapshot copy ตัวล่าสุด (ตัวเลขของ Acme)"
+    },
+    {
+      "title": "Drift และกับดัก",
+      "body": "มีคนเปิด port 5432 ให้ `0.0.0.0/0` ใน console แล้ว `plan -detailed-exitcode` ที่รันทุกคืนก็ exit ด้วย 2 แล้วพอ apply `main` อีกรอบ rule นั้นก็หายไป ส่วน hotfix ที่จำเป็นจริง ๆ ต้องอยู่ในโค้ด ไม่อย่างนั้น apply ครั้งถัดไปจะ undo มัน อ่านทุก plan ให้ดี: การตั้ง `kms_key_id` บังคับให้ database ต้องถูก **replace** แล้ว `prevent_destroy` ก็กันไว้ไม่ให้เกิด เก็บ secret ไว้นอก state หรือไม่ก็ encrypt state และแยก state ก้อนใหญ่ก้อนเดียวออกเป็นหนึ่งก้อนต่อ service และ environment"
+    }
+  ]
+}

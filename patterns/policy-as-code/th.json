@@ -1,0 +1,21 @@
+{
+  "summary": "เขียนกฎเป็นโค้ดแล้วตรวจอัตโนมัติทั้งใน CI และตอน deploy เพื่อให้ guardrail มาแทนด่าน approve ด้วยมือ",
+  "steps": [
+    {
+      "title": "Wiki กับด่านรายสัปดาห์",
+      "body": "ก่อนหน้านี้: กฎของ platform ของ Acme อยู่ในหน้า wiki 20 ข้อ และทุก infrastructure change ต้องรอ change advisory board ประจำสัปดาห์ ที่อ่านแต่ละ request เทียบกับหน้านั้นด้วยตา Change request CR-2207 รอตั้งแต่วันจันทร์ถึงวันพฤหัสแล้วได้ approve ส่วน CR-2211 โดน reject เพราะขาด tag ที่ CR-2207 ก็ขาดเหมือนกัน และไม่มีอะไรตรวจการ deploy เลย Security scan เจอ bucket `returns-exports` ที่เปิด public หลังสร้างไปแล้วสองเดือน และในสายตา engineer ตัว security เป็นเหมือนด่านที่ขวางทาง"
+    },
+    {
+      "title": "กฎเป็นโค้ด ตรวจใน CI",
+      "body": "กฎกลายเป็นโค้ดใน Git repository `acme/policies`: เป็นไฟล์ Rego ที่มี unit test ให้ `opa test` รัน (ผ่าน 18 จาก 18) และเปลี่ยนผ่าน pull request ที่มีคน review เหมือนโค้ดอื่น ๆ Pull request #512 เพิ่ม bucket `returns-label-exports` ที่เปิด public access ไว้ แล้ว CI check ก็รัน Conftest กับ Terraform plan แล้ว fail ใน 40 วินาที พร้อม message ที่บอกชื่อกฎ, resource และวิธีแก้ จากนั้นอีก 2 นาที developer ก็ push ตัวแก้ตามมา แล้ว check ก็ผ่าน และ bucket ก็ถูกสร้างแบบ private"
+    },
+    {
+      "title": "ตรวจตอน deploy และตอน audit",
+      "body": "Repository เดียวกันนี้ป้อนกฎให้สองที่ ที่แรกคือ admission controller ของ cluster (ที่นี่ใช้ OPA Gatekeeper) ที่ปฏิเสธ debug pod จาก Docker Hub และต่อมาก็ปฏิเสธ root pod จาก chart ของ vendor ที่สองคือ audit ต่อเนื่องของสิ่งที่รันอยู่แล้ว (Gatekeeper audit ใน cluster และ AWS Config ใน account) กฎใหม่ `no-root` เริ่มในโหมด **warn**: audit เจอ pod 12 จาก 38 ตัวที่รันอยู่และทำผิดกฎ แล้วส่ง ticket ไปให้ทีมเจ้าของทั้ง 5 ทีม สามสัปดาห์ต่อมาแก้ไปแล้ว 11 ตัว ส่วน `legacy-invoicing` ได้ exception ใน `exceptions.yaml` ที่มีเจ้าของและวันหมดอายุ แล้วกฎก็เปลี่ยนเป็น **deny**"
+    },
+    {
+      "title": "กับดักและข้อจำกัด",
+      "body": "กฎหกสิบข้อในสัปดาห์แรกทำให้ทุก build ขึ้นสีแดง และดันให้ทีมหันไปหาทางลัด: เริ่มจากกฎไม่กี่ข้อในโหมด warn ก่อน กฎที่ไม่มี test ทำให้ deploy พังแบบไม่ทันตั้งตัว message ที่คลุมเครือส่งคนกลับไปต่อคิว ส่วน exception ที่อนุมัติกันในแชตก็ไม่มีวันหมดอายุ และกฎที่ copy ไปไว้สอง engine ก็ค่อย ๆ เพี้ยนจากกัน (ที่นี่ตัวใน CI ข้าม init container) การผ่าน check ไม่ได้แทน design review: policy as code ให้ guardrail กับทีม ไม่ใช่ด่าน"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "พิสูจน์ว่าของที่ deploy ถูก build มาจาก source ของเราจริง: มี build provenance, SBOM, signature และการตรวจก่อน deploy ทุกครั้ง",
+  "steps": [
+    {
+      "title": "Supply chain ที่ไม่มีใครเฝ้า",
+      "body": "ก่อนหน้านี้: image ของ checkout ถูก build บน `build-01` ที่เป็น Jenkins VM ที่มีคน 23 คน login เข้าไปได้ และ cluster ก็รันอะไรก็ตามที่ `checkout:latest` ชี้อยู่ ตัวอักษรสีแดงบอกจุดที่โดนโจมตี ตั้งชื่อตาม threat model ของ SLSA v1.2: **E** คือ build ที่ถูกแก้ไข **H** คือ package ที่ typosquat (`lodahs` แทน `lodash`) และ **F** คือ image ที่ถูก push ทับด้วย tag เดิมจาก laptop แล้วก็ไม่มีใครเก็บรายการว่าใน image มีอะไรบ้าง ทำให้พอมีประกาศ CVE ระดับ critical ใน library ยอดนิยม การหาว่า service ไหนใน 38 ตัวมี library นั้นอยู่ก็ใช้เวลาถึงสี่วัน"
+    },
+    {
+      "title": "Provenance และ SBOM",
+      "body": "Release workflow รันบน GitHub-hosted runner คือ VM ใหม่สำหรับทุก job ที่ไม่มีใคร login ได้และไม่มีอะไรค้างอยู่หลังจบ job ตัว workflow บันทึก **provenance** เป็น in-toto statement ที่ใช้ SLSA provenance predicate ระบุ digest ของ image, builder, source commit `4e7a1c` และ workflow แล้ว sign ผ่าน Sigstore ส่วน Syft ก็ลิสต์ component 1,214 ตัวของ image ไว้ใน **SBOM** (ที่นี่ใช้ CycloneDX ส่วนอีก format ที่นิยมคือ SPDX) ทั้งสองอย่างเก็บไว้ใน ECR ข้าง image โดยใช้ digest `sha256:9f2c41…` ของมันเป็น key"
+    },
+    {
+      "title": "Sign แล้ว verify",
+      "body": "Job จะ sign digest ด้วย **cosign** โดยไม่มี key ที่เก็บไว้: ตัว GitHub Actions OIDC token ของ job ถูกแลกเป็น Fulcio certificate ที่ระบุชื่อ workflow และใช้ได้ 10 นาที แล้ว signature ก็ถูกบันทึกลง Rekor transparency log ส่วนตอน deploy ตัว Sigstore policy-controller จะยอมรับ image ก็ต่อเมื่อมันถูก sign โดย `release.yml` บน `main` ของ `acme/checkout` และ provenance แสดง builder, repository และ branch ตรงตามที่คาดไว้ แล้ว pod ก็รัน digest ที่ verify แล้ว ส่วน image ที่ build และ push จาก laptop ไม่มี signature แบบนี้ เลยโดนปฏิเสธ"
+    },
+    {
+      "title": "Roadmap, ผลที่ได้ และข้อจำกัด",
+      "body": "Build level ของ SLSA v1.2 ใช้เป็น roadmap ได้: L1 คือมี provenance, L2 คือ hosted platform เป็นคน sign มัน (Acme อยู่ตรงนี้ตอนนี้) และ L3 คือแยกทุก run ออกจากกัน และกัน signing secret ไว้ให้พ้นมือของ build พอมี CVE ระดับ critical ตัวถัดไป Dependency-Track ก็ตรวจ SBOM ที่เก็บไว้แล้วลิสต์ service 3 ตัวที่โดนผลกระทบได้ใน 6 นาที แทนที่จะเป็น 4 วัน (ตัวเลขของ Acme) ข้อจำกัด (สีเหลืองอำพัน) คือ provenance บอกว่า image ถูก build ที่ไหนและยังไง แต่ไม่ได้บอกว่าโค้ดหรือ build ของมันไม่มีปัญหา ส่วน SBOM ช่วยได้ก็ต่อเมื่อมีคน query มัน และ policy ที่ปล่อยไว้ใน audit mode ไม่ได้ verify อะไรเลย และ supply chain ของ dependency เองก็ไม่ใช่สิ่งที่ Acme ควบคุมได้"
+    }
+  ]
+}
