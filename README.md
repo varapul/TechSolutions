@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**163 animated** · 0 planned · 14 categories
+**163 animated** · 18 planned · 16 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -27,6 +27,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 6 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
+| 🧭 | [DevOps & SRE Principles](#devops--sre-principles) | 0 / 9 | How teams ship changes often and keep production reliable: the principles, measures and practices behind DevOps and site reliability engineering. |
+| 🏗️ | [Platform Engineering](#platform-engineering) | 0 / 9 | Design principles and frameworks for the internal platform: how to build it, organise teams around it and keep it secure, well-architected and affordable. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 | 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
 | 🧱 | [System Components](#system-components) | 16 / 16 | The off-the-shelf building blocks of real systems: how each one works inside, where it sits in a solution and when to choose it. |
@@ -210,6 +212,42 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Centralized Logging**](patterns/centralized-logging/) | Ship structured logs from every service to one searchable store, correlated by request ID. | ✅ animated |
 | [**SLOs & Error Budgets**](patterns/slo-error-budgets/) | Measure SLIs against an objective and alert on error-budget burn rate, not on every blip. | ✅ animated |
 | [**Telemetry Pipeline (OpenTelemetry)**](patterns/telemetry-pipeline/) | Receive, process and export traces, metrics and logs through one vendor-neutral collector. | ✅ animated |
+
+<sub>[↑ Back to contents](#contents)</sub>
+
+## DevOps & SRE Principles
+
+🧭 How teams ship changes often and keep production reliable: the principles, measures and practices behind DevOps and site reliability engineering.
+
+| Pattern | In one line | Status |
+|---|---|:-:|
+| The Three Ways | DevOps in three principles: speed the flow of work to customers, amplify feedback back to the team, and keep learning. | ⏳ planned |
+| DORA Metrics | Measure software delivery by throughput and stability: how often and how fast changes reach production, and how often they fail. | ⏳ planned |
+| Continuous Delivery | Keep every change releasable: a deployment pipeline builds once, tests in stages and promotes the same artifact to production. | ⏳ planned |
+| Trunk-Based Development | Everyone merges small changes into one main branch at least daily; feature flags hide unfinished work instead of long branches. | ⏳ planned |
+| You Build It, You Run It | The team that builds a service runs it in production, on call, so the people who can fix a problem hear about it first. | ⏳ planned |
+| Golden Signals, RED & USE | What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources. | ⏳ planned |
+| Eliminating Toil | Find the manual, repetitive operations work that grows with the system, measure it, cap it and automate it away. | ⏳ planned |
+| Incident Management | A practised response when production breaks: declare early, assign roles, mitigate first and keep everyone informed. | ⏳ planned |
+| Blameless Postmortems | Learn from every incident without blame: a timeline, the contributing factors and tracked action items, shared widely. | ⏳ planned |
+
+<sub>[↑ Back to contents](#contents)</sub>
+
+## Platform Engineering
+
+🏗️ Design principles and frameworks for the internal platform: how to build it, organise teams around it and keep it secure, well-architected and affordable.
+
+| Pattern | In one line | Status |
+|---|---|:-:|
+| The Twelve-Factor App | Twelve rules for apps that deploy cleanly anywhere: config in the environment, stateless processes, separate build, release and run. | ⏳ planned |
+| Infrastructure as Code | Define infrastructure in version-controlled code: review a plan, apply it the same way in every environment and catch drift. | ⏳ planned |
+| Team Topologies | Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check. | ⏳ planned |
+| Platform as a Product | An internal developer platform run like a product: developers are its customers, self-service is its interface, adoption is earned. | ⏳ planned |
+| Golden Paths | A paved, supported route for common tasks: one template creates a service with its pipeline, infrastructure and monitoring. | ⏳ planned |
+| Well-Architected Framework | Review a workload against six pillars, from operational excellence to sustainability, and decide on the trade-offs between them. | ⏳ planned |
+| FinOps | Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value. | ⏳ planned |
+| Supply Chain Security (SLSA) | Prove that what you deploy was built from your source: build provenance, SBOMs, signatures and a check before every deploy. | ⏳ planned |
+| Policy as Code | Write rules as code and check them automatically in CI and at deploy time, so guardrails replace manual approval gates. | ⏳ planned |
 
 <sub>[↑ Back to contents](#contents)</sub>
 

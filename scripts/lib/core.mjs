@@ -25,6 +25,10 @@ export const ghSlug = (s) => s.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\p{Pc} -]
 
 // Categories whose pages teach a real product (System Components, AWS Services) rather than a pattern.
 export const COMPONENT_CATEGORIES = new Set(['system-components', 'aws-services']);
+// Categories whose pages teach a way of working or a framework (DevOps & SRE, Platform Engineering).
+export const PRINCIPLE_CATEGORIES = new Set(['devops-sre', 'platform-engineering']);
+// Pages outside these categories link back to the pages in them whose related list names them.
+const BACKLINKS = [['components', COMPONENT_CATEGORIES], ['principles', PRINCIPLE_CATEGORIES]];
 
 export function loadCatalog() {
   const { categories } = readJSON('catalog.json');
@@ -46,13 +50,13 @@ export function loadCatalog() {
     });
   }
   const bySlug = new Map(patterns.map((p) => [p.slug, p]));
-  // Each pattern links back to the component pages whose related list names it.
-  const isComponent = (p) => COMPONENT_CATEGORIES.has(p.category.id);
-  for (const p of patterns) if (!isComponent(p)) p.components = [];
-  for (const c of patterns.filter((p) => isComponent(p) && p.meta)) {
-    for (const slug of c.meta.related ?? []) {
-      const p = bySlug.get(slug);
-      if (p?.components && !p.meta?.related?.includes(c.slug)) p.components.push(c.slug);
+  for (const [key, cats] of BACKLINKS) {
+    for (const p of patterns) if (!cats.has(p.category.id)) p[key] = [];
+    for (const c of patterns.filter((q) => cats.has(q.category.id) && q.meta)) {
+      for (const slug of c.meta.related ?? []) {
+        const p = bySlug.get(slug);
+        if (p?.[key] && !p.meta?.related?.includes(c.slug)) p[key].push(c.slug);
+      }
     }
   }
   return { categories, patterns, bySlug };
@@ -246,6 +250,9 @@ export function patternFooter(p, bySlug) {
   }
   if (p.components?.length) {
     out.push(`## Related components and services`, ``, ...p.components.map((s) => relatedLine(s, bySlug, '../')), ``);
+  }
+  if (p.principles?.length) {
+    out.push(`## Related principles and frameworks`, ``, ...p.principles.map((s) => relatedLine(s, bySlug, '../')), ``);
   }
   if (p.meta.references?.length) {
     out.push(`## References`, ``, ...p.meta.references.map((r) => `- [${r.title}](${r.url})`), ``);

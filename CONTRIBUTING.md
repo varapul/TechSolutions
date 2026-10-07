@@ -116,6 +116,16 @@ The *System Components* and *AWS Services* categories explain real products: wha
 - **Facts that change:** versions, defaults, limits, quotas, prices and licences. Take them from the current official documentation, name the version or date they hold for, and cite the page.
 - **Colour keeps its meaning:** blue for requests and data flowing in, green for acknowledgements and healthy state, red for failures, amber for the limit or the setting to watch, purple for events and messages, teal for stored state (logs, snapshots, replicas), and orange for identity and access.
 
+## Principle diagrams
+
+The *DevOps & SRE Principles* and *Platform Engineering* categories teach ways of working and frameworks rather than one mechanism or product. The canvas, timeline and tokens are the same; these conventions keep the pages consistent:
+
+- **One concrete team story** at Acme Shop, told with real artefacts: a pipeline and its stages, a pull request, a deploy log, a dashboard, an alert, an incident timeline, a team map, a cost report. The reader should watch the principle happen, not read a slogan.
+- **People and work, not word lists.** Teams are boxes named after what they own (`checkout team`, `platform team`); work moves as tokens (a commit, a change, a ticket, an alert); measurements are small numbers with units. When a framework is a list (twelve factors, six pillars), apply its items to the story's system a few at a time instead of drawing the list.
+- **The four-step arc:** the problem (the pain without the principle, in red: the monthly big-bang release, the page nobody owns, the ticket queue); the principle at work in the story; putting it into practice (how a team adopts or measures it, with the numbers); and its pitfalls or limits (the common misreading, the metric that gets gamed, where it doesn't fit). A framework with several parts may spread them over steps 2 to 4 and leave the pitfalls to the README.
+- **Sources:** these ideas come from books, reports and framework documents (Google's SRE books, the DORA reports, Team Topologies, 12factor.net, the AWS Well-Architected Framework, the FinOps Framework, slsa.dev). Name the source and its authors, paraphrase instead of quoting, give definitions, thresholds and research findings with the edition or year they come from, and never present a research correlation as a law or invent a statistic. Acme Shop's own numbers are an illustration; say so where a reader could take them for research.
+- **Colour keeps its meaning:** blue for work flowing (commits, changes, deploys, requests), green for success and the improved outcome, red for failures and the pain point, amber for the threshold or the number to watch, purple for alerts and events, teal for shared knowledge and state (runbooks, postmortems, catalogs, state files), and orange for policy, identity and approvals.
+
 ## Example: keyframes from a timeline
 
 ```js
@@ -131,11 +141,12 @@ console.log(track('xx-call', go.segs));                              // go.end i
 
 ## Writing
 
-- **meta.json:** four steps, each with a `title`, a one-sentence `caption` (shown in the SVG) and a two-to-three-sentence `body` (README table and site, with inline Markdown allowed). `related` holds catalog slugs and `references` holds `{title, url}` pairs with primary sources where possible (standards, vendor architecture centres, the original article or book). On a System Components or AWS Services page, `related` also lists the page under *Related components and services* on every pattern it names, so name only patterns the component really takes part in.
+- **meta.json:** four steps, each with a `title`, a one-sentence `caption` (shown in the SVG) and a two-to-three-sentence `body` (README table and site, with inline Markdown allowed). `related` holds catalog slugs and `references` holds `{title, url}` pairs with primary sources where possible (standards, vendor architecture centres, the original article or book). On a System Components or AWS Services page, `related` also lists the page under *Related components and services* on every pattern it names, and on a DevOps & SRE or Platform Engineering page, under *Related principles and frameworks* on every pattern and component it names, so name only pages it really connects to.
 - **README.md:** keep the sections from the template (*The problem*, *How it works*, *When to use it*, *Trade-offs*, *Implementation notes*). Be concrete and vendor-neutral; name managed services as examples, not requirements.
 - **Algorithm READMEs** add two sections, and `npm run new` scaffolds them for that category: *Code*, a short Python 3 implementation of your own that uses only the standard library, with an example call and its output (run it, with edge cases, before you commit), and *Complexity*, a table of the time in the best, average and worst case, the extra space, and whether it is stable or in place where that applies.
 - **Design pattern READMEs** add a *Code* section, which `npm run new` scaffolds for that category: a short TypeScript example of your own that mirrors the diagram's scenario and runs as is with `node` (Node 22 strips the types, so use only erasable syntax: no `enum`, `namespace`, parameter properties or decorators), with its output; run it, with assertions, before you commit. Paraphrase the pattern's intent instead of quoting the book.
 - **Component READMEs** (*System Components* and *AWS Services*) add a *Where it fits* section, which `npm run new` scaffolds for those categories: the solutions the product appears in, the patterns of this catalog it implements or supports, its usual neighbours, and its managed offerings (for an open-source product, the AWS service that runs it, when there is one). In *When to use it*, compare it with its closest alternatives; a small table works well. These pages are about one product, so the vendor-neutral rule above gives way to accuracy: state versions, defaults and limits with the version or date they hold for, and keep marketing language out.
+- **Principle READMEs** (*DevOps & SRE Principles* and *Platform Engineering*) have their own sections, which `npm run new` scaffolds for those categories: *The problem*, *How it works* (the principle or framework itself, attributed to its source), *Putting it into practice* (concrete steps a team takes, with tools named as examples, not requirements), *Where it fits* (the patterns, components and other principles of this catalog it connects to), *When to use it* (where it pays off, and where it doesn't fit or costs more than it returns) and *Common pitfalls* (the usual misreadings and anti-patterns, each with what to do instead). Keep evangelism out: be practical and balanced.
 - Link to another pattern as `../<slug>/`. It works on GitHub, the site rewrites it to that pattern's page, and `npm run check` rejects links to patterns that aren't animated yet.
 
 ## Thai translation
@@ -169,6 +180,8 @@ Labels inside the diagrams stay in English: they are mostly code, class names an
 | When not to use it | ตอนไหนไม่ควรใช้ |
 | Trade-offs | ได้อะไร เสียอะไร |
 | Implementation notes | ข้อควรรู้ตอนลงมือทำ |
+| Putting it into practice | ลงมือทำจริงยังไง |
+| Common pitfalls | กับดักที่เจอบ่อย |
 | Code | โค้ด |
 | Complexity | Complexity |
 

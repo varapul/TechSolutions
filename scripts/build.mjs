@@ -49,7 +49,7 @@ const EN = {
   slowDown: 'Slow down', normalSpeed: 'Normal speed',
   stepHeading: 'Step {k} · {title}.', stepOf: 'Step <b>{k}</b> of {n}', playAll: 'play all', replay: '↻ replay',
   startOver: 'start over', next: 'next step', playingAll: 'playing all steps', playingStep: 'playing this step', paused: 'paused',
-  relatedPatterns: 'Related patterns', relatedComponents: 'Related components and services', references: 'References', useInDocs: 'Use it in your docs',
+  relatedPatterns: 'Related patterns', relatedComponents: 'Related components and services', relatedPrinciples: 'Related principles and frameworks', references: 'References', useInDocs: 'Use it in your docs',
   downloadSvg: '<a href="{href}">Download the SVG</a>: it animates on its own in any &lt;img&gt;, README or wiki.',
   previous: '← Previous', nextPage: 'Next →',
   footer: 'Every diagram is a single SVG animated with CSS. It works as a plain &lt;img&gt; in any README, and the pages here drive the same file step by step.',
@@ -245,6 +245,7 @@ function patternPage(p, i, L) {
     : `<li class="planned-item">${esc(r.title)}<span class="tag">${esc(L.ui.plannedTag)}</span></li>`).join('\n');
   const related = items(p.meta.related);
   const components = items(p.components);
+  const principles = items(p.principles);
   const refs = (p.meta.references ?? []).map((r) => `<li><a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a></li>`).join('\n');
   const prev = animated[i - 1];
   const next = animated[i + 1];
@@ -287,6 +288,7 @@ ${note}${article}
     <aside class="side">
       ${related ? `<section><h2>${esc(L.ui.relatedPatterns)}</h2><ul>${related}</ul></section>` : ''}
       ${components ? `<section><h2>${esc(L.ui.relatedComponents)}</h2><ul>${components}</ul></section>` : ''}
+      ${principles ? `<section><h2>${esc(L.ui.relatedPrinciples)}</h2><ul>${principles}</ul></section>` : ''}
       ${refs ? `<section><h2>${esc(L.ui.references)}</h2><ul>${refs}</ul></section>` : ''}
       <section><h2>${esc(L.ui.useInDocs)}</h2><ul><li>${t(L, 'downloadSvg', { href: `${R}diagrams/${p.slug}.svg` })}</li></ul></section>
     </aside>
