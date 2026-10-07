@@ -56,7 +56,7 @@ Building block อื่น ๆ ของ framework:
 | ตัวเลือก | ประเภท | เจ้าของ | ประหยัดได้ต่อเดือน |
 |---|---|---|---|
 | ลบ cluster `loadtest-2` ที่ว่างอยู่ | usage: ของเหลือทิ้ง | ทีม checkout | $7,400 |
-| Rightsize node ของ production จาก 8 → 5 และ CPU เฉลี่ยจาก 12% → 40% | usage: rightsizing | platform team | $12,600 |
+| Rightsize node ของ production จาก 8 → 5 ตัวที่เล็กลง และ CPU เฉลี่ยจาก 12% → 40% | usage: rightsizing | platform team | $12,600 |
 | รัน staging แค่ 07:00–19:00 วันธรรมดา 60 จาก 168 ชั่วโมง | usage: ตั้งเวลา | platform team | $5,800 |
 | S3 Lifecycle: ย้าย log ไป S3 Glacier Flexible Retrieval หลัง 30 วัน และลบหลังหนึ่งปี | usage: storage class | platform team | $2,200 |
 | Compute Savings Plan หนึ่งปี ตามขนาดของ baseline ที่เล็กลงแล้ว | rate: commitment | FinOps practitioner และ finance | $10,000 |
