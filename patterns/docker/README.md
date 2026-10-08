@@ -199,6 +199,7 @@ containers:
 
 ## Related principles and frameworks
 
+- [Testing Pyramid](../testing-pyramid/) — Many fast unit tests, fewer integration and contract tests, a few end-to-end tests: feedback stays fast and failures point at the cause.
 - [The Twelve-Factor App](../twelve-factor-app/) — Twelve rules for apps that deploy cleanly anywhere: config in the environment, stateless processes, separate build, release and run.
 - [Supply Chain Security (SLSA)](../supply-chain-security/) — Prove that what you deploy was built from your source: build provenance, SBOMs, signatures and a check before every deploy.
 

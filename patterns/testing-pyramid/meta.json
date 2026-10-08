@@ -1,0 +1,52 @@
+{
+  "aka": ["Test automation pyramid", "Ice-cream cone (anti-pattern)", "Testing trophy", "Testing honeycomb"],
+  "steps": [
+    {
+      "title": "The ice-cream cone",
+      "caption": "640 browser tests run nightly for 95 min, 7% of runs flaky: red means re-run, so bugs reach staging.",
+      "body": "Acme's checkout service is tested mostly through the browser: 640 end-to-end tests run in a nightly job of 95 minutes, 7% of those runs fail at random, and only 120 unit tests run before a merge. A red run only says that checkout failed, so people re-run it until it passes and stop trusting red builds. When PR #4182 cuts tax off instead of rounding it (8.25% of $19.99 is 1.649…, which becomes 1.64, not 1.65), no layer checks the cents, and the bug is found on staging on Thursday, three days after the merge."
+    },
+    {
+      "title": "The test pyramid",
+      "caption": "Fast tests at the base: the tax bug fails one unit test after 40 s, naming TaxCalculator.round().",
+      "body": "The **test pyramid** (Mike Cohn, *Succeeding with Agile*, 2009) puts many fast, narrow tests at the base and fewer, broader ones above: 2,400 unit tests (40 s), 310 integration tests against real PostgreSQL and Redis in containers (4 min), 90 consumer-driven contract tests with payments and catalog (1 min) and 18 end-to-end smoke tests on staging (6 min). The same bug now fails one unit test 40 seconds after the push, and the failure names `TaxCalculator.round()`. Higher layers would have caught it later and less precisely: an integration test after about 5 minutes with a wrong order total, a smoke test after about 12 with a wrong total on the confirmation page, and the contract tests not at all, since 21.63 is still a valid amount."
+    },
+    {
+      "title": "Fast layers first",
+      "caption": "Base first, each layer on a time budget: green in 12 min; flaky tests quarantined; test the risks.",
+      "body": "The pipeline runs the layers from the base up, so a cheap layer fails before an expensive one starts, and each layer has a time budget (40 s of 1 min, 4 of 5, 1 of 2 and 6 of 8 minutes): a commit is green in about 12 minutes. A flaky test goes to quarantine with an owner and a fix date instead of being re-run (here the guest-checkout smoke test, owned by the checkout team, due on 16 October), which keeps flaky runs under 0.5%. The team lists checkout's risks, tests each at the lowest layer that can catch it, and reads coverage as a map of untested code rather than a target (Acme's numbers are the example's own)."
+    },
+    {
+      "title": "Pitfalls and other shapes",
+      "caption": "Pitfalls: drifting mocks, shape-only contracts, a regrowing E2E suite, gamed coverage; other shapes.",
+      "body": "A year on, the end-to-end suite has grown back from 18 to 70 tests and takes 25 minutes, because every bug got a browser test; contract tests pass 21.63 because they check the shape, not the meaning; the payments mock drifts from the real API unless contract tests check it; and a coverage target is met with tests that assert nothing. Other shapes suit other systems: Kent C. Dodds's **testing trophy** (2018) for JavaScript applications and Spotify's **honeycomb** (2018) for microservices make integration tests the largest group. Canary releases and synthetic checks test in production, as a complement to the pyramid, not a substitute."
+    }
+  ],
+  "related": ["continuous-delivery", "trunk-based-development", "canary-release", "dora-metrics", "feature-flags", "docker", "postgresql", "three-ways"],
+  "references": [
+    { "title": "Martin Fowler — TestPyramid (bliki, 2012)", "url": "https://martinfowler.com/bliki/TestPyramid.html" },
+    { "title": "Ham Vocke — The Practical Test Pyramid (martinfowler.com, 2018)", "url": "https://martinfowler.com/articles/practical-test-pyramid.html" },
+    { "title": "Mike Cohn — Succeeding with Agile: Software Development Using Scrum (Addison-Wesley, 2009)", "url": "https://www.informit.com/store/succeeding-with-agile-software-development-using-scrum-9780321579362" },
+    { "title": "Alister Scott — Introducing the software testing ice-cream cone (anti-pattern) (WatirMelon, 2012; archived copy)", "url": "https://web.archive.org/web/20140326182718/http://watirmelon.com/2012/01/31/introducing-the-software-testing-ice-cream-cone/" },
+    { "title": "Martin Fowler — On the Diverse And Fantastical Shapes of Testing (2021)", "url": "https://martinfowler.com/articles/2021-test-shapes.html" },
+    { "title": "Mike Wacker — Just Say No to More End-to-End Tests (Google Testing Blog, 2015)", "url": "https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html" },
+    { "title": "Adam Bender — Testing Overview (Software Engineering at Google, O'Reilly, 2020, chapter 11)", "url": "https://abseil.io/resources/swe-book/html/ch11.html" },
+    { "title": "André Schaffer and Rickard Dybeck — Testing of Microservices (Spotify Engineering, 2018)", "url": "https://engineering.atspotify.com/2018/01/testing-of-microservices" },
+    { "title": "Kent C. Dodds — The Testing Trophy and Testing Classifications (2021)", "url": "https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications" },
+    { "title": "Martin Fowler — UnitTest (bliki, 2014)", "url": "https://martinfowler.com/bliki/UnitTest.html" },
+    { "title": "Martin Fowler — IntegrationTest (bliki, 2018)", "url": "https://martinfowler.com/bliki/IntegrationTest.html" },
+    { "title": "Martin Fowler — TestDouble (bliki, 2006)", "url": "https://martinfowler.com/bliki/TestDouble.html" },
+    { "title": "Gerard Meszaros — xUnit Test Patterns: Refactoring Test Code (Addison-Wesley, 2007)", "url": "https://www.informit.com/store/xunit-test-patterns-refactoring-test-code-9780131495050" },
+    { "title": "Ian Robinson — Consumer-Driven Contracts: A Service Evolution Pattern (martinfowler.com, 2006)", "url": "https://martinfowler.com/articles/consumerDrivenContracts.html" },
+    { "title": "Martin Fowler — ContractTest (bliki, 2011)", "url": "https://martinfowler.com/bliki/ContractTest.html" },
+    { "title": "Pact documentation — Introduction", "url": "https://docs.pact.io/" },
+    { "title": "Pact documentation — Contract Tests vs Functional Tests", "url": "https://docs.pact.io/consumer/contract_tests_not_functional_tests" },
+    { "title": "Pact documentation — Can I Deploy", "url": "https://docs.pact.io/pact_broker/can_i_deploy" },
+    { "title": "Testcontainers — throwaway databases and services in containers for tests", "url": "https://testcontainers.com/" },
+    { "title": "Martin Fowler — Eradicating Non-Determinism in Tests (2011)", "url": "https://martinfowler.com/articles/nonDeterminism.html" },
+    { "title": "Martin Fowler — TestCoverage (bliki, 2012)", "url": "https://martinfowler.com/bliki/TestCoverage.html" },
+    { "title": "DORA — Capabilities: Test automation", "url": "https://dora.dev/capabilities/test-automation/" },
+    { "title": "Larry Smith — Shift-Left Testing (Dr. Dobb's Journal, 2001; archived copy)", "url": "https://web.archive.org/web/20150106145542/http://www.drdobbs.com/shift-left-testing/184404768" },
+    { "title": "Amazon CloudWatch — Synthetic monitoring (canaries)", "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html" }
+  ]
+}

@@ -207,6 +207,10 @@ ORDER BY n_dead_tup DESC LIMIT 5;
 - [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
 - [Apache Kafka](../kafka/) — A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history.
 
+## Related principles and frameworks
+
+- [Testing Pyramid](../testing-pyramid/) — Many fast unit tests, fewer integration and contract tests, a few end-to-end tests: feedback stays fast and failures point at the cause.
+
 ## References
 
 - [PostgreSQL documentation — Concurrency Control: Introduction (MVCC)](https://www.postgresql.org/docs/current/mvcc-intro.html)

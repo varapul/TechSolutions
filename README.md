@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**181 animated** · 7 planned · 16 categories
+**188 animated** · 0 planned · 16 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -25,9 +25,9 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🗄️ | [Data Management](#data-management) | 9 / 9 | Storing, scaling, caching and synchronising data across services. |
 | 🛡️ | [Resilience & Reliability](#resilience--reliability) | 9 / 9 | Keep serving when dependencies are slow, overloaded or down. |
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
-| 🔄 | [Migration & Modernization](#migration--modernization) | 6 / 8 | Evolve legacy systems step by step, without a big-bang rewrite. |
+| 🔄 | [Migration & Modernization](#migration--modernization) | 8 / 8 | Evolve legacy systems step by step, without a big-bang rewrite. |
 | 🔭 | [Observability & Operations](#observability--operations) | 4 / 4 | See what the system is doing, and why, when something goes wrong. |
-| 🧭 | [DevOps & SRE Principles](#devops--sre-principles) | 9 / 14 | How teams ship changes often and keep production reliable: the principles, measures and practices behind DevOps and site reliability engineering. |
+| 🧭 | [DevOps & SRE Principles](#devops--sre-principles) | 14 / 14 | How teams ship changes often and keep production reliable: the principles, measures and practices behind DevOps and site reliability engineering. |
 | 🏗️ | [Platform Engineering](#platform-engineering) | 9 / 9 | Design principles and frameworks for the internal platform: how to build it, organise teams around it and keep it secure, well-architected and affordable. |
 | 🧮 | [Algorithms & Data Structures](#algorithms--data-structures) | 18 / 18 | The must-know fundamentals: how code searches, sorts, recurses and walks graphs, and what each costs as data grows. |
 | 🧩 | [Design Patterns (GoF)](#design-patterns-gof) | 23 / 23 | The 23 classic object-oriented patterns from the Gang of Four: how objects are created, composed and made to work together. |
@@ -199,8 +199,8 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Parallel Run**](patterns/parallel-run/) | Run old and new side by side on the same inputs and compare results before cutting over. | ✅ animated |
 | [**Expand and Contract**](patterns/expand-and-contract/) | Change a schema or API in backward-compatible steps: expand, migrate, then contract. | ✅ animated |
 | [**Cloud Migration Strategies (7 Rs)**](patterns/cloud-migration-strategies/) | Rehost, replatform, refactor, repurchase, relocate, retain or retire: pick one per workload. | ✅ animated |
-| AWS Cloud Adoption Framework (CAF) | Six perspectives and their foundational capabilities that show what an organisation must build, beyond technology, to adopt the cloud. | ⏳ planned |
-| AWS Migration Process | Assess, mobilize, then migrate and modernize: a business case, a landing zone and migration waves that move a portfolio to AWS. | ⏳ planned |
+| [**AWS Cloud Adoption Framework (CAF)**](patterns/aws-cloud-adoption-framework/) | Six perspectives and their foundational capabilities that show what an organisation must build, beyond technology, to adopt the cloud. | ✅ animated |
+| [**AWS Migration Process**](patterns/aws-migration-process/) | Assess, mobilize, then migrate and modernize: a business case, a landing zone and migration waves that move a portfolio to AWS. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 
@@ -232,11 +232,11 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Eliminating Toil**](patterns/eliminating-toil/) | Find the manual, repetitive operations work that grows with the system, measure it, cap it and automate it away. | ✅ animated |
 | [**Incident Management**](patterns/incident-management/) | A practised response when production breaks: declare early, assign roles, mitigate first and keep everyone informed. | ✅ animated |
 | [**Blameless Postmortems**](patterns/blameless-postmortems/) | Learn from every incident without blame: a timeline, the contributing factors and tracked action items, shared widely. | ✅ animated |
-| SPACE & DevEx | Measure developer productivity without counting code: surveys and system data on satisfaction, flow, feedback loops and cognitive load. | ⏳ planned |
-| Value Stream Mapping | Draw how a change travels from idea to customer, compare the time spent working with the time spent waiting, and remove the biggest wait. | ⏳ planned |
-| CALMS | A lens for assessing a DevOps adoption: culture, automation, lean, measurement and sharing, and the dimension that holds the others back. | ⏳ planned |
-| Testing Pyramid | Many fast unit tests, fewer integration and contract tests, a few end-to-end tests: feedback stays fast and failures point at the cause. | ⏳ planned |
-| ITIL 4 | IT service management with ITIL 4: the service value system, guiding principles and change enablement that work with DevOps, not against it. | ⏳ planned |
+| [**SPACE & DevEx**](patterns/space-devex/) | Measure developer productivity without counting code: surveys and system data on satisfaction, flow, feedback loops and cognitive load. | ✅ animated |
+| [**Value Stream Mapping**](patterns/value-stream-mapping/) | Draw how a change travels from idea to customer, compare the time spent working with the time spent waiting, and remove the biggest wait. | ✅ animated |
+| [**CALMS**](patterns/calms/) | A lens for assessing a DevOps adoption: culture, automation, lean, measurement and sharing, and the dimension that holds the others back. | ✅ animated |
+| [**Testing Pyramid**](patterns/testing-pyramid/) | Many fast unit tests, fewer integration and contract tests, a few end-to-end tests: feedback stays fast and failures point at the cause. | ✅ animated |
+| [**ITIL 4**](patterns/itil-4/) | IT service management with ITIL 4: the service value system, guiding principles and change enablement that work with DevOps, not against it. | ✅ animated |
 
 <sub>[↑ Back to contents](#contents)</sub>
 
