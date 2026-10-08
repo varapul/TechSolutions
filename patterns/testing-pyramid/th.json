@@ -1,0 +1,21 @@
+{
+  "summary": "มี unit test ที่เร็วจำนวนมาก, integration test กับ contract test น้อยลงมา และ end-to-end test แค่ไม่กี่ตัว: feedback เลยยังเร็ว และ test ที่ fail ก็ชี้ไปที่ต้นเหตุ",
+  "steps": [
+    {
+      "title": "Test ทรง ice-cream cone",
+      "body": "checkout service ของ Acme ถูก test ผ่าน browser เป็นหลัก: end-to-end test 640 ตัวรันใน nightly job ที่ใช้เวลา 95 นาที, 7% ของรอบที่รันพังแบบสุ่ม และมี unit test แค่ 120 ตัวที่รันก่อน merge ส่วนรอบที่เป็นสีแดงก็บอกได้แค่ว่า checkout fail ทำให้คนรันซ้ำจนกว่าจะผ่าน แล้วก็เลิกเชื่อ build ที่เป็นสีแดง พอ PR #4182 ตัดเศษภาษีทิ้งแทนที่จะปัดเศษ (8.25% ของ $19.99 คือ 1.649… แล้วกลายเป็น 1.64 แทนที่จะเป็น 1.65) ก็ไม่มี layer ไหนเช็กเศษเซนต์เลย แล้ว bug นี้ก็ไปโผล่ที่ staging วันพฤหัสบดี สามวันหลัง merge"
+    },
+    {
+      "title": "Test pyramid",
+      "body": "**test pyramid** (Mike Cohn, *Succeeding with Agile*, 2009) วาง test ที่เร็วและแคบจำนวนมากไว้ที่ฐาน แล้วมี test ที่กว้างขึ้นแต่น้อยลงในชั้นบน: unit test 2,400 ตัว (40 s), integration test 310 ตัวที่รันกับ PostgreSQL และ Redis ตัวจริงใน container (4 min), consumer-driven contract test 90 ตัวกับ payments และ catalog (1 min) และ end-to-end smoke test 18 ตัวบน staging (6 min) ตอนนี้ bug ตัวเดิมทำให้ unit test หนึ่งตัว fail ภายใน 40 วินาทีหลัง push และ failure นั้นก็ระบุชื่อ `TaxCalculator.round()` ไว้เลย ส่วน layer ที่สูงกว่าจะจับได้ช้ากว่าและชี้ได้ไม่ตรงเท่า: integration test จับได้หลังราว 5 นาทีเป็นยอด order ที่ผิด, smoke test จับได้หลังราว 12 นาทีเป็นยอดรวมที่ผิดบนหน้า confirmation ส่วน contract test จับไม่ได้เลย เพราะ 21.63 ก็ยังเป็นจำนวนเงินที่ valid อยู่"
+    },
+    {
+      "title": "Layer ที่เร็วรันก่อน",
+      "body": "pipeline รัน layer จากฐานขึ้นไป ทำให้ layer ที่ถูก fail ก่อนที่ layer ที่แพงจะเริ่ม และแต่ละ layer ก็มี time budget (40 s จาก 1 min, 4 จาก 5, 1 จาก 2 และ 6 จาก 8 นาที): commit หนึ่งจะเขียวภายในราว 12 นาที ส่วน test ที่ flaky จะถูกย้ายไป quarantine พร้อมเจ้าของและวันที่ต้องแก้เสร็จ แทนที่จะรันซ้ำ (ในที่นี้คือ smoke test ของ guest checkout ที่ทีม checkout เป็นเจ้าของ กำหนดเสร็จวันที่ 16 ตุลาคม) ทำให้รอบที่ flaky อยู่ต่ำกว่า 0.5% ทีมไล่รายการความเสี่ยงของ checkout, test แต่ละข้อที่ layer ต่ำสุดที่จับมันได้ และอ่าน coverage เป็นแผนที่ของโค้ดที่ยังไม่มี test ไม่ใช่เป้าหมาย (ตัวเลขของ Acme เป็นตัวเลขของตัวอย่างนี้เอง)"
+    },
+    {
+      "title": "กับดักและรูปทรงแบบอื่น",
+      "body": "หนึ่งปีผ่านไป end-to-end suite โตกลับขึ้นมาจาก 18 เป็น 70 test และใช้เวลา 25 นาที เพราะทุก bug ได้ browser test เพิ่มมาหนึ่งตัว ส่วน contract test ก็ปล่อย 21.63 ผ่าน เพราะมันเช็ก shape ไม่ได้เช็กความหมาย, mock ของ payments ก็ค่อย ๆ เพี้ยนไปจาก API จริง ถ้าไม่มี contract test คอยเช็ก และเป้า coverage ก็ทำได้ถึงด้วย test ที่ไม่ assert อะไรเลย ระบบต่างแบบก็เหมาะกับรูปทรงต่างกัน: **testing trophy** ของ Kent C. Dodds (2018) สำหรับ JavaScript application และ **honeycomb** ของ Spotify (2018) สำหรับ microservices ให้ integration test เป็นกลุ่มที่ใหญ่ที่สุด ส่วน canary release กับ synthetic check ก็ test ใน production เป็นส่วนเสริมของ pyramid ไม่ใช่ตัวแทน"
+    }
+  ]
+}
