@@ -1,0 +1,930 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Normalization &amp; Denormalization</title>
+<desc id="dg-desc">Normalization &amp; Denormalization. Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step. Step 1, One wide table: Repeated facts: an email change rewrites 6,537 rows; inserts fail and deletes lose a customer. Step 2, Each fact stored once: Normal forms split it by what each column depends on: 4 tables, and the new email is UPDATE 1. Step 3, Copy on purpose: orders.total_thb is a deliberate copy kept by a trigger; the price paid is a fact, not a copy. Step 4, Joins vs copies: Joins cost reads, copies cost writes; document stores make the same choice as embed or reference.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Normalization &amp; Denormalization</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · One wide table</text>
+  <text class="step on p1" x="40" y="518">1 · One wide table</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Each fact stored once</text>
+  <text class="step on p2" x="262" y="518">2 · Each fact stored once</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Copy on purpose</text>
+  <text class="step on p3" x="484" y="518">3 · Copy on purpose</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Joins vs copies</text>
+  <text class="step on p4" x="706" y="518">4 · Joins vs copies</text>
+  <text class="caption p1" x="40" y="552">Repeated facts: an email change rewrites 6,537 rows; inserts fail and deletes lose a customer.</text>
+  <text class="caption p2" x="40" y="552">Normal forms split it by what each column depends on: 4 tables, and the new email is UPDATE 1.</text>
+  <text class="caption p3" x="40" y="552">orders.total_thb is a deliberate copy kept by a trigger; the price paid is a fact, not a copy.</text>
+  <text class="caption p4" x="40" y="552">Joins cost reads, copies cost writes; document stores make the same choice as embed or reference.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Normalization and denormalization. Timeline (20s loop, 1s = 5%):
+   0-25%   one wide table: UPDATE rewrites customer 1's 6,537 lines; an insert fails; a delete loses a customer
+   25-50%  1NF/2NF/3NF split it into customers, products, orders, order_items; the email UPDATE touches 1 row
+   50-75%  orders.total_thb is a deliberate copy: the order list reads it, a trigger keeps it; prices paid stay
+   75-100% joins cost reads, the copy costs writes; MongoDB, DynamoDB and CQRS make the same choice
+   Generated by a scratch script from one run on PostgreSQL 18.6. */
+.diagram .nf-q0 { animation: nf-q0 var(--T) linear infinite; }
+.diagram .nf-q1 { opacity: 0; animation: nf-q1 var(--T) linear infinite; }
+.diagram .nf-q2 { opacity: 0; animation: nf-q2 var(--T) linear infinite; }
+.diagram .nf-q3 { opacity: 0; animation: nf-q3 var(--T) linear infinite; }
+.diagram .nf-q4 { opacity: 0; animation: nf-q4 var(--T) linear infinite; }
+.diagram .nf-q5 { opacity: 0; animation: nf-q5 var(--T) linear infinite; }
+.diagram .nf-q6 { opacity: 0; animation: nf-q6 var(--T) linear infinite; }
+.diagram .nf-q7 { opacity: 0; animation: nf-q7 var(--T) linear infinite; }
+.diagram .nf-q8 { opacity: 0; animation: nf-q8 var(--T) linear infinite; }
+.diagram .nf-q9 { opacity: 0; animation: nf-q9 var(--T) linear infinite; }
+.diagram .nf-pl0 { animation: nf-pl0 var(--T) linear infinite; }
+.diagram .nf-pl1 { opacity: 0; animation: nf-pl1 var(--T) linear infinite; }
+.diagram .nf-pl2 { opacity: 0; animation: nf-pl2 var(--T) linear infinite; }
+.diagram .nf-pl3 { opacity: 0; animation: nf-pl3 var(--T) linear infinite; }
+.diagram .nf-pl4 { opacity: 0; animation: nf-pl4 var(--T) linear infinite; }
+.diagram .nf-pl5 { opacity: 0; animation: nf-pl5 var(--T) linear infinite; }
+.diagram .nf-pl6 { opacity: 0; animation: nf-pl6 var(--T) linear infinite; }
+.diagram .nf-pl7 { opacity: 0; animation: nf-pl7 var(--T) linear infinite; }
+.diagram .nf-pl8 { opacity: 0; animation: nf-pl8 var(--T) linear infinite; }
+.diagram .nf-pl9 { opacity: 0; animation: nf-pl9 var(--T) linear infinite; }
+.diagram .nf-rw0 { animation: nf-rw0 var(--T) linear infinite; }
+.diagram .nf-rw1 { animation: nf-rw1 var(--T) linear infinite; }
+.diagram .nf-rw2 { animation: nf-rw2 var(--T) linear infinite; }
+.diagram .nf-rw3 { animation: nf-rw3 var(--T) linear infinite; }
+.diagram .nf-wdim { animation: nf-wdim var(--T) linear infinite; }
+.diagram .nf-rwn { animation: nf-rwn var(--T) linear infinite; }
+.diagram .nf-nf1 { opacity: 0; animation: nf-nf1 var(--T) linear infinite; }
+.diagram .nf-nf2 { opacity: 0; animation: nf-nf2 var(--T) linear infinite; }
+.diagram .nf-nf3 { opacity: 0; animation: nf-nf3 var(--T) linear infinite; }
+.diagram .nf-cd0 { animation: nf-cd0 var(--T) linear infinite; }
+.diagram .nf-ch0 { animation: nf-ch0 var(--T) linear infinite; }
+.diagram .nf-cd1 { animation: nf-cd1 var(--T) linear infinite; }
+.diagram .nf-ch1 { animation: nf-ch1 var(--T) linear infinite; }
+.diagram .nf-cd2 { animation: nf-cd2 var(--T) linear infinite; }
+.diagram .nf-ch2 { animation: nf-ch2 var(--T) linear infinite; }
+.diagram .nf-strike { animation: nf-strike var(--T) linear infinite; }
+.diagram .nf-ichip { opacity: 0; animation: nf-ichip var(--T) linear infinite; }
+.diagram .nf-rej { opacity: 0; animation: nf-rej var(--T) linear infinite; }
+.diagram .nf-tu1 { opacity: 0; animation: nf-tu1 var(--T) linear infinite; }
+.diagram .nf-or41 { opacity: 0; animation: nf-or41 var(--T) linear infinite; }
+.diagram .nf-ir41 { opacity: 0; animation: nf-ir41 var(--T) linear infinite; }
+.diagram .nf-cr1 { opacity: 0; animation: nf-cr1 var(--T) linear infinite; }
+.diagram .nf-ecom { opacity: 0; animation: nf-ecom var(--T) linear infinite; }
+.diagram .nf-eorg { opacity: 0; animation: nf-eorg var(--T) linear infinite; }
+.diagram .nf-pr { opacity: 0; animation: nf-pr var(--T) linear infinite; }
+.diagram .nf-p1 { opacity: 0; animation: nf-p1 var(--T) linear infinite; }
+.diagram .nf-p2 { opacity: 0; animation: nf-p2 var(--T) linear infinite; }
+.diagram .nf-o5 { opacity: 0; animation: nf-o5 var(--T) linear infinite; }
+.diagram .nf-t0 { opacity: 0; animation: nf-t0 var(--T) linear infinite; }
+.diagram .nf-t1 { opacity: 0; animation: nf-t1 var(--T) linear infinite; }
+.diagram .nf-i5 { opacity: 0; animation: nf-i5 var(--T) linear infinite; }
+.diagram .nf-tick { opacity: 0; animation: nf-tick var(--T) linear infinite; }
+.diagram .nf-co0 { opacity: 0; animation: nf-co0 var(--T) linear infinite; }
+.diagram .nf-co1 { opacity: 0; animation: nf-co1 var(--T) linear infinite; }
+.diagram .nf-ce0 { opacity: 0; animation: nf-ce0 var(--T) linear infinite; }
+.diagram .nf-ce1 { opacity: 0; animation: nf-ce1 var(--T) linear infinite; }
+.diagram .nf-ce2 { opacity: 0; animation: nf-ce2 var(--T) linear infinite; }
+.diagram .nf-ce3 { opacity: 0; animation: nf-ce3 var(--T) linear infinite; }
+.diagram .nf-cp0 { opacity: 0; animation: nf-cp0 var(--T) linear infinite; }
+.diagram .nf-cp1 { opacity: 0; animation: nf-cp1 var(--T) linear infinite; }
+.diagram .nf-cp2 { opacity: 0; animation: nf-cp2 var(--T) linear infinite; }
+.diagram .nf-cp3 { opacity: 0; animation: nf-cp3 var(--T) linear infinite; }
+.diagram .nf-tu2 { opacity: 0; animation: nf-tu2 var(--T) linear infinite; }
+.diagram .nf-trhl { opacity: 0; animation: nf-trhl var(--T) linear infinite; }
+.diagram .nf-tr3 { opacity: 0; animation: nf-tr3 var(--T) linear infinite; }
+.diagram .nf-trig { opacity: 0; animation: nf-trig var(--T) linear infinite; }
+.diagram .nf-tp3 { opacity: 0; animation: nf-tp3 var(--T) linear infinite; }
+.diagram .nf-ddb { opacity: 0; animation: nf-ddb var(--T) linear infinite; }
+.diagram .nf-cq { opacity: 0; animation: nf-cq var(--T) linear infinite; }
+.diagram .nf-j1 { opacity: 0; animation: nf-j1 var(--T) linear infinite; }
+.diagram .nf-j2 { opacity: 0; animation: nf-j2 var(--T) linear infinite; }
+.diagram .nf-j3 { opacity: 0; animation: nf-j3 var(--T) linear infinite; }
+.diagram .nf-j4 { opacity: 0; animation: nf-j4 var(--T) linear infinite; }
+.diagram .nf-w0 { opacity: 0; animation: nf-w0 var(--T) linear infinite; }
+.diagram .nf-w1 { opacity: 0; animation: nf-w1 var(--T) linear infinite; }
+.diagram .nf-w2 { opacity: 0; animation: nf-w2 var(--T) linear infinite; }
+.diagram .nf-s1 { animation: nf-s1 var(--T) linear infinite; }
+.diagram .nf-s2 { opacity: 0; animation: nf-s2 var(--T) linear infinite; }
+.diagram .nf-s3a { opacity: 0; animation: nf-s3a var(--T) linear infinite; }
+.diagram .nf-s3b { opacity: 0; animation: nf-s3b var(--T) linear infinite; }
+.diagram .nf-s3c { opacity: 0; animation: nf-s3c var(--T) linear infinite; }
+.diagram .nf-s4a { opacity: 0; animation: nf-s4a var(--T) linear infinite; }
+.diagram .nf-s4b { opacity: 0; animation: nf-s4b var(--T) linear infinite; }
+.diagram .nf-s4c { opacity: 0; animation: nf-s4c var(--T) linear infinite; }
+@keyframes nf-q0 {
+  0% { opacity: 1; }
+  12.25% { opacity: 1; }
+  12.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q1 {
+  0% { opacity: 0; }
+  12.25% { opacity: 0; }
+  13% { opacity: 1; }
+  17.25% { opacity: 1; }
+  17.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q2 {
+  0% { opacity: 0; }
+  17.25% { opacity: 0; }
+  18% { opacity: 1; }
+  25% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q3 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  38% { opacity: 1; }
+  38.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q4 {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  38.75% { opacity: 1; }
+  50% { opacity: 1; }
+  50.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q5 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.75% { opacity: 1; }
+  56.5% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q6 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  57.25% { opacity: 1; }
+  64% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q7 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  64.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q8 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  84% { opacity: 1; }
+  84.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-q9 {
+  0% { opacity: 0; }
+  84% { opacity: 0; }
+  84.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-pl0 {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  8.75% { opacity: 1; }
+  12.25% { opacity: 1; }
+  12.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl1 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  15.75% { opacity: 1; }
+  17.25% { opacity: 1; }
+  17.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl2 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  19.75% { opacity: 1; }
+  25% { opacity: 1; }
+  25.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl3 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.25% { opacity: 1; }
+  38% { opacity: 1; }
+  38.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl4 {
+  0% { opacity: 0; }
+  42.25% { opacity: 0; }
+  43% { opacity: 1; }
+  50% { opacity: 1; }
+  50.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl5 {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  54% { opacity: 1; }
+  56.5% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl6 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.75% { opacity: 1; }
+  64% { opacity: 1; }
+  64.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl7 {
+  0% { opacity: 0; }
+  67% { opacity: 0; }
+  67.75% { opacity: 1; }
+  75% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl8 {
+  0% { opacity: 0; }
+  81.25% { opacity: 0; }
+  82% { opacity: 1; }
+  84% { opacity: 1; }
+  84.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-pl9 {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  88.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-rw0 {
+  0% { opacity: 0; }
+  3.7% { opacity: 0; }
+  4.2% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-rw1 {
+  0% { opacity: 0; }
+  4.2% { opacity: 0; }
+  4.7% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-rw2 {
+  0% { opacity: 0; }
+  4.65% { opacity: 0; }
+  5.15% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-rw3 {
+  0% { opacity: 0; }
+  6.05% { opacity: 0; }
+  6.55% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-wdim {
+  0% { opacity: 1; }
+  37.5% { opacity: 1; }
+  39% { opacity: 0.38; }
+  100% { opacity: 0.38; }
+}
+@keyframes nf-rwn {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-nf1 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-nf2 {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  30.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-nf3 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  34.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-cd0 {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-ch0 {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-cd1 {
+  0% { opacity: 0; }
+  12.25% { opacity: 0; }
+  13.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-ch1 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-cd2 {
+  0% { opacity: 0; }
+  17.25% { opacity: 0; }
+  18.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-ch2 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-strike {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-ichip {
+  0% { transform: translate(330px, 130px); opacity: 0; }
+  12.5% { transform: translate(330px, 130px); opacity: 0; }
+  12.6% { transform: translate(330px, 136px); }
+  12.75% { opacity: 1; }
+  15.35% { transform: translate(296px, 314px); }
+  16.75% { transform: translate(296px, 314px); opacity: 1; }
+  17% { transform: translate(296px, 314px); opacity: 0; }
+  100% { transform: translate(296px, 314px); opacity: 0; }
+}
+@keyframes nf-rej {
+  0% { opacity: 0; }
+  15.35% { opacity: 0; }
+  15.85% { opacity: 1; }
+  16.75% { opacity: 1; }
+  17.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-tu1 {
+  0% { transform: translate(167px, 128px); opacity: 0; }
+  1.75% { transform: translate(167px, 128px); opacity: 0; }
+  2% { opacity: 1; }
+  3.7% { transform: translate(167px, 196px); }
+  4.2% { transform: translate(167px, 213px); }
+  4.65% { transform: translate(167px, 230px); }
+  6.05% { transform: translate(167px, 278px); }
+  7% { transform: translate(167px, 312px); opacity: 1; }
+  7.25% { transform: translate(167px, 312px); opacity: 0; }
+  100% { transform: translate(167px, 312px); opacity: 0; }
+}
+@keyframes nf-or41 {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-ir41 {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-cr1 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-ecom {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.25% { opacity: 1; }
+  41.75% { opacity: 1; }
+  42.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-eorg {
+  0% { opacity: 0; }
+  41.75% { opacity: 0; }
+  42.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-pr {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-p1 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.25% { opacity: 1; }
+  67% { opacity: 1; }
+  67.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-p2 {
+  0% { opacity: 0; }
+  67% { opacity: 0; }
+  67.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-o5 {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-t0 {
+  0% { opacity: 0; }
+  56.75% { opacity: 0; }
+  57.5% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes nf-t1 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-i5 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-tick {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  69% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-co0 {
+  0% { transform: translate(84px, 200px); opacity: 0; }
+  29.75% { transform: translate(84px, 200px); opacity: 0; }
+  30% { opacity: 1; }
+  30.75% { transform: translate(84px, 200px); }
+  33.5% { transform: translate(506px, 258px); opacity: 1; }
+  33.75% { transform: translate(506px, 258px); opacity: 0; }
+  100% { transform: translate(506px, 258px); opacity: 0; }
+}
+@keyframes nf-co1 {
+  0% { transform: translate(84px, 217px); opacity: 0; }
+  29.75% { transform: translate(84px, 217px); opacity: 0; }
+  30% { opacity: 1; }
+  30.75% { transform: translate(84px, 217px); }
+  33.5% { transform: translate(506px, 258px); opacity: 1; }
+  33.75% { transform: translate(506px, 258px); opacity: 0; }
+  100% { transform: translate(506px, 258px); opacity: 0; }
+}
+@keyframes nf-ce0 {
+  0% { transform: translate(94px, 200px); opacity: 0; }
+  33.25% { transform: translate(94px, 200px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(94px, 200px); }
+  37.5% { transform: translate(488px, 183px); opacity: 1; }
+  37.75% { transform: translate(488px, 183px); opacity: 0; }
+  100% { transform: translate(488px, 183px); opacity: 0; }
+}
+@keyframes nf-ce1 {
+  0% { transform: translate(94px, 217px); opacity: 0; }
+  33.25% { transform: translate(94px, 217px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(94px, 217px); }
+  37.5% { transform: translate(488px, 183px); opacity: 1; }
+  37.75% { transform: translate(488px, 183px); opacity: 0; }
+  100% { transform: translate(488px, 183px); opacity: 0; }
+}
+@keyframes nf-ce2 {
+  0% { transform: translate(94px, 234px); opacity: 0; }
+  33.25% { transform: translate(94px, 234px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(94px, 234px); }
+  37.5% { transform: translate(488px, 183px); opacity: 1; }
+  37.75% { transform: translate(488px, 183px); opacity: 0; }
+  100% { transform: translate(488px, 183px); opacity: 0; }
+}
+@keyframes nf-ce3 {
+  0% { transform: translate(94px, 282px); opacity: 0; }
+  33.25% { transform: translate(94px, 282px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(94px, 282px); }
+  37.5% { transform: translate(488px, 183px); opacity: 1; }
+  37.75% { transform: translate(488px, 183px); opacity: 0; }
+  100% { transform: translate(488px, 183px); opacity: 0; }
+}
+@keyframes nf-cp0 {
+  0% { transform: translate(296px, 200px); opacity: 0; }
+  33.25% { transform: translate(296px, 200px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(296px, 200px); }
+  37.5% { transform: translate(784px, 183px); opacity: 1; }
+  37.75% { transform: translate(784px, 183px); opacity: 0; }
+  100% { transform: translate(784px, 183px); opacity: 0; }
+}
+@keyframes nf-cp1 {
+  0% { transform: translate(296px, 265px); opacity: 0; }
+  33.25% { transform: translate(296px, 265px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(296px, 265px); }
+  37.5% { transform: translate(784px, 183px); opacity: 1; }
+  37.75% { transform: translate(784px, 183px); opacity: 0; }
+  100% { transform: translate(784px, 183px); opacity: 0; }
+}
+@keyframes nf-cp2 {
+  0% { transform: translate(296px, 282px); opacity: 0; }
+  33.25% { transform: translate(296px, 282px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(296px, 282px); }
+  37.5% { transform: translate(784px, 183px); opacity: 1; }
+  37.75% { transform: translate(784px, 183px); opacity: 0; }
+  100% { transform: translate(784px, 183px); opacity: 0; }
+}
+@keyframes nf-cp3 {
+  0% { transform: translate(296px, 299px); opacity: 0; }
+  33.25% { transform: translate(296px, 299px); opacity: 0; }
+  33.5% { opacity: 1; }
+  34% { transform: translate(296px, 299px); }
+  37.5% { transform: translate(784px, 183px); opacity: 1; }
+  37.75% { transform: translate(784px, 183px); opacity: 0; }
+  100% { transform: translate(784px, 183px); opacity: 0; }
+}
+@keyframes nf-tu2 {
+  0% { transform: translate(330px, 128px); opacity: 0; }
+  38.75% { transform: translate(330px, 128px); opacity: 0; }
+  39% { opacity: 1; }
+  41.65% { transform: translate(557px, 180px); opacity: 1; }
+  41.9% { transform: translate(557px, 180px); opacity: 0; }
+  100% { transform: translate(557px, 180px); opacity: 0; }
+}
+@keyframes nf-trhl {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-tr3 {
+  0% { transform: translate(714px, 128px); opacity: 0; }
+  50.75% { transform: translate(714px, 128px); opacity: 0; }
+  51% { opacity: 1; }
+  52.05% { transform: translate(714px, 206px); }
+  52.85% { transform: translate(724px, 254px); opacity: 1; }
+  53.1% { transform: translate(724px, 254px); opacity: 0; }
+  100% { transform: translate(724px, 254px); opacity: 0; }
+}
+@keyframes nf-trig {
+  0% { transform: translate(700px, 374px); opacity: 0; }
+  59% { transform: translate(700px, 374px); opacity: 0; }
+  59.25% { opacity: 1; }
+  61.85% { transform: translate(726px, 269px); opacity: 1; }
+  62.1% { transform: translate(726px, 269px); opacity: 0; }
+  100% { transform: translate(726px, 269px); opacity: 0; }
+}
+@keyframes nf-tp3 {
+  0% { transform: translate(420px, 128px); opacity: 0; }
+  64.5% { transform: translate(420px, 128px); opacity: 0; }
+  64.55% { transform: translate(420px, 134px); }
+  64.75% { opacity: 1; }
+  67.2% { transform: translate(898px, 179px); opacity: 1; }
+  67.45% { transform: translate(898px, 179px); opacity: 0; }
+  100% { transform: translate(898px, 179px); opacity: 0; }
+}
+@keyframes nf-ddb {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-cq {
+  0% { opacity: 0; }
+  85.5% { opacity: 0; }
+  86.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-j1 {
+  0% { transform: translate(714px, 128px); opacity: 0; }
+  75.75% { transform: translate(714px, 128px); opacity: 0; }
+  76% { opacity: 1; }
+  76.5% { transform: translate(714px, 206px); }
+  78.7% { transform: translate(490px, 254px); opacity: 1; }
+  78.95% { transform: translate(490px, 254px); opacity: 0; }
+  100% { transform: translate(490px, 254px); opacity: 0; }
+}
+@keyframes nf-j2 {
+  0% { transform: translate(490px, 254px); opacity: 0; }
+  78.75% { transform: translate(490px, 254px); opacity: 0; }
+  79% { opacity: 1; }
+  79.7% { transform: translate(490px, 204px); }
+  80.05% { transform: translate(472px, 204px); }
+  80.5% { transform: translate(472px, 180px); opacity: 1; }
+  80.75% { transform: translate(472px, 180px); opacity: 0; }
+  100% { transform: translate(472px, 180px); opacity: 0; }
+}
+@keyframes nf-j3 {
+  0% { transform: translate(490px, 254px); opacity: 0; }
+  78.75% { transform: translate(490px, 254px); opacity: 0; }
+  79% { opacity: 1; }
+  80.5% { transform: translate(490px, 344px); opacity: 1; }
+  80.75% { transform: translate(490px, 344px); opacity: 0; }
+  100% { transform: translate(490px, 344px); opacity: 0; }
+}
+@keyframes nf-j4 {
+  0% { transform: translate(700px, 344px); opacity: 0; }
+  80.75% { transform: translate(700px, 344px); opacity: 0; }
+  81% { opacity: 1; }
+  81.85% { transform: translate(772px, 344px); }
+  84% { transform: translate(772px, 200px); }
+  84.55% { transform: translate(800px, 180px); opacity: 1; }
+  84.8% { transform: translate(800px, 180px); opacity: 0; }
+  100% { transform: translate(800px, 180px); opacity: 0; }
+}
+@keyframes nf-w0 {
+  0% { transform: translate(700px, 374px); opacity: 0; }
+  84.75% { transform: translate(700px, 374px); opacity: 0; }
+  85% { opacity: 1; }
+  86.85% { transform: translate(726px, 269px); opacity: 1; }
+  87.1% { transform: translate(726px, 269px); opacity: 0; }
+  100% { transform: translate(726px, 269px); opacity: 0; }
+}
+@keyframes nf-w1 {
+  0% { transform: translate(700px, 374px); opacity: 0; }
+  85.85% { transform: translate(700px, 374px); opacity: 0; }
+  86.1% { opacity: 1; }
+  87.95% { transform: translate(726px, 269px); opacity: 1; }
+  88.2% { transform: translate(726px, 269px); opacity: 0; }
+  100% { transform: translate(726px, 269px); opacity: 0; }
+}
+@keyframes nf-w2 {
+  0% { transform: translate(700px, 374px); opacity: 0; }
+  86.95% { transform: translate(700px, 374px); opacity: 0; }
+  87.2% { opacity: 1; }
+  89.05% { transform: translate(726px, 269px); opacity: 1; }
+  89.3% { transform: translate(726px, 269px); opacity: 0; }
+  100% { transform: translate(726px, 269px); opacity: 0; }
+}
+@keyframes nf-s1 {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-s2 {
+  0% { opacity: 0; }
+  42.25% { opacity: 0; }
+  43.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-s3a {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  54.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-s3b {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  54.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-s3c {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-s4a {
+  0% { opacity: 0; }
+  81.25% { opacity: 0; }
+  82.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-s4b {
+  0% { opacity: 0; }
+  81.25% { opacity: 0; }
+  82.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes nf-s4c {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  89% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+<rect class="box" x="30" y="92" width="110" height="32" rx="10"/>
+<text class="label mid" x="85" y="113">shop app</text>
+<rect class="f-bg s-line" x="150" y="92" width="780" height="32" rx="10" stroke-width="1.5"/>
+<text class="sub mono f-ink nf-q0" x="162" y="113">UPDATE order_lines_wide SET email = 'customer1@example.org' WHERE customer_id = 1</text>
+<text class="sub mono f-ink nf-q1" x="162" y="113">INSERT INTO order_lines_wide (product_name, price_thb) VALUES ('Product 10001', 990.00)</text>
+<text class="sub mono f-ink nf-q2" x="162" y="113">DELETE FROM order_lines_wide WHERE order_id = 124446</text>
+<text class="sub mono f-ink nf-q3" x="162" y="113">CREATE TABLE orders (id bigint PRIMARY KEY, customer_id bigint REFERENCES customers, …)</text>
+<text class="sub mono f-ink nf-q4" x="162" y="113">UPDATE customers SET email = 'customer1@example.org' WHERE id = 1</text>
+<text class="sub mono f-ink nf-q5" x="162" y="113">SELECT id, created_at, status, total_thb FROM orders WHERE customer_id = 1</text>
+<text class="sub mono f-ink nf-q6" x="162" y="113">INSERT INTO order_items VALUES (500001, 1, 4077, 1, 2646.15)</text>
+<text class="sub mono f-ink nf-q7" x="162" y="113">UPDATE products SET price_thb = 2799.00 WHERE id = 4077</text>
+<text class="sub mono f-ink nf-q8" x="162" y="113">SELECT … FROM orders o JOIN customers c JOIN order_items i JOIN products p … WHERE o.id = 41</text>
+<text class="sub mono f-ink nf-q9" x="162" y="113">INSERT INTO order_items SELECT id, 9, 4077, 1, 2646.15 FROM orders WHERE id &gt; 490000</text>
+<g class="nf-pl0"><rect class="f-red-soft s-red" x="818.91" y="98" width="103.09" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="870.45" y="112">UPDATE 6537</text></g>
+<g class="nf-pl1"><rect class="f-red-soft s-red" x="857.65" y="98" width="64.35" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="889.82" y="112">ERROR</text></g>
+<g class="nf-pl2"><rect class="f-red-soft s-red" x="839.09" y="98" width="82.91" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="880.54" y="112">DELETE 3</text></g>
+<g class="nf-pl3"><rect class="f-green-soft s-green" x="803.47" y="98" width="118.53" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="862.73" y="112">CREATE TABLE</text></g>
+<g class="nf-pl4"><rect class="f-green-soft s-green" x="839.09" y="98" width="82.91" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="880.54" y="112">UPDATE 1</text></g>
+<g class="nf-pl5"><rect class="f-blue-soft s-blue" x="840.82" y="98" width="81.18" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="881.41" y="112">2,633 rows</text></g>
+<g class="nf-pl6"><rect class="f-purple-soft s-purple" x="829" y="98" width="93" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="875.5" y="112">INSERT 0 1</text></g>
+<g class="nf-pl7"><rect class="f-purple-soft s-purple" x="839.09" y="98" width="82.91" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="880.54" y="112">UPDATE 1</text></g>
+<g class="nf-pl8"><rect class="f-blue-soft s-blue" x="864.37" y="98" width="57.63" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="893.18" y="112">2 rows</text></g>
+<g class="nf-pl9"><rect class="f-purple-soft s-purple" x="802.09" y="98" width="119.91" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="862.04" y="112">INSERT 0 10000</text></g>
+<g class="p12"><g class="nf-wdim"><text class="sub mono sb" x="40" y="153">order_lines_wide</text><text class="tiny end" x="438" y="153">the prototype · 5 of its 13 columns</text><rect class="box" x="30" y="162" width="418" height="156" rx="10"/><text class="tiny sb f-ink" x="40" y="178">order_id</text><text class="tiny sb f-ink" x="94" y="178">email</text><text class="tiny sb f-ink" x="248" y="178">country</text><text class="tiny sb f-ink" x="296" y="178">product_name</text><text class="tiny sb f-ink end" x="438" y="178">price_thb</text><line class="s-line" x1="36" y1="184" x2="442" y2="184" stroke-width="1"/><rect class="f-red-soft" x="90" y="188" width="202" height="16" rx="4"/><rect class="f-red-soft" x="292" y="188" width="146" height="16" rx="4"/><rect class="f-red-soft" x="90" y="205" width="202" height="16" rx="4"/><rect class="f-red-soft" x="90" y="222" width="202" height="16" rx="4"/><rect class="f-red-soft" x="292" y="253" width="146" height="16" rx="4"/><rect class="f-red-soft" x="90" y="270" width="202" height="16" rx="4"/><rect class="f-red-soft" x="292" y="270" width="146" height="16" rx="4"/><rect class="f-red-soft" x="292" y="287" width="146" height="16" rx="4"/><text class="tiny mono f-ink end" x="84" y="200">41</text><text class="tiny mono f-ink" x="94" y="200">customer1@example.com</text><text class="tiny mono f-ink" x="248" y="200">MY</text><text class="tiny mono f-ink" x="296" y="200">Product 4077</text><text class="tiny mono f-ink end" x="438" y="200">2,646.15</text><text class="tiny mono f-ink end" x="84" y="217">41</text><text class="tiny mono f-ink" x="94" y="217">customer1@example.com</text><text class="tiny mono f-ink" x="248" y="217">MY</text><text class="tiny mono f-ink" x="296" y="217">Product 6634</text><text class="tiny mono f-ink end" x="438" y="217">9,379.18</text><text class="tiny mono f-ink end" x="84" y="234">194</text><text class="tiny mono f-ink" x="94" y="234">customer1@example.com</text><text class="tiny mono f-ink" x="248" y="234">MY</text><text class="tiny mono f-ink" x="296" y="234">Product 1014</text><text class="tiny mono f-ink end" x="438" y="234">2,749.06</text><text class="tiny mono f-ink end" x="84" y="265">100987</text><text class="tiny mono f-ink" x="94" y="265">customer14@example.com</text><text class="tiny mono f-ink" x="248" y="265">VN</text><text class="tiny mono f-ink" x="296" y="265">Product 4077</text><text class="tiny mono f-ink end" x="438" y="265">2,646.15</text><text class="tiny mono f-ink end" x="84" y="282">273754</text><text class="tiny mono f-ink" x="94" y="282">customer1@example.com</text><text class="tiny mono f-ink" x="248" y="282">MY</text><text class="tiny mono f-ink" x="296" y="282">Product 4077</text><text class="tiny mono f-ink end" x="438" y="282">2,646.15</text><text class="tiny mono f-ink end" x="84" y="299">376746</text><text class="tiny mono f-ink" x="94" y="299">customer37@example.com</text><text class="tiny mono f-ink" x="248" y="299">VN</text><text class="tiny mono f-ink" x="296" y="299">Product 4077</text><text class="tiny mono f-ink end" x="438" y="299">2,646.15</text><text class="tiny mid b f-muted" x="239" y="248">⋮</text><text class="tiny mid b f-muted" x="239" y="312">⋮</text><rect class="f-purple-soft s-purple nf-rw0" x="90" y="188" width="154" height="16" rx="4" stroke-width="1.2"/><rect class="f-purple-soft s-purple nf-rw1" x="90" y="205" width="154" height="16" rx="4" stroke-width="1.2"/><rect class="f-purple-soft s-purple nf-rw2" x="90" y="222" width="154" height="16" rx="4" stroke-width="1.2"/><rect class="f-purple-soft s-purple nf-rw3" x="90" y="270" width="154" height="16" rx="4" stroke-width="1.2"/></g></g>
+<g class="p1"><text class="tiny" x="40" y="338"><tspan class="f-red sb">repeated:</tspan> customer 1's email in 6,537 rows, Product 4077 in 111</text><text class="tiny" x="40" y="356">one row per order line: 1,250,000 rows, 25,280 pages, 198 MB</text><g class="nf-rwn"><text class="sub sb f-purple" x="40" y="380">one new email: UPDATE rewrote 6,537 rows</text></g></g>
+<g class="p2"><g class="nf-nf1"><rect class="f-panel-2 s-line" x="40" y="326" width="32" height="16" rx="8" stroke-width="1"/><text class="tiny mid b f-ink" x="56" y="338">1NF</text><text class="tiny" x="80" y="338">one value per cell: no list of products in one column</text></g><g class="nf-nf2"><rect class="f-panel-2 s-line" x="40" y="346" width="32" height="16" rx="8" stroke-width="1"/><text class="tiny mid b f-ink" x="56" y="358">2NF</text><text class="tiny" x="80" y="358">nothing depends on part of the key (order_id, line_no) → orders</text></g><g class="nf-nf3"><rect class="f-panel-2 s-line" x="40" y="366" width="32" height="16" rx="8" stroke-width="1"/><text class="tiny mid b f-ink" x="56" y="378">3NF</text><text class="tiny" x="80" y="378">nothing depends on a non-key column → customers, products</text></g></g>
+<g class="p1"><g class="nf-cd0"><rect class="box" x="460" y="140" width="470" height="74" rx="10"/><rect class="f-red-soft s-red nf-ch0" x="460" y="140" width="470" height="74" rx="10" stroke-width="1.5"/><text class="sub sb f-red" x="474" y="161">Update anomaly</text><text class="tiny" x="474" y="179">customer 1's new email has to be written into all 6,537 of their lines</text><text class="tiny" x="474" y="194">miss some (WHERE order_id = 41 → UPDATE 2) and customer 1 has two emails</text></g><g class="nf-cd1"><rect class="box" x="460" y="220" width="470" height="74" rx="10"/><rect class="f-red-soft s-red nf-ch1" x="460" y="220" width="470" height="74" rx="10" stroke-width="1.5"/><text class="sub sb f-red" x="474" y="241">Insert anomaly</text><text class="tiny" x="474" y="259">a new product, or a new price, has nowhere to go until someone orders it:</text><text class="tiny mono f-red" x="474" y="274">null value in column "order_id" … violates not-null constraint</text><text class="tiny" x="474" y="289">and the 4,120 customers who never ordered can't be stored at all</text></g><g class="nf-cd2"><rect class="box" x="460" y="300" width="470" height="74" rx="10"/><rect class="f-red-soft s-red nf-ch2" x="460" y="300" width="470" height="74" rx="10" stroke-width="1.5"/><text class="sub sb f-red" x="474" y="321">Delete anomaly</text><text class="tiny" x="474" y="339">DELETE order 124446 (3 lines), and customer 5797's email and country go too</text><text class="tiny mono f-ink" x="474" y="354">124446 · customer5797@example.com · VN</text><text class="tiny" x="474" y="369">11,309 customers have exactly one order</text><line class="s-red nf-strike" x1="471" y1="350" x2="735.1800000000001" y2="350" stroke-width="1.5"/></g></g>
+<g class="nf-ichip"><rect class="f-bg s-purple" x="-4" y="-12" width="146" height="16" rx="4" stroke-width="1.2"/><rect class="f-purple-soft" x="-4" y="-12" width="146" height="16" rx="4"/><text class="tiny mono f-purple" x="0" y="0">Product 10001</text><text class="tiny mono f-purple end" x="134" y="0">990.00</text></g>
+<g class="nf-rej"><circle class="f-red" cx="280" cy="310" r="8"/><path class="s-bg" d="M276.5 306.5l7 7M283.5 306.5l-7 7" stroke-width="2" stroke-linecap="round"/></g>
+<circle class="pkt f-purple nf-tu1" r="7"/>
+<g class="p234"><rect class="box" x="460" y="140" width="226" height="51" rx="8"/><text class="tiny mono b f-ink" x="468" y="152">customers</text><text class="tiny end" x="678" y="152">100,000 rows</text><line class="s-line" x1="460" y1="157" x2="686" y2="157" stroke-width="1"/><line class="s-line" x1="464" y1="172" x2="682" y2="172" stroke-width="1"/><text class="tiny sb f-ink" x="466" y="169">id</text><line class="s-ink" x1="466" y1="171.5" x2="477" y2="171.5" stroke-width="1"/><text class="tiny sb f-ink" x="488" y="169">email</text><text class="tiny sb f-ink" x="637" y="169">country</text><rect class="box" x="742" y="140" width="188" height="51" rx="8"/><text class="tiny mono b f-ink" x="750" y="152">products</text><text class="tiny end" x="922" y="152">10,000 rows</text><line class="s-line" x1="742" y1="157" x2="930" y2="157" stroke-width="1"/><line class="s-line" x1="746" y1="172" x2="926" y2="172" stroke-width="1"/><text class="tiny sb f-ink" x="748" y="169">id</text><line class="s-ink" x1="748" y1="171.5" x2="759" y2="171.5" stroke-width="1"/><text class="tiny sb f-ink" x="784" y="169">name</text><text class="tiny sb f-ink end" x="924" y="169">price_thb</text><rect class="box" x="460" y="215" width="304" height="66" rx="8"/><text class="tiny mono b f-ink" x="468" y="227">orders</text><text class="tiny end" x="756" y="227">500,000 rows</text><line class="s-line" x1="460" y1="232" x2="764" y2="232" stroke-width="1"/><line class="s-line" x1="464" y1="247" x2="760" y2="247" stroke-width="1"/><text class="tiny sb f-ink" x="466" y="244">id</text><line class="s-ink" x1="466" y1="246.5" x2="477" y2="246.5" stroke-width="1"/><text class="tiny sb f-ink" x="516" y="244">customer_id</text><text class="tiny sb f-ink" x="594" y="244">shipping_country</text><text class="tiny sb f-ink end" x="756" y="244">total_thb</text><rect class="box" x="460" y="305" width="270" height="81" rx="8"/><text class="tiny mono b f-ink" x="468" y="317">order_items</text><text class="tiny end" x="722" y="317">1,250,000 rows</text><line class="s-line" x1="460" y1="322" x2="730" y2="322" stroke-width="1"/><line class="s-line" x1="464" y1="337" x2="726" y2="337" stroke-width="1"/><text class="tiny sb f-ink" x="466" y="334">order_id</text><line class="s-ink" x1="466" y1="336.5" x2="512" y2="336.5" stroke-width="1"/><text class="tiny sb f-ink" x="522" y="334">line_no</text><line class="s-ink" x1="522" y1="336.5" x2="562" y2="336.5" stroke-width="1"/><text class="tiny sb f-ink" x="572" y="334">product_id</text><text class="tiny sb f-ink" x="642" y="334">qty</text><text class="tiny sb f-ink end" x="724" y="334">price_thb</text><path class="wire" d="M546 215V204H472V194" marker-end="url(#ah)" stroke-width="1.5"/><path class="wire" d="M488 305V284" marker-end="url(#ah)" stroke-width="1.5"/><path class="wire" d="M730 343H772V194" marker-end="url(#ah)" stroke-width="1.5"/><text class="tiny" x="556" y="210">customer_id → customers.id</text><text class="tiny" x="498" y="299">order_id → orders.id</text><text class="tiny" x="778" y="298">product_id →</text><text class="tiny" x="778" y="311">products.id</text><g class="p34"><rect class="f-amber-soft s-amber" x="692" y="246" width="68" height="31" rx="4" stroke-width="1.2"/><rect class="f-teal-soft s-teal" x="590" y="246" width="22" height="31" rx="4" stroke-width="1.2"/><rect class="f-teal-soft s-teal" x="667" y="336" width="61" height="46" rx="4" stroke-width="1.2"/></g><g class="nf-or41"><text class="tiny mono f-ink end" x="506" y="258">41</text><text class="tiny mono f-ink end" x="584" y="258">1</text><text class="tiny mono f-ink" x="594" y="258">MY</text><text class="tiny mono f-ink end" x="756" y="258">33,429.84</text></g><g class="nf-ir41"><text class="tiny mono f-ink end" x="512" y="348">41</text><text class="tiny mono f-ink end" x="560" y="348">1</text><text class="tiny mono f-ink end" x="632" y="348">4077</text><text class="tiny mono f-ink end" x="659" y="348">2</text><text class="tiny mono f-ink end" x="724" y="348">2,646.15</text><text class="tiny mono f-ink end" x="512" y="363">41</text><text class="tiny mono f-ink end" x="560" y="363">2</text><text class="tiny mono f-ink end" x="632" y="363">6634</text><text class="tiny mono f-ink end" x="659" y="363">3</text><text class="tiny mono f-ink end" x="724" y="363">9,379.18</text></g><g class="nf-cr1"><text class="tiny mono f-ink end" x="478" y="183">1</text><text class="tiny mono f-ink" x="637" y="183">MY</text></g><text class="tiny mono f-ink nf-ecom" x="488" y="183">customer1@example.com</text><text class="tiny mono b f-purple nf-eorg" x="488" y="183">customer1@example.org</text><g class="nf-pr"><text class="tiny mono f-ink end" x="776" y="183">4077</text><text class="tiny mono f-ink" x="784" y="183">Product 4077</text></g><text class="tiny mono f-ink end nf-p1" x="924" y="183">2,646.15</text><text class="tiny mono b f-purple end nf-p2" x="924" y="183">2,799.00</text><g class="nf-o5"><rect class="f-purple-soft" x="462" y="262" width="300" height="15" rx="3"/><text class="tiny mono f-purple end" x="506" y="273">500001</text><text class="tiny mono f-purple end" x="584" y="273">1</text><text class="tiny mono f-purple" x="594" y="273">MY</text></g><text class="tiny mono f-purple end nf-t0" x="756" y="273">0.00</text><text class="tiny mono b f-purple end nf-t1" x="756" y="273">2,646.15</text><g class="nf-i5"><rect class="f-purple-soft" x="462" y="367" width="266" height="15" rx="3"/><text class="tiny mono f-purple end" x="512" y="378">500001</text><text class="tiny mono f-purple end" x="560" y="378">1</text><text class="tiny mono f-purple end" x="632" y="378">4077</text><text class="tiny mono f-purple end" x="659" y="378">1</text><text class="tiny mono f-purple end" x="724" y="378">2,646.15</text></g><g class="nf-tick"><text class="tiny b f-teal" x="735" y="348">✓</text><text class="tiny b f-teal" x="735" y="378">✓</text></g><g class="p34"><text class="tiny sb f-amber-ink" x="784" y="232">total_thb: a copy</text><text class="tiny" x="784" y="246">= SUM(qty × price_thb)</text><text class="tiny sb f-teal" x="784" y="263">shipping_country: a fact,</text><text class="tiny" x="784" y="277">where the order shipped</text><text class="tiny sb f-teal" x="784" y="334">price_thb: the price paid</text><text class="tiny" x="784" y="348">fixed at checkout, so it</text><text class="tiny" x="784" y="362">keeps 2,646.15 when the</text><text class="tiny" x="784" y="376">product goes to 2,799.00</text></g><g class="p4"><path class="none s-blue" d="M546 215V204H472V194" marker-end="url(#ah-blue)" stroke-width="2"/><path class="none s-blue" d="M488 305V284" marker-end="url(#ah-blue)" stroke-width="2"/><path class="none s-blue" d="M730 343H772V194" marker-end="url(#ah-blue)" stroke-width="2"/></g></g>
+<g class="nf-co0"><rect class="f-bg s-teal" x="-20" y="-12" width="24" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-20" y="-12" width="24" height="16" rx="4"/><text class="tiny mono f-ink end" x="0" y="0">41</text></g>
+<g class="nf-co1"><rect class="f-bg s-teal" x="-20" y="-12" width="24" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-20" y="-12" width="24" height="16" rx="4"/><text class="tiny mono f-ink end" x="0" y="0">41</text></g>
+<g class="nf-ce0"><rect class="f-bg s-teal" x="-4" y="-12" width="147" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="147" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">customer1@example.com</text></g>
+<g class="nf-ce1"><rect class="f-bg s-teal" x="-4" y="-12" width="147" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="147" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">customer1@example.com</text></g>
+<g class="nf-ce2"><rect class="f-bg s-teal" x="-4" y="-12" width="147" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="147" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">customer1@example.com</text></g>
+<g class="nf-ce3"><rect class="f-bg s-teal" x="-4" y="-12" width="147" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="147" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">customer1@example.com</text></g>
+<g class="nf-cp0"><rect class="f-bg s-teal" x="-4" y="-12" width="148" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="148" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">Product 4077</text><text class="tiny mono f-ink end" x="140" y="0">2,646.15</text></g>
+<g class="nf-cp1"><rect class="f-bg s-teal" x="-4" y="-12" width="148" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="148" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">Product 4077</text><text class="tiny mono f-ink end" x="140" y="0">2,646.15</text></g>
+<g class="nf-cp2"><rect class="f-bg s-teal" x="-4" y="-12" width="148" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="148" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">Product 4077</text><text class="tiny mono f-ink end" x="140" y="0">2,646.15</text></g>
+<g class="nf-cp3"><rect class="f-bg s-teal" x="-4" y="-12" width="148" height="16" rx="4" stroke-width="1.2"/><rect class="f-teal-soft" x="-4" y="-12" width="148" height="16" rx="4"/><text class="tiny mono f-ink" x="0" y="0">Product 4077</text><text class="tiny mono f-ink end" x="140" y="0">2,646.15</text></g>
+<circle class="pkt f-purple nf-tu2" r="7"/>
+<g class="p3"><text class="sub sb" x="40" y="154">Four ways to keep orders.total_thb right</text><rect class="box" x="30" y="164" width="418" height="64" rx="8"/><rect class="f-purple-soft s-purple nf-trhl" x="30" y="164" width="418" height="64" rx="8" stroke-width="1.5"/><text class="tiny sb f-ink" x="42" y="181">1 · trigger, in the same transaction</text><text class="tiny sb end f-purple" x="438" y="181">measured here</text><text class="tiny mono f-ink" x="42" y="196">AFTER INSERT OR UPDATE OR DELETE ON order_items</text><text class="tiny mono f-ink" x="42" y="210">FOR EACH ROW: total_thb ± qty × price_thb</text><rect class="box" x="30" y="234" width="418" height="38" rx="8"/><text class="tiny sb f-ink" x="42" y="251">2 · application code, in the same transaction</text><text class="tiny sb end f-amber-ink" x="438" y="251">every write path</text><text class="tiny" x="42" y="266">each code path that writes order_items also updates orders</text><rect class="box" x="30" y="278" width="418" height="38" rx="8"/><text class="tiny sb f-ink" x="42" y="295">3 · materialized view instead of a column</text><text class="tiny sb end f-amber-ink" x="438" y="295">stale until REFRESH</text><text class="tiny" x="42" y="310">REFRESH MATERIALIZED VIEW reruns the whole SUM</text><rect class="box" x="30" y="322" width="418" height="38" rx="8"/><text class="tiny sb f-ink" x="42" y="339">4 · change stream (CDC) and a consumer</text><text class="tiny sb end f-amber-ink" x="438" y="339">a moment later</text><text class="tiny" x="42" y="354">applies each committed item change to the copy</text><text class="tiny sb f-green" x="40" y="380">✓ check: 0 of 500,000 totals differ from the SUM of their lines</text></g>
+<circle class="pkt f-blue nf-tr3" r="7"/>
+<g class="nf-trig"><circle class="pkt f-purple" r="7"/><text class="tiny sb f-purple end" x="-12" y="4">trigger</text></g>
+<circle class="pkt f-purple nf-tp3" r="7"/>
+<g class="p4"><text class="sub sb" x="40" y="154">MongoDB: embed or reference</text><rect class="box" x="30" y="162" width="418" height="56" rx="8"/><text class="tiny mono f-ink" x="42" y="179">{ _id: 41, customer_id: 1, shipping_country: "MY",</text><text class="tiny mono f-ink" x="55.24" y="194">items: [ { product_id: 4077, name: "Product 4077",</text><text class="tiny mono f-ink" x="128.06" y="209">qty: 2, price_thb: 2646.15 }, … ] }</text><text class="tiny" x="40" y="234"><tspan class="sb f-green">embed</tspan> the lines: read with the order and owned by it</text><text class="tiny" x="40" y="249"><tspan class="sb f-blue">reference</tspan> the customer: shared by 2,633 orders, changes alone</text><g class="nf-ddb"><text class="sub sb" x="40" y="276">DynamoDB: single-table design</text><rect class="box" x="30" y="284" width="418" height="52" rx="8"/><text class="tiny mono b f-ink" x="42" y="299">PK</text><text class="tiny mono b f-ink" x="121.44" y="299">SK</text><text class="tiny mono b f-ink" x="187.64" y="299">attributes</text><text class="tiny mono f-ink" x="42" y="313">CUSTOMER#1</text><text class="tiny mono f-ink" x="121.44" y="313">PROFILE</text><text class="tiny mono f-ink" x="187.64" y="313">email, country</text><text class="tiny mono f-ink" x="42" y="327">CUSTOMER#1</text><text class="tiny mono f-ink" x="121.44" y="327">ORDER#41</text><text class="tiny mono f-ink" x="187.64" y="327">total_thb, shipping_country, items</text><text class="tiny" x="40" y="351">one Query on CUSTOMER#1 returns the customer and the orders</text></g><g class="nf-cq"><text class="tiny" x="40" y="378"><tspan class="sb f-ink">CQRS read models</tspan> keep the copies in a separate store, fed by events</text></g></g>
+<circle class="pkt f-blue nf-j1" r="6"/>
+<circle class="pkt f-blue nf-j2" r="6"/>
+<circle class="pkt f-blue nf-j3" r="6"/>
+<circle class="pkt f-blue nf-j4" r="6"/>
+<circle class="pkt f-purple nf-w0" r="6"/>
+<circle class="pkt f-purple nf-w1" r="6"/>
+<circle class="pkt f-purple nf-w2" r="6"/>
+<rect class="box" x="30" y="398" width="900" height="72" rx="10"/>
+<g class="p12"><text class="tiny sb" x="40" y="414">new email for customer 1, stored in</text><text class="tiny sb end" x="470" y="414">rows written</text><text class="tiny sb end" x="560" y="414">WAL</text><text class="tiny sb end" x="650" y="414">time, 1 run</text><text class="tiny sb" x="690" y="414">table data</text><g class="nf-s1"><rect class="f-red" x="40" y="423" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="431">order_lines_wide, one wide table</text><text class="tiny mono f-ink end" x="470" y="431">6,537</text><text class="tiny mono f-ink end" x="560" y="431">2.5 MB</text><text class="tiny mono f-ink end" x="650" y="431">33 ms</text><text class="tiny mono f-ink" x="690" y="431">198 MB · 25,280 pages</text></g><g class="nf-s2"><rect class="f-green" x="40" y="439" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="447">customers + products + orders + order_items</text><text class="tiny mono f-ink end" x="470" y="447">1</text><text class="tiny mono f-ink end" x="560" y="447">328 B</text><text class="tiny mono f-ink end" x="650" y="447">0.04 ms</text><text class="tiny mono f-ink" x="690" y="447">131 MB · 16,705 pages</text></g><text class="tiny" x="40" y="463">EXPLAIN (ANALYZE, BUFFERS, WAL), PostgreSQL 18.6, warm cache · wide table indexed on customer_id · WAL without full-page images</text></g>
+<g class="p3"><text class="tiny sb" x="40" y="414">query</text><text class="tiny sb" x="300" y="414">plan · EXPLAIN (ANALYZE, BUFFERS), PostgreSQL 18.6</text><text class="tiny sb end" x="660" y="414">rows</text><text class="tiny sb end" x="780" y="414">pages read</text><text class="tiny sb end" x="920" y="414">time, 1 warm run</text><g class="nf-s3a"><rect class="f-green" x="40" y="423" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="431">customer 1's orders, stored total</text><text class="tiny sb f-green" x="300" y="431">Bitmap Heap Scan on orders</text><text class="tiny mono f-ink end" x="660" y="431">2,633</text><text class="tiny mono f-ink end" x="780" y="431">5 + 2,080</text><text class="tiny mono f-ink end" x="920" y="431">2.6 ms</text></g><g class="nf-s3b"><rect class="f-red" x="40" y="439" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="447">the same list, SUM over the lines</text><text class="tiny sb f-red" x="300" y="447">+ 2,633 index lookups in order_items</text><text class="tiny mono f-ink end" x="660" y="447">2,633</text><text class="tiny mono f-ink end" x="780" y="447">12,654</text><text class="tiny mono f-ink end" x="920" y="447">11 ms</text></g><g class="nf-s3c"><rect class="f-purple" x="40" y="455" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="463">a new line in order 500001</text><text class="tiny sb f-purple" x="300" y="463">trigger adds 2,646.15 to orders.total_thb</text><text class="tiny mono f-ink end" x="660" y="463">1 + 1</text><text class="tiny end" x="780" y="463">written</text></g></g>
+<g class="p4"><text class="tiny sb" x="40" y="414">workload</text><text class="tiny sb" x="300" y="414">how</text><text class="tiny sb end" x="660" y="414">pages read</text><text class="tiny sb end" x="780" y="414">WAL written</text><text class="tiny sb end" x="920" y="414">time, 1 warm run</text><g class="nf-s4a"><rect class="f-blue" x="40" y="423" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="431">order 41 with email and names</text><text class="tiny sb f-blue" x="300" y="431">join: 5 index lookups in 4 tables</text><text class="tiny mono f-ink end" x="660" y="431">17</text><text class="tiny mono f-ink end" x="920" y="431">0.02 ms</text></g><g class="nf-s4b"><rect class="f-blue" x="40" y="439" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="447">the same from order_lines_wide</text><text class="tiny sb f-blue" x="300" y="447">1 index lookup, no join</text><text class="tiny mono f-ink end" x="660" y="447">4</text><text class="tiny mono f-ink end" x="920" y="447">0.01 ms</text></g><g class="nf-s4c"><rect class="f-purple" x="40" y="455" width="7" height="7" rx="1.5"/><text class="tiny mono f-ink" x="53" y="463">10,000 new order lines</text><text class="tiny sb f-purple" x="300" y="463">without → with the total_thb trigger</text><text class="tiny mono f-ink end" x="780" y="463">2.2 → 5.2 MB</text><text class="tiny mono f-ink end" x="920" y="463">0.10 → 0.20 s</text></g></g>
+</g>
+</svg>

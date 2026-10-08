@@ -160,6 +160,10 @@ An [API gateway](../api-gateway/) routes each request to one service and applies
 - [Microservices](../microservices/) — Small, independently deployable services, each owning one business capability and its data.
 - [Cache-Aside](../cache-aside/) — Read from the cache first; on a miss load from the database and populate the cache.
 
+## Related database topics
+
+- [N+1 Queries](../n-plus-one-queries/) — One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it.
+
 ## References
 
 - [Azure Architecture Center — Gateway Aggregation pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation)

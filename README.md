@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**188 animated** · 18 planned · 17 categories
+**197 animated** · 9 planned · 17 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -23,7 +23,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🚪 | [API & Edge](#api--edge) | 9 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
 | 📨 | [Messaging & Integration](#messaging--integration) | 12 / 12 | Asynchronous communication, and coordinating work that spans several services. |
 | 🗄️ | [Data Management](#data-management) | 9 / 9 | Storing, scaling, caching and synchronising data across services. |
-| 🗃️ | [Database Internals & Performance](#database-internals--performance) | 0 / 18 | How databases find, store and protect data: indexes, query plans, transactions and storage engines, and how to use them well. |
+| 🗃️ | [Database Internals & Performance](#database-internals--performance) | 9 / 18 | How databases find, store and protect data: indexes, query plans, transactions and storage engines, and how to use them well. |
 | 🛡️ | [Resilience & Reliability](#resilience--reliability) | 9 / 9 | Keep serving when dependencies are slow, overloaded or down. |
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 8 / 8 | Evolve legacy systems step by step, without a big-bang rewrite. |
@@ -159,15 +159,15 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 
 | Pattern | In one line | Status |
 |---|---|:-:|
-| B-Tree Index | How a B-tree index finds a row in three or four page reads, serves ranges in order, and what every insert costs to keep it sorted. | ⏳ planned |
-| Composite Index | A multi-column index serves queries that use its leading columns: put equality columns first and the range or sort column last. | ⏳ planned |
-| Covering Index | Answer a query from the index alone: include the columns it selects, so the table is never read, and the scan is index-only. | ⏳ planned |
-| Index Types | Beyond B-trees: hash, GIN for arrays, JSON and text, GiST, BRIN for time-ordered data, and partial and expression indexes. | ⏳ planned |
-| Query Execution Plans | Read EXPLAIN the way the planner thinks: scans, joins, estimated against actual rows, and the statistics behind each choice. | ⏳ planned |
-| Join Algorithms | Nested loop, hash join and merge join: how each joins two tables, what it costs, and when the planner picks it. | ⏳ planned |
-| N+1 Queries | One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it. | ⏳ planned |
-| Keyset Pagination | Page with WHERE key > last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing. | ⏳ planned |
-| Normalization & Denormalization | Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step. | ⏳ planned |
+| [**B-Tree Index**](patterns/b-tree-index/) | How a B-tree index finds a row in three or four page reads, serves ranges in order, and what every insert costs to keep it sorted. | ✅ animated |
+| [**Composite Index**](patterns/composite-index/) | A multi-column index serves queries that use its leading columns: put equality columns first and the range or sort column last. | ✅ animated |
+| [**Covering Index**](patterns/covering-index/) | Answer a query from the index alone: include the columns it selects, so the table is never read, and the scan is index-only. | ✅ animated |
+| [**Index Types**](patterns/index-types/) | Beyond B-trees: hash, GIN for arrays, JSON and text, GiST, BRIN for time-ordered data, and partial and expression indexes. | ✅ animated |
+| [**Query Execution Plans**](patterns/query-execution-plans/) | Read EXPLAIN the way the planner thinks: scans, joins, estimated against actual rows, and the statistics behind each choice. | ✅ animated |
+| [**Join Algorithms**](patterns/join-algorithms/) | Nested loop, hash join and merge join: how each joins two tables, what it costs, and when the planner picks it. | ✅ animated |
+| [**N+1 Queries**](patterns/n-plus-one-queries/) | One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it. | ✅ animated |
+| [**Keyset Pagination**](patterns/keyset-pagination/) | Page with WHERE key > last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing. | ✅ animated |
+| [**Normalization & Denormalization**](patterns/normalization/) | Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step. | ✅ animated |
 | Transaction Isolation Levels | What concurrent transactions can see of each other: the anomalies each isolation level allows and the defaults engines use. | ⏳ planned |
 | MVCC | Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions. | ⏳ planned |
 | Locks & Deadlocks | Row locks make writers wait for each other; two transactions waiting on each other is a deadlock, and the database aborts one. | ⏳ planned |

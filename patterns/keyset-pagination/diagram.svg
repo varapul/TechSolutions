@@ -1,0 +1,813 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Keyset Pagination</title>
+<desc id="dg-desc">Keyset Pagination. Page with WHERE key &gt; last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing. Step 1, OFFSET reads, then drops: Page 1,000 with OFFSET 49950: the index scan fetches 50,000 rows and Limit keeps only the last 50. Step 2, Rows shift between loads: A new order between two loads pushes every row down one: OFFSET 50 repeats 499955, keyset doesn't. Step 3, Seek past the last key: Keyset seeks past the last key: 3 index pages and 50 rows, so page 1,000 costs what page 1 does. Step 4, Limits and other engines: No jump to page 734, a total is a full count, each filter needs its index; DynamoDB seeks too.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Keyset Pagination</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · OFFSET reads, then drops</text>
+  <text class="step on p1" x="40" y="518">1 · OFFSET reads, then drops</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Rows shift between loads</text>
+  <text class="step on p2" x="262" y="518">2 · Rows shift between loads</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Seek past the last key</text>
+  <text class="step on p3" x="484" y="518">3 · Seek past the last key</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Limits and other engines</text>
+  <text class="step on p4" x="706" y="518">4 · Limits and other engines</text>
+  <text class="caption p1" x="40" y="552">Page 1,000 with OFFSET 49950: the index scan fetches 50,000 rows and Limit keeps only the last 50.</text>
+  <text class="caption p2" x="40" y="552">A new order between two loads pushes every row down one: OFFSET 50 repeats 499955, keyset doesn't.</text>
+  <text class="caption p3" x="40" y="552">Keyset seeks past the last key: 3 index pages and 50 rows, so page 1,000 costs what page 1 does.</text>
+  <text class="caption p4" x="40" y="552">No jump to page 734, a total is a full count, each filter needs its index; DynamoDB seeks too.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Keyset Pagination. Timeline (20s loop, 1s = 5%):
+   0-25%   page 1,000 with OFFSET 49950: descend to the newest leaf, read 50,000 entries, Limit drops 49,950
+   25-50%  shifting rows: load 1 (OFFSET 0), INSERT 500001, rows move down one, OFFSET 50 repeats 499955; keyset doesn't
+   50-75%  keyset: the cursor (key of #49,950) descends root 290 -> 1715 -> leaf 1733 and reads 50 entries
+   75-100% limits: no page numbers, count(*) is a full scan, one index per filter, same idea in DynamoDB/Elasticsearch */
+.diagram .kp-pg { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 1.2; }
+.diagram .kp-blk { fill: var(--panel); stroke: var(--teal); stroke-width: 1.2; }
+.diagram .kp-grow { transform-box: fill-box; transform-origin: 0 0; }
+.diagram .kp-tag { font-size: 10.5px; font-weight: 700; }
+.diagram .kp-card { stroke-width: 1.2; }
+.diagram .kp-btn { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .kp-sh { animation: kp-sh var(--T) linear infinite; }
+.diagram .kp-out { animation: kp-out var(--T) linear infinite; }
+.diagram .kp-in { animation: kp-in var(--T) linear infinite; }
+.diagram .kp-in2 { animation: kp-in2 var(--T) linear infinite; }
+.diagram .kp-in, .diagram .kp-in2 { opacity: 0; }
+.diagram .kp-s2a { opacity: 0; animation: kp-s2a var(--T) linear infinite; }
+.diagram .kp-s2b { opacity: 0; animation: kp-s2b var(--T) linear infinite; }
+.diagram .kp-s2c { opacity: 0; animation: kp-s2c var(--T) linear infinite; }
+.diagram .kp-s3 { opacity: 0; animation: kp-s3 var(--T) linear infinite; }
+.diagram .kp-s4 { opacity: 0; animation: kp-s4 var(--T) linear infinite; }
+.diagram .kp-c2a { opacity: 0; animation: kp-c2a var(--T) linear infinite; }
+.diagram .kp-c2b { opacity: 0; animation: kp-c2b var(--T) linear infinite; }
+.diagram .kp-c2c { opacity: 0; animation: kp-c2c var(--T) linear infinite; }
+.diagram .kp-c4 { opacity: 0; animation: kp-c4 var(--T) linear infinite; }
+.diagram .kp-tok { opacity: 0; animation: kp-tok var(--T) linear infinite; }
+.diagram .kp-ins { opacity: 0; animation: kp-ins var(--T) linear infinite; }
+.diagram .kp-k1 { opacity: 0; animation: kp-k1 var(--T) linear infinite; }
+.diagram .kp-k100 { opacity: 0; animation: kp-k100 var(--T) linear infinite; }
+.diagram .kp-k1000 { opacity: 0; animation: kp-k1000 var(--T) linear infinite; }
+.diagram .kp-cnt { opacity: 0; animation: kp-cnt var(--T) linear infinite; }
+.diagram .kp-cur { opacity: 0; animation: kp-cur var(--T) linear infinite; }
+.diagram .kp-skip { opacity: 0; animation: kp-skip var(--T) linear infinite; }
+.diagram .kp-ret3 { opacity: 0; animation: kp-ret3 var(--T) linear infinite; }
+.diagram .kp-734 { opacity: 0; animation: kp-734 var(--T) linear infinite; }
+.diagram .kp-newhl { opacity: 0; animation: kp-newhl var(--T) linear infinite; }
+.diagram .kp-last { opacity: 0; animation: kp-last var(--T) linear infinite; }
+.diagram .kp-again { opacity: 0; animation: kp-again var(--T) linear infinite; }
+.diagram .kp-againhl { opacity: 0; animation: kp-againhl var(--T) linear infinite; }
+.diagram .kp-kgo { opacity: 0; animation: kp-kgo var(--T) linear infinite; }
+.diagram .kp-kgohl { opacity: 0; animation: kp-kgohl var(--T) linear infinite; }
+.diagram .kp-b1 { opacity: 0; animation: kp-b1 var(--T) linear infinite; }
+.diagram .kp-b2 { opacity: 0; animation: kp-b2 var(--T) linear infinite; }
+.diagram .kp-l1 { opacity: 0; animation: kp-l1 var(--T) linear infinite; }
+.diagram .kp-l2 { opacity: 0; animation: kp-l2 var(--T) linear infinite; }
+.diagram .kp-l3 { opacity: 0; animation: kp-l3 var(--T) linear infinite; }
+.diagram .kp-l4 { opacity: 0; animation: kp-l4 var(--T) linear infinite; }
+.diagram .kp-a1 { opacity: 0; animation: kp-a1 var(--T) linear infinite; }
+.diagram .kp-a2 { opacity: 0; animation: kp-a2 var(--T) linear infinite; }
+.diagram .kp-a3 { opacity: 0; animation: kp-a3 var(--T) linear infinite; }
+.diagram .kp-a4 { opacity: 0; animation: kp-a4 var(--T) linear infinite; }
+.diagram .kp-m1 { opacity: 0; animation: kp-m1 var(--T) linear infinite; }
+.diagram .kp-m2 { opacity: 0; animation: kp-m2 var(--T) linear infinite; }
+.diagram .kp-m3 { opacity: 0; animation: kp-m3 var(--T) linear infinite; }
+.diagram .kp-m4 { opacity: 0; animation: kp-m4 var(--T) linear infinite; }
+.diagram .kp-s1 { animation: kp-s1 var(--T) linear infinite; }
+.diagram .kp-c1 { animation: kp-c1 var(--T) linear infinite; }
+.diagram .kp-red { animation: kp-red var(--T) linear infinite; }
+.diagram .kp-grn { animation: kp-grn var(--T) linear infinite; }
+.diagram .kp-t100 { animation: kp-t100 var(--T) linear infinite; }
+.diagram .kp-lim { animation: kp-lim var(--T) linear infinite; }
+.diagram .kp-ret1 { animation: kp-ret1 var(--T) linear infinite; }
+.diagram .kp-o1 { animation: kp-o1 var(--T) linear infinite; }
+.diagram .kp-o100 { animation: kp-o100 var(--T) linear infinite; }
+.diagram .kp-o1000 { animation: kp-o1000 var(--T) linear infinite; }
+@keyframes kp-s1 {
+  0% { opacity: 1; }
+  24.25% { opacity: 1; }
+  25% { opacity: 0; }
+  99.25% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+@keyframes kp-s2a {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  30% { opacity: 1; }
+  30.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-s2b {
+  0% { opacity: 0; }
+  30.75% { opacity: 0; }
+  31.5% { opacity: 1; }
+  36% { opacity: 1; }
+  36.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-s2c {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  37.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-s3 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-s4 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-c1 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  19.75% { opacity: 1; }
+  24.25% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-c2a {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.25% { opacity: 1; }
+  30% { opacity: 1; }
+  30.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-c2b {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  33.75% { opacity: 1; }
+  36% { opacity: 1; }
+  36.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-c2c {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.25% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-c4 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  78.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-tok {
+  0% { transform: translate(104px, 179px); opacity: 0; }
+  2% { transform: translate(104px, 179px); opacity: 0; }
+  2.25% { opacity: 1; }
+  2.97% { transform: translate(104px, 243px); }
+  4.182% { transform: translate(184px, 243px); }
+  5.227% { transform: translate(184px, 174px); }
+  5.576% { transform: translate(207px, 174px); }
+  16.5% { transform: translate(207px, 300px); }
+  19% { transform: translate(207px, 364px); opacity: 1; }
+  19.25% { transform: translate(207px, 364px); opacity: 0; }
+  54.5% { transform: translate(104px, 179px); opacity: 0; }
+  54.75% { opacity: 1; }
+  55.47% { transform: translate(104px, 243px); }
+  56.682% { transform: translate(184px, 243px); }
+  57.788% { transform: translate(184px, 316px); }
+  58.136% { transform: translate(207px, 316px); }
+  60.5% { transform: translate(207px, 364px); opacity: 1; }
+  60.75% { transform: translate(207px, 364px); opacity: 0; }
+  100% { transform: translate(207px, 364px); opacity: 0; }
+}
+@keyframes kp-ins {
+  0% { transform: translate(207px, 126px); opacity: 0; }
+  31% { transform: translate(207px, 126px); opacity: 0; }
+  31.25% { opacity: 1; }
+  33% { transform: translate(207px, 174px); opacity: 1; }
+  33.25% { transform: translate(207px, 174px); opacity: 0; }
+  100% { transform: translate(207px, 174px); opacity: 0; }
+}
+@keyframes kp-red {
+  0% { transform: scaleY(0.113); opacity: 0; }
+  5.576% { transform: scaleY(0.113); opacity: 0; }
+  6.076% { opacity: 1; }
+  16.5% { transform: scaleY(1); }
+  24.25% { transform: scaleY(1); opacity: 1; }
+  25% { transform: scaleY(1); opacity: 0; }
+  100% { transform: scaleY(0.113); opacity: 0; }
+}
+@keyframes kp-grn {
+  0% { transform: scaleY(0); opacity: 0; }
+  16.5% { transform: scaleY(0); opacity: 0; }
+  16.75% { opacity: 1; }
+  19% { transform: scaleY(1); }
+  24.25% { transform: scaleY(1); opacity: 1; }
+  25% { transform: scaleY(1); opacity: 0; }
+  25.25% { transform: scaleY(0.250); opacity: 0; }
+  58.136% { transform: scaleY(0.250); opacity: 0; }
+  58.636% { opacity: 1; }
+  60.5% { transform: scaleY(1); }
+  97.5% { transform: scaleY(1); opacity: 1; }
+  99.25% { transform: scaleY(1); opacity: 0; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
+@keyframes kp-t100 {
+  0% { opacity: 0; }
+  7.75% { opacity: 0; }
+  9.25% { opacity: 1; }
+  24.25% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-lim {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  18% { opacity: 1; }
+  24.25% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-ret1 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  20.5% { opacity: 1; }
+  24.25% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-o1 {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  8% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-o100 {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  10.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-o1000 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  20.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-k1 {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  62.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-k100 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  64% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-k1000 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  65.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-cnt {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-cur {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-skip {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-ret3 {
+  0% { opacity: 0; }
+  60.5% { opacity: 0; }
+  62% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-734 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-sh {
+  0% { transform: translate(0px, 0px); opacity: 1; }
+  33% { transform: translate(0px, 0px); opacity: 1; }
+  36% { transform: translate(0px, 16px); opacity: 1; }
+  51% { transform: translate(0px, 16px); opacity: 1; }
+  51.25% { transform: translate(0px, 0px); opacity: 1; }
+  100% { transform: translate(0px, 0px); opacity: 1; }
+}
+@keyframes kp-out {
+  0% { transform: translate(0px, 0px); opacity: 1; }
+  33% { transform: translate(0px, 0px); opacity: 1; }
+  36% { transform: translate(0px, 16px); opacity: 0; }
+  51% { transform: translate(0px, 16px); opacity: 0; }
+  51.25% { transform: translate(0px, 0px); opacity: 1; }
+  100% { transform: translate(0px, 0px); opacity: 1; }
+}
+@keyframes kp-in {
+  0% { transform: translate(0px, 0px); opacity: 0; }
+  33% { transform: translate(0px, 0px); opacity: 0; }
+  36% { transform: translate(0px, 16px); opacity: 1; }
+  51% { transform: translate(0px, 16px); opacity: 1; }
+  51.25% { transform: translate(0px, 0px); opacity: 0; }
+  100% { transform: translate(0px, 0px); opacity: 0; }
+}
+@keyframes kp-in2 {
+  0% { transform: translate(0px, 0px); opacity: 0; }
+  33% { transform: translate(0px, 0px); opacity: 0; }
+  36% { transform: translate(0px, 16px); opacity: 1; }
+  51% { transform: translate(0px, 16px); opacity: 1; }
+  51.25% { transform: translate(0px, 0px); opacity: 0; }
+  100% { transform: translate(0px, 0px); opacity: 0; }
+}
+@keyframes kp-newhl {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  37% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-last {
+  0% { opacity: 0; }
+  27.5% { opacity: 0; }
+  29% { opacity: 1; }
+  38% { opacity: 1; }
+  39.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-again {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  40% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-againhl {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  40% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-kgo {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  44% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-kgohl {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  44% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-b1 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  28% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-b2 {
+  0% { opacity: 0; }
+  37.25% { opacity: 0; }
+  38.75% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-l1 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  28% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-l2 {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  32.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-l3 {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  40% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-l4 {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  44% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-a1 {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  52.5% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-a2 {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  54% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-a3 {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  63.5% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-a4 {
+  0% { opacity: 0; }
+  65% { opacity: 0; }
+  66.5% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes kp-m1 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kp-m2 {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  81% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kp-m3 {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  84% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes kp-m4 {
+  0% { opacity: 0; }
+  85.5% { opacity: 0; }
+  87% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<rect class="box" x="30" y="92" width="110" height="32" rx="10"/>
+<text class="label mid" x="85" y="113">back office</text>
+<rect class="f-bg s-line" x="150" y="92" width="780" height="32" rx="10" stroke-width="1.5"/>
+<text class="sub mono f-ink kp-s1" x="162" y="113">SELECT * FROM orders ORDER BY created_at DESC, id DESC LIMIT 50 OFFSET 49950</text>
+<text class="sub mono f-ink kp-s2a" x="162" y="113">SELECT * FROM orders ORDER BY created_at DESC, id DESC LIMIT 50 OFFSET 0</text>
+<text class="sub mono f-ink kp-s2b" x="162" y="113">INSERT INTO orders (…, created_at, …) VALUES (…, '2026-10-02 17:20:00+00', …)</text>
+<text class="sub mono f-ink kp-s2c" x="162" y="113">SELECT * FROM orders ORDER BY created_at DESC, id DESC LIMIT 50 OFFSET 50</text>
+<text class="sub mono f-ink kp-s3" x="162" y="113">SELECT * FROM orders WHERE (created_at, id) &lt; ($1, $2) ORDER BY created_at DESC, id DESC LIMIT 50</text>
+<text class="sub mono f-ink kp-s4" x="162" y="113">SELECT count(*) FROM orders</text>
+<g class="kp-c1"><rect class="f-red-soft s-red" x="811" y="98" width="111" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="866.5" y="112">50 rows · 33 ms</text></g>
+<g class="kp-c2a"><rect class="f-blue-soft s-blue" x="861" y="98" width="61" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="891.5" y="112">50 rows</text></g>
+<g class="kp-c2b"><rect class="f-purple-soft s-purple" x="848" y="98" width="74" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="885" y="112">id 500001</text></g>
+<g class="kp-c2c"><rect class="f-red-soft s-red" x="830" y="98" width="92" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="876" y="112">499955 again</text></g>
+<g class="kp-c4"><rect class="f-amber-soft s-amber" x="811" y="98" width="111" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="866.5" y="112">500,000 · 29 ms</text></g>
+<text class="sub mono sb f-teal" x="40" y="145">orders_created_at_id_idx</text>
+<text class="tiny" x="222" y="145">on (created_at, id) · 1,925 pages · 3 levels · 15 MB</text>
+<g class="p134">
+<rect class="kp-pg" x="40" y="158" width="130" height="42" rx="8"/>
+<text class="tiny sb f-teal" x="48" y="174">root · page 290</text>
+<rect class="kp-pg" x="40" y="222" width="130" height="42" rx="8"/>
+<text class="tiny sb f-teal" x="48" y="238">level 1 · page 1715</text>
+<line class="wire" x1="104" y1="200" x2="104" y2="221" stroke-width="1.5" marker-end="url(#ah)"/>
+<path class="wire" d="M170 243H184V174H195" stroke-width="1.5" marker-end="url(#ah)"/>
+<path class="wire" d="M184 243V316H195" stroke-width="1.5" marker-end="url(#ah)"/>
+</g>
+<g class="p1"><text class="tiny" x="48" y="190">last child → page 1715</text><text class="tiny" x="48" y="254">last child → leaf 1924</text></g>
+<g class="p34"><text class="tiny sb f-blue" x="48" y="190">cursor → page 1715</text><text class="tiny sb f-blue" x="48" y="254">cursor → leaf 1733</text></g>
+<g class="p1"><text class="tiny" x="40" y="296">leaves are linked:</text><text class="tiny" x="40" y="310">the scan walks 192</text><text class="tiny" x="40" y="324">leaves, 1924 → 1733,</text><text class="tiny" x="40" y="338">and fetches each row</text></g>
+<g class="p34"><text class="tiny" x="40" y="296">the key picks the path:</text><text class="tiny" x="40" y="310">3 index pages, then</text><text class="tiny" x="40" y="324">50 table rows,</text><text class="tiny" x="40" y="338">53 buffers in all</text></g>
+<g class="p134">
+<rect class="kp-blk" x="196" y="158" width="360" height="62" rx="8"/>
+<rect class="kp-blk" x="196" y="284" width="360" height="92" rx="8"/>
+<rect class="f-red-soft kp-grow kp-red" x="198" y="166" width="356" height="142" rx="4"/>
+<rect class="f-green-soft s-green kp-grow kp-grn" x="198" y="308" width="356" height="64" rx="4" stroke-width="1.2"/>
+<g class="kp-cur"><rect class="f-amber-soft s-amber" x="198" y="292" width="356" height="16" rx="4" stroke-width="1.2"/><text class="kp-tag f-amber-ink" x="508" y="304">cursor</text></g>
+<rect class="f-bg" x="204" y="150" width="158" height="12" rx="3"/><text class="tiny sb f-teal" x="208" y="159">leaf 1924 · #1 … #185, newest</text>
+<rect class="f-bg" x="204" y="276" width="166" height="12" rx="3"/><text class="tiny sb f-teal" x="208" y="285">leaf 1733 · #49,776 … #50,036</text>
+<text class="tiny end" x="264" y="178">#1</text><text class="tiny mono f-ink" x="274" y="178">2026-10-02 17:16:37.158283</text><text class="tiny mono end f-ink" x="500" y="178">499999</text>
+<text class="tiny end" x="264" y="194">#2</text><text class="tiny mono f-ink" x="274" y="194">2026-10-02 17:10:55.531854</text><text class="tiny mono end f-ink" x="500" y="194">499998</text>
+<text class="tiny end" x="264" y="210">#3</text><text class="tiny mono f-ink" x="274" y="210">2026-10-02 17:10:38.351139</text><text class="tiny mono end f-ink" x="500" y="210">500000</text>
+<text class="tiny end" x="264" y="255">⋮</text><text class="tiny" x="274" y="255">#4 … #49,949 · 190 leaf pages in between</text>
+<text class="tiny end" x="264" y="304">#49,950</text><text class="tiny mono f-ink" x="274" y="304">2026-07-30 18:45:26.947567</text><text class="tiny mono end f-ink" x="500" y="304">450057</text>
+<text class="tiny end" x="264" y="320">#49,951</text><text class="tiny mono f-ink" x="274" y="320">2026-07-30 18:41:57.924396</text><text class="tiny mono end f-ink" x="500" y="320">450045</text>
+<text class="tiny end" x="264" y="336">#49,952</text><text class="tiny mono f-ink" x="274" y="336">2026-07-30 18:40:54.954003</text><text class="tiny mono end f-ink" x="500" y="336">450051</text>
+<text class="tiny end" x="264" y="352">⋮</text><text class="tiny" x="274" y="352">47 more</text>
+<text class="tiny end" x="264" y="368">#50,000</text><text class="tiny mono f-ink" x="274" y="368">2026-07-30 17:11:55.499124</text><text class="tiny mono end f-ink" x="500" y="368">449996</text>
+<text class="tiny end" x="264" y="390">⋮</text><text class="tiny" x="274" y="390">#50,001 … #500,000 · 1,724 more leaves</text>
+<g class="kp-t100"><line class="s-blue" x1="200" y1="234" x2="214" y2="234" stroke-width="2"/><text class="tiny sb f-blue" x="274" y="238">#4,951 · page 100 would start here, in leaf 1905</text></g>
+<text class="tiny sb f-red kp-lim" x="274" y="272">49,950 rows fetched, then dropped by Limit</text>
+<text class="tiny sb f-green kp-ret1" x="326" y="352">· Limit returns these 50</text>
+<text class="tiny sb f-green kp-skip" x="274" y="272">never read: the cursor jumps over them</text>
+<text class="tiny sb f-green kp-ret3" x="326" y="352">· 50 read, 50 returned</text>
+<g class="kp-734"><rect class="f-red-soft s-red" x="198" y="226" width="356" height="16" rx="4" stroke-width="1.2" stroke-dasharray="4 3"/><text class="tiny sb f-red" x="274" y="238">page 734 starts at #36,651: which key is that?</text></g>
+</g>
+<g class="p2">
+<rect class="kp-blk" x="196" y="158" width="360" height="204" rx="8"/>
+<rect class="f-bg" x="204" y="150" width="158" height="12" rx="3"/><text class="tiny sb f-teal" x="208" y="159">leaf 1924 · #1 … #185, newest</text>
+<g class="kp-newhl"><rect class="f-purple-soft s-purple" x="198" y="166" width="356" height="16" rx="4" stroke-width="1.2"/></g>
+<g class="kp-againhl"><rect class="f-red-soft s-red" x="198" y="294" width="356" height="16" rx="4" stroke-width="1.2"/></g>
+<g class="kp-kgohl"><rect class="f-green-soft s-green" x="198" y="310" width="356" height="16" rx="4" stroke-width="1.2"/></g>
+<g class="kp-b1"><line class="s-blue" x1="198" y1="294" x2="554" y2="294" stroke-width="1.5" stroke-dasharray="5 4"/><path class="none s-blue" d="M180 167H186V292H180" stroke-width="1.5"/><text class="sub sb f-blue end" x="172" y="226">page 1</text><text class="tiny mono end" x="172" y="242">load 1: OFFSET 0</text></g>
+<g class="kp-b2"><path class="none s-blue" d="M180 296H186V358H180" stroke-width="1.5"/><text class="sub sb f-blue end" x="172" y="322">page 2</text><text class="tiny mono end" x="172" y="338">load 2: OFFSET 50</text></g>
+<text class="tiny end" x="264" y="178">#1</text>
+<text class="tiny end" x="264" y="194">#2</text>
+<text class="tiny end" x="264" y="210">#3</text>
+<text class="tiny end" x="264" y="226">#4</text>
+<text class="tiny end" x="264" y="242">⋮</text>
+<text class="tiny end" x="264" y="258">#48</text>
+<text class="tiny end" x="264" y="274">#49</text>
+<text class="tiny end" x="264" y="290">#50</text>
+<text class="tiny end" x="264" y="306">#51</text>
+<text class="tiny end" x="264" y="322">#52</text>
+<text class="tiny end" x="264" y="338">#53</text>
+<text class="tiny end" x="264" y="354">⋮</text>
+<text class="tiny" x="274" y="242">#5 … #47</text>
+<g class="kp-in"><g transform="translate(0 162)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 17:20:00</text><text class="tiny mono end f-ink" x="500" y="0">500001</text><text class="kp-tag f-purple" x="508" y="0">new</text></g></g>
+<g class="kp-sh"><g transform="translate(0 178)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 17:16:37.158283</text><text class="tiny mono end f-ink" x="500" y="0">499999</text></g></g>
+<g class="kp-sh"><g transform="translate(0 194)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 17:10:55.531854</text><text class="tiny mono end f-ink" x="500" y="0">499998</text></g></g>
+<g class="kp-sh"><g transform="translate(0 210)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 17:10:38.351139</text><text class="tiny mono end f-ink" x="500" y="0">500000</text></g></g>
+<g class="kp-out"><g transform="translate(0 226)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 17:10:22.82773</text><text class="tiny mono end f-ink" x="500" y="0">499997</text></g></g>
+<g class="kp-in2"><g transform="translate(0 242)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 15:44:30.979305</text><text class="tiny mono end f-ink" x="500" y="0">499954</text></g></g>
+<g class="kp-sh"><g transform="translate(0 258)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 15:44:08.033863</text><text class="tiny mono end f-ink" x="500" y="0">499956</text></g></g>
+<g class="kp-sh"><g transform="translate(0 274)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 15:42:44.337547</text><text class="tiny mono end f-ink" x="500" y="0">499949</text></g></g>
+<g class="kp-sh"><g transform="translate(0 290)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 15:38:37.916976</text><text class="tiny mono end f-ink" x="500" y="0">499955</text><text class="kp-tag f-blue kp-last" x="508" y="0">last</text><text class="kp-tag f-red kp-again" x="508" y="0">again</text></g></g>
+<g class="kp-sh"><g transform="translate(0 306)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 15:34:13.970346</text><text class="tiny mono end f-ink" x="500" y="0">499952</text><text class="kp-tag f-green kp-kgo" x="508" y="0">keyset</text></g></g>
+<g class="kp-sh"><g transform="translate(0 322)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 15:32:26.200978</text><text class="tiny mono end f-ink" x="500" y="0">499951</text></g></g>
+<g class="kp-out"><g transform="translate(0 338)"><text class="tiny mono f-ink" x="274" y="0">2026-10-02 15:30:50.892505</text><text class="tiny mono end f-ink" x="500" y="0">499946</text></g></g>
+</g>
+<rect class="box" x="572" y="136" width="358" height="256" rx="10"/>
+<text class="tiny sb" x="584" y="152">EXPLAIN (ANALYZE, BUFFERS) · PostgreSQL 18.6</text>
+<text class="tiny sb end" x="768" y="169">rows read</text><text class="tiny sb end" x="842" y="169">buffers</text><text class="tiny sb end" x="918" y="169">time, 1 run</text>
+<line class="s-line" x1="582" y1="175" x2="920" y2="175" stroke-width="1"/>
+<text class="sub sb" x="584" y="191">OFFSET 50 × (page − 1)</text>
+<text class="tiny mono" x="584" y="205">Limit ← Index Scan Backward</text>
+<g class="kp-o1"><text class="tiny" x="594" y="222">page 1</text><text class="tiny mono end f-ink" x="768" y="222">50</text><text class="tiny mono end f-ink" x="842" y="222">53</text><text class="tiny mono end f-ink" x="918" y="222">0.1 ms</text></g>
+<g class="kp-o100"><text class="tiny" x="594" y="238">page 100</text><text class="tiny mono end f-ink" x="768" y="238">5,000</text><text class="tiny mono end f-ink" x="842" y="238">5,022</text><text class="tiny mono end f-ink" x="918" y="238">4.0 ms</text></g>
+<g class="kp-o1000"><text class="tiny" x="594" y="254">page 1,000</text><text class="tiny mono end b f-red" x="768" y="254">50,000</text><text class="tiny mono end b f-red" x="842" y="254">50,185</text><text class="tiny mono end b f-red" x="918" y="254">33 ms</text></g>
+<text class="sub sb" x="584" y="276">keyset: (created_at, id) &lt; cursor</text>
+<text class="tiny mono" x="584" y="290">Index Cond: ROW(created_at, id) &lt; ROW($1, $2)</text>
+<g class="kp-k1"><text class="tiny" x="594" y="307">page 1</text><text class="tiny mono end f-ink" x="768" y="307">50</text><text class="tiny mono end f-ink" x="842" y="307">53</text><text class="tiny mono end f-ink" x="918" y="307">0.1 ms</text></g>
+<g class="kp-k100"><text class="tiny" x="594" y="323">page 100</text><text class="tiny mono end f-ink" x="768" y="323">50</text><text class="tiny mono end f-ink" x="842" y="323">53</text><text class="tiny mono end f-ink" x="918" y="323">0.1 ms</text></g>
+<g class="kp-k1000"><text class="tiny" x="594" y="339">page 1,000</text><text class="tiny mono end b f-green" x="768" y="339">50</text><text class="tiny mono end b f-green" x="842" y="339">53</text><text class="tiny mono end b f-green" x="918" y="339">0.1 ms</text></g>
+<line class="s-line" x1="582" y1="349" x2="920" y2="349" stroke-width="1"/>
+<g class="kp-cnt"><text class="sub sb" x="584" y="366">count(*)</text><text class="tiny mono" x="642" y="366">Parallel Seq Scan, 2 workers</text><text class="tiny" x="594" y="381">all orders</text><text class="tiny mono end b f-amber-ink" x="768" y="381">500,000</text><text class="tiny mono end b f-amber-ink" x="842" y="381">5,058</text><text class="tiny mono end b f-amber-ink" x="918" y="381">29 ms</text></g>
+<g class="p1">
+<rect class="box" x="30" y="402" width="900" height="66" rx="10"/>
+<text class="tiny sb" x="42" y="419">Orders · newest first · 50 per page · 10,000 pages</text>
+<rect class="kp-btn" x="42" y="430" width="24" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="54" y="448">‹</text>
+<rect class="kp-btn" x="72" y="430" width="24" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="84" y="448">1</text>
+<rect class="kp-btn" x="102" y="430" width="24" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="114" y="448">2</text>
+<rect class="kp-btn" x="132" y="430" width="24" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="144" y="448">3</text>
+<text class="tiny mid" x="168" y="448">…</text>
+<rect class="kp-btn" x="178" y="430" width="33" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="194.5" y="448">100</text>
+<text class="tiny mid" x="223" y="448">…</text>
+<rect class="kp-btn" x="233" y="430" width="33" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="249.5" y="448">999</text>
+<rect class="f-blue-soft s-blue" x="272" y="430" width="47" height="26" rx="6" stroke-width="1.5"/>
+<text class="tiny mid sb f-blue" x="295.5" y="448">1,000</text>
+<text class="tiny mid" x="331" y="448">…</text>
+<rect class="kp-btn" x="341" y="430" width="54" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="368" y="448">10,000</text>
+<rect class="kp-btn" x="401" y="430" width="24" height="26" rx="6"/>
+<text class="tiny mid f-ink" x="413" y="448">›</text>
+<text class="tiny mono" x="470" y="428">GET /orders?page=1000</text>
+<text class="sub mono f-ink" x="470" y="446">OFFSET 50 × (1,000 − 1) = <tspan class="b f-red">49,950</tspan></text>
+<text class="tiny" x="470" y="462">rows to skip: the database still reads every one of them</text>
+</g>
+<g class="kp-l1"><rect class="f-blue-soft s-blue kp-card" x="30" y="402" width="214" height="66" rx="10"/><text class="tiny sb f-blue" x="40" y="418">load 1 · page 1 · OFFSET 0</text><text class="tiny mono f-ink" x="40" y="433">#48  499956</text><text class="tiny mono f-ink" x="40" y="447">#49  499949</text><text class="tiny mono f-ink" x="40" y="461">#50  499955  ← last row</text></g>
+<g class="kp-l2"><rect class="f-purple-soft s-purple kp-card" x="258" y="402" width="214" height="66" rx="10"/><text class="tiny sb f-purple" x="268" y="418">a new order arrives</text><text class="tiny" x="268" y="433">INSERT … RETURNING id: 500001</text><text class="tiny" x="268" y="447">created_at 2026-10-02 17:20:00</text><text class="tiny" x="268" y="461">sorts first: all rows move down 1</text></g>
+<g class="kp-l3"><rect class="f-red-soft s-red kp-card" x="486" y="402" width="214" height="66" rx="10"/><text class="tiny sb f-red" x="496" y="418">load 2 · page 2 · OFFSET 50</text><text class="tiny mono f-ink" x="496" y="433">#51  499955  ← shown again</text><text class="tiny mono f-ink" x="496" y="447">#52  499952</text><text class="tiny mono f-ink" x="496" y="461">#53  499951</text></g>
+<g class="kp-l4"><rect class="f-green-soft s-green kp-card" x="714" y="402" width="216" height="66" rx="10"/><text class="tiny sb f-green" x="724" y="418">load 2 · keyset after 499955</text><text class="tiny mono f-ink" x="724" y="433">499952  ← the next row</text><text class="tiny mono f-ink" x="724" y="447">499951</text><text class="tiny mono f-ink" x="724" y="461">499946   nothing repeats</text></g>
+<g class="kp-m1"><rect class="f-red-soft s-red kp-card" x="30" y="402" width="214" height="66" rx="10"/><text class="tiny sb f-red" x="40" y="418">no jumping to page 734</text><text class="tiny" x="40" y="433">its first key is unknown until</text><text class="tiny" x="40" y="447">36,650 earlier rows are read:</text><text class="tiny" x="40" y="461">offer Next / Previous, or a date</text></g>
+<g class="kp-m2"><rect class="f-amber-soft s-amber kp-card" x="258" y="402" width="214" height="66" rx="10"/><text class="tiny sb f-amber-ink" x="268" y="418">a total is another query</text><text class="tiny" x="268" y="433">count(*) reads all 5,058 pages,</text><text class="tiny" x="268" y="447">29 ms each time. For a Next link,</text><text class="tiny" x="268" y="461">fetch 51: a 51st row means more</text></g>
+<g class="kp-m3"><rect class="f-amber-soft s-amber kp-card" x="486" y="402" width="214" height="66" rx="10"/><text class="tiny sb f-amber-ink" x="496" y="418">each filter needs its index</text><text class="tiny" x="496" y="433">customer 1, keyset page 50:</text><text class="tiny" x="496" y="447">(created_at, id): reads 9,825 rows</text><text class="tiny" x="496" y="461">(customer_id, created_at, id): 50</text></g>
+<g class="kp-m4"><rect class="box" x="714" y="402" width="216" height="66" rx="10"/><text class="tiny sb f-ink" x="724" y="418">the same idea elsewhere</text><text class="tiny" x="724" y="433">DynamoDB: LastEvaluatedKey →</text><text class="tiny" x="724" y="447">ExclusiveStartKey of the next Query</text><text class="tiny" x="724" y="461">Elasticsearch: search_after + PIT</text></g>
+<g class="p3">
+<rect class="box" x="30" y="402" width="900" height="66" rx="10"/>
+<g class="kp-a1"><text class="tiny mono f-ink" x="42" y="420">GET /orders?cursor=<tspan class="f-amber-ink sb">eyJ0IjoiMjAyNi0wNy0zMFQxODo0NToyNi45NDc1NjdaIiwiaWQiOjQ1MDA1N30</tspan></text></g>
+<g class="kp-a2"><text class="tiny" x="42" y="438">decodes to <tspan class="mono f-ink">{"t":"2026-07-30T18:45:26.947567Z","id":450057}</tspan>, the key of row #49,950 → $1, $2</text></g>
+<g class="kp-a3"><text class="tiny" x="42" y="456"><tspan class="sb f-green">200 OK</tspan> · 50 orders, 450045 … 449996 · next_cursor = the key of 449996</text></g>
+<g class="kp-a4"><rect class="f-teal-soft s-teal kp-card" x="660" y="410" width="260" height="50" rx="8"/><text class="tiny sb f-teal" x="670" y="426">tie-breaker: id</text><text class="tiny" x="670" y="440">two orders may share a created_at;</text><text class="tiny" x="670" y="454">adding id makes every key unique</text></g>
+</g>
+<circle class="pkt f-purple kp-ins" r="6"/>
+<circle class="pkt f-blue kp-tok" r="6"/>
+</g>
+</svg>

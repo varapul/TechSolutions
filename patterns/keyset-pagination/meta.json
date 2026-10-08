@@ -1,0 +1,38 @@
+{
+  "aka": ["Seek method", "Cursor pagination"],
+  "steps": [
+    {
+      "title": "OFFSET reads, then drops",
+      "caption": "Page 1,000 with OFFSET 49950: the index scan fetches 50,000 rows and Limit keeps only the last 50.",
+      "body": "Acme's back office lists orders newest first, 50 to a page, and page 1,000 asks for `LIMIT 50 OFFSET 49950`. Even with an index on `(created_at, id)`, PostgreSQL can't start at row 49,951: an **Index Scan Backward** goes down to the newest leaf, walks 192 leaf pages and fetches **50,000** rows, and the Limit node drops **49,950** of them (50,185 buffers, 33 ms in one run on a laptop). Page 100 reads 5,000 rows in 4.0 ms and page 1 reads 50 in 0.1 ms: the work grows with the page number."
+    },
+    {
+      "title": "Rows shift between loads",
+      "caption": "A new order between two loads pushes every row down one: OFFSET 50 repeats 499955, keyset doesn't.",
+      "body": "`OFFSET` counts positions, and positions move. Load 1 shows page 1, ending with order **499955** at #50; then order **500001** arrives, sorts first and pushes every row down one place, so load 2 with `OFFSET 50` starts with 499955 **again**. A deleted order does the opposite and makes page 2 skip a row. Keyset pagination asks for the rows after 499955's key, so load 2 starts at 499952 whatever changed above it."
+    },
+    {
+      "title": "Seek past the last key",
+      "caption": "Keyset seeks past the last key: 3 index pages and 50 rows, so page 1,000 costs what page 1 does.",
+      "body": "Keyset pagination keeps the last row's key instead of a count. `WHERE (created_at, id) < ($1, $2)` is a row comparison in the index's own order, so it becomes an **Index Cond**: the descent compares the cursor with root page 290 and level-1 page 1715, lands in leaf 1733 just after row #49,950 and reads 50 entries, **53 buffers and 0.1 ms for page 1,000, the same as page 1**. The API returns the key as an opaque cursor (base64url of the timestamp and id), and the `id` tie-breaker makes every key unique, so no row can fall between two pages."
+    },
+    {
+      "title": "Limits and other engines",
+      "caption": "No jump to page 734, a total is a full count, each filter needs its index; DynamoDB seeks too.",
+      "body": "There's no page 734 to jump to: its first key is unknown until the 36,650 rows before it are read, so offer Next and Previous, or a jump by date. A total is another query, and `count(*)` reads all **5,058 pages** (29 ms) every time. Each filter needs an index that leads with it and ends with the sort key: customer 1's keyset page 50 reads **9,825** rows through `(created_at, id)` but 50 through `(customer_id, created_at, id)`. DynamoDB hands back `LastEvaluatedKey` for the next request's `ExclusiveStartKey`, and Elasticsearch pages deep results with `search_after`."
+    }
+  ],
+  "related": ["composite-index", "b-tree-index", "query-execution-plans", "postgresql", "amazon-dynamodb", "elasticsearch", "mongodb"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — LIMIT and OFFSET", "url": "https://www.postgresql.org/docs/18/queries-limit.html" },
+    { "title": "PostgreSQL 18 documentation — Row Constructor Comparison", "url": "https://www.postgresql.org/docs/18/functions-comparisons.html#ROW-WISE-COMPARISON" },
+    { "title": "PostgreSQL 18 documentation — Indexes and ORDER BY", "url": "https://www.postgresql.org/docs/18/indexes-ordering.html" },
+    { "title": "Markus Winand, Use The Index, Luke — OFFSET is bad for skipping previous rows (the seek method)", "url": "https://use-the-index-luke.com/sql/partial-results/fetch-next-page" },
+    { "title": "Markus Winand — We need tool support for keyset pagination", "url": "https://use-the-index-luke.com/no-offset" },
+    { "title": "Amazon DynamoDB Developer Guide — Paginating table query results", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html" },
+    { "title": "Elasticsearch Reference — Paginate search results (search_after, point in time)", "url": "https://www.elastic.co/docs/reference/elasticsearch/rest-apis/paginate-search-results" },
+    { "title": "MongoDB Manual — cursor.skip() and pagination with range queries", "url": "https://www.mongodb.com/docs/manual/reference/method/cursor.skip/" },
+    { "title": "MySQL 8.4 Reference Manual — Row Constructor Expression Optimization", "url": "https://dev.mysql.com/doc/refman/8.4/en/row-constructor-optimization.html" },
+    { "title": "GraphQL Cursor Connections Specification (Relay)", "url": "https://relay.dev/graphql/connections.htm" }
+  ]
+}

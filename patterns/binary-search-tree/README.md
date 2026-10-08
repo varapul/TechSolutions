@@ -186,6 +186,10 @@ Stable and in place don't apply to a search tree. Sorting by inserting every ite
 - [Depth-First Search](../depth-first-search/) — Follow one path as deep as it goes, then backtrack; a stack or recursion remembers where to resume, and finds cycles too.
 - [Breadth-First Search](../breadth-first-search/) — Explore a graph level by level from a queue; the first time BFS reaches a node, it has found a path with the fewest edges.
 
+## Related database topics
+
+- [B-Tree Index](../b-tree-index/) — How a B-tree index finds a row in three or four page reads, serves ranges in order, and what every insert costs to keep it sorted.
+
 ## References
 
 - [Sedgewick and Wayne — Algorithms, 4th edition, 3.2 Binary Search Trees](https://algs4.cs.princeton.edu/32bst/)

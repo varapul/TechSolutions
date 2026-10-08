@@ -212,6 +212,12 @@ Look elsewhere when the queries are ad hoc or relational (joins, reports, flexib
 - [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 
+## Related database topics
+
+- [Composite Index](../composite-index/) — A multi-column index serves queries that use its leading columns: put equality columns first and the range or sort column last.
+- [Keyset Pagination](../keyset-pagination/) — Page with WHERE key > last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing.
+- [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
+
 ## References
 
 - [Amazon DynamoDB Developer Guide — Core components of Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html)

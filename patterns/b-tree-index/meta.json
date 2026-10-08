@@ -1,0 +1,39 @@
+{
+  "aka": ["B+ tree index", "nbtree"],
+  "steps": [
+    {
+      "title": "No index: read everything",
+      "caption": "No index on customer_id: a parallel Seq Scan reads all 5,058 pages to return 179 of 500,000 rows.",
+      "body": "Acme's support tool asks for customer 42's orders, but `customer_id` has no index: PostgreSQL doesn't create one for a foreign key. The only plan is a **sequential scan**, a Gather with two parallel workers that reads all **5,058 pages** of `orders`, checks every row and throws **499,821** away to keep **179** (about 11 ms in one run on a laptop). The work grows with the table, not with the answer."
+    },
+    {
+      "title": "Walk down the B-tree",
+      "caption": "CREATE INDEX: 3 page reads find 42's 179 TIDs in leaf 14; a bitmap fetches their 175 heap pages.",
+      "body": "`CREATE INDEX ON orders (customer_id)` builds a 705-page B-tree with three levels. The lookup compares 42 with the keys of root page 286, follows a downlink to page 3 and then to leaf page 14, where the keys are sorted and 42's entry holds **179 TIDs** in two posting lists. PostgreSQL collects the TIDs in a bitmap and reads the **175 heap pages** in page order: **3 + 175 pages** instead of 5,058, in about 0.09 ms."
+    },
+    {
+      "title": "When the planner uses it",
+      "caption": "Ranges walk the linked leaves; when most rows match, the planner skips the index for a Seq Scan.",
+      "body": "Leaf pages link to their neighbours, so `BETWEEN 42 AND 47` descends once and walks right from leaf 14 into leaf 15 (4 index pages, 902 rows). The planner prices each plan from its statistics: customer 1's 2,633 orders still go through the index but touch 2,080 heap pages, and `status = 'delivered'` matches 487,245 rows, so it reads the table sequentially even though `orders_status_idx` exists."
+    },
+    {
+      "title": "What every write pays",
+      "caption": "Each INSERT adds an entry to every index; a full leaf splits, and every index adds WAL.",
+      "body": "A new order lands on heap page 5,057 and its key goes into leaf 14, which had 104 bytes free: it absorbed 39 new orders for customer 42 and the 40th **split** it, moving keys 43–46 to new page 705 and adding the separator 43 to page 3. Inserting 50,000 orders wrote 8.5 MB of WAL with the primary key alone, 12.4 MB with `orders_customer_id_idx` and 15.6 MB with an index on `status` as well, and an update that changes an indexed column can't be a HOT update. **Index the foreign keys you query by**, and drop the indexes nobody uses."
+    }
+  ],
+  "related": ["composite-index", "covering-index", "index-types", "query-execution-plans", "binary-search-tree", "hash-table", "postgresql", "mvcc"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — B-Tree Indexes (structure, deduplication, bottom-up deletion)", "url": "https://www.postgresql.org/docs/18/btree.html" },
+    { "title": "PostgreSQL 18 documentation — Combining Multiple Indexes (bitmap scans)", "url": "https://www.postgresql.org/docs/18/indexes-bitmap-scans.html" },
+    { "title": "PostgreSQL 18 documentation — Using EXPLAIN", "url": "https://www.postgresql.org/docs/18/using-explain.html" },
+    { "title": "PostgreSQL 18 documentation — pageinspect", "url": "https://www.postgresql.org/docs/18/pageinspect.html" },
+    { "title": "PostgreSQL 18 documentation — CREATE INDEX (fillfactor, CONCURRENTLY)", "url": "https://www.postgresql.org/docs/18/sql-createindex.html" },
+    { "title": "PostgreSQL 18 documentation — Heap-Only Tuples (HOT)", "url": "https://www.postgresql.org/docs/18/storage-hot.html" },
+    { "title": "PostgreSQL source — nbtree README (REL_18_STABLE)", "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/nbtree/README" },
+    { "title": "Philip L. Lehman and S. Bing Yao — Efficient Locking for Concurrent Operations on B-Trees (ACM TODS, 1981)", "url": "https://dl.acm.org/doi/10.1145/319628.319663" },
+    { "title": "MySQL 8.4 Reference Manual — Clustered and Secondary Indexes", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html" },
+    { "title": "Microsoft Learn — Clustered and nonclustered indexes (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/indexes/clustered-and-nonclustered-indexes-described" },
+    { "title": "Markus Winand — Use The Index, Luke: the B-tree", "url": "https://use-the-index-luke.com/sql/anatomy/the-tree" }
+  ]
+}

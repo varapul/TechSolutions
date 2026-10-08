@@ -156,6 +156,10 @@ Binary search only reads the array, so stable and in place don't apply. The expe
 - [Hash Table](../hash-table/) — Hash each key straight to a bucket for O(1) average lookups; colliding keys share a bucket, and the table grows as it fills.
 - [Sliding Window](../sliding-window/) — Slide a window along a sequence, adding the item that enters and dropping the one that leaves, instead of re-scanning each window.
 
+## Related database topics
+
+- [Composite Index](../composite-index/) — A multi-column index serves queries that use its leading columns: put equality columns first and the range or sort column last.
+
 ## References
 
 - [Python documentation — bisect: Array bisection algorithm](https://docs.python.org/3/library/bisect.html)

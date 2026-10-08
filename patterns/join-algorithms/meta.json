@@ -1,0 +1,40 @@
+{
+  "aka": ["nested loop join", "hash join", "merge join", "sort-merge join"],
+  "steps": [
+    {
+      "title": "A nested loop, no index",
+      "caption": "No index on order_events.order_id: the nested loop rescans all 1,500,000 events for every order.",
+      "body": "Customer 2 has 45 orders since 1 September, and the query fetches each one's latest event with a `LATERAL` subquery, which runs once per order: a **nested loop**. `order_events` has no index on `order_id` (a foreign key doesn't create one), so each of the 45 loops is a full scan of 1,500,000 events: 67.5 million rows and 496,350 page reads for 45 result rows, 1.8 s in one run on a laptop."
+    },
+    {
+      "title": "Nested loop + index",
+      "caption": "Joined to order_items, each of the 45 orders is one index lookup: root, branch, leaf, heap page.",
+      "body": "The same 45 orders joined to their items: the inner side is an index scan on `order_items_pkey`, so each outer row costs one descent of the three-level B-tree plus a heap page, 182 pages for 45 lookups and 117 rows in 14 ms (most of it the scan of `orders`). A nested loop wins when the outer side is small and the inner join column is indexed: about N × log M work, and the first row comes back at once."
+    },
+    {
+      "title": "Hash join, merge join",
+      "caption": "Hash: build on September's orders, probe with every item. Merge: walk two sorted inputs together.",
+      "body": "**Hash join** (revenue per category in September): PostgreSQL builds a hash table on the smaller input, 23,436 orders in 32,768 buckets (1,216 kB, one batch), then reads all 1,250,000 order items once and probes it: 58,590 match, 84 ms. With `work_mem` cut to 64 kB it splits into 8 batches that spill to disk, 293 ms. **Merge join** (orders 100,001–300,000): both inputs come out of their primary key indexes in `order_id` order, so one pass over each joins them: 500,000 rows, no sort, 262 ms."
+    },
+    {
+      "title": "How the planner picks",
+      "caption": "The planner costs every method from its row estimates and keeps the cheapest one for each join.",
+      "body": "For each join order and method the planner estimates a cost from its row estimates and keeps the cheapest; the bars are its estimates for each query with the other methods switched off. A wrong row estimate can pick the wrong method, past 8 tables (`join_collapse_limit`) it partly keeps the JOIN order you wrote, and from 12 (`geqo_threshold`) it searches with a genetic algorithm. MySQL 8.4 has nested loops and, since 8.0.18, hash joins, but no merge join."
+    }
+  ],
+  "related": ["query-execution-plans", "b-tree-index", "hash-table", "merge-sort", "n-plus-one-queries", "normalization", "postgresql", "row-vs-column-storage"],
+  "references": [
+    { "title": "PostgreSQL 18 — Planner/Optimizer", "url": "https://www.postgresql.org/docs/18/planner-optimizer.html" },
+    { "title": "PostgreSQL 18 — Using EXPLAIN", "url": "https://www.postgresql.org/docs/18/using-explain.html" },
+    { "title": "PostgreSQL 18 — Query Planning (enable_*, join_collapse_limit, geqo_threshold)", "url": "https://www.postgresql.org/docs/18/runtime-config-query.html" },
+    { "title": "PostgreSQL 18 — Resource Consumption (work_mem, hash_mem_multiplier)", "url": "https://www.postgresql.org/docs/18/runtime-config-resource.html" },
+    { "title": "PostgreSQL 18 — Parallel Plans: parallel joins", "url": "https://www.postgresql.org/docs/18/parallel-plans.html" },
+    { "title": "PostgreSQL 18 — Controlling the Planner with Explicit JOIN Clauses", "url": "https://www.postgresql.org/docs/18/explicit-joins.html" },
+    { "title": "PostgreSQL 18 — Genetic Query Optimization (GEQO)", "url": "https://www.postgresql.org/docs/18/geqo-pg-intro.html" },
+    { "title": "MySQL 8.4 Reference Manual — Nested-Loop Join Algorithms", "url": "https://dev.mysql.com/doc/refman/8.4/en/nested-loop-joins.html" },
+    { "title": "MySQL 8.0 Reference Manual — Hash Join Optimization (8.0.18 and 8.0.20 changes)", "url": "https://dev.mysql.com/doc/refman/8.0/en/hash-joins.html" },
+    { "title": "Microsoft Learn — Joins (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/joins" },
+    { "title": "Oracle AI Database 26ai SQL Tuning Guide — Joins", "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/tgsql/joins.html" },
+    { "title": "SQLite — The SQLite Query Optimizer Overview", "url": "https://www.sqlite.org/optoverview.html" }
+  ]
+}

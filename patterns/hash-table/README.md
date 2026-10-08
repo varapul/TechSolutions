@@ -240,6 +240,12 @@ Stable and in place don't apply to a map. Iteration order is not guaranteed in g
 
 - [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
 
+## Related database topics
+
+- [B-Tree Index](../b-tree-index/) — How a B-tree index finds a row in three or four page reads, serves ranges in order, and what every insert costs to keep it sorted.
+- [Index Types](../index-types/) — Beyond B-trees: hash, GIN for arrays, JSON and text, GiST, BRIN for time-ordered data, and partial and expression indexes.
+- [Join Algorithms](../join-algorithms/) — Nested loop, hash join and merge join: how each joins two tables, what it costs, and when the planner picks it.
+
 ## References
 
 - [RFC 9923 — The FNV Non-Cryptographic Hash Algorithm (Noll, Vo, Eastlake and Hansen, 2026)](https://www.rfc-editor.org/rfc/rfc9923.html)

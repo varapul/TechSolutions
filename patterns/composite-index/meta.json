@@ -1,0 +1,39 @@
+{
+  "aka": ["Multicolumn index", "Concatenated index", "Compound index"],
+  "steps": [
+    {
+      "title": "Wrong column first",
+      "caption": "Only (created_at, customer_id) exists: customer 42's history walks 52,936 entries to find 20 rows.",
+      "body": "Acme Shop already has an index on **(created_at, customer_id)**. The history screen asks for customer 42's 20 newest delivered orders, and the best PostgreSQL 18 can do with that index is walk it backward from the newest entry, checking `customer_id = 42` on each one: 52,936 entries and 226 buffers for 20 rows. For customer 1012, with 34 orders, the planner gives up on the index: it reads all 5,058 table pages and sorts."
+    },
+    {
+      "title": "Leftmost prefix",
+      "caption": "Swap the columns: customer_id = 42 becomes one slice of 179 entries, already sorted by created_at.",
+      "body": "A B-tree on (a, b) is sorted by `a`, and by `b` only among entries with the same `a`. On **(customer_id, created_at)** an equality on the leading column lands on one contiguous slice, customer 42's 179 entries, and inside it the entries are already in `created_at` order. A condition on `created_at` alone has no single range to seek to: its matches sit in every customer's slice."
+    },
+    {
+      "title": "Equality first, sort last",
+      "caption": "History: seek to the slice end, read 20 entries, stop (23 buffers). Dashboard: (status, created_at).",
+      "body": "After `CREATE INDEX ON orders (customer_id, created_at)` the plan is again an Index Scan Backward with `Index Cond: (customer_id = 42)`, but now it seeks to the end of the slice, takes 20 entries newest first and stops: 23 buffers and no Sort node. The dashboard (`status = 'pending' AND created_at >= '2026-10-02'`) follows the same rule with **(status, created_at)**, equality first and range last, so it reads exactly its 210 entries: 213 buffers instead of 526."
+    },
+    {
+      "title": "Skip scan and the costs",
+      "caption": "Skip scan: (status, created_at) serves created_at alone too. Every index is written on every insert.",
+      "body": "With PostgreSQL 18's **skip scan**, (status, created_at) also answers `created_at >= '2026-10-02'` with no status condition: 6 index searches over its 5 statuses, 579 buffers, so the old (created_at, customer_id) index can go if nothing else needs it. (customer_id, created_at) couldn't stand in: with 95,880 customers to skip, the planner would rather read the whole table. Every index is written on every INSERT (5 WAL records here with four indexes, 2 with the primary key alone), and an index on (customer_id) alone would be redundant next to (customer_id, created_at)."
+    }
+  ],
+  "related": ["b-tree-index", "covering-index", "index-types", "query-execution-plans", "keyset-pagination", "postgresql", "binary-search", "mongodb", "amazon-dynamodb"],
+  "references": [
+    { "title": "PostgreSQL 18 Documentation — 11.3 Multicolumn Indexes", "url": "https://www.postgresql.org/docs/18/indexes-multicolumn.html" },
+    { "title": "PostgreSQL 18 Documentation — 11.4 Indexes and ORDER BY", "url": "https://www.postgresql.org/docs/18/indexes-ordering.html" },
+    { "title": "PostgreSQL 18 Release Notes — B-tree skip scan and Index Searches in EXPLAIN", "url": "https://www.postgresql.org/docs/18/release-18.html" },
+    { "title": "PostgreSQL 18 Documentation — 14.1 Using EXPLAIN", "url": "https://www.postgresql.org/docs/18/using-explain.html" },
+    { "title": "MySQL 8.4 Reference Manual — 10.3.6 Multiple-Column Indexes", "url": "https://dev.mysql.com/doc/refman/8.4/en/multiple-column-indexes.html" },
+    { "title": "MySQL 8.4 Reference Manual — Range Optimization: Skip Scan Range Access Method", "url": "https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html#range-access-skip-scan" },
+    { "title": "MySQL 8.4 Reference Manual — 10.3.10 Use of Index Extensions", "url": "https://dev.mysql.com/doc/refman/8.4/en/index-extensions.html" },
+    { "title": "Markus Winand, Use The Index, Luke — Concatenated Indexes", "url": "https://use-the-index-luke.com/sql/where-clause/the-equals-operator/concatenated-keys" },
+    { "title": "Markus Winand, Use The Index, Luke — Greater, Less and BETWEEN", "url": "https://use-the-index-luke.com/sql/where-clause/searching-for-ranges/greater-less-between-tuning-sql-access-filter-predicates" },
+    { "title": "Markus Winand, Use The Index, Luke — Myth: Most Selective First", "url": "https://use-the-index-luke.com/sql/myth-directory/most-selective-first" },
+    { "title": "MongoDB Manual — The ESR (Equality, Sort, Range) Guideline", "url": "https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/" }
+  ]
+}

@@ -1,0 +1,843 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Query Execution Plans</title>
+<desc id="dg-desc">Query Execution Plans. Read EXPLAIN the way the planner thinks: scans, joins, estimated against actual rows, and the statistics behind each choice. Step 1, The report is slow: The country report takes 106 ms to return 6 rows, and the team starts guessing at the cause. Step 2, Reading the plan: Read from the leaves up: 48 rows expected, 23,213 found, so 23,213 index lookups and 93% of buffers. Step 3, Estimates versus reality: Histogram ends 2 Sep, so the planner guessed 48 rows. After ANALYZE: a hash join and 6,198 buffers. Step 4, Pitfalls in production: EXPLAIN alone only estimates; ANALYZE runs it. Generic plans can't see $1. Log slow plans in prod.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Query Execution Plans</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · The report is slow</text>
+  <text class="step on p1" x="40" y="518">1 · The report is slow</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Reading the plan</text>
+  <text class="step on p2" x="262" y="518">2 · Reading the plan</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Estimates versus reality</text>
+  <text class="step on p3" x="484" y="518">3 · Estimates versus reality</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Pitfalls in production</text>
+  <text class="step on p4" x="706" y="518">4 · Pitfalls in production</text>
+  <text class="caption p1" x="40" y="552">The country report takes 106 ms to return 6 rows, and the team starts guessing at the cause.</text>
+  <text class="caption p2" x="40" y="552">Read from the leaves up: 48 rows expected, 23,213 found, so 23,213 index lookups and 93% of buffers.</text>
+  <text class="caption p3" x="40" y="552">Histogram ends 2 Sep, so the planner guessed 48 rows. After ANALYZE: a hash join and 6,198 buffers.</text>
+  <text class="caption p4" x="40" y="552">EXPLAIN alone only estimates; ANALYZE runs it. Generic plans can't see $1. Log slow plans in prod.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Query Execution Plans. One report on PostgreSQL 18.6 (Acme Shop sample data, parallel query off):
+   revenue per customer country for orders since 2026-09-03 (23,213 orders, 6 rows).
+   Stale statistics (histogram ends 2026-09-02 23:58): est 48 rows -> Nested Loop, 23,213 index lookups,
+   74,704 buffers, 105.8 ms. After ANALYZE: est 22,956 -> Hash Join, 6,198 buffers, 87.7 ms.
+   0-25%   the report runs as a black box; the team guesses
+   25-50%  EXPLAIN (ANALYZE, BUFFERS): rows climb the stale tree, every outer row probes the index
+   50-75%  pg_stats: the range lies past the histogram; ANALYZE; the tree becomes a hash join
+   75-100% pitfalls: EXPLAIN vs ANALYZE, generic plans, auto_explain and pg_stat_statements; reset at 19.5 s */
+.diagram .qep-name { font-size: 12px; font-weight: 600; fill: var(--ink); }
+.diagram .qep-q { font-size: 72px; font-weight: 700; fill: var(--line); }
+.diagram .qep-badge { font-size: 10px; font-weight: 700; fill: var(--bg); }
+.diagram .qep-edge { fill: none; stroke: var(--wire); stroke-width: 1.5; }
+.diagram .qep-k0 { opacity: 0; animation: qep-k0 var(--T) linear infinite; }
+.diagram .qep-k1 { opacity: 0; animation: qep-k1 var(--T) linear infinite; }
+.diagram .qep-k2 { opacity: 0; animation: qep-k2 var(--T) linear infinite; }
+.diagram .qep-k3 { opacity: 0; animation: qep-k3 var(--T) linear infinite; }
+.diagram .qep-a0 { opacity: 0; animation: qep-a0 var(--T) linear infinite; }
+.diagram .qep-p0 { opacity: 0; animation: qep-p0 var(--T) linear infinite; }
+.diagram .qep-a1 { opacity: 0; animation: qep-a1 var(--T) linear infinite; }
+.diagram .qep-p1 { opacity: 0; animation: qep-p1 var(--T) linear infinite; }
+.diagram .qep-a2 { opacity: 0; animation: qep-a2 var(--T) linear infinite; }
+.diagram .qep-p2 { opacity: 0; animation: qep-p2 var(--T) linear infinite; }
+.diagram .qep-a3 { opacity: 0; animation: qep-a3 var(--T) linear infinite; }
+.diagram .qep-p3 { opacity: 0; animation: qep-p3 var(--T) linear infinite; }
+.diagram .qep-u0 { opacity: 0; animation: qep-u0 var(--T) linear infinite; }
+.diagram .qep-u1 { opacity: 0; animation: qep-u1 var(--T) linear infinite; }
+.diagram .qep-u2 { opacity: 0; animation: qep-u2 var(--T) linear infinite; }
+.diagram .qep-b0 { opacity: 0; animation: qep-b0 var(--T) linear infinite; }
+.diagram .qep-b1 { opacity: 0; animation: qep-b1 var(--T) linear infinite; }
+.diagram .qep-b2 { opacity: 0; animation: qep-b2 var(--T) linear infinite; }
+.diagram .qep-o0 { opacity: 0; animation: qep-o0 var(--T) linear infinite; }
+.diagram .qep-o1 { opacity: 0; animation: qep-o1 var(--T) linear infinite; }
+.diagram .qep-o2 { opacity: 0; animation: qep-o2 var(--T) linear infinite; }
+.diagram .qep-v0 { opacity: 0; animation: qep-v0 var(--T) linear infinite; }
+.diagram .qep-v1 { opacity: 0; animation: qep-v1 var(--T) linear infinite; }
+.diagram .qep-tgreen { opacity: 0; animation: qep-tgreen var(--T) linear infinite; }
+.diagram .qep-head { opacity: 0; animation: qep-head var(--T) linear infinite; }
+.diagram .qep-stale { opacity: 0; animation: qep-stale var(--T) linear infinite; }
+.diagram .qep-l1hot { opacity: 0; animation: qep-l1hot var(--T) linear infinite; }
+.diagram .qep-l2hot { opacity: 0; animation: qep-l2hot var(--T) linear infinite; }
+.diagram .qep-call2 { opacity: 0; animation: qep-call2 var(--T) linear infinite; }
+.diagram .qep-anat { opacity: 0; animation: qep-anat var(--T) linear infinite; }
+.diagram .qep-stats { opacity: 0; animation: qep-stats var(--T) linear infinite; }
+.diagram .qep-sst { opacity: 0; animation: qep-sst var(--T) linear infinite; }
+.diagram .qep-sfr { opacity: 0; animation: qep-sfr var(--T) linear infinite; }
+.diagram .qep-an1 { opacity: 0; animation: qep-an1 var(--T) linear infinite; }
+.diagram .qep-an2 { opacity: 0; animation: qep-an2 var(--T) linear infinite; }
+.diagram .qep-where { opacity: 0; animation: qep-where var(--T) linear infinite; }
+.diagram .qep-fresh { opacity: 0; animation: qep-fresh var(--T) linear infinite; }
+.diagram .qep-f3hot { opacity: 0; animation: qep-f3hot var(--T) linear infinite; }
+.diagram .qep-call3 { opacity: 0; animation: qep-call3 var(--T) linear infinite; }
+.diagram .qep-call4 { opacity: 0; animation: qep-call4 var(--T) linear infinite; }
+.diagram .qep-c1 { opacity: 0; animation: qep-c1 var(--T) linear infinite; }
+.diagram .qep-c2 { opacity: 0; animation: qep-c2 var(--T) linear infinite; }
+.diagram .qep-c3 { opacity: 0; animation: qep-c3 var(--T) linear infinite; }
+.diagram .qep-box { animation: qep-box var(--T) linear infinite; }
+.diagram .qep-g1 { animation: qep-g1 var(--T) linear infinite; }
+.diagram .qep-g2 { animation: qep-g2 var(--T) linear infinite; }
+.diagram .qep-g3 { animation: qep-g3 var(--T) linear infinite; }
+.diagram .qep-hint { animation: qep-hint var(--T) linear infinite; }
+.diagram .qep-rows { animation: qep-rows var(--T) linear infinite; }
+.diagram .qep-tred { animation: qep-tred var(--T) linear infinite; }
+@keyframes qep-k0 {
+  0% { transform: translate(238px, 196px); opacity: 0; }
+  2% { transform: translate(238px, 196px); opacity: 0; }
+  2.25% { opacity: 1; }
+  6.254% { transform: translate(436px, 246px); opacity: 1; }
+  6.504% { transform: translate(436px, 246px); opacity: 0; }
+  100% { transform: translate(436px, 246px); opacity: 0; }
+}
+@keyframes qep-k1 {
+  0% { transform: translate(436px, 262px); opacity: 0; }
+  7.75% { transform: translate(436px, 262px); opacity: 0; }
+  8% { opacity: 1; }
+  9.964% { transform: translate(250px, 262px); }
+  10.917% { transform: translate(250px, 342px); }
+  11.06% { transform: translate(238px, 342px); opacity: 1; }
+  11.31% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-k2 {
+  0% { transform: translate(436px, 262px); opacity: 0; }
+  8.5% { transform: translate(436px, 262px); opacity: 0; }
+  8.75% { opacity: 1; }
+  10.714% { transform: translate(250px, 262px); }
+  11.667% { transform: translate(250px, 342px); }
+  11.81% { transform: translate(238px, 342px); opacity: 1; }
+  12.06% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-k3 {
+  0% { transform: translate(436px, 262px); opacity: 0; }
+  9.25% { transform: translate(436px, 262px); opacity: 0; }
+  9.5% { opacity: 1; }
+  11.464% { transform: translate(250px, 262px); }
+  12.417% { transform: translate(250px, 342px); }
+  12.56% { transform: translate(238px, 342px); opacity: 1; }
+  12.81% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-a0 {
+  0% { transform: translate(355px, 280px); opacity: 0; }
+  28.5% { transform: translate(355px, 280px); opacity: 0; }
+  28.733% { transform: translate(355px, 266px); }
+  28.75% { opacity: 1; }
+  29.483% { transform: translate(400px, 266px); }
+  29.717% { transform: translate(400px, 252px); opacity: 1; }
+  29.967% { transform: translate(400px, 252px); opacity: 0; }
+  100% { transform: translate(400px, 252px); opacity: 0; }
+}
+@keyframes qep-p0 {
+  0% { transform: translate(524px, 252px); opacity: 0; }
+  29.717% { transform: translate(524px, 252px); opacity: 0; }
+  29.95% { transform: translate(524px, 266px); }
+  29.967% { opacity: 1; }
+  30.7% { transform: translate(569px, 266px); }
+  30.934% { transform: translate(569px, 280px); }
+  31.167% { transform: translate(569px, 266px); }
+  31.917% { transform: translate(524px, 266px); }
+  32.151% { transform: translate(524px, 252px); opacity: 1; }
+  32.401% { transform: translate(524px, 252px); opacity: 0; }
+  100% { transform: translate(524px, 252px); opacity: 0; }
+}
+@keyframes qep-a1 {
+  0% { transform: translate(355px, 280px); opacity: 0; }
+  30.5% { transform: translate(355px, 280px); opacity: 0; }
+  30.733% { transform: translate(355px, 266px); }
+  30.75% { opacity: 1; }
+  31.483% { transform: translate(400px, 266px); }
+  31.717% { transform: translate(400px, 252px); opacity: 1; }
+  31.967% { transform: translate(400px, 252px); opacity: 0; }
+  100% { transform: translate(400px, 252px); opacity: 0; }
+}
+@keyframes qep-p1 {
+  0% { transform: translate(524px, 252px); opacity: 0; }
+  31.717% { transform: translate(524px, 252px); opacity: 0; }
+  31.95% { transform: translate(524px, 266px); }
+  31.967% { opacity: 1; }
+  32.7% { transform: translate(569px, 266px); }
+  32.934% { transform: translate(569px, 280px); }
+  33.167% { transform: translate(569px, 266px); }
+  33.917% { transform: translate(524px, 266px); }
+  34.151% { transform: translate(524px, 252px); opacity: 1; }
+  34.401% { transform: translate(524px, 252px); opacity: 0; }
+  100% { transform: translate(524px, 252px); opacity: 0; }
+}
+@keyframes qep-a2 {
+  0% { transform: translate(355px, 280px); opacity: 0; }
+  32.5% { transform: translate(355px, 280px); opacity: 0; }
+  32.733% { transform: translate(355px, 266px); }
+  32.75% { opacity: 1; }
+  33.483% { transform: translate(400px, 266px); }
+  33.717% { transform: translate(400px, 252px); opacity: 1; }
+  33.967% { transform: translate(400px, 252px); opacity: 0; }
+  100% { transform: translate(400px, 252px); opacity: 0; }
+}
+@keyframes qep-p2 {
+  0% { transform: translate(524px, 252px); opacity: 0; }
+  33.717% { transform: translate(524px, 252px); opacity: 0; }
+  33.95% { transform: translate(524px, 266px); }
+  33.967% { opacity: 1; }
+  34.7% { transform: translate(569px, 266px); }
+  34.934% { transform: translate(569px, 280px); }
+  35.167% { transform: translate(569px, 266px); }
+  35.917% { transform: translate(524px, 266px); }
+  36.151% { transform: translate(524px, 252px); opacity: 1; }
+  36.401% { transform: translate(524px, 252px); opacity: 0; }
+  100% { transform: translate(524px, 252px); opacity: 0; }
+}
+@keyframes qep-a3 {
+  0% { transform: translate(355px, 280px); opacity: 0; }
+  34.5% { transform: translate(355px, 280px); opacity: 0; }
+  34.733% { transform: translate(355px, 266px); }
+  34.75% { opacity: 1; }
+  35.483% { transform: translate(400px, 266px); }
+  35.717% { transform: translate(400px, 252px); opacity: 1; }
+  35.967% { transform: translate(400px, 252px); opacity: 0; }
+  100% { transform: translate(400px, 252px); opacity: 0; }
+}
+@keyframes qep-p3 {
+  0% { transform: translate(524px, 252px); opacity: 0; }
+  35.717% { transform: translate(524px, 252px); opacity: 0; }
+  35.95% { transform: translate(524px, 266px); }
+  35.967% { opacity: 1; }
+  36.7% { transform: translate(569px, 266px); }
+  36.934% { transform: translate(569px, 280px); }
+  37.167% { transform: translate(569px, 266px); }
+  37.917% { transform: translate(524px, 266px); }
+  38.151% { transform: translate(524px, 252px); opacity: 1; }
+  38.401% { transform: translate(524px, 252px); opacity: 0; }
+  100% { transform: translate(524px, 252px); opacity: 0; }
+}
+@keyframes qep-u0 {
+  0% { transform: translate(462px, 226px); opacity: 0; }
+  38.5% { transform: translate(462px, 226px); opacity: 0; }
+  38.75% { opacity: 1; }
+  39.266% { transform: translate(462px, 131px); }
+  40.976% { transform: translate(250px, 131px); }
+  42.677% { transform: translate(250px, 342px); }
+  42.774% { transform: translate(238px, 342px); opacity: 1; }
+  43.024% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-u1 {
+  0% { transform: translate(462px, 226px); opacity: 0; }
+  39.5% { transform: translate(462px, 226px); opacity: 0; }
+  39.75% { opacity: 1; }
+  40.266% { transform: translate(462px, 131px); }
+  41.976% { transform: translate(250px, 131px); }
+  43.677% { transform: translate(250px, 342px); }
+  43.774% { transform: translate(238px, 342px); opacity: 1; }
+  44.024% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-u2 {
+  0% { transform: translate(462px, 226px); opacity: 0; }
+  40.5% { transform: translate(462px, 226px); opacity: 0; }
+  40.75% { opacity: 1; }
+  41.266% { transform: translate(462px, 131px); }
+  42.976% { transform: translate(250px, 131px); }
+  44.677% { transform: translate(250px, 342px); }
+  44.774% { transform: translate(238px, 342px); opacity: 1; }
+  45.024% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-b0 {
+  0% { transform: translate(569px, 330px); opacity: 0; }
+  63.5% { transform: translate(569px, 330px); opacity: 0; }
+  63.75% { opacity: 1; }
+  64.25% { transform: translate(569px, 306px); }
+  64.563% { transform: translate(569px, 296px); opacity: 1; }
+  64.813% { transform: translate(569px, 296px); opacity: 0; }
+  100% { transform: translate(569px, 296px); opacity: 0; }
+}
+@keyframes qep-b1 {
+  0% { transform: translate(569px, 330px); opacity: 0; }
+  64.25% { transform: translate(569px, 330px); opacity: 0; }
+  64.5% { opacity: 1; }
+  65% { transform: translate(569px, 306px); }
+  65.313% { transform: translate(569px, 296px); opacity: 1; }
+  65.563% { transform: translate(569px, 296px); opacity: 0; }
+  100% { transform: translate(569px, 296px); opacity: 0; }
+}
+@keyframes qep-b2 {
+  0% { transform: translate(569px, 330px); opacity: 0; }
+  65% { transform: translate(569px, 330px); opacity: 0; }
+  65.25% { opacity: 1; }
+  65.75% { transform: translate(569px, 306px); }
+  66.063% { transform: translate(569px, 296px); opacity: 1; }
+  66.313% { transform: translate(569px, 296px); opacity: 0; }
+  100% { transform: translate(569px, 296px); opacity: 0; }
+}
+@keyframes qep-o0 {
+  0% { transform: translate(355px, 280px); opacity: 0; }
+  65.75% { transform: translate(355px, 280px); opacity: 0; }
+  65.983% { transform: translate(355px, 266px); }
+  66% { opacity: 1; }
+  66.733% { transform: translate(400px, 266px); }
+  66.967% { transform: translate(400px, 252px); opacity: 1; }
+  67.217% { transform: translate(400px, 252px); opacity: 0; }
+  100% { transform: translate(400px, 252px); opacity: 0; }
+}
+@keyframes qep-o1 {
+  0% { transform: translate(355px, 280px); opacity: 0; }
+  66.75% { transform: translate(355px, 280px); opacity: 0; }
+  66.983% { transform: translate(355px, 266px); }
+  67% { opacity: 1; }
+  67.733% { transform: translate(400px, 266px); }
+  67.967% { transform: translate(400px, 252px); opacity: 1; }
+  68.217% { transform: translate(400px, 252px); opacity: 0; }
+  100% { transform: translate(400px, 252px); opacity: 0; }
+}
+@keyframes qep-o2 {
+  0% { transform: translate(355px, 280px); opacity: 0; }
+  67.75% { transform: translate(355px, 280px); opacity: 0; }
+  67.983% { transform: translate(355px, 266px); }
+  68% { opacity: 1; }
+  68.733% { transform: translate(400px, 266px); }
+  68.967% { transform: translate(400px, 252px); opacity: 1; }
+  69.217% { transform: translate(400px, 252px); opacity: 0; }
+  100% { transform: translate(400px, 252px); opacity: 0; }
+}
+@keyframes qep-v0 {
+  0% { transform: translate(462px, 226px); opacity: 0; }
+  67.75% { transform: translate(462px, 226px); opacity: 0; }
+  68% { opacity: 1; }
+  68.41% { transform: translate(462px, 131px); }
+  69.882% { transform: translate(250px, 131px); }
+  71.347% { transform: translate(250px, 342px); }
+  71.431% { transform: translate(238px, 342px); opacity: 1; }
+  71.681% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-v1 {
+  0% { transform: translate(462px, 226px); opacity: 0; }
+  68.5% { transform: translate(462px, 226px); opacity: 0; }
+  68.75% { opacity: 1; }
+  69.16% { transform: translate(462px, 131px); }
+  70.632% { transform: translate(250px, 131px); }
+  72.097% { transform: translate(250px, 342px); }
+  72.181% { transform: translate(238px, 342px); opacity: 1; }
+  72.431% { transform: translate(238px, 342px); opacity: 0; }
+  100% { transform: translate(238px, 342px); opacity: 0; }
+}
+@keyframes qep-box {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  25.5% { opacity: 0; }
+  97.5% { opacity: 0; }
+  98% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes qep-g1 {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15% { opacity: 1; }
+  25% { opacity: 1; }
+  25.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-g2 {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17% { opacity: 1; }
+  25% { opacity: 1; }
+  25.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-g3 {
+  0% { opacity: 0; }
+  18.5% { opacity: 0; }
+  19% { opacity: 1; }
+  25% { opacity: 1; }
+  25.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-hint {
+  0% { opacity: 0; }
+  20.5% { opacity: 0; }
+  21% { opacity: 1; }
+  25% { opacity: 1; }
+  25.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-rows {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-tred {
+  0% { opacity: 0; }
+  12% { opacity: 0; }
+  12.5% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-tgreen {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-head {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-stale {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.5% { opacity: 1; }
+  61% { opacity: 1; }
+  61.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-l1hot {
+  0% { opacity: 0; }
+  30.5% { opacity: 0; }
+  31% { opacity: 1; }
+  61% { opacity: 1; }
+  61.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-l2hot {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36% { opacity: 1; }
+  61% { opacity: 1; }
+  61.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-call2 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  43.5% { opacity: 1; }
+  61% { opacity: 1; }
+  61.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-anat {
+  0% { opacity: 0; }
+  25.5% { opacity: 0; }
+  26% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-stats {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-sst {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.5% { opacity: 1; }
+  58.5% { opacity: 1; }
+  59% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-sfr {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-an1 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.5% { opacity: 1; }
+  58% { opacity: 1; }
+  58.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-an2 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-where {
+  0% { opacity: 0; }
+  51.5% { opacity: 0; }
+  52% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-fresh {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  61.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-f3hot {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.5% { opacity: 1; }
+  75% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-call3 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70% { opacity: 1; }
+  80.5% { opacity: 1; }
+  81% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-call4 {
+  0% { opacity: 0; }
+  81% { opacity: 0; }
+  81.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-c1 {
+  0% { opacity: 0; }
+  75.5% { opacity: 0; }
+  76% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-c2 {
+  0% { opacity: 0; }
+  81% { opacity: 0; }
+  81.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes qep-c3 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  86.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- left: the report and what it returns -->
+<rect class="box" x="30" y="96" width="214" height="184" rx="10"/>
+<text class="tiny mono" x="42" y="114">report.sql</text>
+<text class="tiny end" x="232" y="114">PostgreSQL 18.6</text>
+<g class="qep-where"><rect class="f-amber-soft s-amber" x="36" y="209" width="202" height="32" rx="5" stroke-width="1"/></g>
+<text class="tiny mono f-ink" x="42" y="134">SELECT c.country,</text>
+<text class="tiny mono f-ink" x="55.2" y="148.5">count(*) AS orders,</text>
+<text class="tiny mono f-ink" x="55.2" y="163">sum(o.total_thb) AS revenue</text>
+<text class="tiny mono f-ink" x="42" y="177.5">FROM orders o</text>
+<text class="tiny mono f-ink" x="42" y="192">JOIN customers c</text>
+<text class="tiny mono f-ink" x="55.2" y="206.5">ON c.id = o.customer_id</text>
+<text class="tiny mono f-ink" x="42" y="221">WHERE o.created_at</text>
+<text class="tiny mono f-ink" x="55.2" y="235.5">&gt;= '2026-09-03'</text>
+<text class="tiny mono f-ink" x="42" y="250">GROUP BY c.country</text>
+<text class="tiny mono f-ink" x="42" y="264.5">ORDER BY revenue DESC;</text>
+<rect class="box" x="30" y="290" width="214" height="128" rx="10"/>
+<text class="tiny" x="42" y="308">country</text>
+<text class="tiny end" x="146" y="308">orders</text>
+<text class="tiny end" x="232" y="308">revenue THB</text>
+<g class="qep-rows">
+  <text class="tiny mono f-ink" x="42" y="327">TH</text><text class="tiny mono f-ink end" x="146" y="327">12,713</text><text class="tiny mono f-ink end" x="232" y="327">320.2 M</text>
+  <text class="tiny mono f-ink" x="42" y="342">SG</text><text class="tiny mono f-ink end" x="146" y="342">3,463</text><text class="tiny mono f-ink end" x="232" y="342">85.1 M</text>
+  <text class="tiny mono f-ink" x="42" y="357">MY</text><text class="tiny mono f-ink end" x="146" y="357">2,776</text><text class="tiny mono f-ink end" x="232" y="357">69.4 M</text>
+  <text class="tiny mono f-ink" x="42" y="372">VN</text><text class="tiny mono f-ink end" x="146" y="372">1,933</text><text class="tiny mono f-ink end" x="232" y="372">47.5 M</text>
+  <text class="tiny mono f-ink" x="42" y="387">ID</text><text class="tiny mono f-ink end" x="146" y="387">1,383</text><text class="tiny mono f-ink end" x="232" y="387">34.5 M</text>
+  <text class="tiny mono f-ink" x="42" y="402">PH</text><text class="tiny mono f-ink end" x="146" y="402">945</text><text class="tiny mono f-ink end" x="232" y="402">23.7 M</text>
+</g>
+<g class="qep-tred"><rect class="f-red-soft s-red" x="30" y="428" width="214" height="32" rx="16" stroke-width="1.5"/><text class="tiny" x="46" y="448">Execution Time</text><text class="label end f-red" x="228" y="450">106 ms</text></g>
+<g class="qep-tgreen"><rect class="f-green-soft s-green" x="30" y="428" width="214" height="32" rx="16" stroke-width="1.5"/><text class="tiny" x="46" y="448">Execution Time</text><text class="label end f-green" x="228" y="450">88 ms</text></g>
+<!-- centre, step 1: the query goes in, 6 rows come out, nobody knows what happened inside -->
+<g class="qep-box">
+<rect class="zone" x="256" y="118" width="412" height="256" rx="14"/>
+<text class="label mid" x="462" y="152">PostgreSQL 18.6</text>
+<text class="sub mid" x="462" y="172">plans the query, then runs the plan</text>
+<text class="qep-q mid" x="462" y="266">?</text>
+<text class="tiny mid" x="462" y="308">Which plan? How many rows? Where did the time go?</text>
+</g>
+<g class="qep-hint"><rect class="f-blue-soft s-blue" x="286" y="388" width="352" height="30" rx="15" stroke-width="1.5"/><text class="tiny sb mid f-blue" x="462" y="407">Don't guess: run EXPLAIN (ANALYZE, BUFFERS)</text></g>
+<!-- the plan header (steps 2-4) -->
+<g class="qep-head"><text class="tiny mono sb f-ink" x="256" y="108">EXPLAIN (ANALYZE, BUFFERS)</text><text class="tiny end" x="668" y="108">one run · parallel query off</text></g>
+<!-- stale statistics: the plan the planner chose for 48 rows -->
+<g class="qep-stale">
+<line class="qep-edge" x1="462" y1="144" x2="462" y2="154"/><line class="qep-edge" x1="462" y1="180" x2="462" y2="190"/><path class="qep-edge" d="M400 252V266H355V280"/><path class="qep-edge" d="M524 252V266H569V280"/>
+<line class="qep-edge" x1="462" y1="216" x2="462" y2="226"/>
+<rect class="box" x="280" y="118" width="364" height="26" rx="8"/><text class="qep-name" x="292" y="135">Sort</text><text class="tiny mono end" x="632" y="135">est 6 · actual 6 · 105.6 ms · <tspan class="f-red">buffers 74,704</tspan></text>
+<rect class="box" x="280" y="154" width="364" height="26" rx="8"/><text class="qep-name" x="292" y="171">GroupAggregate</text><text class="tiny mono end" x="632" y="171">est 6 · actual 6 · 105.6 ms</text>
+<rect class="box" x="280" y="190" width="364" height="26" rx="8"/><text class="qep-name" x="292" y="207">Sort</text><text class="tiny mono end" x="632" y="207">est 48 · <tspan class="f-red">actual 23,213</tspan> · 101.3 ms</text>
+<rect class="box" x="280" y="226" width="364" height="26" rx="8"/><text class="qep-name" x="292" y="243">Nested Loop</text><text class="tiny mono end" x="632" y="243">est 48 · <tspan class="f-red">actual 23,213</tspan> · 92.8 ms</text>
+<text class="tiny" x="296" y="276">outer</text>
+<text class="tiny" x="576" y="276">inner, per row</text>
+<rect class="box" x="256" y="280" width="198" height="94" rx="8"/><text class="qep-name" x="266" y="297">Seq Scan on orders o</text><text class="tiny mono" x="266" y="314">est 48 · <tspan class="f-red">actual 23,213</tspan></text><text class="tiny mono" x="266" y="330">removed by filter 476,787</text><text class="tiny mono" x="266" y="346">0.010..43.964 ms</text><text class="tiny mono" x="266" y="362">buffers 5,059</text>
+<rect class="box" x="470" y="280" width="198" height="94" rx="8"/><text class="qep-name" x="480" y="297">Index Scan · customers_pkey</text><text class="tiny mono" x="480" y="314">est 1 · actual 1 per loop</text><text class="tiny mono" x="480" y="330"><tspan class="f-red">loops 23,213</tspan></text><text class="tiny mono" x="480" y="346">0.002 ms × 23,213 ≈ 46 ms</text><text class="tiny mono" x="480" y="362"><tspan class="f-red">buffers 69,639</tspan></text>
+</g>
+<g class="qep-l1hot"><rect class="none s-red" x="256" y="280" width="198" height="94" rx="8" stroke-width="2.5"/><rect class="f-red" x="414" y="287" width="34" height="14" rx="7"/><text class="qep-badge mid" x="431" y="297.5">×484</text></g>
+<g class="qep-l2hot"><rect class="none s-red" x="470" y="280" width="198" height="94" rx="8" stroke-width="2.5"/><rect class="f-red" x="580" y="352" width="34" height="14" rx="7"/><text class="qep-badge mid" x="597" y="362.5">93%</text></g>
+<!-- fresh statistics: the plan after ANALYZE -->
+<g class="qep-fresh">
+<line class="qep-edge" x1="462" y1="144" x2="462" y2="154"/><line class="qep-edge" x1="462" y1="180" x2="462" y2="226"/><path class="qep-edge" d="M400 252V266H355V280"/><path class="qep-edge" d="M524 252V266H569V280"/>
+<line class="qep-edge" x1="569" y1="306" x2="569" y2="318"/>
+<rect class="box" x="280" y="118" width="364" height="26" rx="8"/><text class="qep-name" x="292" y="135">Sort</text><text class="tiny mono end" x="632" y="135">est 6 · actual 6 · 87.4 ms · <tspan class="f-green">buffers 6,198</tspan></text>
+<rect class="box" x="280" y="154" width="364" height="26" rx="8"/><text class="qep-name" x="292" y="171">HashAggregate</text><text class="tiny mono end" x="632" y="171">est 6 · actual 6 · 87.4 ms</text>
+<rect class="box" x="280" y="226" width="364" height="26" rx="8"/><text class="qep-name" x="292" y="243">Hash Join</text><text class="tiny mono end" x="632" y="243">est 22,956 · <tspan class="f-green">actual 23,213</tspan> · 82.0 ms</text>
+<text class="tiny" x="296" y="276">probe</text>
+<text class="tiny" x="576" y="276">build, once</text>
+<rect class="box" x="256" y="280" width="198" height="94" rx="8"/><text class="qep-name" x="266" y="297">Seq Scan on orders o</text><text class="tiny mono" x="266" y="314">est 22,956 · <tspan class="f-green">actual 23,213</tspan></text><text class="tiny mono" x="266" y="330">removed by filter 476,787</text><text class="tiny mono" x="266" y="346">0.011..37.430 ms</text><text class="tiny mono" x="266" y="362">buffers 5,059</text>
+<rect class="box" x="470" y="280" width="198" height="26" rx="8"/><text class="qep-name" x="480" y="297">Hash</text><text class="tiny mono" x="516" y="297">100,000 rows · 32.3 ms</text>
+<rect class="box" x="470" y="318" width="198" height="56" rx="8"/><text class="qep-name" x="480" y="335">Seq Scan on customers c</text><text class="tiny mono" x="480" y="352">est = actual = 100,000</text><text class="tiny mono" x="480" y="368">13.6 ms · buffers 1,136</text>
+</g>
+<g class="qep-f3hot"><rect class="none s-green" x="280" y="226" width="364" height="26" rx="8" stroke-width="2.5"/></g>
+<!-- callouts under the tree -->
+<g class="qep-call2"><rect class="f-red-soft s-red" x="256" y="388" width="412" height="72" rx="10" stroke-width="1.5"/><text class="tiny sb f-red" x="268" y="406">Most expensive: 23,213 index lookups, 93% of all buffers</text><text class="tiny f-ink" x="268" y="422">They happen because the scan was estimated at 48 rows: for 48,</text><text class="tiny f-ink" x="268" y="438">a Nested Loop looked cheapest (cost 11,409 vs 14,408 hash join).</text><text class="tiny" x="268" y="453">cost: planner units, not ms; a node includes its children</text></g>
+<g class="qep-call3"><rect class="f-green-soft s-green" x="256" y="388" width="412" height="72" rx="10" stroke-width="1.5"/><text class="tiny sb f-green" x="268" y="406">Hash Join: 6,198 buffers instead of 74,704 · 106 → 88 ms</text><text class="tiny f-ink" x="268" y="422">With 22,956 rows expected, one pass over customers into a hash</text><text class="tiny f-ink" x="268" y="438">is cheapest: cost 14,928 vs 22,701 for a nested loop.</text><text class="tiny" x="268" y="453">warm cache here: every page was already in memory</text></g>
+<g class="qep-call4"><rect class="f-amber-soft s-amber" x="256" y="388" width="412" height="72" rx="10" stroke-width="1.5"/><text class="tiny sb f-amber-ink" x="268" y="406">Generic plan: PREPARE … WHERE o.created_at >= $1</text><text class="tiny f-ink" x="268" y="422">Seq Scan on orders o (rows=166,667): a third of the table,</text><text class="tiny f-ink" x="268" y="438">because a generic plan cannot see the value of $1.</text><text class="tiny" x="268" y="453">PostgreSQL kept custom plans here: the generic one cost more</text></g>
+<!-- right, step 1: the guesses -->
+<g class="qep-g1"><text class="tiny sb" x="680" y="112">The team's guesses</text><rect class="box" x="680" y="122" width="250" height="44" rx="10"/><circle class="f-red-soft s-red" cx="702" cy="144" r="10" stroke-width="1.5"/><text class="tiny b mid f-red" x="702" y="148">?</text><text class="sub f-ink" x="722" y="148">Add an index on every column?</text></g>
+<g class="qep-g2"><rect class="box" x="680" y="176" width="250" height="44" rx="10"/><circle class="f-red-soft s-red" cx="702" cy="198" r="10" stroke-width="1.5"/><text class="tiny b mid f-red" x="702" y="202">?</text><text class="sub f-ink" x="722" y="202">Give the server more memory?</text></g>
+<g class="qep-g3"><rect class="box" x="680" y="230" width="250" height="44" rx="10"/><circle class="f-red-soft s-red" cx="702" cy="252" r="10" stroke-width="1.5"/><text class="tiny b mid f-red" x="702" y="256">?</text><text class="sub f-ink" x="722" y="256">Move to a bigger instance?</text></g>
+<g class="qep-hint"><text class="tiny" x="680" y="296">None of them looks at what the</text><text class="tiny" x="680" y="310">database actually did.</text></g>
+<!-- right, step 2: how to read one node (the inner index scan) -->
+<g class="qep-anat">
+<text class="tiny sb" x="680" y="112">Reading one plan node</text>
+<rect class="box" x="680" y="120" width="250" height="254" rx="10"/>
+<text class="tiny mono sb f-ink" x="692" y="140">Index Scan using customers_pkey</text>
+<text class="tiny" x="692" y="154">operation, then the index it reads</text>
+<text class="tiny mono f-ink" x="692" y="178">cost=0.29..8.06 rows=1</text>
+<text class="tiny" x="692" y="192">estimate: startup..total cost, rows</text>
+<text class="tiny mono f-ink" x="692" y="214">actual time=0.002..0.002</text>
+<text class="tiny" x="692" y="228">ms to first row..last row, per loop</text>
+<text class="tiny mono f-ink" x="692" y="250">rows=1.00 <tspan class="f-red">loops=23213</tspan></text>
+<text class="tiny" x="692" y="264">× 23,213 loops: 23,213 rows, ≈ 46 ms</text>
+<text class="tiny mono f-ink" x="692" y="286">Buffers: shared <tspan class="f-red">hit=69639</tspan></text>
+<text class="tiny" x="692" y="300">8 kB pages; hit = already in memory</text>
+<line class="s-line" x1="692" y1="316" x2="918" y2="316" stroke-width="1"/>
+<text class="tiny sb f-ink" x="692" y="334">Read from the leaves up:</text>
+<text class="tiny" x="692" y="350">compare rows with actual rows,</text>
+<text class="tiny" x="692" y="364">then follow the time and the buffers.</text>
+</g>
+<!-- right, step 3: the statistics behind the estimate -->
+<g class="qep-stats">
+<text class="tiny sb" x="680" y="112">What the planner knew</text>
+<text class="tiny mono f-ink" x="680" y="130">pg_stats · orders.created_at</text>
+<text class="tiny" x="680" y="144">100 buckets of 1% each; Jul–Oct shown</text>
+<line class="s-line" x1="696" y1="200" x2="696" y2="204" stroke-width="1"/><text class="tiny mid" x="696" y="216">Jul</text>
+<line class="s-line" x1="768.6" y1="200" x2="768.6" y2="204" stroke-width="1"/><text class="tiny mid" x="768.6" y="216">Aug</text>
+<line class="s-line" x1="841.1" y1="200" x2="841.1" y2="204" stroke-width="1"/><text class="tiny mid" x="841.1" y="216">Sep</text>
+<line class="s-line" x1="911.3" y1="200" x2="911.3" y2="204" stroke-width="1"/><text class="tiny mid" x="910" y="216">Oct</text>
+<g class="qep-an1"><rect class="f-amber-soft s-amber" x="680" y="256" width="250" height="24" rx="12" stroke-width="1.5"/><text class="tiny mono sb f-amber-ink" x="694" y="272">ANALYZE orders;</text><text class="tiny end" x="916" y="272">rebuilds statistics</text></g>
+<g class="qep-an2"><rect class="f-green-soft s-green" x="680" y="256" width="250" height="24" rx="12" stroke-width="1.5"/><text class="tiny mono sb f-green" x="694" y="272">ANALYZE orders;</text><text class="tiny end" x="916" y="272">done: new histogram</text></g>
+<text class="tiny mono f-ink" x="680" y="300">pg_class · orders</text>
+<text class="tiny sb f-amber-ink" x="680" y="334">Auto-ANALYZE waits for 47,729 changes</text>
+<text class="tiny" x="680" y="348">(50 + 10% of 476,787); 23,213 arrived</text>
+<line class="s-line" x1="680" y1="362" x2="930" y2="362" stroke-width="1"/>
+<text class="tiny mono f-ink" x="680" y="380">pg_stats · customers.country</text>
+<text class="tiny mono" x="680" y="396">TH .5522 · SG .1485 · MY .1189</text>
+<text class="tiny mono" x="680" y="410">VN .0815 · ID .0584 · PH .0405</text>
+<text class="tiny" x="680" y="426">n_distinct 6: the aggregates expect 6 rows</text>
+</g>
+<g class="qep-sst">
+<text class="tiny mono sb f-red end" x="916" y="160">created_at >= '2026-09-03'</text>
+<path class="none s-red" d="M845.8 172V166H915.3V172" stroke-width="1.5"/>
+<rect class="f-amber-soft s-amber" x="696" y="176" width="7.5" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="703.5" y="176" width="13" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="716.5" y="176" width="14.8" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="731.3" y="176" width="14.4" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="745.7" y="176" width="15" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="760.7" y="176" width="13.7" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="774.4" y="176" width="14.8" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="789.2" y="176" width="14" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="803.2" y="176" width="13.5" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="816.7" y="176" width="14.8" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="831.5" y="176" width="14.3" height="24" stroke-width="0.75"/>
+<rect class="f-red-soft s-red dash" x="845.8" y="176" width="70.2" height="24" stroke-width="1"/>
+<text class="tiny b mid f-red" x="880.9" y="192">?</text>
+<text class="tiny sb f-red" x="680" y="234">Past the last bound, 2026-09-02 23:58:</text>
+<text class="tiny" x="680" y="248">floor 0.01% × 476,881 rows = 48 rows</text>
+<text class="tiny" x="680" y="314">476,787 rows in 5,058 pages (now 5,059)</text>
+</g>
+<g class="qep-sfr">
+<text class="tiny mono sb f-green end" x="916" y="160">created_at >= '2026-09-03'</text>
+<path class="none s-green" d="M845.8 172V166H915.3V172" stroke-width="1.5"/>
+<rect class="f-amber-soft s-amber" x="696" y="176" width="9.9" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="705.9" y="176" width="15.6" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="721.5" y="176" width="14.2" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="735.7" y="176" width="14.3" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="750" y="176" width="14.4" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="764.4" y="176" width="15" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="779.4" y="176" width="15.8" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="795.2" y="176" width="15.6" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="810.8" y="176" width="14.5" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="825.3" y="176" width="14.3" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="839.6" y="176" width="15.2" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="854.8" y="176" width="15" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="869.8" y="176" width="14" height="24" stroke-width="0.75"/><rect class="f-panel-2 s-amber" x="883.8" y="176" width="16.8" height="24" stroke-width="0.75"/><rect class="f-amber-soft s-amber" x="900.6" y="176" width="14.7" height="24" stroke-width="0.75"/>
+<rect class="f-green-soft s-green" x="845.8" y="176" width="69.5" height="24" stroke-width="1.5"/>
+<text class="tiny sb f-green" x="680" y="234">The range covers 4.59 of 100 buckets:</text>
+<text class="tiny" x="680" y="248">4.59% × 500,000 rows = 22,956 rows</text>
+<text class="tiny" x="680" y="314">500,000 rows in 5,059 pages</text>
+</g>
+<!-- right, step 4: pitfalls -->
+<g class="qep-c1"><rect class="box" x="680" y="100" width="250" height="104" rx="10"/><text class="tiny sb f-ink" x="692" y="120">EXPLAIN alone only estimates</text><text class="tiny" x="692" y="136">EXPLAIN ANALYZE runs the statement,</text><text class="tiny" x="692" y="150">so wrap a write in a transaction:</text><text class="tiny mono f-purple" x="692" y="170">BEGIN;</text><text class="tiny mono f-purple" x="692" y="184">EXPLAIN ANALYZE UPDATE orders …;</text><text class="tiny mono f-purple" x="692" y="198">ROLLBACK;</text></g>
+<g class="qep-c2"><rect class="box" x="680" y="214" width="250" height="116" rx="10"/><text class="tiny sb f-amber-ink" x="692" y="234">Plans change with parameters</text><text class="tiny" x="692" y="250">A prepared statement gets 5 custom</text><text class="tiny" x="692" y="264">plans, then may switch to a generic</text><text class="tiny" x="692" y="278">one that cannot see $1.</text><text class="tiny mono f-ink" x="692" y="298">plan_cache_mode = auto</text><text class="tiny" x="692" y="314">force_custom_plan when values skew</text></g>
+<g class="qep-c3"><rect class="box" x="680" y="340" width="250" height="120" rx="10"/><text class="tiny sb f-teal" x="692" y="360">Watch plans in production</text><text class="tiny mono f-ink" x="692" y="378">auto_explain.log_min_duration</text><text class="tiny" x="692" y="392">logs the plan of each slow statement</text><text class="tiny mono f-ink" x="692" y="412">pg_stat_statements</text><text class="tiny" x="692" y="426">ranks statements by total time</text><text class="tiny" x="692" y="446">Then EXPLAIN the top ones by hand.</text></g>
+<!-- tokens: rows moving through the plan -->
+<circle class="pkt f-blue qep-k0" r="6"/>
+<circle class="pkt f-blue qep-k1" r="4.5"/>
+<circle class="pkt f-blue qep-k2" r="4.5"/>
+<circle class="pkt f-blue qep-k3" r="4.5"/>
+<circle class="pkt f-blue qep-a0" r="4.5"/>
+<circle class="pkt f-red qep-p0" r="4"/>
+<circle class="pkt f-blue qep-a1" r="4.5"/>
+<circle class="pkt f-red qep-p1" r="4"/>
+<circle class="pkt f-blue qep-a2" r="4.5"/>
+<circle class="pkt f-red qep-p2" r="4"/>
+<circle class="pkt f-blue qep-a3" r="4.5"/>
+<circle class="pkt f-red qep-p3" r="4"/>
+<circle class="pkt f-blue qep-u0" r="4.5"/>
+<circle class="pkt f-blue qep-u1" r="4.5"/>
+<circle class="pkt f-blue qep-u2" r="4.5"/>
+<circle class="pkt f-green qep-b0" r="4.5"/>
+<circle class="pkt f-green qep-b1" r="4.5"/>
+<circle class="pkt f-green qep-b2" r="4.5"/>
+<circle class="pkt f-green qep-o0" r="4.5"/>
+<circle class="pkt f-green qep-o1" r="4.5"/>
+<circle class="pkt f-green qep-o2" r="4.5"/>
+<circle class="pkt f-green qep-v0" r="4.5"/>
+<circle class="pkt f-green qep-v1" r="4.5"/>
+</g>
+</svg>

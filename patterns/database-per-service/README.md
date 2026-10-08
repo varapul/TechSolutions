@@ -94,6 +94,10 @@ In MySQL a schema *is* a database (`CREATE SCHEMA` is a synonym for `CREATE DATA
 
 - [Team Topologies](../team-topologies/) — Four team types and three interaction modes that organise teams around the flow of change and keep cognitive load in check.
 
+## Related database topics
+
+- [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
+
 ## References
 
 - [Chris Richardson (microservices.io) — Pattern: Database per service](https://microservices.io/patterns/data/database-per-service.html)

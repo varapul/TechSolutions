@@ -1,0 +1,620 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Covering Index</title>
+<desc id="dg-desc">Covering Index. Answer a query from the index alone: include the columns it selects, so the table is never read, and the scan is index-only. Step 1, One heap page per row: The index finds the 20 newest entries on one leaf page, then reads 20 heap pages to return the rows. Step 2, INCLUDE: index-only scan: INCLUDE (id, status, total_thb) puts the selected columns in every leaf entry: an Index Only Scan. Step 3, The visibility map decides: An UPDATE clears 3 pages' visibility bits: Heap Fetches 4. After VACUUM, Heap Fetches is 0 again. Step 4, Costs and other engines: Twice the size, costlier writes. InnoDB entries carry the primary key; SQL Server has INCLUDE too.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Covering Index</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · One heap page per row</text>
+  <text class="step on p1" x="40" y="518">1 · One heap page per row</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · INCLUDE: index-only scan</text>
+  <text class="step on p2" x="262" y="518">2 · INCLUDE: index-only scan</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · The visibility map decides</text>
+  <text class="step on p3" x="484" y="518">3 · The visibility map decides</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Costs and other engines</text>
+  <text class="step on p4" x="706" y="518">4 · Costs and other engines</text>
+  <text class="caption p1" x="40" y="552">The index finds the 20 newest entries on one leaf page, then reads 20 heap pages to return the rows.</text>
+  <text class="caption p2" x="40" y="552">INCLUDE (id, status, total_thb) puts the selected columns in every leaf entry: an Index Only Scan.</text>
+  <text class="caption p3" x="40" y="552">An UPDATE clears 3 pages' visibility bits: Heap Fetches 4. After VACUUM, Heap Fetches is 0 again.</text>
+  <text class="caption p4" x="40" y="552">Twice the size, costlier writes. InnoDB entries carry the primary key; SQL Server has INCLUDE too.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Covering Index. Timeline (20s loop, 1s = 5%), PostgreSQL 18.6, Acme Shop sample data:
+   0-25%   Index Scan Backward on (customer_id, created_at): 3 index pages, then 20 heap pages, one per row: shared hit=23
+   25-50%  INCLUDE (id, status, total_thb): entries widen, Index Only Scan, VM checked, Heap Fetches 0, shared hit=4
+   50-75%  UPDATE of 2 orders clears 3 VM bits: Heap Fetches 4 (shared hit=8); VACUUM sets page 5057 again: 0
+   75-100% the cost (32 MB vs 15 MB, no HOT, more WAL) and InnoDB / SQL Server */
+.diagram .ci-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .ci-hd-amber { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--amber-ink); }
+.diagram .ci-10 { font-size: 10px; }
+.diagram .ci-in { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .ci-pan { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+.diagram .ci-row { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .ci-zoom { fill: none; stroke: var(--wire); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.diagram .ci-heap { fill: var(--panel-2); stroke: var(--line); stroke-width: 1.2; }
+.diagram .ci-cell { stroke: none; }
+.diagram .ci-slot { fill: none; stroke: var(--line); stroke-width: 1; }
+.diagram .ci-dim { fill: var(--bg); opacity: 0.6; }
+.diagram .ci-wid { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.5057); animation: ci-wid var(--T) linear infinite; }
+.diagram .ci-tid { animation: ci-tid var(--T) linear infinite; }
+.diagram .ci-sh1 { animation: ci-sh1 var(--T) linear infinite; }
+.diagram .ci-sh2 { animation: ci-sh2 var(--T) linear infinite; }
+.diagram .ci-q1 { opacity: 0; animation: ci-q1 var(--T) linear infinite; }
+.diagram .ci-cur1 { opacity: 0; animation: ci-cur1 var(--T) linear infinite; }
+.diagram .ci-f0 { opacity: 0; animation: ci-f0 var(--T) linear infinite; }
+.diagram .ci-h0 { animation: ci-h0 var(--T) linear infinite; }
+.diagram .ci-f1 { opacity: 0; animation: ci-f1 var(--T) linear infinite; }
+.diagram .ci-h1 { animation: ci-h1 var(--T) linear infinite; }
+.diagram .ci-f2 { opacity: 0; animation: ci-f2 var(--T) linear infinite; }
+.diagram .ci-h2 { animation: ci-h2 var(--T) linear infinite; }
+.diagram .ci-f3 { opacity: 0; animation: ci-f3 var(--T) linear infinite; }
+.diagram .ci-h3 { animation: ci-h3 var(--T) linear infinite; }
+.diagram .ci-f4 { opacity: 0; animation: ci-f4 var(--T) linear infinite; }
+.diagram .ci-h4 { animation: ci-h4 var(--T) linear infinite; }
+.diagram .ci-f5 { opacity: 0; animation: ci-f5 var(--T) linear infinite; }
+.diagram .ci-h5 { animation: ci-h5 var(--T) linear infinite; }
+.diagram .ci-f6 { opacity: 0; animation: ci-f6 var(--T) linear infinite; }
+.diagram .ci-h6 { animation: ci-h6 var(--T) linear infinite; }
+.diagram .ci-f7 { opacity: 0; animation: ci-f7 var(--T) linear infinite; }
+.diagram .ci-h7 { animation: ci-h7 var(--T) linear infinite; }
+.diagram .ci-f8 { opacity: 0; animation: ci-f8 var(--T) linear infinite; }
+.diagram .ci-h8 { animation: ci-h8 var(--T) linear infinite; }
+.diagram .ci-f9 { opacity: 0; animation: ci-f9 var(--T) linear infinite; }
+.diagram .ci-h9 { animation: ci-h9 var(--T) linear infinite; }
+.diagram .ci-f10 { opacity: 0; animation: ci-f10 var(--T) linear infinite; }
+.diagram .ci-h10 { animation: ci-h10 var(--T) linear infinite; }
+.diagram .ci-f11 { opacity: 0; animation: ci-f11 var(--T) linear infinite; }
+.diagram .ci-h11 { animation: ci-h11 var(--T) linear infinite; }
+.diagram .ci-f12 { opacity: 0; animation: ci-f12 var(--T) linear infinite; }
+.diagram .ci-h12 { animation: ci-h12 var(--T) linear infinite; }
+.diagram .ci-f13 { opacity: 0; animation: ci-f13 var(--T) linear infinite; }
+.diagram .ci-h13 { animation: ci-h13 var(--T) linear infinite; }
+.diagram .ci-f14 { opacity: 0; animation: ci-f14 var(--T) linear infinite; }
+.diagram .ci-h14 { animation: ci-h14 var(--T) linear infinite; }
+.diagram .ci-f15 { opacity: 0; animation: ci-f15 var(--T) linear infinite; }
+.diagram .ci-h15 { animation: ci-h15 var(--T) linear infinite; }
+.diagram .ci-f16 { opacity: 0; animation: ci-f16 var(--T) linear infinite; }
+.diagram .ci-h16 { animation: ci-h16 var(--T) linear infinite; }
+.diagram .ci-f17 { opacity: 0; animation: ci-f17 var(--T) linear infinite; }
+.diagram .ci-h17 { animation: ci-h17 var(--T) linear infinite; }
+.diagram .ci-f18 { opacity: 0; animation: ci-f18 var(--T) linear infinite; }
+.diagram .ci-h18 { animation: ci-h18 var(--T) linear infinite; }
+.diagram .ci-f19 { opacity: 0; animation: ci-f19 var(--T) linear infinite; }
+.diagram .ci-h19 { animation: ci-h19 var(--T) linear infinite; }
+.diagram .ci-v10 { animation: ci-v10 var(--T) linear infinite; }
+.diagram .ci-v11 { animation: ci-v11 var(--T) linear infinite; }
+.diagram .ci-v12 { animation: ci-v12 var(--T) linear infinite; }
+.diagram .ci-z1 { animation: ci-z1 var(--T) linear infinite; }
+.diagram .ci-b1 { animation: ci-b1 var(--T) linear infinite; }
+.diagram .ci-q2 { opacity: 0; animation: ci-q2 var(--T) linear infinite; }
+.diagram .ci-vmr2 { opacity: 0; animation: ci-vmr2 var(--T) linear infinite; }
+.diagram .ci-cur2 { opacity: 0; animation: ci-cur2 var(--T) linear infinite; }
+.diagram .ci-res2 { opacity: 0; animation: ci-res2 var(--T) linear infinite; }
+.diagram .ci-v20 { animation: ci-v20 var(--T) linear infinite; }
+.diagram .ci-v21 { animation: ci-v21 var(--T) linear infinite; }
+.diagram .ci-v22 { animation: ci-v22 var(--T) linear infinite; }
+.diagram .ci-vm2 { animation: ci-vm2 var(--T) linear infinite; }
+.diagram .ci-b2 { animation: ci-b2 var(--T) linear infinite; }
+.diagram .ci-n2a { animation: ci-n2a var(--T) linear infinite; }
+.diagram .ci-n2b { animation: ci-n2b var(--T) linear infinite; }
+.diagram .ci-u3 { animation: ci-u3 var(--T) linear infinite; }
+.diagram .ci-w1 { opacity: 0; animation: ci-w1 var(--T) linear infinite; }
+.diagram .ci-w2 { opacity: 0; animation: ci-w2 var(--T) linear infinite; }
+.diagram .ci-s3 { animation: ci-s3 var(--T) linear infinite; }
+.diagram .ci-q3 { opacity: 0; animation: ci-q3 var(--T) linear infinite; }
+.diagram .ci-vmr3 { opacity: 0; animation: ci-vmr3 var(--T) linear infinite; }
+.diagram .ci-cur3 { opacity: 0; animation: ci-cur3 var(--T) linear infinite; }
+.diagram .ci-g0 { opacity: 0; animation: ci-g0 var(--T) linear infinite; }
+.diagram .ci-x0 { animation: ci-x0 var(--T) linear infinite; }
+.diagram .ci-g1 { opacity: 0; animation: ci-g1 var(--T) linear infinite; }
+.diagram .ci-x1 { animation: ci-x1 var(--T) linear infinite; }
+.diagram .ci-g2 { opacity: 0; animation: ci-g2 var(--T) linear infinite; }
+.diagram .ci-x2 { animation: ci-x2 var(--T) linear infinite; }
+.diagram .ci-g3 { opacity: 0; animation: ci-g3 var(--T) linear infinite; }
+.diagram .ci-x3 { animation: ci-x3 var(--T) linear infinite; }
+.diagram .ci-v30 { animation: ci-v30 var(--T) linear infinite; }
+.diagram .ci-v31 { animation: ci-v31 var(--T) linear infinite; }
+.diagram .ci-v32 { animation: ci-v32 var(--T) linear infinite; }
+.diagram .ci-vm3 { animation: ci-vm3 var(--T) linear infinite; }
+.diagram .ci-b3 { animation: ci-b3 var(--T) linear infinite; }
+.diagram .ci-vac { animation: ci-vac var(--T) linear infinite; }
+.diagram .ci-sw { opacity: 0; animation: ci-sw var(--T) linear infinite; }
+.diagram .ci-b3b { animation: ci-b3b var(--T) linear infinite; }
+.diagram .ci-k1 { animation: ci-k1 var(--T) linear infinite; }
+.diagram .ci-k2 { animation: ci-k2 var(--T) linear infinite; }
+.diagram .ci-k3 { animation: ci-k3 var(--T) linear infinite; }
+.diagram .ci-pay { opacity: 0; animation: ci-pay var(--T) linear infinite; }
+.diagram .ci-i0 { opacity: 0; animation: ci-i0 var(--T) linear infinite; }
+.diagram .ci-i1 { opacity: 0; animation: ci-i1 var(--T) linear infinite; }
+.diagram .ci-i2 { opacity: 0; animation: ci-i2 var(--T) linear infinite; }
+.diagram .ci-i3 { opacity: 0; animation: ci-i3 var(--T) linear infinite; }
+.diagram .ci-i4 { opacity: 0; animation: ci-i4 var(--T) linear infinite; }
+.diagram .ci-i5 { opacity: 0; animation: ci-i5 var(--T) linear infinite; }
+.diagram .ci-i6 { opacity: 0; animation: ci-i6 var(--T) linear infinite; }
+.diagram .ci-i7 { opacity: 0; animation: ci-i7 var(--T) linear infinite; }
+.diagram .ci-i8g { opacity: 0; animation: ci-i8g var(--T) linear infinite; }
+.diagram .ci-i8r { opacity: 0; animation: ci-i8r var(--T) linear infinite; }
+.diagram .ci-d8 { opacity: 0; animation: ci-d8 var(--T) linear infinite; }
+.diagram .ci-i9g { opacity: 0; animation: ci-i9g var(--T) linear infinite; }
+.diagram .ci-i9r { opacity: 0; animation: ci-i9r var(--T) linear infinite; }
+.diagram .ci-d9 { opacity: 0; animation: ci-d9 var(--T) linear infinite; }
+.diagram .ci-idots { opacity: 0; animation: ci-idots var(--T) linear infinite; }
+.diagram .ci-nw { opacity: 0; animation: ci-nw var(--T) linear infinite; }
+.diagram .ci-iNr { opacity: 0; animation: ci-iNr var(--T) linear infinite; }
+.diagram .ci-iNg { opacity: 0; animation: ci-iNg var(--T) linear infinite; }
+.diagram .ci-bar0 { transform-box: fill-box; transform-origin: 0 50%; animation: ci-bar0 var(--T) linear infinite; }
+.diagram .ci-bar1 { transform-box: fill-box; transform-origin: 0 50%; animation: ci-bar1 var(--T) linear infinite; }
+.diagram .ci-bar2 { transform-box: fill-box; transform-origin: 0 50%; animation: ci-bar2 var(--T) linear infinite; }
+.diagram .ci-bar3 { transform-box: fill-box; transform-origin: 0 50%; animation: ci-bar3 var(--T) linear infinite; }
+.diagram .ci-k4 { animation: ci-k4 var(--T) linear infinite; }
+.diagram .ci-m3 { opacity: 0; animation: ci-m3 var(--T) linear infinite; }
+.diagram .ci-r57 { opacity: 0; animation: ci-r57 var(--T) linear infinite; }
+.diagram .ci-ok57 { opacity: 0; animation: ci-ok57 var(--T) linear infinite; }
+.diagram .ci-e1 { animation: ci-e1 var(--T) linear infinite; }
+.diagram .ci-e2 { animation: ci-e2 var(--T) linear infinite; }
+.diagram .ci-e3 { animation: ci-e3 var(--T) linear infinite; }
+@keyframes ci-wid {0% { transform: scaleX(0.5057); } 26.5% { transform: scaleX(0.5057); } 28.5% { transform: scaleX(1); } 80% { transform: scaleX(1); } 81% { transform: scaleX(0.5057); } 100% { transform: scaleX(0.5057); }}
+@keyframes ci-tid {0% { transform: translate(0px, 0px); } 26.5% { transform: translate(0px, 0px); } 28.5% { transform: translate(178px, 0px); } 80% { transform: translate(178px, 0px); } 81% { transform: translate(0px, 0px); } 100% { transform: translate(0px, 0px); }}
+@keyframes ci-sh1 {0% { transform: translate(0px, 0px); } 54.75% { transform: translate(0px, 0px); } 56% { transform: translate(0px, 17px); } 80% { transform: translate(0px, 17px); } 81% { transform: translate(0px, 0px); } 100% { transform: translate(0px, 0px); }}
+@keyframes ci-sh2 {0% { transform: translate(0px, 0px); } 54.75% { transform: translate(0px, 0px); } 56% { transform: translate(0px, 34px); } 80% { transform: translate(0px, 34px); } 81% { transform: translate(0px, 0px); } 100% { transform: translate(0px, 0px); }}
+@keyframes ci-q1 {0% { transform: translate(270px, 132px); opacity: 0; } 2% { transform: translate(270px, 132px); opacity: 0; } 2.25% { opacity: 1; } 3.1% { transform: translate(327px, 132px); } 3.7% { transform: translate(327px, 132px); } 4.8% { transform: translate(453px, 132px); } 5.4% { transform: translate(453px, 132px); } 6.5% { transform: translate(579px, 132px); } 7.1% { transform: translate(579px, 132px); opacity: 1; } 7.35% { transform: translate(579px, 132px); opacity: 0; } 100% { transform: translate(579px, 132px); opacity: 0; }}
+@keyframes ci-cur1 {0% { transform: translate(0px, 369px); opacity: 0; } 7.3% { transform: translate(0px, 369px); opacity: 0; } 7.55% { opacity: 1; } 7.65% { transform: translate(0px, 369px); } 7.9% { transform: translate(0px, 352px); } 8.25% { transform: translate(0px, 352px); } 8.5% { transform: translate(0px, 335px); } 8.85% { transform: translate(0px, 335px); } 9.1% { transform: translate(0px, 318px); } 9.45% { transform: translate(0px, 318px); } 9.7% { transform: translate(0px, 301px); } 10.05% { transform: translate(0px, 301px); } 10.3% { transform: translate(0px, 284px); } 10.65% { transform: translate(0px, 284px); } 10.9% { transform: translate(0px, 267px); } 11.25% { transform: translate(0px, 267px); } 11.5% { transform: translate(0px, 250px); } 11.85% { transform: translate(0px, 250px); } 12.1% { transform: translate(0px, 233px); } 12.45% { transform: translate(0px, 233px); } 12.7% { transform: translate(0px, 216px); } 13.05% { transform: translate(0px, 216px); } 13.3% { transform: translate(0px, 201px); } 19.5% { transform: translate(0px, 201px); opacity: 1; } 19.75% { transform: translate(0px, 201px); opacity: 0; } 100% { transform: translate(0px, 201px); opacity: 0; }}
+@keyframes ci-f0 {0% { transform: translate(470px, 365px); opacity: 0; } 7.5% { transform: translate(470px, 365px); opacity: 0; } 7.75% { opacity: 1; } 9.75% { transform: translate(791.93px, 129px); opacity: 1; } 10% { transform: translate(791.93px, 129px); opacity: 0; } 100% { transform: translate(791.93px, 129px); opacity: 0; }}
+@keyframes ci-h0 {0% { opacity: 0; } 9.75% { opacity: 0; } 10.25% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f1 {0% { transform: translate(470px, 348px); opacity: 0; } 8.1% { transform: translate(470px, 348px); opacity: 0; } 8.35% { opacity: 1; } 10.35% { transform: translate(916.97px, 129px); opacity: 1; } 10.6% { transform: translate(916.97px, 129px); opacity: 0; } 100% { transform: translate(916.97px, 129px); opacity: 0; }}
+@keyframes ci-h1 {0% { opacity: 0; } 10.35% { opacity: 0; } 10.85% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f2 {0% { transform: translate(470px, 331px); opacity: 0; } 8.7% { transform: translate(470px, 331px); opacity: 0; } 8.95% { opacity: 1; } 10.95% { transform: translate(895.11px, 129px); opacity: 1; } 11.2% { transform: translate(895.11px, 129px); opacity: 0; } 100% { transform: translate(895.11px, 129px); opacity: 0; }}
+@keyframes ci-h2 {0% { opacity: 0; } 10.95% { opacity: 0; } 11.45% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f3 {0% { transform: translate(470px, 314px); opacity: 0; } 9.3% { transform: translate(470px, 314px); opacity: 0; } 9.55% { opacity: 1; } 11.55% { transform: translate(866.21px, 129px); opacity: 1; } 11.8% { transform: translate(866.21px, 129px); opacity: 0; } 100% { transform: translate(866.21px, 129px); opacity: 0; }}
+@keyframes ci-h3 {0% { opacity: 0; } 11.55% { opacity: 0; } 12.05% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f4 {0% { transform: translate(470px, 297px); opacity: 0; } 9.9% { transform: translate(470px, 297px); opacity: 0; } 10.15% { opacity: 1; } 12.15% { transform: translate(755.83px, 129px); opacity: 1; } 12.4% { transform: translate(755.83px, 129px); opacity: 0; } 100% { transform: translate(755.83px, 129px); opacity: 0; }}
+@keyframes ci-h4 {0% { opacity: 0; } 12.15% { opacity: 0; } 12.65% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f5 {0% { transform: translate(470px, 280px); opacity: 0; } 10.5% { transform: translate(470px, 280px); opacity: 0; } 10.75% { opacity: 1; } 12.75% { transform: translate(781.41px, 129px); opacity: 1; } 13% { transform: translate(781.41px, 129px); opacity: 0; } 100% { transform: translate(781.41px, 129px); opacity: 0; }}
+@keyframes ci-h5 {0% { opacity: 0; } 12.75% { opacity: 0; } 13.25% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f6 {0% { transform: translate(470px, 263px); opacity: 0; } 11.1% { transform: translate(470px, 263px); opacity: 0; } 11.35% { opacity: 1; } 13.35% { transform: translate(710.5px, 129px); opacity: 1; } 13.6% { transform: translate(710.5px, 129px); opacity: 0; } 100% { transform: translate(710.5px, 129px); opacity: 0; }}
+@keyframes ci-h6 {0% { opacity: 0; } 13.35% { opacity: 0; } 13.85% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f7 {0% { transform: translate(470px, 246px); opacity: 0; } 11.7% { transform: translate(470px, 246px); opacity: 0; } 11.95% { opacity: 1; } 13.95% { transform: translate(724.85px, 129px); opacity: 1; } 14.2% { transform: translate(724.85px, 129px); opacity: 0; } 100% { transform: translate(724.85px, 129px); opacity: 0; }}
+@keyframes ci-h7 {0% { opacity: 0; } 13.95% { opacity: 0; } 14.45% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f8 {0% { transform: translate(470px, 229px); opacity: 0; } 12.3% { transform: translate(470px, 229px); opacity: 0; } 12.55% { opacity: 1; } 14.55% { transform: translate(925.78px, 129px); opacity: 1; } 14.8% { transform: translate(925.78px, 129px); opacity: 0; } 100% { transform: translate(925.78px, 129px); opacity: 0; }}
+@keyframes ci-h8 {0% { opacity: 0; } 14.55% { opacity: 0; } 15.05% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f9 {0% { transform: translate(470px, 212px); opacity: 0; } 12.9% { transform: translate(470px, 212px); opacity: 0; } 13.15% { opacity: 1; } 15.15% { transform: translate(800.32px, 129px); opacity: 1; } 15.4% { transform: translate(800.32px, 129px); opacity: 0; } 100% { transform: translate(800.32px, 129px); opacity: 0; }}
+@keyframes ci-h9 {0% { opacity: 0; } 15.15% { opacity: 0; } 15.65% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f10 {0% { transform: translate(470px, 196px); opacity: 0; } 13.5% { transform: translate(470px, 196px); opacity: 0; } 13.75% { opacity: 1; } 15.75% { transform: translate(756.55px, 129px); opacity: 1; } 16% { transform: translate(756.55px, 129px); opacity: 0; } 100% { transform: translate(756.55px, 129px); opacity: 0; }}
+@keyframes ci-h10 {0% { opacity: 0; } 15.75% { opacity: 0; } 16.25% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f11 {0% { transform: translate(470px, 196px); opacity: 0; } 14.1% { transform: translate(470px, 196px); opacity: 0; } 14.35% { opacity: 1; } 16.35% { transform: translate(786.54px, 129px); opacity: 1; } 16.6% { transform: translate(786.54px, 129px); opacity: 0; } 100% { transform: translate(786.54px, 129px); opacity: 0; }}
+@keyframes ci-h11 {0% { opacity: 0; } 16.35% { opacity: 0; } 16.85% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f12 {0% { transform: translate(470px, 196px); opacity: 0; } 14.7% { transform: translate(470px, 196px); opacity: 0; } 14.95% { opacity: 1; } 16.95% { transform: translate(702.94px, 129px); opacity: 1; } 17.2% { transform: translate(702.94px, 129px); opacity: 0; } 100% { transform: translate(702.94px, 129px); opacity: 0; }}
+@keyframes ci-h12 {0% { opacity: 0; } 16.95% { opacity: 0; } 17.45% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f13 {0% { transform: translate(470px, 196px); opacity: 0; } 15.3% { transform: translate(470px, 196px); opacity: 0; } 15.55% { opacity: 1; } 17.55% { transform: translate(716.51px, 129px); opacity: 1; } 17.8% { transform: translate(716.51px, 129px); opacity: 0; } 100% { transform: translate(716.51px, 129px); opacity: 0; }}
+@keyframes ci-h13 {0% { opacity: 0; } 17.55% { opacity: 0; } 18.05% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f14 {0% { transform: translate(470px, 196px); opacity: 0; } 15.9% { transform: translate(470px, 196px); opacity: 0; } 16.15% { opacity: 1; } 18.15% { transform: translate(830.26px, 129px); opacity: 1; } 18.4% { transform: translate(830.26px, 129px); opacity: 0; } 100% { transform: translate(830.26px, 129px); opacity: 0; }}
+@keyframes ci-h14 {0% { opacity: 0; } 18.15% { opacity: 0; } 18.65% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f15 {0% { transform: translate(470px, 196px); opacity: 0; } 16.5% { transform: translate(470px, 196px); opacity: 0; } 16.75% { opacity: 1; } 18.75% { transform: translate(723.87px, 129px); opacity: 1; } 19% { transform: translate(723.87px, 129px); opacity: 0; } 100% { transform: translate(723.87px, 129px); opacity: 0; }}
+@keyframes ci-h15 {0% { opacity: 0; } 18.75% { opacity: 0; } 19.25% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f16 {0% { transform: translate(470px, 196px); opacity: 0; } 17.1% { transform: translate(470px, 196px); opacity: 0; } 17.35% { opacity: 1; } 19.35% { transform: translate(706.98px, 129px); opacity: 1; } 19.6% { transform: translate(706.98px, 129px); opacity: 0; } 100% { transform: translate(706.98px, 129px); opacity: 0; }}
+@keyframes ci-h16 {0% { opacity: 0; } 19.35% { opacity: 0; } 19.85% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f17 {0% { transform: translate(470px, 196px); opacity: 0; } 17.7% { transform: translate(470px, 196px); opacity: 0; } 17.95% { opacity: 1; } 19.95% { transform: translate(790.69px, 129px); opacity: 1; } 20.2% { transform: translate(790.69px, 129px); opacity: 0; } 100% { transform: translate(790.69px, 129px); opacity: 0; }}
+@keyframes ci-h17 {0% { opacity: 0; } 19.95% { opacity: 0; } 20.45% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f18 {0% { transform: translate(470px, 196px); opacity: 0; } 18.3% { transform: translate(470px, 196px); opacity: 0; } 18.55% { opacity: 1; } 20.55% { transform: translate(855.59px, 129px); opacity: 1; } 20.8% { transform: translate(855.59px, 129px); opacity: 0; } 100% { transform: translate(855.59px, 129px); opacity: 0; }}
+@keyframes ci-h18 {0% { opacity: 0; } 20.55% { opacity: 0; } 21.05% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-f19 {0% { transform: translate(470px, 196px); opacity: 0; } 18.9% { transform: translate(470px, 196px); opacity: 0; } 19.15% { opacity: 1; } 21.15% { transform: translate(712.26px, 129px); opacity: 1; } 21.4% { transform: translate(712.26px, 129px); opacity: 0; } 100% { transform: translate(712.26px, 129px); opacity: 0; }}
+@keyframes ci-h19 {0% { opacity: 0; } 21.15% { opacity: 0; } 21.65% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v10 {0% { opacity: 0; } 3.1% { opacity: 0; } 3.6% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v11 {0% { opacity: 0; } 4.8% { opacity: 0; } 5.3% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v12 {0% { opacity: 0; } 6.5% { opacity: 0; } 7% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-z1 {0% { opacity: 0; } 9.75% { opacity: 0; } 11.25% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-b1 {0% { opacity: 0; } 21% { opacity: 0; } 22.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-q2 {0% { transform: translate(270px, 132px); opacity: 0; } 30.5% { transform: translate(270px, 132px); opacity: 0; } 30.75% { opacity: 1; } 31.6% { transform: translate(327px, 132px); } 32.2% { transform: translate(327px, 132px); } 33.3% { transform: translate(453px, 132px); } 33.9% { transform: translate(453px, 132px); } 35% { transform: translate(579px, 132px); } 35.6% { transform: translate(579px, 132px); opacity: 1; } 35.85% { transform: translate(579px, 132px); opacity: 0; } 100% { transform: translate(579px, 132px); opacity: 0; }}
+@keyframes ci-vmr2 {0% { transform: translate(579px, 142px); opacity: 0; } 35.6% { transform: translate(579px, 142px); opacity: 0; } 35.85% { opacity: 1; } 37.2% { transform: translate(799px, 156px); opacity: 1; } 37.45% { transform: translate(799px, 156px); opacity: 0; } 100% { transform: translate(799px, 156px); opacity: 0; }}
+@keyframes ci-cur2 {0% { transform: translate(0px, 369px); opacity: 0; } 37.5% { transform: translate(0px, 369px); opacity: 0; } 37.75% { opacity: 1; } 37.85% { transform: translate(0px, 369px); } 38.05% { transform: translate(0px, 352px); } 38.4% { transform: translate(0px, 352px); } 38.6% { transform: translate(0px, 335px); } 38.95% { transform: translate(0px, 335px); } 39.15% { transform: translate(0px, 318px); } 39.5% { transform: translate(0px, 318px); } 39.7% { transform: translate(0px, 301px); } 40.05% { transform: translate(0px, 301px); } 40.25% { transform: translate(0px, 284px); } 40.6% { transform: translate(0px, 284px); } 40.8% { transform: translate(0px, 267px); } 41.15% { transform: translate(0px, 267px); } 41.35% { transform: translate(0px, 250px); } 41.7% { transform: translate(0px, 250px); } 41.9% { transform: translate(0px, 233px); } 42.25% { transform: translate(0px, 233px); } 42.45% { transform: translate(0px, 216px); } 42.8% { transform: translate(0px, 216px); } 43% { transform: translate(0px, 201px); } 44.5% { transform: translate(0px, 201px); opacity: 1; } 44.75% { transform: translate(0px, 201px); opacity: 0; } 100% { transform: translate(0px, 201px); opacity: 0; }}
+@keyframes ci-res2 {0% { transform: translate(579px, 132px); opacity: 0; } 44.75% { transform: translate(579px, 132px); opacity: 0; } 45% { opacity: 1; } 47% { transform: translate(270px, 132px); opacity: 1; } 47.25% { transform: translate(270px, 132px); opacity: 0; } 100% { transform: translate(270px, 132px); opacity: 0; }}
+@keyframes ci-v20 {0% { opacity: 0; } 31.6% { opacity: 0; } 32.1% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v21 {0% { opacity: 0; } 33.3% { opacity: 0; } 33.8% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v22 {0% { opacity: 0; } 35% { opacity: 0; } 35.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-vm2 {0% { opacity: 0; } 37.2% { opacity: 0; } 37.7% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-b2 {0% { opacity: 0; } 46% { opacity: 0; } 47.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-n2a {0% { opacity: 0; } 29% { opacity: 0; } 30.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-n2b {0% { opacity: 0; } 37.2% { opacity: 0; } 38.7% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-u3 {0% { opacity: 0; } 51.5% { opacity: 0; } 52.75% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-w1 {0% { transform: translate(262px, 248px); opacity: 0; } 52% { transform: translate(262px, 248px); opacity: 0; } 52.25% { opacity: 1; } 54.25% { transform: translate(927.97px, 129px); opacity: 1; } 54.5% { transform: translate(927.97px, 129px); opacity: 0; } 100% { transform: translate(927.97px, 129px); opacity: 0; }}
+@keyframes ci-w2 {0% { transform: translate(262px, 264px); opacity: 0; } 52.5% { transform: translate(262px, 264px); opacity: 0; } 52.75% { opacity: 1; } 54.75% { transform: translate(927.97px, 129px); opacity: 1; } 55% { transform: translate(927.97px, 129px); opacity: 0; } 100% { transform: translate(927.97px, 129px); opacity: 0; }}
+@keyframes ci-s3 {0% { opacity: 0; } 56.25% { opacity: 0; } 57.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-q3 {0% { transform: translate(270px, 132px); opacity: 0; } 56.25% { transform: translate(270px, 132px); opacity: 0; } 56.5% { opacity: 1; } 57% { transform: translate(327px, 132px); } 57.35% { transform: translate(327px, 132px); } 58.1% { transform: translate(453px, 132px); } 58.45% { transform: translate(453px, 132px); } 59.2% { transform: translate(579px, 132px); } 59.55% { transform: translate(579px, 132px); opacity: 1; } 59.8% { transform: translate(579px, 132px); opacity: 0; } 100% { transform: translate(579px, 132px); opacity: 0; }}
+@keyframes ci-vmr3 {0% { transform: translate(579px, 142px); opacity: 0; } 59.55% { transform: translate(579px, 142px); opacity: 0; } 59.8% { opacity: 1; } 60.8% { transform: translate(799px, 156px); opacity: 1; } 61.05% { transform: translate(799px, 156px); opacity: 0; } 100% { transform: translate(799px, 156px); opacity: 0; }}
+@keyframes ci-cur3 {0% { transform: translate(0px, 403px); opacity: 0; } 60.95% { transform: translate(0px, 403px); opacity: 0; } 61.2% { opacity: 1; } 61.85% { transform: translate(0px, 403px); } 62.05% { transform: translate(0px, 386px); } 62.95% { transform: translate(0px, 386px); } 63.15% { transform: translate(0px, 369px); } 64.05% { transform: translate(0px, 369px); } 64.25% { transform: translate(0px, 352px); } 65.05% { transform: translate(0px, 352px); } 65.25% { transform: translate(0px, 335px); } 65.35% { transform: translate(0px, 335px); } 65.55% { transform: translate(0px, 318px); } 65.65% { transform: translate(0px, 318px); } 65.85% { transform: translate(0px, 301px); } 65.95% { transform: translate(0px, 301px); } 66.15% { transform: translate(0px, 284px); } 66.25% { transform: translate(0px, 284px); } 66.45% { transform: translate(0px, 267px); } 66.55% { transform: translate(0px, 267px); } 66.75% { transform: translate(0px, 250px); } 66.85% { transform: translate(0px, 250px); } 67.05% { transform: translate(0px, 233px); } 67.15% { transform: translate(0px, 233px); } 67.35% { transform: translate(0px, 216px); } 67.45% { transform: translate(0px, 216px); } 67.65% { transform: translate(0px, 201px); } 68.65% { transform: translate(0px, 201px); opacity: 1; } 68.9% { transform: translate(0px, 201px); opacity: 0; } 100% { transform: translate(0px, 201px); opacity: 0; }}
+@keyframes ci-g0 {0% { transform: translate(646px, 398px); opacity: 0; } 61.1% { transform: translate(646px, 398px); opacity: 0; } 61.35% { opacity: 1; } 62.6% { transform: translate(927.97px, 129px); opacity: 1; } 62.85% { transform: translate(927.97px, 129px); opacity: 0; } 100% { transform: translate(927.97px, 129px); opacity: 0; }}
+@keyframes ci-x0 {0% { opacity: 0; } 62.6% { opacity: 0; } 63.1% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-g1 {0% { transform: translate(646px, 381px); opacity: 0; } 62.2% { transform: translate(646px, 381px); opacity: 0; } 62.45% { opacity: 1; } 63.7% { transform: translate(791.93px, 129px); opacity: 1; } 63.95% { transform: translate(791.93px, 129px); opacity: 0; } 100% { transform: translate(791.93px, 129px); opacity: 0; }}
+@keyframes ci-x1 {0% { opacity: 0; } 63.7% { opacity: 0; } 64.2% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-g2 {0% { transform: translate(646px, 364px); opacity: 0; } 63.3% { transform: translate(646px, 364px); opacity: 0; } 63.55% { opacity: 1; } 64.8% { transform: translate(927.97px, 129px); opacity: 1; } 65.05% { transform: translate(927.97px, 129px); opacity: 0; } 100% { transform: translate(927.97px, 129px); opacity: 0; }}
+@keyframes ci-x2 {0% { opacity: 0; } 64.8% { opacity: 0; } 65.3% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-g3 {0% { transform: translate(646px, 347px); opacity: 0; } 64.4% { transform: translate(646px, 347px); opacity: 0; } 64.65% { opacity: 1; } 65.9% { transform: translate(916.97px, 129px); opacity: 1; } 66.15% { transform: translate(916.97px, 129px); opacity: 0; } 100% { transform: translate(916.97px, 129px); opacity: 0; }}
+@keyframes ci-x3 {0% { opacity: 0; } 65.9% { opacity: 0; } 66.4% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v30 {0% { opacity: 0; } 57% { opacity: 0; } 57.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v31 {0% { opacity: 0; } 58.1% { opacity: 0; } 58.6% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-v32 {0% { opacity: 0; } 59.2% { opacity: 0; } 59.7% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-vm3 {0% { opacity: 0; } 60.8% { opacity: 0; } 61.3% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-b3 {0% { opacity: 0; } 66.15% { opacity: 0; } 67.4% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-vac {0% { opacity: 0; } 67.15% { opacity: 0; } 68.15% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-sw {0% { transform: translate(668px, 0px); opacity: 0; } 67.4% { transform: translate(668px, 0px); opacity: 0; } 67.65% { opacity: 1; } 69.65% { transform: translate(906px, 0px); opacity: 1; } 69.9% { transform: translate(906px, 0px); opacity: 0; } 100% { transform: translate(906px, 0px); opacity: 0; }}
+@keyframes ci-b3b {0% { opacity: 0; } 70.4% { opacity: 0; } 71.65% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-k1 {0% { opacity: 0; } 81% { opacity: 0; } 82.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-k2 {0% { opacity: 0; } 84% { opacity: 0; } 85.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-k3 {0% { opacity: 0; } 87% { opacity: 0; } 88.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-pay {0% { opacity: 0; } 28% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-i0 {0% { opacity: 0; } 42.6% { opacity: 0; } 43.1% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i1 {0% { opacity: 0; } 42.05% { opacity: 0; } 42.55% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i2 {0% { opacity: 0; } 41.5% { opacity: 0; } 42% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i3 {0% { opacity: 0; } 40.95% { opacity: 0; } 41.45% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i4 {0% { opacity: 0; } 40.4% { opacity: 0; } 40.9% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i5 {0% { opacity: 0; } 39.85% { opacity: 0; } 40.35% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i6 {0% { opacity: 0; } 39.3% { opacity: 0; } 39.8% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i7 {0% { opacity: 0; } 38.75% { opacity: 0; } 39.25% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i8g {0% { opacity: 0; } 38.2% { opacity: 0; } 38.7% { opacity: 1; } 54.75% { opacity: 1; } 55.25% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i8r {0% { opacity: 0; } 54.75% { opacity: 0; } 55.25% { opacity: 1; } 65.9% { opacity: 1; } 66.4% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-d8 {0% { opacity: 0; } 65.9% { opacity: 0; } 66.65% { opacity: 1; } 75% { opacity: 1; } 75.75% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i9g {0% { opacity: 0; } 37.65% { opacity: 0; } 38.15% { opacity: 1; } 54.75% { opacity: 1; } 55.25% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-i9r {0% { opacity: 0; } 54.75% { opacity: 0; } 55.25% { opacity: 1; } 63.7% { opacity: 1; } 64.2% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-d9 {0% { opacity: 0; } 63.7% { opacity: 0; } 64.45% { opacity: 1; } 75% { opacity: 1; } 75.75% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-idots {0% { opacity: 0; } 43.15% { opacity: 0; } 43.65% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-nw {0% { opacity: 0; } 55.25% { opacity: 0; } 56.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-iNr {0% { opacity: 0; } 55.25% { opacity: 0; } 55.75% { opacity: 1; } 69.65% { opacity: 1; } 70.15% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-iNg {0% { opacity: 0; } 69.65% { opacity: 0; } 70.15% { opacity: 1; } 75% { opacity: 1; } 75.5% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-bar0 {0% { transform: scaleX(0); } 76.75% { transform: scaleX(0); } 79% { transform: scaleX(1); } 100% { transform: scaleX(1); }}
+@keyframes ci-bar1 {0% { transform: scaleX(0); } 77.75% { transform: scaleX(0); } 80% { transform: scaleX(1); } 100% { transform: scaleX(1); }}
+@keyframes ci-bar2 {0% { transform: scaleX(0); } 78.75% { transform: scaleX(0); } 81% { transform: scaleX(1); } 100% { transform: scaleX(1); }}
+@keyframes ci-bar3 {0% { transform: scaleX(0); } 79.75% { transform: scaleX(0); } 82% { transform: scaleX(1); } 100% { transform: scaleX(1); }}
+@keyframes ci-k4 {0% { opacity: 0; } 82% { opacity: 0; } 83.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-m3 {0% { opacity: 0; } 54.75% { opacity: 0; } 55.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-r57 {0% { opacity: 0; } 54.75% { opacity: 0; } 55.25% { opacity: 1; } 69.65% { opacity: 1; } 70.15% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-ok57 {0% { opacity: 0; } 69.65% { opacity: 0; } 70.15% { opacity: 1; } 73.4% { opacity: 1; } 73.9% { opacity: 0; } 100% { opacity: 0; }}
+@keyframes ci-e1 {0% { opacity: 0; } 85% { opacity: 0; } 86.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-e2 {0% { opacity: 0; } 88% { opacity: 0; } 89.5% { opacity: 1; } 100% { opacity: 1; }}
+@keyframes ci-e3 {0% { opacity: 0; } 91% { opacity: 0; } 92.5% { opacity: 1; } 100% { opacity: 1; }}
+</style>
+<g class="stage">
+<!-- A: the app's query and the plan from EXPLAIN (ANALYZE, BUFFERS) -->
+<text class="tiny sb f-ink" x="30" y="104">Acme app: recent orders</text>
+<rect class="f-panel-2 s-line" x="176" y="93" width="94" height="16" rx="8" stroke-width="1"/>
+<text class="tiny sb mid f-ink" x="223" y="105">PostgreSQL 18.6</text>
+<rect class="box" x="30" y="112" width="240" height="92" rx="10"/>
+<g class="p1"><text class="tiny mono f-ink" x="42" y="132"><tspan class="f-blue sb">SELECT</tspan> id, status, total_thb</text></g>
+<g class="p234"><text class="tiny mono f-ink" x="42" y="132"><tspan class="f-blue sb">SELECT</tspan> <tspan class="f-teal sb">id, status, total_thb</tspan></text></g>
+<text class="tiny mono f-ink" x="42" y="148"><tspan class="f-blue sb">FROM</tspan> orders</text>
+<text class="tiny mono f-ink" x="42" y="164"><tspan class="f-blue sb">WHERE</tspan> customer_id = 42</text>
+<text class="tiny mono f-ink" x="42" y="180"><tspan class="f-blue sb">ORDER BY</tspan> created_at <tspan class="f-blue sb">DESC</tspan></text>
+<text class="tiny mono f-ink" x="42" y="196"><tspan class="f-blue sb">LIMIT</tspan> 20</text>
+<rect class="ci-in" x="30" y="214" width="240" height="252" rx="10"/>
+<g class="p1">
+<text class="tiny mono sb f-muted" x="42" y="232">EXPLAIN (ANALYZE, BUFFERS)</text>
+<text class="tiny mono sb f-ink" x="42" y="254">Index Scan Backward</text>
+<text class="tiny mono f-ink" x="54" y="270">Index Cond: (customer_id = 42)</text>
+<g class="ci-b1"><text class="tiny mono sb f-red" x="42" y="308">Buffers: shared hit=23</text></g>
+<rect class="ci-slot" x="42" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="51.4" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="60.8" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="70.2" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="79.6" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="89" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="98.4" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="107.8" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="117.2" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="126.6" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="136" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="145.4" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="154.8" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="164.2" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="173.6" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="183" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="192.4" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="201.8" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="211.2" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="220.6" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="230" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="239.4" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="248.8" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v10" x="42" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v11" x="51.4" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v12" x="60.8" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h0" x="70.2" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h1" x="79.6" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h2" x="89" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h3" x="98.4" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h4" x="107.8" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h5" x="117.2" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h6" x="126.6" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h7" x="136" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h8" x="145.4" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h9" x="154.8" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h10" x="164.2" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h11" x="173.6" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h12" x="183" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h13" x="192.4" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h14" x="201.8" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h15" x="211.2" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h16" x="220.6" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h17" x="230" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h18" x="239.4" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-red ci-h19" x="248.8" y="316" width="8" height="8" rx="1.5"/>
+<g class="ci-b1"><rect class="ci-cell f-teal" x="42" y="334" width="8" height="8" rx="1.5"/><text class="tiny" x="54" y="342">3 index pages</text><rect class="ci-cell f-red" x="134" y="334" width="8" height="8" rx="1.5"/><text class="tiny" x="146" y="342">20 heap pages</text><text class="sub f-ink" x="42" y="370">All 20 entries sit on one leaf</text><text class="sub f-ink" x="42" y="386">page, but each points to its row</text><text class="sub f-ink" x="42" y="402">on a different heap page: 20</text><text class="sub f-ink" x="42" y="418">random reads when not cached.</text></g>
+</g>
+<g class="p2">
+<text class="tiny mono sb f-muted" x="42" y="232">EXPLAIN (ANALYZE, BUFFERS)</text>
+<text class="tiny mono sb f-green" x="42" y="254">Index Only Scan Backward</text>
+<text class="tiny mono f-ink" x="54" y="270">Index Cond: (customer_id = 42)</text>
+<g class="ci-b2"><text class="tiny mono sb f-green" x="54" y="286">Heap Fetches: 0</text><text class="tiny mono sb f-green" x="42" y="308">Buffers: shared hit=4</text></g>
+<rect class="ci-slot" x="42" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="51.4" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="60.8" y="316" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="70.2" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v20" x="42" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v21" x="51.4" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v22" x="60.8" y="316" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-green ci-vm2" x="70.2" y="316" width="8" height="8" rx="1.5"/>
+<g class="ci-b2"><rect class="ci-cell f-teal" x="42" y="334" width="8" height="8" rx="1.5"/><text class="tiny" x="54" y="342">3 index pages</text><rect class="ci-cell f-green" x="134" y="334" width="8" height="8" rx="1.5"/><text class="tiny" x="146" y="342">1 visibility map page</text></g>
+<g class="ci-n2a"><text class="sub f-ink" x="42" y="370"><tspan class="mono">id</tspan> is included too: index</text><text class="sub f-ink" x="42" y="386">entries don't carry the primary</text><text class="sub f-ink" x="42" y="402">key. Without it the plan stayed</text><text class="sub f-ink" x="42" y="418">an Index Scan: 23 pages.</text></g>
+</g>
+<g class="p3">
+<g class="ci-u3"><text class="tiny mono f-ink" x="42" y="232"><tspan class="f-purple sb">UPDATE</tspan> orders</text><text class="tiny mono f-ink" x="42" y="248"><tspan class="f-purple sb">SET</tspan> total_thb = total_thb - 500</text><text class="tiny mono f-ink" x="42" y="264"><tspan class="f-purple sb">WHERE</tspan> id IN (495179, 493709);</text></g>
+<g class="ci-s3"><text class="tiny mono sb f-ink" x="42" y="290">Index Only Scan Backward</text></g>
+<g class="ci-b3"><text class="tiny mono sb f-amber-ink" x="54" y="306">Heap Fetches: 4</text><text class="tiny mono sb f-ink" x="42" y="322">Buffers: shared hit=8</text></g>
+<rect class="ci-slot" x="42" y="330" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="51.4" y="330" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="60.8" y="330" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="70.2" y="330" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="79.6" y="330" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="89" y="330" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="98.4" y="330" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="107.8" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v30" x="42" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v31" x="51.4" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-teal ci-v32" x="60.8" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-green ci-vm3" x="70.2" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-amber ci-x0" x="79.6" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-amber ci-x1" x="89" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-amber ci-x2" x="98.4" y="330" width="8" height="8" rx="1.5"/>
+<rect class="ci-cell f-amber ci-x3" x="107.8" y="330" width="8" height="8" rx="1.5"/>
+<g class="ci-vac"><text class="tiny mono f-ink" x="42" y="362"><tspan class="f-teal sb">VACUUM</tspan> orders;</text></g>
+<g class="ci-b3b"><text class="tiny mono sb f-green" x="54" y="380">Heap Fetches: 0</text><text class="tiny mono sb f-green" x="42" y="396">Buffers: shared hit=4</text><rect class="ci-slot" x="42" y="404" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="51.4" y="404" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="60.8" y="404" width="8" height="8" rx="1.5"/><rect class="ci-slot" x="70.2" y="404" width="8" height="8" rx="1.5"/><rect class="ci-cell f-teal" x="42" y="404" width="8" height="8" rx="1.5"/><rect class="ci-cell f-teal" x="51.4" y="404" width="8" height="8" rx="1.5"/><rect class="ci-cell f-teal" x="60.8" y="404" width="8" height="8" rx="1.5"/><rect class="ci-cell f-green" x="70.2" y="404" width="8" height="8" rx="1.5"/><text class="tiny" x="42" y="436">Heap Fetches counts the entries</text><text class="tiny" x="42" y="452">it had to check in the heap.</text></g>
+</g>
+<g class="p4">
+<text class="ci-hd-amber" x="42" y="234">WHAT IT COSTS</text>
+<g class="ci-k1"><text class="tiny f-ink" x="42" y="258">990 status updates, pending → paid</text><text class="tiny mono f-ink" x="42" y="278">HOT updates</text><text class="tiny mono sb end f-amber-ink" x="258" y="278">80 → 0</text><text class="tiny" x="42" y="294">status sits in an index now</text></g>
+<g class="ci-k2"><text class="tiny f-ink" x="42" y="322">10,000 new orders, after a checkpoint</text><text class="tiny mono f-ink" x="42" y="342">WAL written</text><text class="tiny mono sb end f-amber-ink" x="258" y="342">15 MB → 26 MB</text></g>
+<g class="ci-k3"><text class="sub f-ink" x="42" y="372">Between vacuums, changed pages</text><text class="sub f-ink" x="42" y="388">cost Heap Fetches again.</text><text class="sub f-ink" x="42" y="404">Autovacuum waits for 50 + 20%</text><text class="sub f-ink" x="42" y="420">of the rows: 100,050 dead rows</text><text class="sub f-ink" x="42" y="436">in orders, by default.</text></g>
+</g>
+<!-- B: the B-tree, its path and the leaf page holding customer 42's newest entries -->
+<g class="p1"><text class="tiny sb f-ink" x="284" y="100">index <tspan class="mono">orders_customer_id_created_at_idx</tspan></text><text class="tiny end" x="654" y="100">1,927 pages · 15 MB</text><text class="ci-10 mono f-muted" x="284" y="115">ON orders (customer_id, created_at)</text></g>
+<g class="p23"><text class="tiny sb f-ink" x="284" y="100">index <tspan class="mono">orders_customer_covering_idx</tspan></text><text class="tiny end" x="654" y="100">4,121 pages · 32 MB</text><text class="ci-10 mono f-muted" x="284" y="115">(customer_id, created_at) <tspan class="f-teal sb">INCLUDE (id, status, total_thb)</tspan></text></g>
+<g class="p123">
+<rect class="box" x="284" y="122" width="86" height="20" rx="6"/>
+<rect class="box" x="410" y="122" width="86" height="20" rx="6"/>
+<rect class="box" x="536" y="122" width="86" height="20" rx="6"/>
+<line class="wire" x1="370" y1="132" x2="408" y2="132" marker-end="url(#ah)"/>
+<line class="wire" x1="496" y1="132" x2="534" y2="132" marker-end="url(#ah)"/>
+<text class="tiny mono mid f-ink" x="453" y="136">internal 3</text>
+<path class="ci-zoom" d="M536 142L284 150M622 142L654 150"/>
+<rect class="ci-pan" x="284" y="150" width="370" height="282" rx="10"/>
+</g>
+<g class="p1"><text class="tiny mono mid f-ink" x="327" y="136">root 210</text><text class="tiny mono mid f-ink" x="579" y="136">leaf 58</text><text class="tiny sb f-ink" x="296" y="168">leaf page 58 · 261 entries of 24 bytes</text><text class="tiny f-muted" x="296" y="184">key (customer_id, created_at) → heap tid</text><g class="ci-v10"><rect class="none s-blue" x="283" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><g class="ci-v11"><rect class="none s-blue" x="409" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><g class="ci-v12"><rect class="none s-blue" x="535" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><text class="tiny" x="284" y="452">Backward scan: newest entry first; an entry is key + tid</text></g>
+<g class="p23"><text class="tiny mono mid f-ink" x="327" y="136">root 209</text><text class="tiny mono mid f-ink" x="579" y="136">leaf 122</text><text class="tiny sb f-ink" x="296" y="168">leaf page 122 · 122 entries of 56 bytes</text><text class="tiny f-muted" x="296" y="184">key</text><g class="ci-pay"><text class="tiny f-teal sb" x="398" y="184">id</text><text class="tiny f-teal sb" x="444" y="184">status</text><text class="tiny f-teal sb end" x="566" y="184">total_thb</text><text class="tiny f-muted" x="576" y="184">heap tid</text><text class="tiny f-muted mid" x="646" y="184">VM</text></g></g>
+<g class="p2"><g class="ci-v20"><rect class="none s-blue" x="283" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><g class="ci-v21"><rect class="none s-blue" x="409" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><g class="ci-v22"><rect class="none s-blue" x="535" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><text class="tiny" x="284" y="452">Each leaf entry now carries id, status and total_thb</text></g>
+<g class="p3"><g class="ci-v30"><rect class="none s-blue" x="283" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><g class="ci-v31"><rect class="none s-blue" x="409" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><g class="ci-v32"><rect class="none s-blue" x="535" y="121" width="88" height="22" rx="7" stroke-width="2"/></g><text class="tiny" x="284" y="452">New entries (purple); the scan marked the old ones dead</text></g>
+<g class="p123"><text class="tiny f-muted end" x="642" y="168">times: 2026, UTC</text><text class="tiny f-muted" x="296" y="201">⋮ 10 older entries of customer 42</text></g>
+<g class="p123">
+<rect class="ci-row ci-wid" x="290" y="204" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="216">42</text><text class="tiny mono f-ink" x="316" y="216">08-19 21:19</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="216">465759</text><text class="tiny mono f-teal" x="444" y="216">delivered</text><text class="tiny mono f-teal end" x="566" y="216">16730.67</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="216">(2554,10)</text></g><g class="ci-i0"><rect class="ci-cell f-green" x="642" y="207" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="221" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="233">42</text><text class="tiny mono f-ink" x="316" y="233">08-26 22:33</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="233">471274</text><text class="tiny mono f-teal" x="444" y="233">delivered</text><text class="tiny mono f-teal end" x="566" y="233">21369.53</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="233">(4976,2)</text></g><g class="ci-i1"><rect class="ci-cell f-green" x="642" y="224" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="238" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="250">42</text><text class="tiny mono f-ink" x="316" y="250">08-27 16:44</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="250">471860</text><text class="tiny mono f-teal" x="444" y="250">delivered</text><text class="tiny mono f-teal end" x="566" y="250">9372.75</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="250">(1097,61)</text></g><g class="ci-i2"><rect class="ci-cell f-green" x="642" y="241" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="255" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="267">42</text><text class="tiny mono f-ink" x="316" y="267">08-29 20:44</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="267">473551</text><text class="tiny mono f-teal" x="444" y="267">delivered</text><text class="tiny mono f-teal end" x="566" y="267">46395.20</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="267">(820,82)</text></g><g class="ci-i3"><rect class="ci-cell f-green" x="642" y="258" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="272" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="284">42</text><text class="tiny mono f-ink" x="316" y="284">09-01 14:17</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="284">475685</text><text class="tiny mono f-teal" x="444" y="284">delivered</text><text class="tiny mono f-teal end" x="566" y="284">14759.24</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="284">(2189,75)</text></g><g class="ci-i4"><rect class="ci-cell f-green" x="642" y="275" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="289" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="301">42</text><text class="tiny mono f-ink" x="316" y="301">09-01 14:40</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="301">475698</text><text class="tiny mono f-teal" x="444" y="301">delivered</text><text class="tiny mono f-teal end" x="566" y="301">22279.37</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="301">(1695,29)</text></g><g class="ci-i5"><rect class="ci-cell f-green" x="642" y="292" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="306" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="318">42</text><text class="tiny mono f-ink" x="316" y="318">09-08 14:44</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="318">481174</text><text class="tiny mono f-teal" x="444" y="318">delivered</text><text class="tiny mono f-teal end" x="566" y="318">15876.87</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="318">(3826,75)</text></g><g class="ci-i6"><rect class="ci-cell f-green" x="642" y="309" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="323" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="335">42</text><text class="tiny mono f-ink" x="316" y="335">09-14 04:00</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="335">485504</text><text class="tiny mono f-teal" x="444" y="335">delivered</text><text class="tiny mono f-teal end" x="566" y="335">12002.32</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="335">(4384,29)</text></g><g class="ci-i7"><rect class="ci-cell f-green" x="642" y="326" width="8" height="8" rx="2"/></g>
+<rect class="ci-row ci-wid" x="290" y="340" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="352">42</text><text class="tiny mono f-ink" x="316" y="352">09-24 15:54</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="352">493709</text><text class="tiny mono f-teal" x="444" y="352">delivered</text><text class="tiny mono f-teal end" x="566" y="352">21046.51</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="352">(4806,99)</text></g><g class="ci-i8g"><rect class="ci-cell f-green" x="642" y="343" width="8" height="8" rx="2"/></g><g class="ci-i8r"><rect class="ci-cell f-red" x="642" y="343" width="8" height="8" rx="2"/></g><g class="ci-d8"><rect class="ci-dim" x="290" y="340" width="348" height="16" rx="3"/><line class="s-red" x1="292" y1="348" x2="636" y2="348" stroke-width="1.5"/></g>
+<g class="ci-sh1"><rect class="ci-row ci-wid" x="290" y="357" width="348" height="16" rx="3"/><text class="tiny mono f-ink" x="296" y="369">42</text><text class="tiny mono f-ink" x="316" y="369">09-26 12:58</text><g class="ci-pay"><text class="tiny mono f-teal" x="398" y="369">495179</text><text class="tiny mono f-teal" x="444" y="369">delivered</text><text class="tiny mono f-teal end" x="566" y="369">51179.03</text></g><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="369">(2392,2)</text></g><g class="ci-i9g"><rect class="ci-cell f-green" x="642" y="360" width="8" height="8" rx="2"/></g><g class="ci-i9r"><rect class="ci-cell f-red" x="642" y="360" width="8" height="8" rx="2"/></g><g class="ci-d9"><rect class="ci-dim" x="290" y="357" width="348" height="16" rx="3"/><line class="s-red" x1="292" y1="365" x2="636" y2="365" stroke-width="1.5"/></g></g>
+<g class="ci-idots"><rect class="ci-cell f-green" x="642" y="192" width="8" height="8" rx="2"/></g>
+<g class="ci-sh2"><rect class="ci-row ci-wid" x="290" y="374" width="348" height="16" rx="3" opacity="0.6"/><text class="tiny mono f-muted" x="296" y="386">43</text><text class="tiny mono f-muted" x="316" y="386">2024-12-31</text><g class="ci-tid"><text class="tiny mono f-muted" x="398" y="386">(32,24)</text></g></g>
+</g>
+<g class="p3"><g class="ci-nw"><rect class="f-purple-soft s-purple" x="290" y="357" width="348" height="16" rx="3" stroke-width="1"/><text class="tiny mono f-ink" x="296" y="369">42</text><text class="tiny mono f-ink" x="316" y="369">09-24 15:54</text><text class="tiny mono f-purple sb" x="398" y="369">493709</text><text class="tiny mono f-purple" x="444" y="369">delivered</text><text class="tiny mono f-purple sb end" x="566" y="369">20546.51</text><text class="tiny mono f-purple" x="576" y="369">(5057,91)</text><rect class="f-purple-soft s-purple" x="290" y="391" width="348" height="16" rx="3" stroke-width="1"/><text class="tiny mono f-ink" x="296" y="403">42</text><text class="tiny mono f-ink" x="316" y="403">09-26 12:58</text><text class="tiny mono f-purple sb" x="398" y="403">495179</text><text class="tiny mono f-purple" x="444" y="403">delivered</text><text class="tiny mono f-purple sb end" x="566" y="403">50679.03</text><text class="tiny mono f-purple" x="576" y="403">(5057,92)</text></g><g class="ci-iNr"><rect class="ci-cell f-red" x="642" y="360" width="8" height="8" rx="2"/><rect class="ci-cell f-red" x="642" y="394" width="8" height="8" rx="2"/></g><g class="ci-iNg"><rect class="ci-cell f-green" x="642" y="360" width="8" height="8" rx="2"/><rect class="ci-cell f-green" x="642" y="394" width="8" height="8" rx="2"/></g></g>
+<g class="p4">
+<text class="ci-hd" x="284" y="104">SIZE ON DISK</text>
+<text class="tiny mono end" x="654" y="104">pg_relation_size</text>
+<text class="tiny f-ink" x="284" y="132">orders heap</text>
+<text class="tiny end" x="654" y="132">5,058 pages · 40 MB</text>
+<rect class="ci-slot" x="284" y="139" width="370" height="14" rx="3"/>
+<rect class="ci-cell f-wire ci-bar0" x="284" y="139" width="370" height="14" rx="3"/>
+<text class="tiny f-ink" x="284" y="176">orders_pkey (id)</text>
+<text class="tiny end" x="654" y="176">1,374 pages · 11 MB</text>
+<rect class="ci-slot" x="284" y="183" width="370" height="14" rx="3"/>
+<rect class="ci-cell f-wire ci-bar1" x="284" y="183" width="100.5" height="14" rx="3"/>
+<text class="tiny mono f-ink" x="284" y="220">orders_customer_id_created_at_idx</text>
+<text class="tiny end" x="654" y="220">1,927 pages · 15 MB</text>
+<rect class="ci-slot" x="284" y="227" width="370" height="14" rx="3"/>
+<rect class="ci-cell f-wire ci-bar2" x="284" y="227" width="141" height="14" rx="3"/>
+<text class="tiny mono sb f-teal" x="284" y="264">orders_customer_covering_idx</text>
+<text class="tiny end sb f-teal" x="654" y="264">4,121 pages · 32 MB</text>
+<rect class="ci-slot" x="284" y="271" width="370" height="14" rx="3"/>
+<rect class="ci-cell f-teal ci-bar3" x="284" y="271" width="301.5" height="14" rx="3"/>
+<g class="ci-k4"><text class="tiny f-ink" x="284" y="330">one leaf entry: 24 bytes → 56 bytes; per leaf page: 261 → 122</text><text class="tiny f-ink" x="284" y="346">INCLUDE columns are not in the root or internal pages</text><text class="sub f-ink" x="284" y="378">The 3 columns as key columns also give 32 MB here.</text><text class="sub f-ink" x="284" y="396">INCLUDE keeps a UNIQUE index unique on its key alone</text><text class="sub f-ink" x="284" y="414">and accepts types with no B-tree operator class.</text></g>
+</g>
+<!-- C: the heap to scale (5,058 pages) and its visibility map -->
+<g class="p123">
+<text class="tiny sb f-ink" x="668" y="104">heap <tspan class="mono">orders</tspan>: 5,058 pages of 8 kB</text>
+<text class="tiny end" x="930" y="104">40 MB</text>
+<rect class="ci-heap" x="668" y="112" width="262" height="34" rx="3"/>
+<rect class="ci-cell f-green" x="668" y="152" width="262" height="8" rx="2"/>
+<text class="tiny" x="668" y="174">visibility map, all-visible bits</text>
+</g>
+<g class="p1">
+<rect class="ci-dim" x="668" y="152" width="262" height="8" rx="2"/>
+<text class="tiny end f-muted" x="930" y="174">not read here</text>
+<g class="ci-h0"><rect class="ci-cell f-red" x="790.93" y="113" width="2.2" height="32"/></g>
+<g class="ci-h1"><rect class="ci-cell f-red" x="915.97" y="113" width="2.2" height="32"/></g>
+<g class="ci-h2"><rect class="ci-cell f-red" x="894.11" y="113" width="2.2" height="32"/></g>
+<g class="ci-h3"><rect class="ci-cell f-red" x="865.21" y="113" width="2.2" height="32"/></g>
+<g class="ci-h4"><rect class="ci-cell f-red" x="754.83" y="113" width="2.2" height="32"/></g>
+<g class="ci-h5"><rect class="ci-cell f-red" x="780.41" y="113" width="2.2" height="32"/></g>
+<g class="ci-h6"><rect class="ci-cell f-red" x="709.5" y="113" width="2.2" height="32"/></g>
+<g class="ci-h7"><rect class="ci-cell f-red" x="723.85" y="113" width="2.2" height="32"/></g>
+<g class="ci-h8"><rect class="ci-cell f-red" x="924.78" y="113" width="2.2" height="32"/></g>
+<g class="ci-h9"><rect class="ci-cell f-red" x="799.32" y="113" width="2.2" height="32"/></g>
+<g class="ci-h10"><rect class="ci-cell f-red" x="755.55" y="113" width="2.2" height="32"/></g>
+<g class="ci-h11"><rect class="ci-cell f-red" x="785.54" y="113" width="2.2" height="32"/></g>
+<g class="ci-h12"><rect class="ci-cell f-red" x="701.94" y="113" width="2.2" height="32"/></g>
+<g class="ci-h13"><rect class="ci-cell f-red" x="715.51" y="113" width="2.2" height="32"/></g>
+<g class="ci-h14"><rect class="ci-cell f-red" x="829.26" y="113" width="2.2" height="32"/></g>
+<g class="ci-h15"><rect class="ci-cell f-red" x="722.87" y="113" width="2.2" height="32"/></g>
+<g class="ci-h16"><rect class="ci-cell f-red" x="705.98" y="113" width="2.2" height="32"/></g>
+<g class="ci-h17"><rect class="ci-cell f-red" x="789.69" y="113" width="2.2" height="32"/></g>
+<g class="ci-h18"><rect class="ci-cell f-red" x="854.59" y="113" width="2.2" height="32"/></g>
+<g class="ci-h19"><rect class="ci-cell f-red" x="711.26" y="113" width="2.2" height="32"/></g>
+<g class="ci-z1"><circle class="none s-red" cx="791.93" cy="129" r="9" stroke-width="2"/><rect class="ci-in" x="668" y="186" width="262" height="124" rx="8"/><text class="tiny sb f-ink" x="678" y="203">heap page 2392 · 8 kB · 98 rows</text><text class="ci-10 f-muted end" x="690" y="220">lp</text><text class="ci-10 f-muted" x="698" y="220">id</text><text class="ci-10 f-muted end" x="790" y="220">customer</text><text class="ci-10 f-muted" x="800" y="220">status</text><text class="ci-10 f-muted end" x="922" y="220">total_thb</text><text class="tiny mono end f-muted" x="690" y="238">1</text><text class="tiny mono f-muted" x="698" y="238">216210</text><text class="tiny mono end f-muted" x="790" y="238">74864</text><text class="tiny mono f-muted" x="800" y="238">delivered</text><text class="tiny mono end f-muted" x="922" y="238">23546.07</text><rect class="f-red-soft s-red" x="674" y="242" width="252" height="16" rx="3" stroke-width="1"/><text class="tiny mono end f-ink sb" x="690" y="254">2</text><text class="tiny mono f-ink sb" x="698" y="254">495179</text><text class="tiny mono end f-ink sb" x="790" y="254">42</text><text class="tiny mono f-ink" x="800" y="254">delivered</text><text class="tiny mono end f-ink sb" x="922" y="254">51179.03</text><text class="tiny mono end f-muted" x="690" y="270">3</text><text class="tiny mono f-muted" x="698" y="270">173516</text><text class="tiny mono end f-muted" x="790" y="270">40972</text><text class="tiny mono f-muted" x="800" y="270">delivered</text><text class="tiny mono end f-muted" x="922" y="270">18915.56</text><text class="tiny mono end f-muted" x="690" y="286">4</text><text class="tiny mono f-muted" x="698" y="286">178043</text><text class="tiny mono end f-muted" x="790" y="286">61985</text><text class="tiny mono f-muted" x="800" y="286">cancelled</text><text class="tiny mono end f-muted" x="922" y="286">35700.63</text><text class="tiny f-muted" x="678" y="302">⋮ 94 more rows, other customers</text><text class="sub f-ink" x="668" y="332">One row needed, one whole page read.</text><text class="sub f-ink" x="668" y="350">The 20 rows sit on 20 pages spread</text><text class="sub f-ink" x="668" y="368">across the whole table.</text></g>
+</g>
+<g class="p2"><g class="ci-vm2"><rect class="none s-green" x="666" y="150" width="266" height="12" rx="3" stroke-width="2"/></g><g class="ci-b2"><text class="tiny sb mid f-green" x="799" y="133">Heap Fetches: 0 · not read</text></g><g class="ci-n2b"><text class="tiny sb f-green" x="668" y="204">The scan reads 1 visibility map page</text><text class="tiny f-ink" x="668" y="220">instead: every page bit is set, so each</text><text class="tiny f-ink" x="668" y="236">entry is answered from the index alone.</text><text class="tiny f-ink" x="668" y="252">VACUUM sets a bit when all rows on the</text><text class="tiny f-ink" x="668" y="268">page are visible to everyone; any change</text><text class="tiny f-ink" x="668" y="284">to the page clears it.</text></g><g class="ci-n2a"><text class="tiny sb f-teal" x="668" y="318">INCLUDE columns are payload only</text><text class="tiny f-ink" x="668" y="336">• not searchable: WHERE status = …</text><text class="tiny f-ink" x="677" y="352">is a Filter, not an Index Cond</text><text class="tiny f-ink" x="668" y="370">• not sortable: ORDER BY total_thb</text><text class="tiny f-ink" x="677" y="386">adds a Sort</text><text class="tiny f-ink" x="668" y="404">• kept in leaf entries only</text><text class="tiny f-ink" x="668" y="422">• B-tree since PG 11, GiST 12, SP-GiST 14</text></g></g>
+<g class="p3"><g class="ci-m3"><rect class="ci-cell f-purple" x="927.37" y="113" width="2.6" height="32"/><rect class="ci-cell f-red" x="790.93" y="113" width="2.2" height="32"/><rect class="ci-cell f-red" x="915.97" y="113" width="2.2" height="32"/><path class="none s-red" d="M787.93 117l8 8m0 -8l-8 8" stroke-width="2" stroke-linecap="round"/><path class="none s-red" d="M912.97 117l8 8m0 -8l-8 8" stroke-width="2" stroke-linecap="round"/><rect class="ci-cell f-red" x="790.18" y="150" width="3.5" height="12" rx="1"/><rect class="ci-cell f-red" x="915.22" y="150" width="3.5" height="12" rx="1"/><circle class="none s-purple" cx="928.6700000000001" cy="129" r="9" stroke-width="2"/><rect class="ci-in" x="668" y="186" width="262" height="124" rx="8"/><text class="tiny sb f-ink" x="678" y="203">heap page 5057, the last · 92 rows</text><text class="ci-10 f-muted end" x="690" y="220">lp</text><text class="ci-10 f-muted" x="698" y="220">id</text><text class="ci-10 f-muted end" x="790" y="220">customer</text><text class="ci-10 f-muted" x="800" y="220">status</text><text class="ci-10 f-muted end" x="922" y="220">total_thb</text><text class="tiny mono end f-muted" x="690" y="238">89</text><text class="tiny mono f-muted" x="698" y="238">486582</text><text class="tiny mono end f-muted" x="790" y="238">64140</text><text class="tiny mono f-muted" x="800" y="238">delivered</text><text class="tiny mono end f-muted" x="922" y="238">43175.57</text><text class="tiny mono end f-muted" x="690" y="254">90</text><text class="tiny mono f-muted" x="698" y="254">210629</text><text class="tiny mono end f-muted" x="790" y="254">92788</text><text class="tiny mono f-muted" x="800" y="254">delivered</text><text class="tiny mono end f-muted" x="922" y="254">12651.18</text><rect class="f-purple-soft s-purple" x="674" y="258" width="252" height="16" rx="3" stroke-width="1"/><text class="tiny mono end f-purple" x="690" y="270">91</text><text class="tiny mono f-purple sb" x="698" y="270">493709</text><text class="tiny mono end f-purple" x="790" y="270">42</text><text class="tiny mono f-purple" x="800" y="270">delivered</text><text class="tiny mono end f-purple sb" x="922" y="270">20546.51</text><rect class="f-purple-soft s-purple" x="674" y="274" width="252" height="16" rx="3" stroke-width="1"/><text class="tiny mono end f-purple" x="690" y="286">92</text><text class="tiny mono f-purple sb" x="698" y="286">495179</text><text class="tiny mono end f-purple" x="790" y="286">42</text><text class="tiny mono f-purple" x="800" y="286">delivered</text><text class="tiny mono end f-purple sb" x="922" y="286">50679.03</text><text class="tiny f-red" x="678" y="302">old versions on 2392 and 4806: dead</text></g><g class="ci-r57"><rect class="ci-cell f-red" x="926.47" y="150" width="3.5" height="12" rx="1"/></g><g class="ci-ok57"><circle class="none s-green" cx="928.6700000000001" cy="156" r="7" stroke-width="2"/></g><g class="ci-b3b"><text class="tiny sb f-teal" x="668" y="334">VACUUM set page 5057 all-visible again.</text><text class="tiny f-ink" x="668" y="352">With only 2 dead rows it skipped the</text><text class="tiny f-ink" x="668" y="368">index pass: 2392 and 4806 keep a dead</text><text class="tiny f-ink" x="668" y="384">stub until a later vacuum, and the scan</text><text class="tiny f-ink" x="668" y="400">skips their entries, marked dead.</text></g><g class="ci-sw"><rect class="f-teal-soft s-teal" x="0" y="110" width="24" height="52" rx="4" stroke-width="1.5"/></g></g>
+<g class="p4">
+<text class="ci-hd" x="668" y="104">OTHER ENGINES</text>
+<g class="ci-e1"><rect class="ci-in" x="668" y="114" width="262" height="182" rx="8"/><text class="sub sb f-ink" x="680" y="134">MySQL 8.4 · InnoDB</text><text class="tiny" x="680" y="152">a secondary index entry</text><rect class="ci-row" x="680" y="160" width="30" height="18" rx="3"/><text class="tiny mono mid f-ink" x="695" y="173">42</text><rect class="ci-row" x="712" y="160" width="92" height="18" rx="3"/><text class="tiny mono mid f-ink" x="758" y="173">09-26 12:58</text><rect class="f-teal-soft s-teal" x="806" y="160" width="56" height="18" rx="3" stroke-width="1"/><text class="tiny mono mid sb f-teal" x="834" y="173">495179</text><text class="tiny f-teal sb" x="868" y="173">← PK</text><text class="tiny f-ink" x="680" y="196">Every entry carries the primary key, so</text><text class="tiny f-ink" x="680" y="212">SELECT id is covered. There is no</text><text class="tiny f-ink" x="680" y="228">INCLUDE: add status, total_thb as key</text><text class="tiny f-ink" x="680" y="244">columns. EXPLAIN shows Using index.</text></g>
+<g class="ci-e2"><text class="tiny f-ink" x="680" y="266">The clustered index is the table, so a</text><text class="tiny f-ink" x="680" y="282">lookup by id lands on the row itself.</text></g>
+<g class="ci-e3"><rect class="ci-in" x="668" y="306" width="262" height="134" rx="8"/><text class="sub sb f-ink" x="680" y="326">SQL Server</text><text class="ci-10 mono f-ink" x="680" y="344">CREATE INDEX … (customer_id, created_at)</text><text class="ci-10 mono f-ink" x="680" y="358">  INCLUDE (status, total_thb)</text><text class="tiny f-ink" x="680" y="378">Included columns sit at the leaf level</text><text class="tiny f-ink" x="680" y="394">only; the clustering key rides along.</text><text class="tiny f-ink" x="680" y="410">A column the index lacks costs one</text><text class="tiny f-ink" x="680" y="426">Key Lookup per row.</text></g>
+</g>
+<!-- tokens -->
+<g class="ci-q1"><circle class="pkt f-blue" r="6"/></g>
+<g class="ci-q2"><circle class="pkt f-blue" r="6"/></g>
+<g class="ci-q3"><circle class="pkt f-blue" r="6"/></g>
+<g class="ci-cur1"><rect class="none s-blue" x="287" y="-14" width="182" height="20" rx="4" stroke-width="2"/></g>
+<g class="ci-cur2"><rect class="none s-blue" x="287" y="-14" width="366" height="20" rx="4" stroke-width="2"/></g>
+<g class="ci-cur3"><rect class="none s-blue" x="287" y="-14" width="366" height="20" rx="4" stroke-width="2"/></g>
+<g class="ci-f0"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f1"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f2"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f3"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f4"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f5"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f6"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f7"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f8"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f9"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f10"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f11"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f12"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f13"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f14"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f15"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f16"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f17"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f18"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-f19"><circle class="pkt f-blue" r="4.5"/></g>
+<g class="ci-vmr2"><circle class="pkt f-green" r="5"/></g>
+<g class="ci-vmr3"><circle class="pkt f-green" r="5"/></g>
+<g class="ci-res2"><circle class="pkt f-green" r="6"/></g>
+<g class="ci-w1"><circle class="pkt f-purple" r="5"/></g>
+<g class="ci-w2"><circle class="pkt f-purple" r="5"/></g>
+<g class="ci-g0"><circle class="pkt f-amber" r="5"/></g>
+<g class="ci-g1"><circle class="pkt f-amber" r="5"/></g>
+<g class="ci-g2"><circle class="pkt f-amber" r="5"/></g>
+<g class="ci-g3"><circle class="pkt f-amber" r="5"/></g>
+</g>
+</svg>

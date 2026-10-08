@@ -133,6 +133,10 @@ It doesn't have to be all or nothing. Azure's guidance suggests applying it to t
 - [Apache Kafka](../kafka/) — A partitioned, replicated commit log: producers append events, consumer groups read at their own pace and can replay history.
 - [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
 
+## Related database topics
+
+- [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
+
 ## References
 
 - [Martin Fowler — Event Sourcing (2005)](https://martinfowler.com/eaaDev/EventSourcing.html)

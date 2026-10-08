@@ -160,6 +160,10 @@ All three end with a stream of changes that other systems consume. They differ i
 - [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
 - [Amazon RDS & Aurora](../amazon-rds-aurora/) — Managed relational databases: backups, Multi-AZ failover and read replicas, and Aurora's storage shared across three zones.
 
+## Related database topics
+
+- [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
+
 ## References
 
 - [Debezium documentation — Architecture](https://debezium.io/documentation/reference/stable/architecture.html)

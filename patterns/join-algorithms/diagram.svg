@@ -1,0 +1,941 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Join Algorithms</title>
+<desc id="dg-desc">Join Algorithms. Nested loop, hash join and merge join: how each joins two tables, what it costs, and when the planner picks it. Step 1, A nested loop, no index: No index on order_events.order_id: the nested loop rescans all 1,500,000 events for every order. Step 2, Nested loop + index: Joined to order_items, each of the 45 orders is one index lookup: root, branch, leaf, heap page. Step 3, Hash join, merge join: Hash: build on September's orders, probe with every item. Merge: walk two sorted inputs together. Step 4, How the planner picks: The planner costs every method from its row estimates and keeps the cheapest one for each join.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Join Algorithms</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A nested loop, no index</text>
+  <text class="step on p1" x="40" y="518">1 · A nested loop, no index</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Nested loop + index</text>
+  <text class="step on p2" x="262" y="518">2 · Nested loop + index</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Hash join, merge join</text>
+  <text class="step on p3" x="484" y="518">3 · Hash join, merge join</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · How the planner picks</text>
+  <text class="step on p4" x="706" y="518">4 · How the planner picks</text>
+  <text class="caption p1" x="40" y="552">No index on order_events.order_id: the nested loop rescans all 1,500,000 events for every order.</text>
+  <text class="caption p2" x="40" y="552">Joined to order_items, each of the 45 orders is one index lookup: root, branch, leaf, heap page.</text>
+  <text class="caption p3" x="40" y="552">Hash: build on September's orders, probe with every item. Merge: walk two sorted inputs together.</text>
+  <text class="caption p4" x="40" y="552">The planner costs every method from its row estimates and keeps the cheapest one for each join.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Join Algorithms. Generated from runs on PostgreSQL 18.6 (scratch gen.mjs); timeline (20s loop, 1s = 5%):
+   0-25%   lane A, the problem: a LATERAL subquery runs once per order (nested loop) and order_events has no index on
+           order_id, so each of customer 2's 45 orders rescans all 1,500,000 events (3 scans drawn, then 45 of 45)
+   25-50%  lane A, the same 45 orders joined to order_items: one descent of order_items_pkey per order
+           (root 235, branch 4605, leaf 4805/4649/4699) lands on its heap rows (3 lookups drawn)
+   50-75%  lane B, hash join: 4 September orders land in their buckets (low 15 bits of hashint8(id)), 4 items probe
+           (order 1 misses in #5958); lane C, merge join: the inner pointer skips 250,000 rows, then equal keys match
+   75-100% the planner's estimated cost of each method per query (the chosen one is the cheapest);
+           19.5-20s: results fade, lane A returns to the problem state */
+.diagram .jn-hd { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; fill: var(--muted); }
+.diagram .jn-q { font-size: 12px; font-weight: 600; }
+.diagram .jn-m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 11px; }
+.diagram .jn-pl { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 11px; white-space: pre; }
+.diagram .jn-t { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 10px; fill: var(--muted); }
+.diagram .jn-dimA { animation: jn-dimA var(--T) linear infinite; }
+.diagram .jn-dimBC { opacity: 0.32; animation: jn-dimBC var(--T) linear infinite; }
+.diagram .jn-bar { transform-box: fill-box; transform-origin: 0 50%; animation: jn-bar var(--T) linear infinite; }
+.diagram .jn-c1, .diagram .jn-c2, .diagram .jn-c3 { opacity: 0; }
+.diagram .jn-c1 { animation: jn-c1 var(--T) linear infinite; }
+.diagram .jn-c2 { animation: jn-c2 var(--T) linear infinite; }
+.diagram .jn-c3 { animation: jn-c3 var(--T) linear infinite; }
+.diagram .jn-c45 { animation: jn-c45 var(--T) linear infinite; }
+.diagram .jn-hiA1 { opacity: 0; animation: jn-hiA1 var(--T) linear infinite; }
+.diagram .jn-bandA { opacity: 0; animation: jn-bandA var(--T) linear infinite; }
+.diagram .jn-hiA2 { opacity: 0; animation: jn-hiA2 var(--T) linear infinite; }
+.diagram .jn-lkA { opacity: 0; animation: jn-lkA var(--T) linear infinite; }
+.diagram .jn-bd0 { opacity: 0; animation: jn-bd0 var(--T) linear infinite; }
+.diagram .jn-bd1 { opacity: 0; animation: jn-bd1 var(--T) linear infinite; }
+.diagram .jn-bd2 { opacity: 0; animation: jn-bd2 var(--T) linear infinite; }
+.diagram .jn-bd3 { opacity: 0; animation: jn-bd3 var(--T) linear infinite; }
+.diagram .jn-prB { opacity: 0; animation: jn-prB var(--T) linear infinite; }
+.diagram .jn-oPtr { opacity: 0; animation: jn-oPtr var(--T) linear infinite; }
+.diagram .jn-iPtr { opacity: 0; animation: jn-iPtr var(--T) linear infinite; }
+@keyframes jn-dimA {
+  0% { opacity: 1; }
+  50% { opacity: 1; }
+  52% { opacity: 0.32; }
+  75% { opacity: 0.32; }
+  77% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jn-dimBC {
+  0% { opacity: 0.32; }
+  50% { opacity: 0.32; }
+  52% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0.32; }
+}
+@keyframes jn-c1 {
+  0% { opacity: 0; }
+  2.25% { opacity: 0; }
+  2.75% { opacity: 1; }
+  9.25% { opacity: 1; }
+  9.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jn-c2 {
+  0% { opacity: 0; }
+  9.5% { opacity: 0; }
+  10% { opacity: 1; }
+  14.75% { opacity: 1; }
+  15.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jn-c3 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  15.5% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes jn-c45 {
+  0% { opacity: 0; }
+  19% { opacity: 0; }
+  19.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes jn-hiA1 {
+  0% { transform: translate(73px, 195px); opacity: 0; }
+  1.5% { transform: translate(73px, 195px); opacity: 0; }
+  1.75% { opacity: 1; }
+  7.75% { transform: translate(73px, 195px); }
+  8.75% { transform: translate(73px, 217px); }
+  13.75% { transform: translate(73px, 217px); }
+  14.75% { transform: translate(73px, 239px); }
+  18% { transform: translate(73px, 239px); }
+  19% { transform: translate(73px, 305px); }
+  23.4% { transform: translate(73px, 305px); opacity: 1; }
+  23.65% { transform: translate(73px, 305px); opacity: 0; }
+  100% { transform: translate(73px, 305px); opacity: 0; }
+}
+@keyframes jn-bandA {
+  0% { transform: translate(257px, 195px); opacity: 0; }
+  2.5% { transform: translate(257px, 195px); opacity: 0; }
+  2.7% { opacity: 1; }
+  7.5% { transform: translate(257px, 327px); opacity: 1; }
+  7.7% { transform: translate(257px, 327px); opacity: 0; }
+  9.5% { transform: translate(257px, 195px); opacity: 0; }
+  9.7% { opacity: 1; }
+  13% { transform: translate(257px, 327px); opacity: 1; }
+  13.2% { transform: translate(257px, 327px); opacity: 0; }
+  15% { transform: translate(257px, 195px); opacity: 0; }
+  15.2% { opacity: 1; }
+  17.5% { transform: translate(257px, 327px); opacity: 1; }
+  17.7% { transform: translate(257px, 327px); opacity: 0; }
+  19% { transform: translate(257px, 195px); opacity: 0; }
+  19.2% { opacity: 1; }
+  21.25% { transform: translate(257px, 327px); opacity: 1; }
+  21.45% { transform: translate(257px, 327px); opacity: 0; }
+  100% { transform: translate(257px, 327px); opacity: 0; }
+}
+@keyframes jn-lkA {
+  0% { transform: translate(104px, 195px); opacity: 0; }
+  27.75% { transform: translate(104px, 195px); opacity: 0; }
+  27.947% { transform: translate(112px, 202px); }
+  27.95% { opacity: 1; }
+  28.725% { transform: translate(154px, 202px); }
+  29.325% { transform: translate(154px, 202px); }
+  30.028% { transform: translate(154px, 240px); }
+  30.628% { transform: translate(154px, 240px); }
+  31.332% { transform: translate(154px, 278px); }
+  31.932% { transform: translate(154px, 278px); }
+  32.747% { transform: translate(198px, 278px); }
+  32.839% { transform: translate(198px, 283px); }
+  32.951% { transform: translate(204px, 283px); opacity: 1; }
+  33.151% { transform: translate(204px, 283px); opacity: 0; }
+  33.75% { transform: translate(104px, 217px); opacity: 0; }
+  33.95% { opacity: 1; }
+  34.065% { transform: translate(112px, 202px); }
+  34.843% { transform: translate(154px, 202px); }
+  35.443% { transform: translate(154px, 202px); }
+  36.146% { transform: translate(154px, 240px); }
+  36.746% { transform: translate(154px, 240px); }
+  37.45% { transform: translate(154px, 278px); }
+  38.05% { transform: translate(154px, 278px); }
+  38.865% { transform: translate(198px, 278px); }
+  39.75% { transform: translate(104px, 239px); opacity: 0; }
+  39.95% { opacity: 1; }
+  40.198% { transform: translate(198px, 206px); }
+  40.309% { transform: translate(204px, 206px); opacity: 1; }
+  40.451% { transform: translate(112px, 202px); }
+  40.509% { transform: translate(204px, 206px); opacity: 0; }
+  41.229% { transform: translate(154px, 202px); }
+  41.829% { transform: translate(154px, 202px); }
+  42.532% { transform: translate(154px, 240px); }
+  43.132% { transform: translate(154px, 240px); }
+  43.836% { transform: translate(154px, 278px); }
+  44.436% { transform: translate(154px, 278px); }
+  45.251% { transform: translate(198px, 278px); }
+  45.973% { transform: translate(198px, 239px); }
+  46.084% { transform: translate(204px, 239px); opacity: 1; }
+  46.284% { transform: translate(204px, 239px); opacity: 0; }
+  100% { transform: translate(204px, 239px); opacity: 0; }
+}
+@keyframes jn-hiA2 {
+  0% { transform: translate(73px, 195px); opacity: 0; }
+  26.75% { transform: translate(73px, 195px); opacity: 0; }
+  27% { opacity: 1; }
+  32.5% { transform: translate(73px, 195px); }
+  33.25% { transform: translate(73px, 217px); }
+  38.5% { transform: translate(73px, 217px); }
+  39.25% { transform: translate(73px, 239px); }
+  44.5% { transform: translate(73px, 239px); opacity: 1; }
+  44.75% { transform: translate(73px, 239px); opacity: 0; }
+  100% { transform: translate(73px, 239px); opacity: 0; }
+}
+@keyframes jn-pg-root {
+  0% { opacity: 0; }
+  28.325% { opacity: 0; }
+  28.725% { opacity: 1; }
+  30.225% { opacity: 1; }
+  30.625% { opacity: 0; }
+  34.443% { opacity: 0; }
+  34.843% { opacity: 1; }
+  36.343% { opacity: 1; }
+  36.743% { opacity: 0; }
+  40.829% { opacity: 0; }
+  41.229% { opacity: 1; }
+  42.729% { opacity: 1; }
+  43.129% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-pg-root { opacity: 0; animation: jn-pg-root var(--T) linear infinite; }
+@keyframes jn-pg-branch {
+  0% { opacity: 0; }
+  29.628% { opacity: 0; }
+  30.028% { opacity: 1; }
+  31.528% { opacity: 1; }
+  31.928% { opacity: 0; }
+  35.746% { opacity: 0; }
+  36.146% { opacity: 1; }
+  37.646% { opacity: 1; }
+  38.046% { opacity: 0; }
+  42.132% { opacity: 0; }
+  42.532% { opacity: 1; }
+  44.032% { opacity: 1; }
+  44.432% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-pg-branch { opacity: 0; animation: jn-pg-branch var(--T) linear infinite; }
+@keyframes jn-pg-leaf {
+  0% { opacity: 0; }
+  30.932% { opacity: 0; }
+  31.332% { opacity: 1; }
+  32.832% { opacity: 1; }
+  33.232% { opacity: 0; }
+  37.05% { opacity: 0; }
+  37.45% { opacity: 1; }
+  38.95% { opacity: 1; }
+  39.35% { opacity: 0; }
+  43.436% { opacity: 0; }
+  43.836% { opacity: 1; }
+  45.336% { opacity: 1; }
+  45.736% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-pg-leaf { opacity: 0; animation: jn-pg-leaf var(--T) linear infinite; }
+@keyframes jn-leaf0 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.4% { opacity: 1; }
+  37.2% { opacity: 1; }
+  37.21% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-leaf0 { opacity: 0; animation: jn-leaf0 var(--T) linear infinite; }
+@keyframes jn-leaf1 {
+  0% { opacity: 0; }
+  37.2% { opacity: 0; }
+  37.6% { opacity: 1; }
+  43.586% { opacity: 1; }
+  43.596% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-leaf1 { opacity: 0; animation: jn-leaf1 var(--T) linear infinite; }
+@keyframes jn-leaf2 {
+  0% { opacity: 0; }
+  43.586% { opacity: 0; }
+  43.986% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .jn-leaf2 { opacity: 0; animation: jn-leaf2 var(--T) linear infinite; }
+@keyframes jn-hit0 {
+  0% { opacity: 0; }
+  32.951% { opacity: 0; }
+  33.951% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-hit0 { opacity: 0; animation: jn-hit0 var(--T) linear infinite; }
+@keyframes jn-hit1 {
+  0% { opacity: 0; }
+  40.309% { opacity: 0; }
+  41.309% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-hit1 { opacity: 0; animation: jn-hit1 var(--T) linear infinite; }
+@keyframes jn-hit2 {
+  0% { opacity: 0; }
+  46.084% { opacity: 0; }
+  47.084% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-hit2 { opacity: 0; animation: jn-hit2 var(--T) linear infinite; }
+@keyframes jn-l1 {
+  0% { opacity: 0; }
+  27.5% { opacity: 0; }
+  28% { opacity: 1; }
+  33.5% { opacity: 1; }
+  34% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-l1 { opacity: 0; animation: jn-l1 var(--T) linear infinite; }
+@keyframes jn-l2 {
+  0% { opacity: 0; }
+  33.75% { opacity: 0; }
+  34.25% { opacity: 1; }
+  39.5% { opacity: 1; }
+  40% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-l2 { opacity: 0; animation: jn-l2 var(--T) linear infinite; }
+@keyframes jn-l3 {
+  0% { opacity: 0; }
+  39.75% { opacity: 0; }
+  40.25% { opacity: 1; }
+  44.75% { opacity: 1; }
+  45.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-l3 { opacity: 0; animation: jn-l3 var(--T) linear infinite; }
+@keyframes jn-l45 {
+  0% { opacity: 0; }
+  45% { opacity: 0; }
+  46% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-l45 { opacity: 0; animation: jn-l45 var(--T) linear infinite; }
+@keyframes jn-bd0 {
+  0% { transform: translate(406px, 195px); opacity: 0; }
+  52.5% { transform: translate(406px, 195px); opacity: 0; }
+  52.65% { opacity: 1; }
+  55% { transform: translate(456px, 239px); opacity: 1; }
+  55.15% { transform: translate(456px, 239px); opacity: 0; }
+  100% { transform: translate(456px, 239px); opacity: 0; }
+}
+@keyframes jn-fill2 {
+  0% { opacity: 0; }
+  55% { opacity: 0; }
+  55.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-fill2 { opacity: 0; animation: jn-fill2 var(--T) linear infinite; }
+@keyframes jn-bd1 {
+  0% { transform: translate(406px, 217px); opacity: 0; }
+  53.5% { transform: translate(406px, 217px); opacity: 0; }
+  53.65% { opacity: 1; }
+  56% { transform: translate(456px, 195px); opacity: 1; }
+  56.15% { transform: translate(456px, 195px); opacity: 0; }
+  100% { transform: translate(456px, 195px); opacity: 0; }
+}
+@keyframes jn-fill0 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-fill0 { opacity: 0; animation: jn-fill0 var(--T) linear infinite; }
+@keyframes jn-bd2 {
+  0% { transform: translate(406px, 239px); opacity: 0; }
+  54.5% { transform: translate(406px, 239px); opacity: 0; }
+  54.65% { opacity: 1; }
+  57% { transform: translate(456px, 261px); opacity: 1; }
+  57.15% { transform: translate(456px, 261px); opacity: 0; }
+  100% { transform: translate(456px, 261px); opacity: 0; }
+}
+@keyframes jn-fill3 {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  57.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-fill3 { opacity: 0; animation: jn-fill3 var(--T) linear infinite; }
+@keyframes jn-bd3 {
+  0% { transform: translate(406px, 261px); opacity: 0; }
+  55.5% { transform: translate(406px, 261px); opacity: 0; }
+  55.65% { opacity: 1; }
+  58% { transform: translate(456px, 283px); opacity: 1; }
+  58.15% { transform: translate(456px, 283px); opacity: 0; }
+  100% { transform: translate(456px, 283px); opacity: 0; }
+}
+@keyframes jn-fill4 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-fill4 { opacity: 0; animation: jn-fill4 var(--T) linear infinite; }
+@keyframes jn-fillRest {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  58% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-fillRest { opacity: 0; animation: jn-fillRest var(--T) linear infinite; }
+@keyframes jn-pr0 {
+  0% { opacity: 0; }
+  61.6% { opacity: 0; }
+  62.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-pr0 { opacity: 0; animation: jn-pr0 var(--T) linear infinite; }
+@keyframes jn-cmp0 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62% { opacity: 1; }
+  63.1% { opacity: 1; }
+  63.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-cmp0 { opacity: 0; animation: jn-cmp0 var(--T) linear infinite; }
+@keyframes jn-pr1 {
+  0% { opacity: 0; }
+  64.6% { opacity: 0; }
+  65.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-pr1 { opacity: 0; animation: jn-pr1 var(--T) linear infinite; }
+@keyframes jn-cmp1 {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65% { opacity: 1; }
+  66.1% { opacity: 1; }
+  66.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-cmp1 { opacity: 0; animation: jn-cmp1 var(--T) linear infinite; }
+@keyframes jn-pr2 {
+  0% { opacity: 0; }
+  67.6% { opacity: 0; }
+  68.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-pr2 { opacity: 0; animation: jn-pr2 var(--T) linear infinite; }
+@keyframes jn-cmp2 {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68% { opacity: 1; }
+  69.1% { opacity: 1; }
+  69.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-cmp2 { opacity: 0; animation: jn-cmp2 var(--T) linear infinite; }
+@keyframes jn-pr3 {
+  0% { opacity: 0; }
+  70.35% { opacity: 0; }
+  71.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-pr3 { opacity: 0; animation: jn-pr3 var(--T) linear infinite; }
+@keyframes jn-cmp3 {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  70.75% { opacity: 1; }
+  71.85% { opacity: 1; }
+  72.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-cmp3 { opacity: 0; animation: jn-cmp3 var(--T) linear infinite; }
+@keyframes jn-prB {
+  0% { transform: translate(542px, 195px); opacity: 0; }
+  59.5% { transform: translate(542px, 195px); opacity: 0; }
+  59.65% { opacity: 1; }
+  61.6% { transform: translate(517px, 217px); opacity: 1; }
+  61.75% { transform: translate(517px, 217px); opacity: 0; }
+  62.5% { transform: translate(542px, 261px); opacity: 0; }
+  62.65% { opacity: 1; }
+  64.6% { transform: translate(517px, 239px); opacity: 1; }
+  64.75% { transform: translate(517px, 239px); opacity: 0; }
+  65.5% { transform: translate(542px, 305px); opacity: 0; }
+  65.65% { opacity: 1; }
+  67.6% { transform: translate(517px, 195px); opacity: 1; }
+  67.75% { transform: translate(517px, 195px); opacity: 0; }
+  68.25% { transform: translate(542px, 327px); opacity: 0; }
+  68.4% { opacity: 1; }
+  70.35% { transform: translate(517px, 195px); opacity: 1; }
+  70.5% { transform: translate(517px, 195px); opacity: 0; }
+  100% { transform: translate(517px, 195px); opacity: 0; }
+}
+@keyframes jn-skip {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54% { opacity: 1; }
+  56.25% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-skip { opacity: 0; animation: jn-skip var(--T) linear infinite; }
+@keyframes jn-iPtr {
+  0% { transform: translate(803px, 195px); opacity: 0; }
+  52% { transform: translate(803px, 195px); opacity: 0; }
+  52.2% { opacity: 1; }
+  53.5% { transform: translate(803px, 195px); }
+  56% { transform: translate(803px, 239px); }
+  58% { transform: translate(803px, 239px); }
+  58.75% { transform: translate(803px, 261px); }
+  60.5% { transform: translate(803px, 261px); }
+  61.25% { transform: translate(803px, 283px); }
+  64.5% { transform: translate(803px, 283px); }
+  65.25% { transform: translate(803px, 305px); }
+  67% { transform: translate(803px, 305px); }
+  67.75% { transform: translate(803px, 327px); }
+  74% { transform: translate(803px, 327px); opacity: 1; }
+  74.2% { transform: translate(803px, 327px); opacity: 0; }
+  100% { transform: translate(803px, 327px); opacity: 0; }
+}
+@keyframes jn-oPtr {
+  0% { transform: translate(659px, 195px); opacity: 0; }
+  52% { transform: translate(659px, 195px); opacity: 0; }
+  52.2% { opacity: 1; }
+  62% { transform: translate(659px, 195px); }
+  62.75% { transform: translate(659px, 217px); }
+  74% { transform: translate(659px, 217px); opacity: 1; }
+  74.2% { transform: translate(659px, 217px); opacity: 0; }
+  100% { transform: translate(659px, 217px); opacity: 0; }
+}
+@keyframes jn-mt0 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  57.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-mt0 { opacity: 0; animation: jn-mt0 var(--T) linear infinite; }
+@keyframes jn-mt1 {
+  0% { opacity: 0; }
+  59.25% { opacity: 0; }
+  59.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-mt1 { opacity: 0; animation: jn-mt1 var(--T) linear infinite; }
+@keyframes jn-mt2 {
+  0% { opacity: 0; }
+  63.25% { opacity: 0; }
+  63.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-mt2 { opacity: 0; animation: jn-mt2 var(--T) linear infinite; }
+@keyframes jn-mt3 {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  66.35% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-mt3 { opacity: 0; animation: jn-mt3 var(--T) linear infinite; }
+@keyframes jn-mt4 {
+  0% { opacity: 0; }
+  68.25% { opacity: 0; }
+  68.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .jn-mt4 { opacity: 0; animation: jn-mt4 var(--T) linear infinite; }
+@keyframes jn-bar {
+  0% { transform: scaleX(0); }
+  76.25% { transform: scaleX(0); }
+  80% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+</style>
+<g class="stage">
+<g class="jn-dimA">
+<rect class="box" x="30" y="92" width="288" height="376" rx="12"/>
+<text class="jn-hd" x="44" y="114">NESTED LOOP</text>
+<text class="jn-q" x="44" y="133">customer 2’s orders since 1 Sep 2026</text>
+<g class="p1"><text class="sub" x="44" y="148">each with its latest event (LATERAL)</text><rect class="f-bg s-line" x="222" y="101" width="82" height="19" rx="9.5" stroke-width="1"/><text class="jn-m mid f-red b" x="263" y="114.5">O(N × M)</text></g>
+<g class="p234"><text class="sub" x="44" y="148">with their items (JOIN)</text><rect class="f-bg s-line" x="222" y="101" width="82" height="19" rx="9.5" stroke-width="1"/><text class="jn-m mid f-ink" x="263" y="114.5">O(N log M)</text></g>
+<text class="tiny sb f-ink mid" x="73" y="168">orders o</text><text class="tiny mid" x="73" y="180">id</text>
+<rect class="f-bg s-line" x="42" y="186" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="73" y="199">499314</text>
+<rect class="f-bg s-line" x="42" y="208" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="73" y="221">483041</text>
+<rect class="f-bg s-line" x="42" y="230" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="73" y="243">488244</text>
+<rect class="f-bg s-line" x="42" y="252" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="73" y="265">483878</text>
+<rect class="f-bg s-line" x="42" y="274" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="73" y="287">477739</text>
+<text class="jn-m mid f-muted" x="73" y="309">⋮</text>
+<text class="tiny mid" x="73" y="352">45 rows</text>
+<g class="p1">
+<text class="tiny sb f-ink mid" x="257" y="168">order_events e</text><text class="tiny mid" x="257" y="180">order_id · kind</text>
+<rect class="f-bg s-line" x="204" y="186" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="199">1 placed</text>
+<rect class="f-bg s-line" x="204" y="208" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="221">1 paid</text>
+<rect class="f-bg s-line" x="204" y="230" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="243">2 placed</text>
+<rect class="f-bg s-line" x="204" y="252" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="265">5 placed</text>
+<text class="jn-m mid f-muted" x="257" y="287">⋮</text>
+<rect class="f-bg s-line" x="204" y="296" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="309">499998 shipped</text>
+<rect class="f-bg s-line" x="204" y="318" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="331">499999 shipped</text>
+<text class="tiny mid" x="257" y="352">1,500,000 rows</text>
+<rect class="f-red-soft s-red" x="116" y="192" width="76" height="38" rx="6" stroke-width="1.5"/>
+<text class="tiny sb mid f-red" x="154" y="207">no index on</text>
+<text class="jn-m mid f-red" x="154" y="222">order_id</text>
+</g>
+<g class="p1">
+<g class="jn-c1"><text class="tiny sb mid f-red" x="154" y="252">scan 1 of 45</text><text class="jn-m mid b f-red" x="154" y="270">1,500,000</text></g>
+<g class="jn-c2"><text class="tiny sb mid f-red" x="154" y="252">scan 2 of 45</text><text class="jn-m mid b f-red" x="154" y="270">3,000,000</text></g>
+<g class="jn-c3"><text class="tiny sb mid f-red" x="154" y="252">scan 3 of 45</text><text class="jn-m mid b f-red" x="154" y="270">4,500,000</text></g>
+<g class="jn-c45"><text class="tiny sb mid f-red" x="154" y="252">scan 45 of 45</text><text class="jn-m mid b f-red" x="154" y="270">67,500,000</text></g>
+<text class="tiny mid" x="154" y="284">rows read</text>
+<text class="tiny sb mid f-green" x="154" y="304">3 match</text>
+<text class="tiny mid" x="154" y="317">in each scan</text>
+</g>
+<g class="p234">
+<text class="tiny sb f-ink mid" x="257" y="168">order_items i</text><text class="tiny mid" x="257" y="180">order_id · line_no</text>
+<rect class="f-bg s-line" x="204" y="186" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="199">483041 1</text><text class="tiny end" x="305" y="199">p10063</text>
+<rect class="f-bg s-line" x="204" y="208" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="221">483041 2</text>
+<rect class="f-bg s-line" x="204" y="230" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="243">488244 1</text><text class="tiny end" x="305" y="243">p10171</text>
+<rect class="f-bg s-line" x="204" y="252" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="265">499314 1</text><text class="tiny end" x="305" y="265">p10402</text>
+<rect class="f-bg s-line" x="204" y="274" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="287">499314 2</text>
+<rect class="f-bg s-line" x="204" y="296" width="106" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="210" y="309">499314 3</text>
+<text class="jn-m mid f-muted" x="257" y="331">⋮</text>
+<text class="tiny mid" x="257" y="352">1,250,000 rows</text>
+<text class="tiny sb f-ink mid" x="154" y="168">order_items_pkey</text><text class="tiny mid" x="154" y="180">B-tree, 3 levels</text>
+<line class="s-teal" x1="154" y1="212" x2="154" y2="230" stroke-width="1.5"/><line class="s-teal" x1="154" y1="250" x2="154" y2="268" stroke-width="1.5"/>
+<rect class="f-teal-soft s-teal" x="116" y="192" width="76" height="20" rx="5" stroke-width="1.5"/>
+<text class="jn-m mid" x="154" y="206"><tspan class="jn-t">root</tspan> 235</text>
+<rect class="f-teal-soft s-teal" x="116" y="230" width="76" height="20" rx="5" stroke-width="1.5"/>
+<text class="jn-m mid" x="154" y="244"><tspan class="jn-t">branch</tspan> 4605</text>
+<rect class="f-teal-soft s-teal" x="116" y="268" width="76" height="20" rx="5" stroke-width="1.5"/>
+</g>
+<g class="jn-tok jn-hiA1"><rect class="f-blue-soft s-blue" x="-33" y="-11" width="66" height="22" rx="5" stroke-width="2"/></g>
+<g class="jn-tok jn-bandA"><rect class="f-red-soft s-red" x="-55" y="-12" width="110" height="24" rx="5" stroke-width="2"/></g>
+<g class="jn-tok jn-hiA2"><rect class="f-blue-soft s-blue" x="-33" y="-11" width="66" height="22" rx="5" stroke-width="2"/></g>
+<g class="p234"><rect class="none s-blue jn-pg-root" x="114" y="190" width="80" height="24" rx="7" stroke-width="2.5"/></g>
+<g class="p234"><rect class="none s-blue jn-pg-branch" x="114" y="228" width="80" height="24" rx="7" stroke-width="2.5"/></g>
+<g class="p234"><rect class="none s-blue jn-pg-leaf" x="114" y="266" width="80" height="24" rx="7" stroke-width="2.5"/></g>
+<g class="p234"><g class="jn-leaf0"><text class="jn-m mid" x="154" y="282"><tspan class="jn-t">leaf</tspan> 4805</text></g></g>
+<g class="p234"><g class="jn-leaf1"><text class="jn-m mid" x="154" y="282"><tspan class="jn-t">leaf</tspan> 4649</text></g></g>
+<g class="p234"><g class="jn-leaf2"><text class="jn-m mid" x="154" y="282"><tspan class="jn-t">leaf</tspan> 4699</text></g></g>
+<g class="p234"><rect class="f-green-soft s-green jn-hit0" x="203" y="251" width="108" height="64" rx="5" stroke-width="2"/></g>
+<g class="p234"><rect class="f-green-soft s-green jn-hit1" x="203" y="185" width="108" height="42" rx="5" stroke-width="2"/></g>
+<g class="p234"><rect class="f-green-soft s-green jn-hit2" x="203" y="229" width="108" height="20" rx="5" stroke-width="2"/></g>
+<g class="jn-tok jn-lkA"><circle class="pkt f-blue" r="7"/></g>
+<g class="p234"><g class="jn-l1"><text class="tiny sb mid f-blue" x="154" y="314">lookup 1 of 45</text></g></g>
+<g class="p234"><g class="jn-l2"><text class="tiny sb mid f-blue" x="154" y="314">lookup 2 of 45</text></g></g>
+<g class="p234"><g class="jn-l3"><text class="tiny sb mid f-blue" x="154" y="314">lookup 3 of 45</text></g></g>
+<g class="p234"><g class="jn-l45"><text class="tiny sb mid f-green" x="154" y="314">45 lookups</text><text class="tiny mid" x="154" y="328">182 pages, ~4 each</text></g></g>
+<rect class="f-bg s-line" x="38" y="360" width="272" height="102" rx="8" stroke-width="1"/>
+<g class="p1"><text class="jn-pl" x="46" y="377" xml:space="preserve">Nested Loop Left Join     45 rows</text>
+<text class="jn-pl" x="46" y="392" xml:space="preserve">-&gt; Seq Scan on orders o   45 rows</text>
+<text class="jn-pl" x="46" y="407" xml:space="preserve">-&gt; Seq Scan on order_events e</text>
+<text class="jn-pl" x="46" y="422" xml:space="preserve">     rows=3 <tspan class="b f-red">loops=45</tspan></text>
+<text class="jn-pl" x="46" y="437" xml:space="preserve">     Rows Removed by Filter: 1499997</text>
+<text class="jn-pl" x="46" y="452" xml:space="preserve"><tspan class="b f-red">read=496350 pages · 1.8 s</tspan></text></g>
+<g class="p23"><text class="jn-pl" x="46" y="377" xml:space="preserve">Nested Loop              117 rows</text>
+<text class="jn-pl" x="46" y="392" xml:space="preserve">-&gt; Parallel Seq Scan on orders o</text>
+<text class="jn-pl" x="46" y="407" xml:space="preserve">     45 rows, 3 processes</text>
+<text class="jn-pl" x="46" y="422" xml:space="preserve">-&gt; Index Scan using order_items_pkey</text>
+<text class="jn-pl" x="46" y="437" xml:space="preserve">     <tspan class="b f-green">loops=45</tspan> · Buffers: hit=182</text>
+<text class="jn-pl" x="46" y="452" xml:space="preserve"><tspan class="b f-green">Execution Time: 14 ms</tspan></text></g>
+</g>
+<g class="jn-dimBC">
+<rect class="box" x="336" y="92" width="288" height="376" rx="12"/>
+<text class="jn-hd" x="350" y="114">HASH JOIN</text>
+<rect class="f-bg s-line" x="528" y="101" width="82" height="19" rx="9.5" stroke-width="1"/><text class="jn-m mid f-ink" x="569" y="114.5">O(N + M)</text>
+<text class="jn-q" x="350" y="133">revenue per category, September 2026</text>
+<text class="sub" x="350" y="148">joins order_items to orders and products</text>
+<text class="tiny sb f-ink mid" x="373" y="168">orders o</text><text class="tiny mid" x="373" y="180">build: id</text>
+<rect class="f-bg s-line" x="346" y="186" width="54" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="373" y="199">475656</text>
+<rect class="f-bg s-line" x="346" y="208" width="54" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="373" y="221">481095</text>
+<rect class="f-bg s-line" x="346" y="230" width="54" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="373" y="243">489256</text>
+<rect class="f-bg s-line" x="346" y="252" width="54" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="373" y="265">480907</text>
+<text class="jn-m mid f-muted" x="373" y="287">⋮</text>
+<text class="tiny mid" x="373" y="352">23,436 rows</text>
+<text class="tiny sb f-ink mid" x="460" y="168">hash table</text><text class="tiny mid" x="460" y="180">bucket → o.id</text>
+<text class="tiny mono end" x="445" y="199">#1701</text><rect class="f-bg s-line" x="450" y="186" width="64" height="18" rx="4" stroke-width="1"/>
+<text class="tiny mono end" x="445" y="221">#5958</text><rect class="f-bg s-line" x="450" y="208" width="64" height="18" rx="4" stroke-width="1"/>
+<text class="tiny mono end" x="445" y="243">#6483</text><rect class="f-bg s-line" x="450" y="230" width="64" height="18" rx="4" stroke-width="1"/>
+<text class="tiny mono end" x="445" y="265">#14884</text><rect class="f-bg s-line" x="450" y="252" width="64" height="18" rx="4" stroke-width="1"/>
+<text class="tiny mono end" x="445" y="287">#26321</text><rect class="f-bg s-line" x="450" y="274" width="64" height="18" rx="4" stroke-width="1"/>
+<text class="jn-m mid f-muted" x="482" y="309">⋮</text>
+<text class="tiny mid" x="460" y="352">32,768 buckets</text>
+<text class="tiny sb f-ink mid" x="579" y="168">order_items i</text><text class="tiny mid" x="579" y="180">probe: order_id</text>
+<rect class="f-bg s-line" x="544" y="186" width="70" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="549" y="199">1 1</text>
+<rect class="f-bg s-line" x="544" y="208" width="70" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="549" y="221">1 2</text>
+<text class="jn-m mid f-muted" x="579" y="243">⋮</text>
+<rect class="f-bg s-line" x="544" y="252" width="70" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="549" y="265">475656 1</text>
+<text class="jn-m mid f-muted" x="579" y="287">⋮</text>
+<rect class="f-bg s-line" x="544" y="296" width="70" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="549" y="309">481095 1</text>
+<rect class="f-bg s-line" x="544" y="318" width="70" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="549" y="331">481095 2</text>
+<text class="tiny mid" x="579" y="352">1,250,000 rows</text>
+<g class="jn-tok jn-bd0"><rect class="f-teal" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="jn-fill2"><rect class="f-teal-soft s-teal" x="450" y="230" width="64" height="18" rx="4" stroke-width="1.5"/><text class="jn-m" x="455" y="243">475656</text></g>
+<g class="jn-tok jn-bd1"><rect class="f-teal" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="jn-fill0"><rect class="f-teal-soft s-teal" x="450" y="186" width="64" height="18" rx="4" stroke-width="1.5"/><text class="jn-m" x="455" y="199">481095</text></g>
+<g class="jn-tok jn-bd2"><rect class="f-teal" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="jn-fill3"><rect class="f-teal-soft s-teal" x="450" y="252" width="64" height="18" rx="4" stroke-width="1.5"/><text class="jn-m" x="455" y="265">489256</text><text class="tiny end f-teal" x="510" y="265">+1</text></g>
+<g class="jn-tok jn-bd3"><rect class="f-teal" x="-6" y="-6" width="12" height="12" rx="3"/></g>
+<g class="jn-fill4"><rect class="f-teal-soft s-teal" x="450" y="274" width="64" height="18" rx="4" stroke-width="1.5"/><text class="jn-m" x="455" y="287">480907</text><text class="tiny end f-teal" x="510" y="287">+1</text></g>
+<g class="jn-fillRest"><rect class="f-teal-soft s-teal" x="450" y="208" width="64" height="18" rx="4" stroke-width="1.5"/><text class="jn-m" x="455" y="221">478168</text></g>
+<g class="jn-pr0"><circle class="f-red" cx="529" cy="195" r="6"/><path class="none s-bg" d="M526.5 192.5l5 5M531.5 192.5l-5 5" stroke-width="1.8" stroke-linecap="round"/></g>
+<rect class="none s-red jn-cmp0" x="448" y="206" width="68" height="22" rx="6" stroke-width="2.5"/>
+<g class="jn-pr1"><circle class="f-green" cx="529" cy="261" r="6"/><path class="none s-bg" d="M526 261l2.2 2.2 4-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect class="none s-green jn-cmp1" x="448" y="228" width="68" height="22" rx="6" stroke-width="2.5"/>
+<g class="jn-pr2"><circle class="f-green" cx="529" cy="305" r="6"/><path class="none s-bg" d="M526 305l2.2 2.2 4-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect class="none s-green jn-cmp2" x="448" y="184" width="68" height="22" rx="6" stroke-width="2.5"/>
+<g class="jn-pr3"><circle class="f-green" cx="529" cy="327" r="6"/><path class="none s-bg" d="M526 327l2.2 2.2 4-4.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+<rect class="none s-green jn-cmp3" x="448" y="184" width="68" height="22" rx="6" stroke-width="2.5"/>
+<g class="jn-tok jn-prB"><circle class="pkt f-blue" r="6.5"/></g>
+<rect class="f-bg s-line" x="344" y="360" width="272" height="102" rx="8" stroke-width="1"/>
+<g class="p123"><text class="jn-pl" x="352" y="377" xml:space="preserve">Parallel Hash Join    58,590 rows</text>
+<text class="jn-pl" x="352" y="392" xml:space="preserve">-&gt; Parallel Seq Scan on order_items</text>
+<text class="jn-pl" x="352" y="407" xml:space="preserve">-&gt; Parallel Hash: 23,436 orders</text>
+<text class="jn-pl" x="352" y="422" xml:space="preserve">     <tspan class="b f-green">Batches: 1</tspan> · Memory: 1216kB</text>
+<text class="jn-pl" x="352" y="437" xml:space="preserve">then Hash Join on products · <tspan class="b f-green">84 ms</tspan></text>
+<text class="jn-pl" x="352" y="452" xml:space="preserve"><tspan class="b f-amber-ink">work_mem=64kB: Batches: 8 · 293 ms</tspan></text></g>
+</g>
+<g class="jn-dimBC">
+<rect class="box" x="642" y="92" width="288" height="376" rx="12"/>
+<text class="jn-hd" x="656" y="114">MERGE JOIN</text>
+<rect class="f-bg s-line" x="834" y="101" width="82" height="19" rx="9.5" stroke-width="1"/><text class="jn-m mid f-ink" x="875" y="114.5">O(N + M)</text>
+<text class="jn-q" x="656" y="133">orders 100,001–300,000 with items</text>
+<text class="sub" x="656" y="148">both inputs read in order_id order</text>
+<text class="tiny sb f-ink mid" x="693" y="168">orders o</text><text class="tiny mid" x="693" y="180">id · orders_pkey</text>
+<rect class="f-bg s-line" x="662" y="186" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="693" y="199">100001</text>
+<rect class="f-bg s-line" x="662" y="208" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="693" y="221">100002</text>
+<rect class="f-bg s-line" x="662" y="230" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="693" y="243">100003</text>
+<rect class="f-bg s-line" x="662" y="252" width="62" height="18" rx="4" stroke-width="1"/><text class="jn-m mid" x="693" y="265">100004</text>
+<text class="jn-m mid f-muted" x="693" y="287">⋮</text>
+<text class="tiny mid" x="693" y="352">200,000 rows</text>
+<text class="tiny sb f-ink mid" x="862" y="168">order_items i</text><text class="tiny mid" x="862" y="180">order_id · line_no</text>
+<rect class="f-bg s-line" x="806" y="186" width="112" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="812" y="199">1 1</text>
+<text class="tiny sb mid f-amber-ink" x="862" y="221">⋮ 250,000 skipped ⋮</text>
+<rect class="f-bg s-line" x="806" y="230" width="112" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="812" y="243">100001 1</text>
+<rect class="f-bg s-line" x="806" y="252" width="112" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="812" y="265">100001 2</text>
+<rect class="f-bg s-line" x="806" y="274" width="112" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="812" y="287">100002 1</text>
+<rect class="f-bg s-line" x="806" y="296" width="112" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="812" y="309">100002 2</text>
+<rect class="f-bg s-line" x="806" y="318" width="112" height="18" rx="4" stroke-width="1"/><text class="jn-m" x="812" y="331">100002 3</text>
+<text class="tiny mid" x="862" y="352">750,001 read</text>
+<rect class="none s-amber dash" x="803" y="183" width="118" height="46" rx="6" stroke-width="1.2"/>
+<rect class="f-amber-soft s-amber jn-skip" x="803" y="183" width="118" height="46" rx="6" stroke-width="2"/>
+<g class="jn-tok jn-oPtr"><path class="f-blue" d="M-9 -6L0 0L-9 6Z"/></g>
+<g class="jn-tok jn-iPtr"><path class="f-blue" d="M-9 -6L0 0L-9 6Z"/></g>
+<line class="s-green jn-mt0" x1="724" y1="195" x2="806" y2="239" stroke-width="2"/>
+<line class="s-green jn-mt1" x1="724" y1="195" x2="806" y2="261" stroke-width="2"/>
+<line class="s-green jn-mt2" x1="724" y1="217" x2="806" y2="283" stroke-width="2"/>
+<line class="s-green jn-mt3" x1="724" y1="217" x2="806" y2="305" stroke-width="2"/>
+<line class="s-green jn-mt4" x1="724" y1="217" x2="806" y2="327" stroke-width="2"/>
+<rect class="f-bg s-line" x="650" y="360" width="272" height="102" rx="8" stroke-width="1"/>
+<g class="p123"><text class="jn-pl" x="658" y="377" xml:space="preserve">Merge Join           500,000 rows</text>
+<text class="jn-pl" x="658" y="392" xml:space="preserve">  Merge Cond: (o.id = i.order_id)</text>
+<text class="jn-pl" x="658" y="407" xml:space="preserve">-&gt; Index Scan using orders_pkey</text>
+<text class="jn-pl" x="658" y="422" xml:space="preserve">-&gt; Index Scan using order_items_pkey</text>
+<text class="jn-pl" x="658" y="437" xml:space="preserve">     rows=750001 (250,000 skipped)</text>
+<text class="jn-pl" x="658" y="452" xml:space="preserve"><tspan class="b f-green">no Sort · Execution Time: 262 ms</tspan></text></g>
+</g>
+<g class="p4">
+<rect class="f-bg" x="39" y="361" width="270" height="100" rx="7"/>
+<text class="tiny" x="46" y="377">planner’s estimated cost</text>
+<text class="jn-pl b f-green" x="46" y="395">Nested Loop</text>
+<rect class="f-green jn-bar" x="134" y="386" width="15.11" height="10" rx="3"/>
+<text class="jn-pl b f-green" x="155.11" y="395">9,400 ✓</text>
+<text class="jn-pl f-muted" x="46" y="413">Hash Join</text>
+<rect class="f-line jn-bar" x="134" y="404" width="56.89" height="10" rx="3"/>
+<text class="jn-pl f-muted" x="196.89" y="413">35,390</text>
+<text class="jn-pl f-muted" x="46" y="431">Merge Join</text>
+<rect class="f-line jn-bar" x="134" y="422" width="112" height="10" rx="3"/>
+<text class="jn-pl f-muted" x="252" y="431">69,676</text>
+<text class="tiny sb f-amber-ink" x="46" y="452">slow without an index on the inner key</text>
+<rect class="f-bg" x="345" y="361" width="270" height="100" rx="7"/>
+<text class="tiny" x="352" y="377">planner’s estimated cost</text>
+<text class="jn-pl f-muted" x="352" y="395">Nested Loop</text>
+<rect class="f-line jn-bar" x="440" y="386" width="64.61" height="10" rx="3"/>
+<text class="jn-pl f-muted" x="510.61" y="395">43,232</text>
+<text class="jn-pl b f-green" x="352" y="413">Hash Join</text>
+<rect class="f-green jn-bar" x="440" y="404" width="40.23" height="10" rx="3"/>
+<text class="jn-pl b f-green" x="486.23" y="413">26,922 ✓</text>
+<text class="jn-pl f-muted" x="352" y="431">Merge Join</text>
+<rect class="f-line jn-bar" x="440" y="422" width="112" height="10" rx="3"/>
+<text class="jn-pl f-muted" x="558" y="431">74,945</text>
+<text class="tiny sb f-amber-ink" x="352" y="452">needs memory, or it spills in batches</text>
+<rect class="f-bg" x="651" y="361" width="270" height="100" rx="7"/>
+<text class="tiny" x="658" y="377">planner’s estimated cost</text>
+<text class="jn-pl f-muted" x="658" y="395">Nested Loop</text>
+<rect class="f-line jn-bar" x="746" y="386" width="112" height="10" rx="3"/>
+<text class="jn-pl f-muted" x="864" y="395">149,367</text>
+<text class="jn-pl f-muted" x="658" y="413">Hash Join</text>
+<rect class="f-line jn-bar" x="746" y="404" width="80.64" height="10" rx="3"/>
+<text class="jn-pl f-muted" x="832.64" y="413">107,547</text>
+<text class="jn-pl b f-green" x="658" y="431">Merge Join</text>
+<rect class="f-green jn-bar" x="746" y="422" width="72.06" height="10" rx="3"/>
+<text class="jn-pl b f-green" x="824.06" y="431">96,097 ✓</text>
+<text class="tiny sb f-amber-ink" x="658" y="452">needs both inputs sorted on the key</text>
+</g>
+</g>
+</svg>

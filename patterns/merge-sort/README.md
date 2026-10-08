@@ -125,6 +125,10 @@ Slicing (`items[:mid]`) copies each half, which keeps the code short but allocat
 - [Big-O Notation](../big-o-notation/) — How an algorithm's cost grows with its input: O(1), O(log n), O(n), O(n log n) and O(n²) side by side as n grows.
 - [Two Pointers](../two-pointers/) — Move two indices through an array, toward each other or one chasing the other, to solve pair and partition problems in one pass.
 
+## Related database topics
+
+- [Join Algorithms](../join-algorithms/) — Nested loop, hash join and merge join: how each joins two tables, what it costs, and when the planner picks it.
+
 ## References
 
 - [Sedgewick and Wayne — Algorithms, 4th edition, 2.2 Mergesort](https://algs4.cs.princeton.edu/22mergesort/)

@@ -1,0 +1,92 @@
+{
+  "aka": [
+    "index-only scan",
+    "INCLUDE columns"
+  ],
+  "steps": [
+    {
+      "title": "One heap page per row",
+      "caption": "The index finds the 20 newest entries on one leaf page, then reads 20 heap pages to return the rows.",
+      "body": "With an index on `(customer_id, created_at)`, PostgreSQL 18.6 walks three index pages (root, internal, leaf) to customer 42's newest entries, all on leaf page 58. An entry holds only the key and the row's address (its tid), and the 20 rows sit on 20 different pages of the 40 MB heap: `EXPLAIN (ANALYZE, BUFFERS)` reports `shared hit=23`, 3 index pages and 20 heap pages for 20 rows. With a cold cache, that is 20 random reads."
+    },
+    {
+      "title": "INCLUDE: index-only scan",
+      "caption": "INCLUDE (id, status, total_thb) puts the selected columns in every leaf entry: an Index Only Scan.",
+      "body": "The covering index `(customer_id, created_at) INCLUDE (id, status, total_thb)` stores the selected columns in every leaf entry (56 bytes instead of 24), but not in the root and internal pages. The plan becomes an **Index Only Scan** with `Heap Fetches: 0` and `shared hit=4`: 3 index pages and 1 visibility map page. Included columns can't guide the search or the sort, and `id` has to be included too, because a PostgreSQL index entry doesn't carry the primary key."
+    },
+    {
+      "title": "The visibility map decides",
+      "caption": "An UPDATE clears 3 pages' visibility bits: Heap Fetches 4. After VACUUM, Heap Fetches is 0 again.",
+      "body": "Index entries hold no visibility information, so for each entry the scan checks its heap page's all-visible bit and visits the heap only when the bit is clear. After an `UPDATE` of 2 of customer 42's orders, the new versions on page 5057 and the dead ones on pages 2392 and 4806 cost `Heap Fetches: 4` (`shared hit=8`), and the scan marks the 2 dead entries as it passes. `VACUUM` sets page 5057 all-visible again, and the count drops to 0."
+    },
+    {
+      "title": "Costs and other engines",
+      "caption": "Twice the size, costlier writes. InnoDB entries carry the primary key; SQL Server has INCLUDE too.",
+      "body": "The covering index takes 32 MB instead of 15 MB, every insert writes the wider entry, and status updates can no longer be HOT: 80 of 990 were before, none after. Between vacuums, changed pages cost heap fetches again. In InnoDB every secondary index entry carries the primary key and the clustered index holds the rows; SQL Server has `INCLUDE` too, with the columns at the leaf level only."
+    }
+  ],
+  "related": [
+    "b-tree-index",
+    "composite-index",
+    "mvcc",
+    "query-execution-plans",
+    "index-types",
+    "postgresql",
+    "materialized-view",
+    "cqrs"
+  ],
+  "references": [
+    {
+      "title": "PostgreSQL 18 documentation — Index-Only Scans and Covering Indexes",
+      "url": "https://www.postgresql.org/docs/18/indexes-index-only-scans.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — CREATE INDEX (the INCLUDE clause)",
+      "url": "https://www.postgresql.org/docs/18/sql-createindex.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Visibility Map",
+      "url": "https://www.postgresql.org/docs/18/storage-vm.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Routine Vacuuming",
+      "url": "https://www.postgresql.org/docs/18/routine-vacuuming.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — VACUUM (INDEX_CLEANUP)",
+      "url": "https://www.postgresql.org/docs/18/sql-vacuum.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Heap-Only Tuples (HOT)",
+      "url": "https://www.postgresql.org/docs/18/storage-hot.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — Clustered and Secondary Indexes",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — InnoDB Multi-Versioning",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-multi-versioning.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — EXPLAIN Output Format (Using index)",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/explain-output.html"
+    },
+    {
+      "title": "Microsoft Learn — Create indexes with included columns (SQL Server)",
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/indexes/create-indexes-with-included-columns"
+    },
+    {
+      "title": "Microsoft Learn — SQL Server index architecture and design guide",
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-index-design-guide"
+    },
+    {
+      "title": "Microsoft Learn — Showplan operator reference (Key Lookup)",
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/showplan-logical-and-physical-operators-reference"
+    },
+    {
+      "title": "Amazon DynamoDB Developer Guide — Using global secondary indexes (projections)",
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html"
+    }
+  ]
+}

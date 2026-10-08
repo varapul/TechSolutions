@@ -240,6 +240,13 @@ Figures and terms from the MongoDB 9.0, PostgreSQL 18, Amazon DynamoDB and Apach
 - [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
 - [Apache Cassandra](../cassandra/) — A wide-column database built for heavy writes across data centres: a token ring, tunable consistency and LSM storage.
 
+## Related database topics
+
+- [Composite Index](../composite-index/) — A multi-column index serves queries that use its leading columns: put equality columns first and the range or sort column last.
+- [Index Types](../index-types/) — Beyond B-trees: hash, GIN for arrays, JSON and text, GiST, BRIN for time-ordered data, and partial and expression indexes.
+- [Keyset Pagination](../keyset-pagination/) — Page with WHERE key > last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing.
+- [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
+
 ## References
 
 - [MongoDB Database Manual (9.0) — Release Notes for MongoDB 9.0](https://www.mongodb.com/docs/manual/release-notes/9.0/)

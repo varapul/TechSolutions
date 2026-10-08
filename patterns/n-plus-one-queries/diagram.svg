@@ -1,0 +1,1291 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">N+1 Queries</title>
+<desc id="dg-desc">N+1 Queries. One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it. Step 1, 73 queries, one page: One page of 20 orders sends 73 queries: 1 for the orders, 20 for their items, 52 for products. Step 2, Lazy loading in a loop: order.items and item.product load on first access: 73 statements, only 3 distinct ones. Step 3, Batch by keys, or join: Batched with = ANY($1): 3 queries, 1.9 ms. One join with json_agg: 1 query, 1.2 ms. Step 4, Pitfalls: Pitfalls: preloading too much, endless IN lists, joins that multiply rows, caches, GraphQL.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">N+1 Queries</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · 73 queries, one page</text>
+  <text class="step on p1" x="40" y="518">1 · 73 queries, one page</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Lazy loading in a loop</text>
+  <text class="step on p2" x="262" y="518">2 · Lazy loading in a loop</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Batch by keys, or join</text>
+  <text class="step on p3" x="484" y="518">3 · Batch by keys, or join</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Pitfalls</text>
+  <text class="step on p4" x="706" y="518">4 · Pitfalls</text>
+  <text class="caption p1" x="40" y="552">One page of 20 orders sends 73 queries: 1 for the orders, 20 for their items, 52 for products.</text>
+  <text class="caption p2" x="40" y="552">order.items and item.product load on first access: 73 statements, only 3 distinct ones.</text>
+  <text class="caption p3" x="40" y="552">Batched with = ANY($1): 3 queries, 1.9 ms. One join with json_agg: 1 query, 1.2 ms.</text>
+  <text class="caption p4" x="40" y="552">Pitfalls: preloading too much, endless IN lists, joins that multiply rows, caches, GraphQL.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* N+1 Queries. Generated from one run on PostgreSQL 18.6 (scratch gen.mjs, final.json); timeline (20s loop, 1s = 5%):
+   0-25%   customer 42's page: 1 orders query, then lazy loads; 3 round trips drawn slowly, the other 70
+           compressed by their real end times (2.55-4.15s); counter, pg_stat_statements tallies and the
+           app-side timeline (median of 100 views, 33 ms) advance together
+   25-50%  why: order.items / item.product load on access; the server log shows one statement per $1 value;
+           pg_stat_statements calls 1 / 20 / 52; 1.9 ms of plan + execute against 33 ms at the app
+   50-75%  the fix: .preload -> orders, order_items = ANY($1), products = ANY($1): 3 round trips (1.9 ms);
+           one json_agg join: 1 round trip (1.2 ms)
+   75-100% pitfalls; 19.7-20s: the fixed state fades and the lazy page view starts again */
+.diagram .np-hd { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; fill: var(--muted); }
+.diagram .np-lab { font-size: 12px; font-weight: 600; }
+.diagram .np-ct { font-size: 12px; font-weight: 700; }
+.diagram .np-m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 11px; }
+.diagram .np-code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 11px; }
+.diagram .np-q { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 10.5px; }
+.diagram .np-big { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.diagram .np-band { opacity: 0; animation: np-band var(--T) linear infinite; }
+.diagram .np-loop { opacity: 0; animation: np-loop var(--T) linear infinite; }
+.diagram .np-call1 { opacity: 0; animation: np-call1 var(--T) linear infinite; }
+.diagram .np-call2 { opacity: 0; animation: np-call2 var(--T) linear infinite; }
+.diagram .np-busy { opacity: 0; animation: np-busy var(--T) linear infinite; }
+.diagram .np-ql0 { opacity: 0; animation: np-ql0 var(--T) linear infinite; }
+.diagram .np-rl0 { opacity: 0; animation: np-rl0 var(--T) linear infinite; }
+.diagram .np-ql1 { opacity: 0; animation: np-ql1 var(--T) linear infinite; }
+.diagram .np-rl1 { opacity: 0; animation: np-rl1 var(--T) linear infinite; }
+.diagram .np-ql2 { opacity: 0; animation: np-ql2 var(--T) linear infinite; }
+.diagram .np-rl2 { opacity: 0; animation: np-rl2 var(--T) linear infinite; }
+.diagram .np-fql0 { opacity: 0; animation: np-fql0 var(--T) linear infinite; }
+.diagram .np-frl0 { opacity: 0; animation: np-frl0 var(--T) linear infinite; }
+.diagram .np-fql1 { opacity: 0; animation: np-fql1 var(--T) linear infinite; }
+.diagram .np-frl1 { opacity: 0; animation: np-frl1 var(--T) linear infinite; }
+.diagram .np-fql2 { opacity: 0; animation: np-fql2 var(--T) linear infinite; }
+.diagram .np-frl2 { opacity: 0; animation: np-frl2 var(--T) linear infinite; }
+.diagram .np-fql3 { opacity: 0; animation: np-fql3 var(--T) linear infinite; }
+.diagram .np-frl3 { opacity: 0; animation: np-frl3 var(--T) linear infinite; }
+.diagram .np-q0 { opacity: 0; animation: np-q0 var(--T) linear infinite; }
+.diagram .np-r0 { opacity: 0; animation: np-r0 var(--T) linear infinite; }
+.diagram .np-q1 { opacity: 0; animation: np-q1 var(--T) linear infinite; }
+.diagram .np-r1 { opacity: 0; animation: np-r1 var(--T) linear infinite; }
+.diagram .np-q2 { opacity: 0; animation: np-q2 var(--T) linear infinite; }
+.diagram .np-r2 { opacity: 0; animation: np-r2 var(--T) linear infinite; }
+.diagram .np-fq0 { opacity: 0; animation: np-fq0 var(--T) linear infinite; }
+.diagram .np-fr0 { opacity: 0; animation: np-fr0 var(--T) linear infinite; }
+.diagram .np-fq1 { opacity: 0; animation: np-fq1 var(--T) linear infinite; }
+.diagram .np-fr1 { opacity: 0; animation: np-fr1 var(--T) linear infinite; }
+.diagram .np-fq2 { opacity: 0; animation: np-fq2 var(--T) linear infinite; }
+.diagram .np-fr2 { opacity: 0; animation: np-fr2 var(--T) linear infinite; }
+.diagram .np-fq3 { opacity: 0; animation: np-fq3 var(--T) linear infinite; }
+.diagram .np-fr3 { opacity: 0; animation: np-fr3 var(--T) linear infinite; }
+.diagram .np-strip { transform: translate(0px, -2920px); animation: np-strip var(--T) linear infinite; }
+.diagram .np-n1 {  animation: np-n1 var(--T) linear infinite; }
+.diagram .np-n2 { opacity: 0; animation: np-n2 var(--T) linear infinite; }
+.diagram .np-n3 { opacity: 0; animation: np-n3 var(--T) linear infinite; }
+.diagram .np-hi { opacity: 0; animation: np-hi var(--T) linear infinite; }
+.diagram .np-c0 {  animation: np-c0 var(--T) linear infinite; }
+.diagram .np-t1 { animation: np-t1 var(--T) linear infinite; }
+.diagram .np-t2a { animation: np-t2a var(--T) linear infinite; }
+.diagram .np-t2b { animation: np-t2b var(--T) linear infinite; }
+.diagram .np-k0 {  animation: np-k0 var(--T) linear infinite; }
+.diagram .np-k1 {  animation: np-k1 var(--T) linear infinite; }
+.diagram .np-k2 {  animation: np-k2 var(--T) linear infinite; }
+.diagram .np-mr {  animation: np-mr var(--T) linear infinite; }
+.diagram .np-b0 { opacity: 0; animation: np-b0 var(--T) linear infinite; }
+.diagram .np-b1 { opacity: 0; animation: np-b1 var(--T) linear infinite; }
+.diagram .np-b2 { opacity: 0; animation: np-b2 var(--T) linear infinite; }
+.diagram .np-bf { opacity: 0; animation: np-bf var(--T) linear infinite; }
+.diagram .np-l1 {  animation: np-l1 var(--T) linear infinite; }
+.diagram .np-cover { transform-box: fill-box; transform-origin: 100% 50%; transform: scaleX(0); animation: np-cover var(--T) linear infinite; }
+.diagram .np-cur { opacity: 0; animation: np-cur var(--T) linear infinite; }
+.diagram .np-l1n {  animation: np-l1n var(--T) linear infinite; }
+.diagram .np-l2 {  animation: np-l2 var(--T) linear infinite; }
+.diagram .np-s0 { opacity: 0; animation: np-s0 var(--T) linear infinite; }
+.diagram .np-s1 { opacity: 0; animation: np-s1 var(--T) linear infinite; }
+.diagram .np-s2 { opacity: 0; animation: np-s2 var(--T) linear infinite; }
+.diagram .np-l3 {  animation: np-l3 var(--T) linear infinite; }
+.diagram .np-g0 { opacity: 0; animation: np-g0 var(--T) linear infinite; }
+.diagram .np-g1 { opacity: 0; animation: np-g1 var(--T) linear infinite; }
+.diagram .np-g2 { opacity: 0; animation: np-g2 var(--T) linear infinite; }
+.diagram .np-g3 { opacity: 0; animation: np-g3 var(--T) linear infinite; }
+.diagram .np-g4 { opacity: 0; animation: np-g4 var(--T) linear infinite; }
+.diagram .np-g5 { opacity: 0; animation: np-g5 var(--T) linear infinite; }
+.diagram .np-g6 { opacity: 0; animation: np-g6 var(--T) linear infinite; }
+.diagram .np-gs { opacity: 0; animation: np-gs var(--T) linear infinite; }
+.diagram .np-p0 { opacity: 0; animation: np-p0 var(--T) linear infinite; }
+.diagram .np-p1 { opacity: 0; animation: np-p1 var(--T) linear infinite; }
+.diagram .np-p2 { opacity: 0; animation: np-p2 var(--T) linear infinite; }
+.diagram .np-p3 { opacity: 0; animation: np-p3 var(--T) linear infinite; }
+.diagram .np-p4 { opacity: 0; animation: np-p4 var(--T) linear infinite; }
+@keyframes np-band {
+  0% { transform: translate(0px, 176px); opacity: 0; }
+  1.75% { opacity: 0; }
+  2.25% { opacity: 1; }
+  5.25% { transform: translate(0px, 176px); }
+  5.5% { transform: translate(0px, 212px); }
+  8.75% { transform: translate(0px, 212px); }
+  9% { transform: translate(0px, 230px); }
+  12.25% { opacity: 1; }
+  12.75% { transform: translate(0px, 230px); opacity: 0; }
+  100% { transform: translate(0px, 230px); opacity: 0; }
+}
+@keyframes np-loop {
+  0% { opacity: 0; }
+  12.75% { opacity: 0; }
+  13.5% { opacity: 1; }
+  20.75% { opacity: 1; }
+  21.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-call1 {
+  0% { opacity: 0; }
+  27.5% { opacity: 0; }
+  29% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-call2 {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-busy {
+  0% { opacity: 0; }
+  12.75% { opacity: 0; }
+  13.5% { opacity: 1; }
+  20.75% { opacity: 1; }
+  21.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-ql0 {
+  0% { opacity: 0; }
+  2% { opacity: 0; }
+  2.75% { opacity: 1; }
+  3.65% { opacity: 1; }
+  4.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-rl0 {
+  0% { opacity: 0; }
+  3.9% { opacity: 0; }
+  4.65% { opacity: 1; }
+  5.75% { opacity: 1; }
+  6.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-ql1 {
+  0% { opacity: 0; }
+  5.6% { opacity: 0; }
+  6.35% { opacity: 1; }
+  7.15% { opacity: 1; }
+  7.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-rl1 {
+  0% { opacity: 0; }
+  7.4% { opacity: 0; }
+  8.15% { opacity: 1; }
+  9.25% { opacity: 1; }
+  10% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-ql2 {
+  0% { opacity: 0; }
+  9.1% { opacity: 0; }
+  9.85% { opacity: 1; }
+  10.65% { opacity: 1; }
+  11.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-rl2 {
+  0% { opacity: 0; }
+  10.9% { opacity: 0; }
+  11.65% { opacity: 1; }
+  12.75% { opacity: 1; }
+  13.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-fql0 {
+  0% { opacity: 0; }
+  52.25% { opacity: 0; }
+  53% { opacity: 1; }
+  53.75% { opacity: 1; }
+  54.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-frl0 {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  54.75% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-fql1 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.75% { opacity: 1; }
+  57.5% { opacity: 1; }
+  58.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-frl1 {
+  0% { opacity: 0; }
+  57.75% { opacity: 0; }
+  58.5% { opacity: 1; }
+  59.25% { opacity: 1; }
+  60% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-fql2 {
+  0% { opacity: 0; }
+  59.75% { opacity: 0; }
+  60.5% { opacity: 1; }
+  61.25% { opacity: 1; }
+  62% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-frl2 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.25% { opacity: 1; }
+  63% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-fql3 {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65% { opacity: 1; }
+  65.75% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-frl3 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  66.75% { opacity: 1; }
+  67.5% { opacity: 1; }
+  68.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes np-q0 {
+  0% { transform: translate(302px, 150px); opacity: 0; }
+  2% { transform: translate(302px, 150px); opacity: 0; }
+  2.25% { opacity: 1; }
+  3.5% { transform: translate(568px, 150px); opacity: 1; }
+  3.75% { transform: translate(568px, 150px); opacity: 0; }
+  100% { transform: translate(568px, 150px); opacity: 0; }
+}
+@keyframes np-r0 {
+  0% { transform: translate(568px, 150px); opacity: 0; }
+  3.9% { transform: translate(568px, 150px); opacity: 0; }
+  4.15% { opacity: 1; }
+  5.25% { transform: translate(302px, 150px); opacity: 1; }
+  5.5% { transform: translate(302px, 150px); opacity: 0; }
+  100% { transform: translate(302px, 150px); opacity: 0; }
+}
+@keyframes np-q1 {
+  0% { transform: translate(302px, 150px); opacity: 0; }
+  5.6% { transform: translate(302px, 150px); opacity: 0; }
+  5.85% { opacity: 1; }
+  7.1% { transform: translate(568px, 150px); opacity: 1; }
+  7.35% { transform: translate(568px, 150px); opacity: 0; }
+  100% { transform: translate(568px, 150px); opacity: 0; }
+}
+@keyframes np-r1 {
+  0% { transform: translate(568px, 150px); opacity: 0; }
+  7.4% { transform: translate(568px, 150px); opacity: 0; }
+  7.65% { opacity: 1; }
+  8.75% { transform: translate(302px, 150px); opacity: 1; }
+  9% { transform: translate(302px, 150px); opacity: 0; }
+  100% { transform: translate(302px, 150px); opacity: 0; }
+}
+@keyframes np-q2 {
+  0% { transform: translate(302px, 150px); opacity: 0; }
+  9.1% { transform: translate(302px, 150px); opacity: 0; }
+  9.35% { opacity: 1; }
+  10.6% { transform: translate(568px, 150px); opacity: 1; }
+  10.85% { transform: translate(568px, 150px); opacity: 0; }
+  100% { transform: translate(568px, 150px); opacity: 0; }
+}
+@keyframes np-r2 {
+  0% { transform: translate(568px, 150px); opacity: 0; }
+  10.9% { transform: translate(568px, 150px); opacity: 0; }
+  11.15% { opacity: 1; }
+  12.25% { transform: translate(302px, 150px); opacity: 1; }
+  12.5% { transform: translate(302px, 150px); opacity: 0; }
+  100% { transform: translate(302px, 150px); opacity: 0; }
+}
+@keyframes np-fq0 {
+  0% { transform: translate(302px, 150px); opacity: 0; }
+  52.25% { transform: translate(302px, 150px); opacity: 0; }
+  52.5% { opacity: 1; }
+  53.75% { transform: translate(568px, 150px); opacity: 1; }
+  54% { transform: translate(568px, 150px); opacity: 0; }
+  100% { transform: translate(568px, 150px); opacity: 0; }
+}
+@keyframes np-fr0 {
+  0% { transform: translate(568px, 150px); opacity: 0; }
+  54% { transform: translate(568px, 150px); opacity: 0; }
+  54.25% { opacity: 1; }
+  55.25% { transform: translate(302px, 150px); opacity: 1; }
+  55.5% { transform: translate(302px, 150px); opacity: 0; }
+  100% { transform: translate(302px, 150px); opacity: 0; }
+}
+@keyframes np-fq1 {
+  0% { transform: translate(302px, 150px); opacity: 0; }
+  56% { transform: translate(302px, 150px); opacity: 0; }
+  56.25% { opacity: 1; }
+  57.5% { transform: translate(568px, 150px); opacity: 1; }
+  57.75% { transform: translate(568px, 150px); opacity: 0; }
+  100% { transform: translate(568px, 150px); opacity: 0; }
+}
+@keyframes np-fr1 {
+  0% { transform: translate(568px, 150px); opacity: 0; }
+  57.75% { transform: translate(568px, 150px); opacity: 0; }
+  58% { opacity: 1; }
+  59% { transform: translate(302px, 150px); opacity: 1; }
+  59.25% { transform: translate(302px, 150px); opacity: 0; }
+  100% { transform: translate(302px, 150px); opacity: 0; }
+}
+@keyframes np-fq2 {
+  0% { transform: translate(302px, 150px); opacity: 0; }
+  59.75% { transform: translate(302px, 150px); opacity: 0; }
+  60% { opacity: 1; }
+  61.25% { transform: translate(568px, 150px); opacity: 1; }
+  61.5% { transform: translate(568px, 150px); opacity: 0; }
+  100% { transform: translate(568px, 150px); opacity: 0; }
+}
+@keyframes np-fr2 {
+  0% { transform: translate(568px, 150px); opacity: 0; }
+  61.5% { transform: translate(568px, 150px); opacity: 0; }
+  61.75% { opacity: 1; }
+  62.75% { transform: translate(302px, 150px); opacity: 1; }
+  63% { transform: translate(302px, 150px); opacity: 0; }
+  100% { transform: translate(302px, 150px); opacity: 0; }
+}
+@keyframes np-fq3 {
+  0% { transform: translate(302px, 150px); opacity: 0; }
+  64.25% { transform: translate(302px, 150px); opacity: 0; }
+  64.5% { opacity: 1; }
+  65.75% { transform: translate(568px, 150px); opacity: 1; }
+  66% { transform: translate(568px, 150px); opacity: 0; }
+  100% { transform: translate(568px, 150px); opacity: 0; }
+}
+@keyframes np-fr3 {
+  0% { transform: translate(568px, 150px); opacity: 0; }
+  66% { transform: translate(568px, 150px); opacity: 0; }
+  66.25% { opacity: 1; }
+  67.25% { transform: translate(302px, 150px); opacity: 1; }
+  67.5% { transform: translate(302px, 150px); opacity: 0; }
+  100% { transform: translate(302px, 150px); opacity: 0; }
+}
+@keyframes np-strip {
+  0% { transform: translate(0px, 0px); opacity: 0; }
+  1.5% { opacity: 1; }
+  5.05% { transform: translate(0px, 0px); }
+  5.25% { transform: translate(0px, -40px); }
+  8.55% { transform: translate(0px, -40px); }
+  8.75% { transform: translate(0px, -80px); }
+  12.05% { transform: translate(0px, -80px); }
+  12.25% { transform: translate(0px, -120px); }
+  13.12% { transform: translate(0px, -120px); }
+  13.13% { transform: translate(0px, -160px); }
+  13.243% { transform: translate(0px, -160px); }
+  13.253% { transform: translate(0px, -200px); }
+  13.351% { transform: translate(0px, -200px); }
+  13.361% { transform: translate(0px, -240px); }
+  13.469% { transform: translate(0px, -240px); }
+  13.479% { transform: translate(0px, -280px); }
+  13.578% { transform: translate(0px, -280px); }
+  13.588% { transform: translate(0px, -320px); }
+  13.682% { transform: translate(0px, -320px); }
+  13.692% { transform: translate(0px, -360px); }
+  13.793% { transform: translate(0px, -360px); }
+  13.803% { transform: translate(0px, -400px); }
+  13.902% { transform: translate(0px, -400px); }
+  13.912% { transform: translate(0px, -440px); }
+  14.012% { transform: translate(0px, -440px); }
+  14.022% { transform: translate(0px, -480px); }
+  14.11% { transform: translate(0px, -480px); }
+  14.12% { transform: translate(0px, -520px); }
+  14.214% { transform: translate(0px, -520px); }
+  14.224% { transform: translate(0px, -560px); }
+  14.366% { transform: translate(0px, -560px); }
+  14.376% { transform: translate(0px, -600px); }
+  14.473% { transform: translate(0px, -600px); }
+  14.483% { transform: translate(0px, -640px); }
+  14.852% { transform: translate(0px, -640px); }
+  14.862% { transform: translate(0px, -680px); }
+  14.961% { transform: translate(0px, -680px); }
+  14.971% { transform: translate(0px, -720px); }
+  15.085% { transform: translate(0px, -720px); }
+  15.095% { transform: translate(0px, -760px); }
+  15.205% { transform: translate(0px, -760px); }
+  15.215% { transform: translate(0px, -800px); }
+  15.312% { transform: translate(0px, -800px); }
+  15.322% { transform: translate(0px, -840px); }
+  15.415% { transform: translate(0px, -840px); }
+  15.425% { transform: translate(0px, -880px); }
+  15.524% { transform: translate(0px, -880px); }
+  15.534% { transform: translate(0px, -920px); }
+  15.623% { transform: translate(0px, -920px); }
+  15.633% { transform: translate(0px, -960px); }
+  15.728% { transform: translate(0px, -960px); }
+  15.738% { transform: translate(0px, -1000px); }
+  15.828% { transform: translate(0px, -1000px); }
+  15.838% { transform: translate(0px, -1040px); }
+  15.935% { transform: translate(0px, -1040px); }
+  15.945% { transform: translate(0px, -1080px); }
+  16.035% { transform: translate(0px, -1080px); }
+  16.045% { transform: translate(0px, -1120px); }
+  16.136% { transform: translate(0px, -1120px); }
+  16.146% { transform: translate(0px, -1160px); }
+  16.243% { transform: translate(0px, -1160px); }
+  16.253% { transform: translate(0px, -1200px); }
+  16.344% { transform: translate(0px, -1200px); }
+  16.354% { transform: translate(0px, -1240px); }
+  16.441% { transform: translate(0px, -1240px); }
+  16.451% { transform: translate(0px, -1280px); }
+  16.546% { transform: translate(0px, -1280px); }
+  16.556% { transform: translate(0px, -1320px); }
+  16.649% { transform: translate(0px, -1320px); }
+  16.659% { transform: translate(0px, -1360px); }
+  16.749% { transform: translate(0px, -1360px); }
+  16.759% { transform: translate(0px, -1400px); }
+  16.853% { transform: translate(0px, -1400px); }
+  16.863% { transform: translate(0px, -1440px); }
+  16.956% { transform: translate(0px, -1440px); }
+  16.966% { transform: translate(0px, -1480px); }
+  17.057% { transform: translate(0px, -1480px); }
+  17.067% { transform: translate(0px, -1520px); }
+  17.155% { transform: translate(0px, -1520px); }
+  17.165% { transform: translate(0px, -1560px); }
+  17.257% { transform: translate(0px, -1560px); }
+  17.267% { transform: translate(0px, -1600px); }
+  17.357% { transform: translate(0px, -1600px); }
+  17.367% { transform: translate(0px, -1640px); }
+  17.464% { transform: translate(0px, -1640px); }
+  17.474% { transform: translate(0px, -1680px); }
+  17.562% { transform: translate(0px, -1680px); }
+  17.572% { transform: translate(0px, -1720px); }
+  17.666% { transform: translate(0px, -1720px); }
+  17.676% { transform: translate(0px, -1760px); }
+  17.789% { transform: translate(0px, -1760px); }
+  17.799% { transform: translate(0px, -1800px); }
+  17.896% { transform: translate(0px, -1800px); }
+  17.906% { transform: translate(0px, -1840px); }
+  17.997% { transform: translate(0px, -1840px); }
+  18.007% { transform: translate(0px, -1880px); }
+  18.099% { transform: translate(0px, -1880px); }
+  18.109% { transform: translate(0px, -1920px); }
+  18.211% { transform: translate(0px, -1920px); }
+  18.221% { transform: translate(0px, -1960px); }
+  18.316% { transform: translate(0px, -1960px); }
+  18.326% { transform: translate(0px, -2000px); }
+  18.423% { transform: translate(0px, -2000px); }
+  18.433% { transform: translate(0px, -2040px); }
+  18.534% { transform: translate(0px, -2040px); }
+  18.544% { transform: translate(0px, -2080px); }
+  18.644% { transform: translate(0px, -2080px); }
+  18.654% { transform: translate(0px, -2120px); }
+  18.749% { transform: translate(0px, -2120px); }
+  18.759% { transform: translate(0px, -2160px); }
+  18.85% { transform: translate(0px, -2160px); }
+  18.86% { transform: translate(0px, -2200px); }
+  18.955% { transform: translate(0px, -2200px); }
+  18.965% { transform: translate(0px, -2240px); }
+  19.059% { transform: translate(0px, -2240px); }
+  19.069% { transform: translate(0px, -2280px); }
+  19.171% { transform: translate(0px, -2280px); }
+  19.181% { transform: translate(0px, -2320px); }
+  19.272% { transform: translate(0px, -2320px); }
+  19.282% { transform: translate(0px, -2360px); }
+  19.38% { transform: translate(0px, -2360px); }
+  19.39% { transform: translate(0px, -2400px); }
+  19.487% { transform: translate(0px, -2400px); }
+  19.497% { transform: translate(0px, -2440px); }
+  19.586% { transform: translate(0px, -2440px); }
+  19.596% { transform: translate(0px, -2480px); }
+  19.689% { transform: translate(0px, -2480px); }
+  19.699% { transform: translate(0px, -2520px); }
+  19.793% { transform: translate(0px, -2520px); }
+  19.803% { transform: translate(0px, -2560px); }
+  19.899% { transform: translate(0px, -2560px); }
+  19.909% { transform: translate(0px, -2600px); }
+  20.01% { transform: translate(0px, -2600px); }
+  20.02% { transform: translate(0px, -2640px); }
+  20.11% { transform: translate(0px, -2640px); }
+  20.12% { transform: translate(0px, -2680px); }
+  20.211% { transform: translate(0px, -2680px); }
+  20.221% { transform: translate(0px, -2720px); }
+  20.321% { transform: translate(0px, -2720px); }
+  20.331% { transform: translate(0px, -2760px); }
+  20.424% { transform: translate(0px, -2760px); }
+  20.434% { transform: translate(0px, -2800px); }
+  20.53% { transform: translate(0px, -2800px); }
+  20.54% { transform: translate(0px, -2840px); }
+  20.635% { transform: translate(0px, -2840px); }
+  20.645% { transform: translate(0px, -2880px); }
+  20.74% { transform: translate(0px, -2880px); }
+  20.75% { transform: translate(0px, -2920px); }
+  49% { opacity: 1; }
+  49.75% { transform: translate(0px, -2920px); opacity: 0; }
+  49.8% { transform: translate(0px, 0px); }
+  51.5% { opacity: 1; }
+  55.05% { transform: translate(0px, 0px); }
+  55.25% { transform: translate(0px, -40px); }
+  58.8% { transform: translate(0px, -40px); }
+  59% { transform: translate(0px, -80px); }
+  62.55% { transform: translate(0px, -80px); }
+  62.75% { transform: translate(0px, -120px); }
+  98% { opacity: 1; }
+  98.75% { transform: translate(0px, -120px); opacity: 0; }
+  99% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); opacity: 0; }
+}
+@keyframes np-n1 {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-n2 {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  41.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-n3 {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  69.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-hi {
+  0% { opacity: 0; }
+  31% { opacity: 0; }
+  32.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-c0 {
+  0% { opacity: 0; }
+  3.5% { opacity: 0; }
+  3.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-t1 {
+  0% { transform: translate(-120px, 0px); }
+  6.8% { transform: translate(-120px, 0px); }
+  7.1% { transform: translate(-114px, 0px); }
+  13.469% { transform: translate(-114px, 0px); }
+  13.479% { transform: translate(-108px, 0px); }
+  13.793% { transform: translate(-108px, 0px); }
+  13.803% { transform: translate(-102px, 0px); }
+  14.012% { transform: translate(-102px, 0px); }
+  14.022% { transform: translate(-96px, 0px); }
+  14.473% { transform: translate(-96px, 0px); }
+  14.483% { transform: translate(-90px, 0px); }
+  15.205% { transform: translate(-90px, 0px); }
+  15.215% { transform: translate(-84px, 0px); }
+  15.524% { transform: translate(-84px, 0px); }
+  15.534% { transform: translate(-78px, 0px); }
+  16.035% { transform: translate(-78px, 0px); }
+  16.045% { transform: translate(-72px, 0px); }
+  16.243% { transform: translate(-72px, 0px); }
+  16.253% { transform: translate(-66px, 0px); }
+  16.649% { transform: translate(-66px, 0px); }
+  16.659% { transform: translate(-60px, 0px); }
+  17.155% { transform: translate(-60px, 0px); }
+  17.165% { transform: translate(-54px, 0px); }
+  17.562% { transform: translate(-54px, 0px); }
+  17.572% { transform: translate(-48px, 0px); }
+  17.896% { transform: translate(-48px, 0px); }
+  17.906% { transform: translate(-42px, 0px); }
+  18.316% { transform: translate(-42px, 0px); }
+  18.326% { transform: translate(-36px, 0px); }
+  18.85% { transform: translate(-36px, 0px); }
+  18.86% { transform: translate(-30px, 0px); }
+  19.059% { transform: translate(-30px, 0px); }
+  19.069% { transform: translate(-24px, 0px); }
+  19.38% { transform: translate(-24px, 0px); }
+  19.39% { transform: translate(-18px, 0px); }
+  19.793% { transform: translate(-18px, 0px); }
+  19.803% { transform: translate(-12px, 0px); }
+  20.01% { transform: translate(-12px, 0px); }
+  20.02% { transform: translate(-6px, 0px); }
+  20.321% { transform: translate(-6px, 0px); }
+  20.331% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes np-t2a {
+  0% { transform: translate(-156px, 0px); }
+  10.3% { transform: translate(-156px, 0px); }
+  10.6% { transform: translate(-150px, 0px); }
+  13.12% { transform: translate(-150px, 0px); }
+  13.13% { transform: translate(-144px, 0px); }
+  13.243% { transform: translate(-144px, 0px); }
+  13.253% { transform: translate(-138px, 0px); }
+  13.351% { transform: translate(-138px, 0px); }
+  13.361% { transform: translate(-132px, 0px); }
+  13.578% { transform: translate(-132px, 0px); }
+  13.588% { transform: translate(-126px, 0px); }
+  13.682% { transform: translate(-126px, 0px); }
+  13.692% { transform: translate(-120px, 0px); }
+  13.902% { transform: translate(-120px, 0px); }
+  13.912% { transform: translate(-114px, 0px); }
+  14.11% { transform: translate(-114px, 0px); }
+  14.12% { transform: translate(-108px, 0px); }
+  14.214% { transform: translate(-108px, 0px); }
+  14.224% { transform: translate(-102px, 0px); }
+  14.366% { transform: translate(-102px, 0px); }
+  14.376% { transform: translate(-96px, 0px); }
+  14.852% { transform: translate(-96px, 0px); }
+  14.862% { transform: translate(-90px, 0px); }
+  14.961% { transform: translate(-90px, 0px); }
+  14.971% { transform: translate(-84px, 0px); }
+  15.085% { transform: translate(-84px, 0px); }
+  15.095% { transform: translate(-78px, 0px); }
+  15.312% { transform: translate(-78px, 0px); }
+  15.322% { transform: translate(-72px, 0px); }
+  15.415% { transform: translate(-72px, 0px); }
+  15.425% { transform: translate(-66px, 0px); }
+  15.623% { transform: translate(-66px, 0px); }
+  15.633% { transform: translate(-60px, 0px); }
+  15.728% { transform: translate(-60px, 0px); }
+  15.738% { transform: translate(-54px, 0px); }
+  15.828% { transform: translate(-54px, 0px); }
+  15.838% { transform: translate(-48px, 0px); }
+  15.935% { transform: translate(-48px, 0px); }
+  15.945% { transform: translate(-42px, 0px); }
+  16.136% { transform: translate(-42px, 0px); }
+  16.146% { transform: translate(-36px, 0px); }
+  16.344% { transform: translate(-36px, 0px); }
+  16.354% { transform: translate(-30px, 0px); }
+  16.441% { transform: translate(-30px, 0px); }
+  16.451% { transform: translate(-24px, 0px); }
+  16.546% { transform: translate(-24px, 0px); }
+  16.556% { transform: translate(-18px, 0px); }
+  16.749% { transform: translate(-18px, 0px); }
+  16.759% { transform: translate(-12px, 0px); }
+  16.853% { transform: translate(-12px, 0px); }
+  16.863% { transform: translate(-6px, 0px); }
+  16.956% { transform: translate(-6px, 0px); }
+  16.966% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes np-t2b {
+  0% { transform: translate(-156px, 0px); }
+  17.057% { transform: translate(-156px, 0px); }
+  17.067% { transform: translate(-150px, 0px); }
+  17.257% { transform: translate(-150px, 0px); }
+  17.267% { transform: translate(-144px, 0px); }
+  17.357% { transform: translate(-144px, 0px); }
+  17.367% { transform: translate(-138px, 0px); }
+  17.464% { transform: translate(-138px, 0px); }
+  17.474% { transform: translate(-132px, 0px); }
+  17.666% { transform: translate(-132px, 0px); }
+  17.676% { transform: translate(-126px, 0px); }
+  17.789% { transform: translate(-126px, 0px); }
+  17.799% { transform: translate(-120px, 0px); }
+  17.997% { transform: translate(-120px, 0px); }
+  18.007% { transform: translate(-114px, 0px); }
+  18.099% { transform: translate(-114px, 0px); }
+  18.109% { transform: translate(-108px, 0px); }
+  18.211% { transform: translate(-108px, 0px); }
+  18.221% { transform: translate(-102px, 0px); }
+  18.423% { transform: translate(-102px, 0px); }
+  18.433% { transform: translate(-96px, 0px); }
+  18.534% { transform: translate(-96px, 0px); }
+  18.544% { transform: translate(-90px, 0px); }
+  18.644% { transform: translate(-90px, 0px); }
+  18.654% { transform: translate(-84px, 0px); }
+  18.749% { transform: translate(-84px, 0px); }
+  18.759% { transform: translate(-78px, 0px); }
+  18.955% { transform: translate(-78px, 0px); }
+  18.965% { transform: translate(-72px, 0px); }
+  19.171% { transform: translate(-72px, 0px); }
+  19.181% { transform: translate(-66px, 0px); }
+  19.272% { transform: translate(-66px, 0px); }
+  19.282% { transform: translate(-60px, 0px); }
+  19.487% { transform: translate(-60px, 0px); }
+  19.497% { transform: translate(-54px, 0px); }
+  19.586% { transform: translate(-54px, 0px); }
+  19.596% { transform: translate(-48px, 0px); }
+  19.689% { transform: translate(-48px, 0px); }
+  19.699% { transform: translate(-42px, 0px); }
+  19.899% { transform: translate(-42px, 0px); }
+  19.909% { transform: translate(-36px, 0px); }
+  20.11% { transform: translate(-36px, 0px); }
+  20.12% { transform: translate(-30px, 0px); }
+  20.211% { transform: translate(-30px, 0px); }
+  20.221% { transform: translate(-24px, 0px); }
+  20.424% { transform: translate(-24px, 0px); }
+  20.434% { transform: translate(-18px, 0px); }
+  20.53% { transform: translate(-18px, 0px); }
+  20.54% { transform: translate(-12px, 0px); }
+  20.635% { transform: translate(-12px, 0px); }
+  20.645% { transform: translate(-6px, 0px); }
+  20.74% { transform: translate(-6px, 0px); }
+  20.75% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+@keyframes np-k0 {
+  0% { opacity: 0; }
+  3.5% { opacity: 0; }
+  4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-k1 {
+  0% { opacity: 0; }
+  20.331% { opacity: 0; }
+  20.831% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-k2 {
+  0% { opacity: 0; }
+  20.75% { opacity: 0; }
+  21.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-mr {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-b0 {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-b1 {
+  0% { opacity: 0; }
+  57.5% { opacity: 0; }
+  57.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-b2 {
+  0% { opacity: 0; }
+  61.25% { opacity: 0; }
+  61.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-bf {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-l1 {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-cover {
+  0% { transform: scaleX(0.9972); }
+  2% { transform: scaleX(0.9972); transform: scaleX(0.9972); }
+  5.25% { transform: scaleX(0.9825); }
+  5.6% { transform: scaleX(0.9825); }
+  8.75% { transform: scaleX(0.9696); }
+  9.1% { transform: scaleX(0.9696); }
+  12.25% { transform: scaleX(0.9570); }
+  12.75% { transform: scaleX(0.9570); }
+  20.75% { transform: scaleX(0.0276); }
+  21.25% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+@keyframes np-cur {
+  0% { transform: translate(182px, 0px); opacity: 0; }
+  2% { transform: translate(182px, 0px); opacity: 0; transform: translate(182px, 0px); }
+  2.25% { opacity: 1; }
+  5.25% { transform: translate(192.64px, 0px); }
+  5.6% { transform: translate(192.64px, 0px); }
+  8.75% { transform: translate(202.03px, 0px); }
+  9.1% { transform: translate(202.03px, 0px); }
+  12.25% { transform: translate(211.13px, 0px); }
+  12.75% { transform: translate(211.13px, 0px); }
+  20.75% { transform: translate(884.04px, 0px); opacity: 1; }
+  21.5% { opacity: 0; }
+  100% { transform: translate(884.04px, 0px); opacity: 0; }
+}
+@keyframes np-l1n {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-l2 {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-s0 {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  55.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-s1 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  59.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-s2 {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-l3 {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  69% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-g0 {
+  0% { opacity: 0; }
+  26.75% { opacity: 0; }
+  28.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-g1 {
+  0% { opacity: 0; }
+  28.25% { opacity: 0; }
+  29.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-g2 {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  31.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-g3 {
+  0% { opacity: 0; }
+  31.25% { opacity: 0; }
+  32.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-g4 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  34.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-g5 {
+  0% { opacity: 0; }
+  34.25% { opacity: 0; }
+  35.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-g6 {
+  0% { opacity: 0; }
+  35.75% { opacity: 0; }
+  37.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-gs {
+  0% { opacity: 0; }
+  37.75% { opacity: 0; }
+  39.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-p0 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  78% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-p1 {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  81% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-p2 {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  84% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-p3 {
+  0% { opacity: 0; }
+  85.5% { opacity: 0; }
+  87% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes np-p4 {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  90% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+  <!-- APP: the endpoint and its ORM loop -->
+  <rect class="box" x="30" y="96" width="262" height="204" rx="12"/>
+  <text class="np-hd" x="44" y="118">MY ORDERS API</text>
+  <rect class="f-blue-soft s-blue" x="44" y="128" width="172" height="22" rx="11" stroke-width="1.5"/>
+  <text class="np-m b f-blue mid" x="130" y="143.5">GET /customers/42/orders</text>
+  <g class="p1">
+    <rect class="f-blue-soft np-band" x="40" y="-12.5" width="246" height="17" rx="4"/>
+    <g class="np-loop"><rect class="f-blue-soft s-blue pulse" x="40" y="181.5" width="246" height="53" rx="5" stroke-width="1"/></g>
+  </g>
+  <g class="p12">
+    <text class="np-code" x="48" y="176">orders = Order.latest(42, limit=20)</text>
+    <text class="np-code" x="48" y="194"><tspan class="f-purple">for</tspan> order <tspan class="f-purple">in</tspan> orders:</text>
+    <text class="np-code" x="48" y="248">render(orders)</text>
+  </g>
+  <g class="p1">
+    <text class="np-code" x="61.24" y="212"><tspan class="f-purple">for</tspan> item <tspan class="f-purple">in</tspan> order.items:</text>
+    <text class="np-code" x="74.48" y="230">name = item.product.name</text>
+  </g>
+  <g class="p2">
+    <text class="np-code" x="61.24" y="212"><tspan class="f-purple">for</tspan> item <tspan class="f-purple">in</tspan> <tspan class="f-amber-ink b">order.items</tspan>:</text>
+    <text class="np-code" x="74.48" y="230">name = <tspan class="f-amber-ink b">item.product</tspan>.name</text>
+    <text class="np-q np-call1" x="48" y="273"><tspan class="f-amber-ink b">order.items</tspan>  → 1 query per order</text>
+    <text class="np-q np-call2" x="48" y="289"><tspan class="f-amber-ink b">item.product</tspan> → 1 query per item</text>
+  </g>
+  <g class="p34">
+    <rect class="f-green-soft" x="40" y="181.5" width="246" height="17" rx="4"/>
+    <text class="np-code" x="48" y="176">orders = Order.latest(42, limit=20)</text>
+    <text class="np-code f-green b" x="61.24" y="194">.preload("items.product")</text>
+    <text class="np-code" x="48" y="212"><tspan class="f-purple">for</tspan> order <tspan class="f-purple">in</tspan> orders:</text>
+    <text class="np-code" x="61.24" y="230"><tspan class="f-purple">for</tspan> item <tspan class="f-purple">in</tspan> order.items:</text>
+    <text class="np-code" x="74.48" y="248">name = item.product.name</text>
+    <text class="np-code" x="48" y="266">render(orders)</text>
+    <text class="tiny" x="48" y="289">the loop reads loaded objects: no SQL</text>
+  </g>
+  <!-- WIRE: one query at a time, counted -->
+  <line class="wire" x1="292" y1="150" x2="578" y2="150"/>
+  <g class="np-busy">
+    <rect class="f-blue-soft s-blue pulse" x="296" y="144" width="278" height="12" rx="6" stroke-width="1"/>
+    <text class="tiny sb f-blue mid" x="435" y="137">70 more round trips, one after another</text>
+  </g>
+  <text class="np-m b f-blue mid np-ql0" x="435" y="138">customer_id = 42</text>
+  <text class="np-m f-teal mid np-rl0" x="435" y="171">20 rows</text>
+  <text class="np-m b f-blue mid np-ql1" x="435" y="138">order_id = 495179</text>
+  <text class="np-m f-teal mid np-rl1" x="435" y="171">4 rows</text>
+  <text class="np-m b f-blue mid np-ql2" x="435" y="138">id = 7689</text>
+  <text class="np-m f-teal mid np-rl2" x="435" y="171">1 row</text>
+  <text class="np-m b f-blue mid np-fql0" x="435" y="138">customer_id = 42</text>
+  <text class="np-m f-teal mid np-frl0" x="435" y="171">20 rows</text>
+  <text class="np-m b f-blue mid np-fql1" x="435" y="138">order_id = ANY($1): 20 ids</text>
+  <text class="np-m f-teal mid np-frl1" x="435" y="171">52 rows</text>
+  <text class="np-m b f-blue mid np-fql2" x="435" y="138">id = ANY($1): 52 ids</text>
+  <text class="np-m f-teal mid np-frl2" x="435" y="171">52 rows</text>
+  <text class="np-m b f-blue mid np-fql3" x="435" y="138">JOIN … json_agg(…)</text>
+  <text class="np-m f-teal mid np-frl3" x="435" y="171">20 rows, items as JSON</text>
+  <circle class="pkt f-blue np-q0" r="6"/>
+  <rect class="pkt f-teal np-r0" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <circle class="pkt f-blue np-q1" r="6"/>
+  <rect class="pkt f-teal np-r1" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <circle class="pkt f-blue np-q2" r="6"/>
+  <rect class="pkt f-teal np-r2" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <circle class="pkt f-blue np-fq0" r="6"/>
+  <rect class="pkt f-teal np-fr0" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <circle class="pkt f-blue np-fq1" r="6"/>
+  <rect class="pkt f-teal np-fr1" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <circle class="pkt f-blue np-fq2" r="6"/>
+  <rect class="pkt f-teal np-fr2" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <circle class="pkt f-blue np-fq3" r="6"/>
+  <rect class="pkt f-teal np-fr3" x="-6" y="-6" width="12" height="12" rx="3"/>
+  <text class="np-hd mid" x="435" y="194">QUERIES PER PAGE VIEW</text>
+  <defs><clipPath id="np-cnt"><rect x="375" y="202" width="120" height="40"/></clipPath></defs>
+  <g clip-path="url(#np-cnt)"><g class="np-strip"><text class="np-big mid" x="435" y="234">0</text><text class="np-big mid" x="435" y="274">1</text><text class="np-big mid" x="435" y="314">2</text><text class="np-big mid" x="435" y="354">3</text><text class="np-big mid" x="435" y="394">4</text><text class="np-big mid" x="435" y="434">5</text><text class="np-big mid" x="435" y="474">6</text><text class="np-big mid" x="435" y="514">7</text><text class="np-big mid" x="435" y="554">8</text><text class="np-big mid" x="435" y="594">9</text><text class="np-big mid" x="435" y="634">10</text><text class="np-big mid" x="435" y="674">11</text><text class="np-big mid" x="435" y="714">12</text><text class="np-big mid" x="435" y="754">13</text><text class="np-big mid" x="435" y="794">14</text><text class="np-big mid" x="435" y="834">15</text><text class="np-big mid" x="435" y="874">16</text><text class="np-big mid" x="435" y="914">17</text><text class="np-big mid" x="435" y="954">18</text><text class="np-big mid" x="435" y="994">19</text><text class="np-big mid" x="435" y="1034">20</text><text class="np-big mid" x="435" y="1074">21</text><text class="np-big mid" x="435" y="1114">22</text><text class="np-big mid" x="435" y="1154">23</text><text class="np-big mid" x="435" y="1194">24</text><text class="np-big mid" x="435" y="1234">25</text><text class="np-big mid" x="435" y="1274">26</text><text class="np-big mid" x="435" y="1314">27</text><text class="np-big mid" x="435" y="1354">28</text><text class="np-big mid" x="435" y="1394">29</text><text class="np-big mid" x="435" y="1434">30</text><text class="np-big mid" x="435" y="1474">31</text><text class="np-big mid" x="435" y="1514">32</text><text class="np-big mid" x="435" y="1554">33</text><text class="np-big mid" x="435" y="1594">34</text><text class="np-big mid" x="435" y="1634">35</text><text class="np-big mid" x="435" y="1674">36</text><text class="np-big mid" x="435" y="1714">37</text><text class="np-big mid" x="435" y="1754">38</text><text class="np-big mid" x="435" y="1794">39</text><text class="np-big mid" x="435" y="1834">40</text><text class="np-big mid" x="435" y="1874">41</text><text class="np-big mid" x="435" y="1914">42</text><text class="np-big mid" x="435" y="1954">43</text><text class="np-big mid" x="435" y="1994">44</text><text class="np-big mid" x="435" y="2034">45</text><text class="np-big mid" x="435" y="2074">46</text><text class="np-big mid" x="435" y="2114">47</text><text class="np-big mid" x="435" y="2154">48</text><text class="np-big mid" x="435" y="2194">49</text><text class="np-big mid" x="435" y="2234">50</text><text class="np-big mid" x="435" y="2274">51</text><text class="np-big mid" x="435" y="2314">52</text><text class="np-big mid" x="435" y="2354">53</text><text class="np-big mid" x="435" y="2394">54</text><text class="np-big mid" x="435" y="2434">55</text><text class="np-big mid" x="435" y="2474">56</text><text class="np-big mid" x="435" y="2514">57</text><text class="np-big mid" x="435" y="2554">58</text><text class="np-big mid" x="435" y="2594">59</text><text class="np-big mid" x="435" y="2634">60</text><text class="np-big mid" x="435" y="2674">61</text><text class="np-big mid" x="435" y="2714">62</text><text class="np-big mid" x="435" y="2754">63</text><text class="np-big mid" x="435" y="2794">64</text><text class="np-big mid" x="435" y="2834">65</text><text class="np-big mid" x="435" y="2874">66</text><text class="np-big mid" x="435" y="2914">67</text><text class="np-big mid" x="435" y="2954">68</text><text class="np-big mid" x="435" y="2994">69</text><text class="np-big mid" x="435" y="3034">70</text><text class="np-big mid" x="435" y="3074">71</text><text class="np-big mid" x="435" y="3114">72</text><text class="np-big mid" x="435" y="3154">73</text></g></g>
+  <text class="tiny mid p1" x="435" y="258">each one a round trip</text>
+  <text class="tiny mid p34" x="435" y="258">the batched version</text>
+  <g class="p1"><g class="np-n1">
+    <text class="tiny mid" x="435" y="278">at 100 page views a second (assumed)</text>
+    <text class="np-m b f-red mid" x="435" y="294">7,300 queries a second</text>
+  </g></g>
+  <g class="p2"><g class="np-n2">
+    <text class="tiny mid" x="435" y="262">33 ms per page view at the app</text>
+    <rect class="f-green" x="318" y="269" width="13.43" height="10" rx="2"/>
+    <rect class="f-red-soft s-red" x="332.43" y="269" width="219.57" height="10" rx="2" stroke-width="1"/>
+    <text class="tiny b f-green" x="318" y="293">1.9 ms in PostgreSQL</text>
+    <text class="tiny b f-red end" x="552" y="293">31 ms round trips</text>
+  </g></g>
+  <g class="p34"><g class="np-n3">
+    <text class="tiny mid" x="435" y="278">at 100 page views a second (assumed)</text>
+    <text class="np-m b f-green mid" x="435" y="294">300 queries a second</text>
+  </g></g>
+  <!-- POSTGRESQL: pg_stat_statements, per page view -->
+  <rect class="box" x="578" y="96" width="352" height="204" rx="12"/>
+  <text class="np-hd" x="592" y="118">POSTGRESQL 18</text>
+  <text class="np-m f-muted end" x="916" y="118">pg_stat_statements</text>
+  <g class="p2"><g class="np-hi"><rect class="f-amber-soft s-amber" x="776" y="162" width="36" height="16" rx="5" stroke-width="1.5"/><rect class="f-amber-soft s-amber" x="776" y="202" width="36" height="16" rx="5" stroke-width="1.5"/><rect class="f-amber-soft s-amber" x="776" y="242" width="36" height="16" rx="5" stroke-width="1.5"/></g></g>
+  <text class="tiny" x="592" y="138">query</text>
+  <text class="tiny end p134" x="806" y="138">calls</text>
+  <text class="tiny sb f-amber-ink end p2" x="806" y="138">calls</text>
+  <text class="tiny end" x="866" y="138">mean ms</text>
+  <text class="tiny end" x="916" y="138">rows</text>
+  <g class="p12">
+    <text class="np-q" x="592" y="158">SELECT … FROM orders WHERE customer_id = <tspan class="f-blue b">$1</tspan> …</text>
+    <text class="np-q" x="592" y="198">SELECT … FROM order_items WHERE order_id = <tspan class="f-blue b">$1</tspan></text>
+    <text class="np-q" x="592" y="238">SELECT … FROM products WHERE id = <tspan class="f-blue b">$1</tspan></text>
+    <rect class="f-panel-2" x="592" y="165" width="4.5" height="9" rx="1"/>
+    <rect class="f-blue np-c0" x="592" y="165" width="4.5" height="9" rx="1"/>
+    <rect class="f-panel-2" x="592" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="598" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="604" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="610" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="616" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="622" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="628" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="634" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="640" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="646" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="652" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="658" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="664" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="670" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="676" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="682" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="688" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="694" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="700" y="205" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="706" y="205" width="4.5" height="9" rx="1"/>
+    <defs><clipPath id="np-t1c"><rect x="592" y="205" width="4.5" height="9" rx="1"/><rect x="598" y="205" width="4.5" height="9" rx="1"/><rect x="604" y="205" width="4.5" height="9" rx="1"/><rect x="610" y="205" width="4.5" height="9" rx="1"/><rect x="616" y="205" width="4.5" height="9" rx="1"/><rect x="622" y="205" width="4.5" height="9" rx="1"/><rect x="628" y="205" width="4.5" height="9" rx="1"/><rect x="634" y="205" width="4.5" height="9" rx="1"/><rect x="640" y="205" width="4.5" height="9" rx="1"/><rect x="646" y="205" width="4.5" height="9" rx="1"/><rect x="652" y="205" width="4.5" height="9" rx="1"/><rect x="658" y="205" width="4.5" height="9" rx="1"/><rect x="664" y="205" width="4.5" height="9" rx="1"/><rect x="670" y="205" width="4.5" height="9" rx="1"/><rect x="676" y="205" width="4.5" height="9" rx="1"/><rect x="682" y="205" width="4.5" height="9" rx="1"/><rect x="688" y="205" width="4.5" height="9" rx="1"/><rect x="694" y="205" width="4.5" height="9" rx="1"/><rect x="700" y="205" width="4.5" height="9" rx="1"/><rect x="706" y="205" width="4.5" height="9" rx="1"/></clipPath></defs>
+    <g clip-path="url(#np-t1c)"><rect class="f-blue np-t1" x="592" y="205" width="120" height="9"/></g>
+    <rect class="f-panel-2" x="592" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="598" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="604" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="610" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="616" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="622" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="628" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="634" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="640" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="646" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="652" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="658" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="664" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="670" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="676" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="682" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="688" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="694" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="700" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="706" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="712" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="718" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="724" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="730" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="736" y="245" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="742" y="245" width="4.5" height="9" rx="1"/>
+    <defs><clipPath id="np-t2ac"><rect x="592" y="245" width="4.5" height="9" rx="1"/><rect x="598" y="245" width="4.5" height="9" rx="1"/><rect x="604" y="245" width="4.5" height="9" rx="1"/><rect x="610" y="245" width="4.5" height="9" rx="1"/><rect x="616" y="245" width="4.5" height="9" rx="1"/><rect x="622" y="245" width="4.5" height="9" rx="1"/><rect x="628" y="245" width="4.5" height="9" rx="1"/><rect x="634" y="245" width="4.5" height="9" rx="1"/><rect x="640" y="245" width="4.5" height="9" rx="1"/><rect x="646" y="245" width="4.5" height="9" rx="1"/><rect x="652" y="245" width="4.5" height="9" rx="1"/><rect x="658" y="245" width="4.5" height="9" rx="1"/><rect x="664" y="245" width="4.5" height="9" rx="1"/><rect x="670" y="245" width="4.5" height="9" rx="1"/><rect x="676" y="245" width="4.5" height="9" rx="1"/><rect x="682" y="245" width="4.5" height="9" rx="1"/><rect x="688" y="245" width="4.5" height="9" rx="1"/><rect x="694" y="245" width="4.5" height="9" rx="1"/><rect x="700" y="245" width="4.5" height="9" rx="1"/><rect x="706" y="245" width="4.5" height="9" rx="1"/><rect x="712" y="245" width="4.5" height="9" rx="1"/><rect x="718" y="245" width="4.5" height="9" rx="1"/><rect x="724" y="245" width="4.5" height="9" rx="1"/><rect x="730" y="245" width="4.5" height="9" rx="1"/><rect x="736" y="245" width="4.5" height="9" rx="1"/><rect x="742" y="245" width="4.5" height="9" rx="1"/></clipPath></defs>
+    <g clip-path="url(#np-t2ac)"><rect class="f-blue np-t2a" x="592" y="245" width="156" height="9"/></g>
+    <rect class="f-panel-2" x="592" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="598" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="604" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="610" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="616" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="622" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="628" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="634" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="640" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="646" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="652" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="658" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="664" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="670" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="676" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="682" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="688" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="694" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="700" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="706" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="712" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="718" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="724" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="730" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="736" y="257" width="4.5" height="9" rx="1"/><rect class="f-panel-2" x="742" y="257" width="4.5" height="9" rx="1"/>
+    <defs><clipPath id="np-t2bc"><rect x="592" y="257" width="4.5" height="9" rx="1"/><rect x="598" y="257" width="4.5" height="9" rx="1"/><rect x="604" y="257" width="4.5" height="9" rx="1"/><rect x="610" y="257" width="4.5" height="9" rx="1"/><rect x="616" y="257" width="4.5" height="9" rx="1"/><rect x="622" y="257" width="4.5" height="9" rx="1"/><rect x="628" y="257" width="4.5" height="9" rx="1"/><rect x="634" y="257" width="4.5" height="9" rx="1"/><rect x="640" y="257" width="4.5" height="9" rx="1"/><rect x="646" y="257" width="4.5" height="9" rx="1"/><rect x="652" y="257" width="4.5" height="9" rx="1"/><rect x="658" y="257" width="4.5" height="9" rx="1"/><rect x="664" y="257" width="4.5" height="9" rx="1"/><rect x="670" y="257" width="4.5" height="9" rx="1"/><rect x="676" y="257" width="4.5" height="9" rx="1"/><rect x="682" y="257" width="4.5" height="9" rx="1"/><rect x="688" y="257" width="4.5" height="9" rx="1"/><rect x="694" y="257" width="4.5" height="9" rx="1"/><rect x="700" y="257" width="4.5" height="9" rx="1"/><rect x="706" y="257" width="4.5" height="9" rx="1"/><rect x="712" y="257" width="4.5" height="9" rx="1"/><rect x="718" y="257" width="4.5" height="9" rx="1"/><rect x="724" y="257" width="4.5" height="9" rx="1"/><rect x="730" y="257" width="4.5" height="9" rx="1"/><rect x="736" y="257" width="4.5" height="9" rx="1"/><rect x="742" y="257" width="4.5" height="9" rx="1"/></clipPath></defs>
+    <g clip-path="url(#np-t2bc)"><rect class="f-blue np-t2b" x="592" y="257" width="156" height="9"/></g>
+    <text class="np-m b end np-k0" x="806" y="174">1</text>
+    <text class="np-m b end np-k1" x="806" y="214">20</text>
+    <text class="np-m b end np-k2" x="806" y="254">52</text>
+    <g class="np-mr">
+      <text class="np-m end" x="866" y="174">0.034</text><text class="np-m end" x="916" y="174">20</text>
+      <text class="np-m end" x="866" y="214">0.009</text><text class="np-m end" x="916" y="214">52</text>
+      <text class="np-m end" x="866" y="254">0.007</text><text class="np-m end" x="916" y="254">52</text>
+    </g>
+  </g>
+  <g class="p1"><g class="np-n1"><text class="tiny" x="592" y="288"><tspan class="b f-red">1 + 20 + 52 = 73 calls</tspan> for one page view</text></g></g>
+  <g class="p2"><g class="np-n2"><text class="tiny" x="592" y="288">planning + execution: <tspan class="b f-green">1.9 ms</tspan> per page view</text></g></g>
+  <g class="p34">
+    <text class="np-q" x="592" y="158">SELECT … FROM orders WHERE customer_id = <tspan class="f-blue b">$1</tspan> …</text>
+    <rect class="f-panel-2" x="592" y="165" width="4.5" height="9" rx="1"/>
+    <g class="np-b0"><rect class="f-blue" x="592" y="165" width="4.5" height="9" rx="1"/>
+      <text class="np-m b end" x="806" y="174">1</text><text class="np-m end" x="866" y="174">0.034</text><text class="np-m end" x="916" y="174">20</text></g>
+    <text class="np-q" x="592" y="198">SELECT … FROM order_items WHERE order_id = <tspan class="f-green b">ANY($1)</tspan></text>
+    <rect class="f-panel-2" x="592" y="205" width="4.5" height="9" rx="1"/>
+    <g class="np-b1"><rect class="f-blue" x="592" y="205" width="4.5" height="9" rx="1"/>
+      <text class="np-m b end" x="806" y="214">1</text><text class="np-m end" x="866" y="214">0.073</text><text class="np-m end" x="916" y="214">52</text></g>
+    <text class="np-q" x="592" y="238">SELECT … FROM products WHERE id = <tspan class="f-green b">ANY($1)</tspan></text>
+    <rect class="f-panel-2" x="592" y="245" width="4.5" height="9" rx="1"/>
+    <g class="np-b2"><rect class="f-blue" x="592" y="245" width="4.5" height="9" rx="1"/>
+      <text class="np-m b end" x="806" y="254">1</text><text class="np-m end" x="866" y="254">0.099</text><text class="np-m end" x="916" y="254">52</text></g>
+    <text class="tiny np-bf" x="592" y="288">after a reset: <tspan class="b f-green">3 calls, 0.3 ms</tspan> per page view</text>
+  </g>
+  <!-- BOTTOM: one page view on a time axis, the server log, the pitfalls -->
+  <rect class="box" x="30" y="312" width="900" height="156" rx="12"/>
+  <g class="p13">
+    <text class="np-hd" x="44" y="332">ONE PAGE VIEW, TIMED AT THE APP</text>
+    <text class="tiny end" x="916" y="332">median of 100 views · one run on a laptop</text>
+    <line class="s-line" x1="182" y1="432" x2="902" y2="432" stroke-width="1"/>
+    <line class="s-wire" x1="182" y1="432" x2="182" y2="436" stroke-width="1"/><text class="tiny mid" x="182" y="448">0</text>
+    <line class="s-wire" x1="394" y1="432" x2="394" y2="436" stroke-width="1"/><text class="tiny mid" x="394" y="448">10</text>
+    <line class="s-wire" x1="606" y1="432" x2="606" y2="436" stroke-width="1"/><text class="tiny mid" x="606" y="448">20</text>
+    <line class="s-wire" x1="818" y1="432" x2="818" y2="436" stroke-width="1"/><text class="tiny mid" x="818" y="448">30 ms</text>
+    <text class="np-lab" x="44" y="351">N+1, lazy loading</text>
+    <text class="tiny b f-red np-l1" x="44" y="364">73 queries · 33 ms</text>
+    <g><rect class="f-red-soft s-red" x="182.02" y="342" width="10.02" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="192.68" y="342" width="8.75" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="202.08" y="342" width="8.45" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="211.15" y="342" width="31.35" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="243.25" y="342" width="9.53" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="253.47" y="342" width="8.47" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="263.05" y="342" width="8.83" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="272.55" y="342" width="8.47" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="281.68" y="342" width="8.07" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="290.4" y="342" width="8.75" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="299.79" y="342" width="8.49" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="308.95" y="342" width="8.58" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="318.15" y="342" width="7.67" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="326.44" y="342" width="8.13" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="335.36" y="342" width="11.91" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="347.91" y="342" width="8.39" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="356.92" y="342" width="31.26" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="388.85" y="342" width="8.49" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="397.99" y="342" width="9.85" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="408.48" y="342" width="9.41" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="418.53" y="342" width="8.35" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="427.5" y="342" width="8.03" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="436.17" y="342" width="8.54" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="445.33" y="342" width="7.75" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="453.72" y="342" width="8.16" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="462.5" y="342" width="7.84" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="470.98" y="342" width="8.3" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="479.92" y="342" width="7.75" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="488.3" y="342" width="7.88" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="496.82" y="342" width="8.37" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="505.81" y="342" width="7.84" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="514.29" y="342" width="7.58" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="522.49" y="342" width="8.13" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="531.27" y="342" width="8.07" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="539.98" y="342" width="7.8" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="548.4" y="342" width="8.05" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="557.09" y="342" width="8.07" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="565.8" y="342" width="7.86" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="574.28" y="342" width="7.6" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="582.51" y="342" width="7.9" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="591.03" y="342" width="7.86" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="599.53" y="342" width="8.3" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="608.48" y="342" width="7.67" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="616.79" y="342" width="8.07" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="625.53" y="342" width="9.64" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="635.81" y="342" width="8.43" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="644.88" y="342" width="7.84" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="653.36" y="342" width="7.94" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="661.95" y="342" width="8.71" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="671.3" y="342" width="8.3" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="680.24" y="342" width="8.28" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="689.15" y="342" width="8.73" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="698.52" y="342" width="8.66" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="707.82" y="342" width="8.09" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="716.56" y="342" width="7.88" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="725.06" y="342" width="8.28" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="733.96" y="342" width="8.11" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="742.72" y="342" width="8.69" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="752.03" y="342" width="7.99" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="760.65" y="342" width="8.43" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="769.71" y="342" width="8.28" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="778.61" y="342" width="7.75" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="787.01" y="342" width="8.05" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="795.7" y="342" width="8.11" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="804.43" y="342" width="8.26" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="813.34" y="342" width="8.69" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="822.64" y="342" width="7.8" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="831.08" y="342" width="7.88" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="839.6" y="342" width="8.6" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="848.85" y="342" width="8.05" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="857.52" y="342" width="8.2" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="866.36" y="342" width="8.2" height="16" rx="1.5" stroke-width="1"/><rect class="f-red-soft s-red" x="875.2" y="342" width="8.24" height="16" rx="1.5" stroke-width="1"/></g>
+    <rect class="f-panel np-cover" x="180" y="340" width="724" height="20"/>
+    <line class="s-blue np-cur" x1="0" y1="337" x2="0" y2="363" stroke-width="2"/>
+    <g class="p1"><g class="np-l1n">
+      <path class="none s-wire" d="M197.36 361V378H196" stroke-width="1"/>
+      <text class="tiny" x="202" y="382">each box is one round trip, and the next query waits for it: about 0.4 ms at the app,</text>
+      <text class="tiny" x="202" y="396">of which PostgreSQL spends about 0.03 ms planning and executing the query</text>
+    </g></g>
+  </g>
+  <g class="p3">
+    <text class="np-lab" x="44" y="381">batched, = ANY($1)</text>
+    <text class="tiny b f-green np-l2" x="44" y="394">3 queries · 1.9 ms</text>
+    <rect class="f-green-soft s-green np-s0" x="182.02" y="372" width="11.42" height="16" rx="1.5" stroke-width="1"/>
+    <rect class="f-green-soft s-green np-s1" x="194.11" y="372" width="12.54" height="16" rx="1.5" stroke-width="1"/>
+    <rect class="f-green-soft s-green np-s2" x="207.5" y="372" width="13.16" height="16" rx="1.5" stroke-width="1"/>
+    <text class="tiny np-l2" x="231.26" y="384">orders, then the items of all 20 orders, then all 52 products</text>
+    <text class="np-lab" x="44" y="411">one query, json_agg</text>
+    <text class="tiny b f-green np-l3" x="44" y="424">1 query · 1.2 ms</text>
+    <rect class="f-green-soft s-green np-l3" x="182.04" y="402" width="23.74" height="16" rx="1.5" stroke-width="1"/>
+    <text class="tiny np-l3" x="216.38" y="414">one statement: a join, each order’s items nested as JSON</text>
+  </g>
+  <g class="p2">
+    <text class="np-hd" x="44" y="332">SERVER LOG FOR ONE PAGE VIEW</text>
+    <text class="np-m f-muted end" x="916" y="332">log_min_duration_statement = 0</text>
+    <g class="np-g0"><text class="np-q f-muted end" x="100" y="350">0.055 ms</text><text class="np-q" x="112" y="350">execute: SELECT … FROM orders WHERE customer_id = <tspan class="f-blue b">$1</tspan> …</text><text class="np-q f-blue" x="490" y="350">$1 = '42'</text></g>
+    <g class="np-g1"><text class="np-q f-muted end" x="100" y="364">0.013 ms</text><text class="np-q" x="112" y="364">execute: SELECT … FROM order_items WHERE order_id = <tspan class="f-blue b">$1</tspan></text><text class="np-q f-blue" x="490" y="364">$1 = '495179'</text></g>
+    <g class="np-g2"><text class="np-q f-muted end" x="100" y="378">0.009 ms</text><text class="np-q" x="112" y="378">execute: SELECT … FROM products WHERE id = <tspan class="f-blue b">$1</tspan></text><text class="np-q f-blue" x="490" y="378">$1 = '7689'</text></g>
+    <g class="np-g3"><text class="np-q f-muted end" x="100" y="392">0.008 ms</text><text class="np-q" x="112" y="392">execute: SELECT … FROM products WHERE id = <tspan class="f-blue b">$1</tspan></text><text class="np-q f-blue" x="490" y="392">$1 = '2892'</text></g>
+    <g class="np-g4"><text class="np-q f-muted end" x="100" y="406">0.008 ms</text><text class="np-q" x="112" y="406">execute: SELECT … FROM products WHERE id = <tspan class="f-blue b">$1</tspan></text><text class="np-q f-blue" x="490" y="406">$1 = '1967'</text></g>
+    <g class="np-g5"><text class="np-q f-muted end" x="100" y="420">0.008 ms</text><text class="np-q" x="112" y="420">execute: SELECT … FROM products WHERE id = <tspan class="f-blue b">$1</tspan></text><text class="np-q f-blue" x="490" y="420">$1 = '8428'</text></g>
+    <g class="np-g6"><text class="np-q f-muted end" x="100" y="434">0.010 ms</text><text class="np-q" x="112" y="434">execute: SELECT … FROM order_items WHERE order_id = <tspan class="f-blue b">$1</tspan></text><text class="np-q f-blue" x="490" y="434">$1 = '493709'</text></g>
+    <g class="np-gs">
+      <path class="none s-amber" d="M600 369V423M594 369H600M594 423H600" stroke-width="1.5"/>
+      <text class="tiny sb f-amber-ink" x="610" y="391">the same statement,</text>
+      <text class="tiny sb f-amber-ink" x="610" y="405">a new $1 each time</text>
+      <text class="tiny sb" x="44" y="455">… 66 more lines: <tspan class="f-red">73 statements</tspan>, only <tspan class="f-amber-ink">3 distinct</tspan> (1 orders, 20 order_items, 52 products)</text>
+    </g>
+  </g>
+  <g class="p4">
+    <text class="np-hd" x="44" y="332">PITFALLS</text>
+    <g class="np-p0">
+      <rect class="f-bg s-line" x="44" y="342" width="168" height="116" rx="8" stroke-width="1"/>
+      <text class="np-ct f-red" x="54" y="360">Eager-load everything</text>
+      <text class="tiny" x="54" y="377">Preload only what the</text>
+      <text class="tiny" x="54" y="391">page renders: adding</text>
+      <text class="tiny" x="54" y="405">order_events here would</text>
+      <text class="tiny" x="54" y="419">fetch 60 rows nobody sees.</text>
+    </g>
+    <g class="np-p1">
+      <rect class="f-bg s-line" x="220" y="342" width="168" height="116" rx="8" stroke-width="1"/>
+      <text class="np-ct f-red" x="230" y="360">Endless IN lists</text>
+      <text class="tiny" x="230" y="377">IN ($1, …, $n) is a new</text>
+      <text class="tiny" x="230" y="391">statement for every n,</text>
+      <text class="tiny" x="230" y="405">capped at 65,535 params.</text>
+      <text class="tiny" x="230" y="419">= ANY($1) sends one array.</text>
+    </g>
+    <g class="np-p2">
+      <rect class="f-bg s-line" x="396" y="342" width="168" height="116" rx="8" stroke-width="1"/>
+      <text class="np-ct f-red" x="406" y="360">Two child collections</text>
+      <text class="tiny" x="406" y="377">Joining items and events</text>
+      <text class="tiny" x="406" y="391">repeats rows: 52 + 60</text>
+      <text class="tiny" x="406" y="405">become 156.</text>
+      <g class="f-red-soft s-red" stroke-width="1"><rect x="408" y="410" width="9" height="7" rx="1.5"/><rect x="408" y="419" width="9" height="7" rx="1.5"/><rect x="408" y="428" width="9" height="7" rx="1.5"/><rect x="419" y="410" width="9" height="7" rx="1.5"/><rect x="419" y="419" width="9" height="7" rx="1.5"/><rect x="419" y="428" width="9" height="7" rx="1.5"/><rect x="430" y="410" width="9" height="7" rx="1.5"/><rect x="430" y="419" width="9" height="7" rx="1.5"/><rect x="430" y="428" width="9" height="7" rx="1.5"/><rect x="441" y="410" width="9" height="7" rx="1.5"/><rect x="441" y="419" width="9" height="7" rx="1.5"/><rect x="441" y="428" width="9" height="7" rx="1.5"/></g>
+      <text class="tiny" x="462" y="419">order 495179:</text>
+      <text class="tiny b f-red" x="462" y="433">4 × 3 = 12 rows</text>
+    </g>
+    <g class="np-p3">
+      <rect class="f-bg s-line" x="572" y="342" width="168" height="116" rx="8" stroke-width="1"/>
+      <text class="np-ct f-red" x="582" y="360">A cache hides it</text>
+      <text class="tiny" x="582" y="377">A hit sends 0 queries;</text>
+      <text class="tiny" x="582" y="391">every miss sends all 73</text>
+      <text class="tiny" x="582" y="405">again, so cold caches</text>
+      <text class="tiny" x="582" y="419">and expiries stay slow.</text>
+    </g>
+    <g class="np-p4">
+      <rect class="f-bg s-line" x="748" y="342" width="168" height="116" rx="8" stroke-width="1"/>
+      <text class="np-ct f-red" x="758" y="360">GraphQL resolvers</text>
+      <text class="tiny" x="758" y="377">Order.items resolves once</text>
+      <text class="tiny" x="758" y="391">per order: N+1 again.</text>
+      <text class="tiny" x="758" y="405">DataLoader collects the</text>
+      <text class="tiny" x="758" y="419">keys of one tick into a</text>
+      <text class="tiny" x="758" y="433">single batch call.</text>
+    </g>
+  </g>
+</g>
+</svg>

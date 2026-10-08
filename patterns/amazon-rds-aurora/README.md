@@ -206,6 +206,10 @@ Choose **RDS** when you want a standard engine with backups, patching and failov
 
 - [Well-Architected Framework](../well-architected-framework/) — Review a workload against six pillars, from operational excellence to sustainability, and decide on the trade-offs between them.
 
+## Related database topics
+
+- [Query Execution Plans](../query-execution-plans/) — Read EXPLAIN the way the planner thinks: scans, joins, estimated against actual rows, and the statistics behind each choice.
+
 ## References
 
 - [Amazon RDS User Guide — What is Amazon Relational Database Service (Amazon RDS)?](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html)

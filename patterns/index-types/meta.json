@@ -1,0 +1,163 @@
+{
+  "aka": [
+    "Partial index",
+    "Expression index",
+    "Functional index",
+    "BRIN",
+    "GIN",
+    "GiST",
+    "SP-GiST",
+    "Hash index"
+  ],
+  "steps": [
+    {
+      "title": "One B-tree for everything",
+      "caption": "One B-tree per column: 3,464 kB for 3,000 open orders, lower(email) missed, @> scans all products.",
+      "body": "Acme Shop gave every column it searched a plain B-tree. The one on `status` (3,464 kB) holds all 500,000 orders to find the 3,000 open ones and sorts them all to return 20, the unique index on `email` can't serve `lower(email) = …`, so a login scans 100,000 customers, the one on `happened_at` takes 32 MB, and no B-tree can look inside `attrs @> '{…}'`, so all 10,000 products are checked."
+    },
+    {
+      "title": "Partial and expression",
+      "caption": "A partial index holds only the 3,000 open orders (88 kB); an index on lower(email) serves the login.",
+      "body": "A **partial index** stores only the rows that pass its `WHERE`: the 3,000 open orders, keyed by `created_at`, in 88 kB instead of 3,464 kB, and the queue reads one leaf page. The planner uses it only when it can prove that the query's condition implies the index predicate. An **expression index** stores `lower(email)`, so the login is one lookup, and as a `UNIQUE` index it also rejects the same address typed in another case."
+    },
+    {
+      "title": "BRIN and GIN",
+      "caption": "BRIN keeps a min and max per 128 pages (24 kB, correlation 1.00); GIN maps each key to its rows.",
+      "body": "**BRIN** stores one summary, the lowest and highest `happened_at`, for every 128 heap pages: 87 summaries in 24 kB. It works because events are stored in time order (`pg_stats` correlation 1.00), so one range matches and its 128 pages are read and rechecked. **GIN** is an inverted index: each key (with `jsonb_path_ops`, a hash of path and value) points to a sorted list of the rows that contain it, so `@>` intersects two lists and fetches 8 rows; the same structure serves arrays and full-text search."
+    },
+    {
+      "title": "Costs and limits",
+      "caption": "A reworded WHERE skips the partial index, hash handles = only, BRIN needs order, GIN queues writes.",
+      "body": "Written as `NOT IN ('delivered', 'cancelled')`, the same open orders no longer prove the predicate, so the partial index is skipped. A **hash** index answers `=` only (no `UNIQUE`, ranges or ordering; WAL-logged, so crash-safe, since PostgreSQL 10), BRIN on `orders.created_at` (correlation 0.22) matches 37 of 40 ranges and loses to a plain scan, and GIN's **pending list** makes inserts cheaper but every search reads it until `VACUUM` or `gin_clean_pending_list()` merges it. **GiST** covers ranges, geometry and nearest-neighbour search, **SP-GiST** quad-trees and prefixes, and MySQL's InnoDB has B-tree, `FULLTEXT` and `SPATIAL` indexes but no partial or BRIN ones."
+    }
+  ],
+  "related": [
+    "b-tree-index",
+    "composite-index",
+    "covering-index",
+    "query-execution-plans",
+    "postgresql",
+    "elasticsearch",
+    "mongodb",
+    "hash-table",
+    "table-partitioning"
+  ],
+  "references": [
+    {
+      "title": "PostgreSQL 18 documentation — 11.2 Index Types",
+      "url": "https://www.postgresql.org/docs/18/indexes-types.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 11.8 Partial Indexes",
+      "url": "https://www.postgresql.org/docs/18/indexes-partial.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 11.7 Indexes on Expressions",
+      "url": "https://www.postgresql.org/docs/18/indexes-expressional.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 65.6 Hash Indexes",
+      "url": "https://www.postgresql.org/docs/18/hash-index.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 65.5 BRIN Indexes",
+      "url": "https://www.postgresql.org/docs/18/brin.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 65.4 GIN Indexes",
+      "url": "https://www.postgresql.org/docs/18/gin.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 8.14 JSON Types (jsonb indexing)",
+      "url": "https://www.postgresql.org/docs/18/datatype-json.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 65.2 GiST Indexes",
+      "url": "https://www.postgresql.org/docs/18/gist.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 65.3 SP-GiST Indexes",
+      "url": "https://www.postgresql.org/docs/18/spgist.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — F.35 pg_trgm",
+      "url": "https://www.postgresql.org/docs/18/pgtrgm.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — CREATE INDEX",
+      "url": "https://www.postgresql.org/docs/18/sql-createindex.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — PREPARE (generic and custom plans)",
+      "url": "https://www.postgresql.org/docs/18/sql-prepare.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 66.7 Heap-Only Tuples (HOT)",
+      "url": "https://www.postgresql.org/docs/18/storage-hot.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 23.2 Collation Support",
+      "url": "https://www.postgresql.org/docs/18/collation.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — 12.3 Controlling Text Search (ranking)",
+      "url": "https://www.postgresql.org/docs/18/textsearch-controls.html"
+    },
+    {
+      "title": "PostgreSQL 10 release notes (hash indexes WAL-logged)",
+      "url": "https://www.postgresql.org/docs/10/release-10.html"
+    },
+    {
+      "title": "PostgreSQL 14 release notes (BRIN minmax-multi and bloom)",
+      "url": "https://www.postgresql.org/docs/14/release-14.html"
+    },
+    {
+      "title": "PostgreSQL 16 release notes (HOT updates with BRIN)",
+      "url": "https://www.postgresql.org/docs/16/release-16.html"
+    },
+    {
+      "title": "PostgreSQL 18 release notes (parallel GIN builds)",
+      "url": "https://www.postgresql.org/docs/18/release-18.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — CREATE INDEX Statement",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/create-index.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — Case Sensitivity in String Searches",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/case-sensitivity.html"
+    },
+    {
+      "title": "Microsoft Learn — Create Filtered Indexes (SQL Server)",
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/indexes/create-filtered-indexes"
+    },
+    {
+      "title": "SQLite — Partial Indexes",
+      "url": "https://sqlite.org/partialindex.html"
+    },
+    {
+      "title": "SQLite — Indexes On Expressions",
+      "url": "https://sqlite.org/expridx.html"
+    },
+    {
+      "title": "Oracle AI Database 26ai Concepts — Indexes and Index-Organized Tables",
+      "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/cncpt/indexes-and-index-organized-tables.html"
+    },
+    {
+      "title": "MongoDB Manual — Partial Indexes",
+      "url": "https://www.mongodb.com/docs/manual/core/index-partial/"
+    },
+    {
+      "title": "Amazon DynamoDB Developer Guide — Take advantage of sparse indexes",
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-indexes-general-sparse-indexes.html"
+    },
+    {
+      "title": "Elasticsearch Reference — Thai tokenizer",
+      "url": "https://www.elastic.co/docs/reference/text-analysis/analysis-thai-tokenizer"
+    },
+    {
+      "title": "OpenSearch Documentation — Thai analyzer",
+      "url": "https://docs.opensearch.org/latest/analyzers/language-analyzers/thai/"
+    }
+  ]
+}

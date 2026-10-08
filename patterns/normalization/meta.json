@@ -1,0 +1,42 @@
+{
+  "aka": ["Normal forms", "1NF, 2NF, 3NF, BCNF", "Denormalisation"],
+  "steps": [
+    {
+      "title": "One wide table",
+      "caption": "Repeated facts: an email change rewrites 6,537 rows; inserts fail and deletes lose a customer.",
+      "body": "Acme's prototype kept one row per order line in `order_lines_wide`, rebuilt here with `CREATE TABLE … AS SELECT` from the sample data: 1,250,000 rows in 25,280 pages (198 MB), with the customer's email and country and the product's name and price repeated on every line. Customer 1's new email has to be written into all **6,537** of their lines (33 ms and 2.5 MB of WAL in one run on a laptop), and an update that misses some leaves two emails. A new product can't be stored until someone orders it (`null value in column \"order_id\"`), and deleting order 124446 deletes everything known about customer 5797."
+    },
+    {
+      "title": "Each fact stored once",
+      "caption": "Normal forms split it by what each column depends on: 4 tables, and the new email is UPDATE 1.",
+      "body": "Normalising follows the dependencies. **1NF**: one value per cell. **2NF**: nothing depends on part of the key `(order_id, line_no)`, so the order's own facts move to `orders`. **3NF**: nothing depends on another non-key column, so the email and country move to `customers` and the product's name and price to `products`. The result is the sample schema, held together by foreign keys: the same email change is **one row** in `customers` (0.04 ms, 328 bytes of WAL), and the four tables take 131 MB instead of 198."
+    },
+    {
+      "title": "Copy on purpose",
+      "caption": "orders.total_thb is a deliberate copy kept by a trigger; the price paid is a fact, not a copy.",
+      "body": "Some copies pay for themselves. `orders.total_thb` saves summing the lines on every order list: customer 1's 2,633 orders read **2,085 pages in 2.6 ms** with the stored total and 12,654 pages in 11 ms with `SUM(qty × price_thb)`. A copy must be kept right: here a row trigger on `order_items` adjusts the total in the same transaction, and application code, a materialized view or a change stream are the alternatives. `order_items.price_thb` and `orders.shipping_country` are not copies at all: they record the price paid and where the order shipped, so the lines keep 2,646.15 after the product goes to 2,799.00."
+    },
+    {
+      "title": "Joins vs copies",
+      "caption": "Joins cost reads, copies cost writes; document stores make the same choice as embed or reference.",
+      "body": "Reading order 41 with the email and product names joins four tables: 5 index lookups and 17 pages, against 4 pages from the wide table, both far under a millisecond. The copy is paid on every write instead: 10,000 new lines wrote **5.2 MB of WAL in 0.20 s** with the trigger and 2.2 MB in 0.10 s without, and any write path that skips the trigger lets the total drift. MongoDB makes the same choice as **embed or reference**, DynamoDB's **single-table design** keeps a customer and their orders in one item collection, and CQRS read models move the copies into a separate store."
+    }
+  ],
+  "related": ["materialized-view", "cqrs", "change-data-capture", "join-algorithms", "mongodb", "amazon-dynamodb", "database-per-service", "event-sourcing", "postgresql"],
+  "references": [
+    { "title": "E. F. Codd — A Relational Model of Data for Large Shared Data Banks (Communications of the ACM, 1970)", "url": "https://dl.acm.org/doi/10.1145/362384.362685" },
+    { "title": "PostgreSQL 18 documentation — Constraints (primary keys, foreign keys)", "url": "https://www.postgresql.org/docs/18/ddl-constraints.html" },
+    { "title": "PostgreSQL 18 documentation — CREATE TRIGGER", "url": "https://www.postgresql.org/docs/18/sql-createtrigger.html" },
+    { "title": "PostgreSQL 18 documentation — Trigger Functions (PL/pgSQL)", "url": "https://www.postgresql.org/docs/18/plpgsql-trigger.html" },
+    { "title": "PostgreSQL 18 documentation — Materialized Views", "url": "https://www.postgresql.org/docs/18/rules-materializedviews.html" },
+    { "title": "PostgreSQL 18 documentation — Generated Columns", "url": "https://www.postgresql.org/docs/18/ddl-generated-columns.html" },
+    { "title": "PostgreSQL 18 documentation — The Cumulative Statistics System (pg_stat_get_backend_wal)", "url": "https://www.postgresql.org/docs/18/monitoring-stats.html" },
+    { "title": "MongoDB Database Manual — Embedded Data in Your MongoDB Schema", "url": "https://www.mongodb.com/docs/manual/data-modeling/embedding/" },
+    { "title": "MongoDB Database Manual — Reference Data in Your MongoDB Schema", "url": "https://www.mongodb.com/docs/manual/data-modeling/referencing/" },
+    { "title": "Amazon DynamoDB Developer Guide — Data modeling foundations (single table design)", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/data-modeling-foundations.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Best practices for modeling relational data", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-relational-modeling.html" },
+    { "title": "MySQL 8.4 Reference Manual — Restrictions on Stored Programs (triggers)", "url": "https://dev.mysql.com/doc/refman/8.4/en/stored-program-restrictions.html" },
+    { "title": "Microsoft Learn — Create indexed views (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/views/create-indexed-views" },
+    { "title": "Oracle AI Database 26ai Data Warehousing Guide — Refreshing Materialized Views", "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/dwhsg/refreshing-materialized-views.html" }
+  ]
+}

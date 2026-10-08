@@ -1,0 +1,39 @@
+{
+  "aka": ["N+1 selects", "N+1 query problem"],
+  "steps": [
+    {
+      "title": "73 queries, one page",
+      "caption": "One page of 20 orders sends 73 queries: 1 for the orders, 20 for their items, 52 for products.",
+      "body": "Acme's **My orders** endpoint shows customer 42's 20 latest orders with their items and product names. With lazy loading the ORM sends 1 query for the orders, 1 per order for its items and 1 per item for its product: **1 + 20 + 52 = 73 queries**, one round trip after another. Each is quick, yet the page takes **33 ms** at the app (median of 100 views, one run on a laptop), and at an assumed 100 page views a second that is 7,300 queries a second."
+    },
+    {
+      "title": "Lazy loading in a loop",
+      "caption": "order.items and item.product load on first access: 73 statements, only 3 distinct ones.",
+      "body": "The code reads like one query, but `order.items` and `item.product` are lazy: each first access runs a query. The server log shows the same statement again and again with a new `$1`, and **pg_stat_statements** folds them into 3 entries with 1, 20 and 52 calls. PostgreSQL spends **1.9 ms** planning and executing all 73; the other 31 ms of the page view go to round trips and per-statement overhead."
+    },
+    {
+      "title": "Batch by keys, or join",
+      "caption": "Batched with = ANY($1): 3 queries, 1.9 ms. One join with json_agg: 1 query, 1.2 ms.",
+      "body": "Ask for all the children at once. With `.preload` the ORM sends the orders query, then `order_items WHERE order_id = ANY($1)` with the 20 order ids as one array, then `products WHERE id = ANY($1)` with the 52 product ids: **3 queries, 1.9 ms**. Or one statement joins the three tables and nests each order's items with `json_agg`: **1 query, 1.2 ms**."
+    },
+    {
+      "title": "Pitfalls",
+      "caption": "Pitfalls: preloading too much, endless IN lists, joins that multiply rows, caches, GraphQL.",
+      "body": "Preload only what the page renders. Send keys as one array: an `IN` list with a parameter per key is a new statement for every length, and PostgreSQL caps a statement at 65,535 parameters. Don't join two child collections in one query: items and events together turn 52 + 60 rows into 156. A cache hides N+1 until it misses, and GraphQL resolvers fall into it field by field; a batching loader such as **DataLoader** collects the keys of one tick into one batch call, and so into one query."
+    }
+  ],
+  "related": ["query-execution-plans", "join-algorithms", "b-tree-index", "composite-index", "distributed-tracing", "graphql-federation", "cache-aside", "gateway-aggregation", "postgresql"],
+  "references": [
+    { "title": "PostgreSQL 18 — pg_stat_statements", "url": "https://www.postgresql.org/docs/18/pgstatstatements.html" },
+    { "title": "PostgreSQL 18 — Row and Array Comparisons (= ANY)", "url": "https://www.postgresql.org/docs/18/functions-comparisons.html" },
+    { "title": "PostgreSQL 18 — Aggregate Functions (json_agg)", "url": "https://www.postgresql.org/docs/18/functions-aggregate.html" },
+    { "title": "PostgreSQL 18 — Table Expressions (LATERAL subqueries)", "url": "https://www.postgresql.org/docs/18/queries-table-expressions.html" },
+    { "title": "PostgreSQL 18 — libpq Pipeline Mode", "url": "https://www.postgresql.org/docs/18/libpq-pipeline-mode.html" },
+    { "title": "SQLite — Many Small Queries Are Efficient In SQLite", "url": "https://www.sqlite.org/np1queryprob.html" },
+    { "title": "GraphQL — DataLoader", "url": "https://github.com/graphql/dataloader" },
+    { "title": "Django 6.1 — QuerySet API reference (select_related, prefetch_related, fetch_mode)", "url": "https://docs.djangoproject.com/en/6.1/ref/models/querysets/" },
+    { "title": "Rails Guides — Active Record Query Interface: Eager Loading Associations", "url": "https://guides.rubyonrails.org/active_record_querying.html#eager-loading-associations" },
+    { "title": "A Short Guide to Hibernate 7 (7.4) — Association fetching", "url": "https://docs.hibernate.org/orm/7.4/introduction/html_single/" },
+    { "title": "EF Core — Single vs. Split Queries", "url": "https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries" }
+  ]
+}

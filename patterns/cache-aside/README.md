@@ -97,6 +97,10 @@ If the whole data set is small and rarely changes, skip lazy loading: load it al
 - [System Map](../system-map/) — One request and one event through a typical system: DNS, CDN, load balancer, gateway, services, cache, database, queue and search.
 - [Redis & Valkey](../redis/) — An in-memory data-structure server: cache, session store, rate limiter, leaderboard and lightweight queue in one process.
 
+## Related database topics
+
+- [N+1 Queries](../n-plus-one-queries/) — One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it.
+
 ## References
 
 - [Azure Architecture Center — Cache-Aside pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside)

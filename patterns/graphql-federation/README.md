@@ -249,6 +249,10 @@ To remove a field safely, run an [Expand and Contract](../expand-and-contract/) 
 - [JWT Validation](../jwt-validation/) — APIs verify token signatures and claims locally, using the issuer's cached public keys (JWKS).
 - [Token Exchange (On-Behalf-Of)](../token-exchange/) — Swap an incoming user token for a narrowly scoped one before calling a downstream API.
 
+## Related database topics
+
+- [N+1 Queries](../n-plus-one-queries/) — One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it.
+
 ## References
 
 - [GraphQL Specification (September 2025 edition)](https://spec.graphql.org/September2025/)

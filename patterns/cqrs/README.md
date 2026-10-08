@@ -115,6 +115,11 @@ It is overkill when:
 - [Elasticsearch & OpenSearch](../elasticsearch/) — Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes.
 - [Apache Flink](../flink/) — A stream processor: stateful operators over unbounded streams, with event time, windows and exactly-once checkpoints.
 
+## Related database topics
+
+- [Covering Index](../covering-index/) — Answer a query from the index alone: include the columns it selects, so the table is never read, and the scan is index-only.
+- [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
+
 ## References
 
 - [Martin Fowler — CQRS](https://martinfowler.com/bliki/CQRS.html)

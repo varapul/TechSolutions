@@ -83,6 +83,10 @@ A **trace** records one request as a tree of **spans**. A span is one timed oper
 
 - [Golden Signals, RED & USE](../golden-signals/) — What to measure and alert on: latency, traffic, errors and saturation, RED for request-driven services and USE for resources.
 
+## Related database topics
+
+- [N+1 Queries](../n-plus-one-queries/) — One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it.
+
 ## References
 
 - [W3C — Trace Context (Recommendation)](https://www.w3.org/TR/trace-context/)

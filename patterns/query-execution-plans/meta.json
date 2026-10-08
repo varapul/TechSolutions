@@ -1,0 +1,46 @@
+{
+  "aka": ["EXPLAIN", "EXPLAIN ANALYZE", "Query plans"],
+  "steps": [
+    {
+      "title": "The report is slow",
+      "caption": "The country report takes 106 ms to return 6 rows, and the team starts guessing at the cause.",
+      "body": "Acme Shop's report adds up the last 30 days of orders per customer country: 23,213 orders become 6 rows. On PostgreSQL 18.6 it takes **106 ms** (one `EXPLAIN ANALYZE` run on a laptop, parallel query off), and the team starts guessing: an index on every column, more memory, a bigger instance. None of those guesses looks at what the database actually did."
+    },
+    {
+      "title": "Reading the plan",
+      "caption": "Read from the leaves up: 48 rows expected, 23,213 found, so 23,213 index lookups and 93% of buffers.",
+      "body": "`EXPLAIN (ANALYZE, BUFFERS)` prints the plan tree; read it from the innermost nodes up and compare each node's estimated `rows` with the actual rows. The `Seq Scan` on orders was **estimated at 48 rows and returned 23,213**, so the `Nested Loop` above it looked up `customers_pkey` once per row: `loops=23213`, about 46 ms and 69,639 of the 74,704 buffers. The most expensive node is where to look, and the first big gap between estimate and reality usually explains it."
+    },
+    {
+      "title": "Estimates versus reality",
+      "caption": "Histogram ends 2 Sep, so the planner guessed 48 rows. After ANALYZE: a hash join and 6,198 buffers.",
+      "body": "The planner estimates rows from `pg_stats`. The `created_at` histogram was built before the last 30 days of orders arrived and ends at **2026-09-02 23:58**, so `created_at >= '2026-09-03'` falls past its last bucket and the planner uses a floor of 0.01%: 48 rows. After `ANALYZE orders` the range covers 4.59 of the 100 buckets, the estimate is **22,956**, the plan switches to a `Hash Join`, and the report reads **6,198 buffers instead of 74,704** (88 ms instead of 106 ms in this run)."
+    },
+    {
+      "title": "Pitfalls in production",
+      "caption": "EXPLAIN alone only estimates; ANALYZE runs it. Generic plans can't see $1. Log slow plans in prod.",
+      "body": "Plain `EXPLAIN` shows estimates only; `EXPLAIN ANALYZE` really runs the statement, so wrap an `UPDATE` or `DELETE` in `BEGIN … ROLLBACK`. Plans change with parameters: after five runs a prepared statement may switch to a **generic plan** (`plan_cache_mode = auto`), which can't see `$1` and here assumed 166,667 rows, a third of the table. In production, `auto_explain` logs the plans of slow statements and `pg_stat_statements` shows which statements cost the most in total."
+    }
+  ],
+  "related": ["b-tree-index", "join-algorithms", "composite-index", "n-plus-one-queries", "postgresql", "read-replicas", "materialized-view", "amazon-rds-aurora"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — Using EXPLAIN", "url": "https://www.postgresql.org/docs/18/using-explain.html" },
+    { "title": "PostgreSQL 18 documentation — EXPLAIN", "url": "https://www.postgresql.org/docs/18/sql-explain.html" },
+    { "title": "PostgreSQL 18 documentation — Statistics Used by the Planner", "url": "https://www.postgresql.org/docs/18/planner-stats.html" },
+    { "title": "PostgreSQL 18 documentation — Row Estimation Examples", "url": "https://www.postgresql.org/docs/18/row-estimation-examples.html" },
+    { "title": "PostgreSQL 18 documentation — pg_stats", "url": "https://www.postgresql.org/docs/18/view-pg-stats.html" },
+    { "title": "PostgreSQL 18 documentation — CREATE STATISTICS", "url": "https://www.postgresql.org/docs/18/sql-createstatistics.html" },
+    { "title": "PostgreSQL 18 documentation — Routine Vacuuming (the autovacuum daemon)", "url": "https://www.postgresql.org/docs/18/routine-vacuuming.html" },
+    { "title": "PostgreSQL 18 documentation — Query Planning (planner cost constants, plan_cache_mode)", "url": "https://www.postgresql.org/docs/18/runtime-config-query.html" },
+    { "title": "PostgreSQL 18 documentation — PREPARE (custom and generic plans)", "url": "https://www.postgresql.org/docs/18/sql-prepare.html" },
+    { "title": "PostgreSQL 18 documentation — auto_explain", "url": "https://www.postgresql.org/docs/18/auto-explain.html" },
+    { "title": "PostgreSQL 18 documentation — pg_stat_statements", "url": "https://www.postgresql.org/docs/18/pgstatstatements.html" },
+    { "title": "PostgreSQL 18 release notes", "url": "https://www.postgresql.org/docs/18/release-18.html" },
+    { "title": "PostgreSQL source — selfuncs.c, histogram selectivity (REL_18_STABLE)", "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/utils/adt/selfuncs.c" },
+    { "title": "MySQL 8.4 Reference Manual — EXPLAIN Statement (FORMAT=TREE, EXPLAIN ANALYZE)", "url": "https://dev.mysql.com/doc/refman/8.4/en/explain.html" },
+    { "title": "MySQL 8.4 Reference Manual — Configuring Persistent Optimizer Statistics Parameters", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-persistent-stats.html" },
+    { "title": "MySQL 8.4 Reference Manual — ANALYZE TABLE Statement (histograms)", "url": "https://dev.mysql.com/doc/refman/8.4/en/analyze-table.html" },
+    { "title": "Amazon Aurora User Guide — Managing query execution plans for Aurora PostgreSQL", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Optimize.html" },
+    { "title": "Microsoft Learn — Monitor performance by using the Query Store (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/performance/monitoring-performance-by-using-the-query-store" }
+  ]
+}

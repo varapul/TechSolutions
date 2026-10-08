@@ -189,6 +189,11 @@ GET products/_analyze
 - [Sharding](../sharding/) — Split data horizontally across databases using a shard key.
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 
+## Related database topics
+
+- [Index Types](../index-types/) — Beyond B-trees: hash, GIN for arrays, JSON and text, GiST, BRIN for time-ordered data, and partial and expression indexes.
+- [Keyset Pagination](../keyset-pagination/) — Page with WHERE key > last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing.
+
 ## References
 
 - [Elastic Docs — Elasticsearch release notes](https://www.elastic.co/docs/release-notes/elasticsearch)
