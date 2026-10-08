@@ -13,7 +13,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 <!-- BEGIN GENERATED: catalog (npm run sync; do not edit by hand) -->
 ## Contents
 
-**188 animated** · 0 planned · 16 categories
+**188 animated** · 18 planned · 17 categories
 
 | | Category | Animated | What's inside |
 |:-:|---|:-:|---|
@@ -23,6 +23,7 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | 🚪 | [API & Edge](#api--edge) | 9 / 9 | The front door: how clients reach services, and where cross-cutting concerns live. |
 | 📨 | [Messaging & Integration](#messaging--integration) | 12 / 12 | Asynchronous communication, and coordinating work that spans several services. |
 | 🗄️ | [Data Management](#data-management) | 9 / 9 | Storing, scaling, caching and synchronising data across services. |
+| 🗃️ | [Database Internals & Performance](#database-internals--performance) | 0 / 18 | How databases find, store and protect data: indexes, query plans, transactions and storage engines, and how to use them well. |
 | 🛡️ | [Resilience & Reliability](#resilience--reliability) | 9 / 9 | Keep serving when dependencies are slow, overloaded or down. |
 | 🚀 | [Deployment & Release](#deployment--release) | 8 / 8 | Ship changes safely, watch them in production, and roll back fast. |
 | 🔄 | [Migration & Modernization](#migration--modernization) | 8 / 8 | Evolve legacy systems step by step, without a big-bang rewrite. |
@@ -149,6 +150,33 @@ Every diagram is a single, dependency-free SVG file animated with CSS. It plays 
 | [**Change Data Capture (CDC)**](patterns/change-data-capture/) | Stream every committed change from the database log to other systems. | ✅ animated |
 | [**Database per Service**](patterns/database-per-service/) | Each service owns its data; others go through its API or events, never its tables. | ✅ animated |
 | [**Medallion Architecture**](patterns/medallion-architecture/) | Bronze, silver, gold: raw data is refined in layers inside a lakehouse. | ✅ animated |
+
+<sub>[↑ Back to contents](#contents)</sub>
+
+## Database Internals & Performance
+
+🗃️ How databases find, store and protect data: indexes, query plans, transactions and storage engines, and how to use them well.
+
+| Pattern | In one line | Status |
+|---|---|:-:|
+| B-Tree Index | How a B-tree index finds a row in three or four page reads, serves ranges in order, and what every insert costs to keep it sorted. | ⏳ planned |
+| Composite Index | A multi-column index serves queries that use its leading columns: put equality columns first and the range or sort column last. | ⏳ planned |
+| Covering Index | Answer a query from the index alone: include the columns it selects, so the table is never read, and the scan is index-only. | ⏳ planned |
+| Index Types | Beyond B-trees: hash, GIN for arrays, JSON and text, GiST, BRIN for time-ordered data, and partial and expression indexes. | ⏳ planned |
+| Query Execution Plans | Read EXPLAIN the way the planner thinks: scans, joins, estimated against actual rows, and the statistics behind each choice. | ⏳ planned |
+| Join Algorithms | Nested loop, hash join and merge join: how each joins two tables, what it costs, and when the planner picks it. | ⏳ planned |
+| N+1 Queries | One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it. | ⏳ planned |
+| Keyset Pagination | Page with WHERE key > last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing. | ⏳ planned |
+| Normalization & Denormalization | Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step. | ⏳ planned |
+| Transaction Isolation Levels | What concurrent transactions can see of each other: the anomalies each isolation level allows and the defaults engines use. | ⏳ planned |
+| MVCC | Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions. | ⏳ planned |
+| Locks & Deadlocks | Row locks make writers wait for each other; two transactions waiting on each other is a deadlock, and the database aborts one. | ⏳ planned |
+| Optimistic Concurrency Control | Update a row only if it is unchanged since you read it, using a version column, and retry on conflict instead of holding locks. | ⏳ planned |
+| Write-Ahead Log | Log each change before applying it, so a commit survives a crash, recovery replays the log, and replicas and backups follow it. | ⏳ planned |
+| LSM Tree vs B-Tree | Two storage engine designs: update pages in place, or append in memory and merge sorted files, and what each costs to read and write. | ⏳ planned |
+| Row vs Column Storage | Store rows together for transactions or columns together for analytics, and why a column store scans and compresses so much faster. | ⏳ planned |
+| Connection Pooling | Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database. | ⏳ planned |
+| Table Partitioning | Split a large table into partitions by range, list or hash, so queries skip partitions and old data is dropped in an instant. | ⏳ planned |
 
 <sub>[↑ Back to contents](#contents)</sub>
 

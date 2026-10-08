@@ -126,6 +126,16 @@ The *DevOps & SRE Principles* and *Platform Engineering* categories teach ways o
 - **Sources:** these ideas come from books, reports and framework documents (Google's SRE books, the DORA reports, Team Topologies, 12factor.net, the AWS Well-Architected Framework, the FinOps Framework, slsa.dev). Name the source and its authors, paraphrase instead of quoting, give definitions, thresholds and research findings with the edition or year they come from, and never present a research correlation as a law or invent a statistic. Acme Shop's own numbers are an illustration; say so where a reader could take them for research.
 - **Colour keeps its meaning:** blue for work flowing (commits, changes, deploys, requests), green for success and the improved outcome, red for failures and the pain point, amber for the threshold or the number to watch, purple for alerts and events, teal for shared knowledge and state (runbooks, postmortems, catalogs, state files), and orange for policy, identity and approvals.
 
+## Database diagrams
+
+The *Database Internals & Performance* category shows how a database finds, stores and protects data. The canvas, timeline and tokens are the same; these conventions keep the pages consistent:
+
+- **One shared dataset.** Every page uses Acme Shop's sample data (customers, products, orders, order items, order events), generated deterministically on PostgreSQL, so table names, row counts and keys agree from page to page. Name the PostgreSQL version.
+- **A real run, not a guess.** Run the statements the diagram shows on a copy of the sample data and take every plan, row count, page count, lock and timing from that run (`EXPLAIN (ANALYZE, BUFFERS)`, `pg_stat_*`, `pg_locks`). Timings change from run to run: round them and say they come from one run on a laptop.
+- **Draw the data and its structures:** tables as small grids with real rows, index and heap pages as boxes holding real keys, row versions with their transaction ids, transactions as timelines of real statements. A query is a token that travels through the structure it reads.
+- **The four-step arc:** the problem (the slow query, the anomaly, the lock pile-up, in red); the mechanism inside the database; the fix or the right way to use it, measured; and its cost or limit (write amplification, storage, bloat, contention), or how other engines do it differently.
+- **Colour keeps its meaning:** blue for reads and queries, purple for writes and new row versions, green for the fast path and committed data, red for slow paths, anomalies and aborts, amber for the setting, statistic or threshold to watch, teal for stored structures (index pages, the log, snapshots), and orange for locks.
+
 ## Example: keyframes from a timeline
 
 ```js
@@ -141,12 +151,13 @@ console.log(track('xx-call', go.segs));                              // go.end i
 
 ## Writing
 
-- **meta.json:** four steps, each with a `title`, a one-sentence `caption` (shown in the SVG) and a two-to-three-sentence `body` (README table and site, with inline Markdown allowed). `related` holds catalog slugs and `references` holds `{title, url}` pairs with primary sources where possible (standards, vendor architecture centres, the original article or book). On a System Components or AWS Services page, `related` also lists the page under *Related components and services* on every pattern it names, and on a DevOps & SRE or Platform Engineering page, under *Related principles and frameworks* on every pattern and component it names, so name only pages it really connects to.
+- **meta.json:** four steps, each with a `title`, a one-sentence `caption` (shown in the SVG) and a two-to-three-sentence `body` (README table and site, with inline Markdown allowed). `related` holds catalog slugs and `references` holds `{title, url}` pairs with primary sources where possible (standards, vendor architecture centres, the original article or book). On a System Components or AWS Services page, `related` also lists the page under *Related components and services* on every pattern it names, on a DevOps & SRE or Platform Engineering page, under *Related principles and frameworks* on every pattern and component it names, and on a Database Internals & Performance page, under *Related database topics*, so name only pages it really connects to.
 - **README.md:** keep the sections from the template (*The problem*, *How it works*, *When to use it*, *Trade-offs*, *Implementation notes*). Be concrete and vendor-neutral; name managed services as examples, not requirements.
 - **Algorithm READMEs** add two sections, and `npm run new` scaffolds them for that category: *Code*, a short Python 3 implementation of your own that uses only the standard library, with an example call and its output (run it, with edge cases, before you commit), and *Complexity*, a table of the time in the best, average and worst case, the extra space, and whether it is stable or in place where that applies.
 - **Design pattern READMEs** add a *Code* section, which `npm run new` scaffolds for that category: a short TypeScript example of your own that mirrors the diagram's scenario and runs as is with `node` (Node 22 strips the types, so use only erasable syntax: no `enum`, `namespace`, parameter properties or decorators), with its output; run it, with assertions, before you commit. Paraphrase the pattern's intent instead of quoting the book.
 - **Component READMEs** (*System Components* and *AWS Services*) add a *Where it fits* section, which `npm run new` scaffolds for those categories: the solutions the product appears in, the patterns of this catalog it implements or supports, its usual neighbours, and its managed offerings (for an open-source product, the AWS service that runs it, when there is one). In *When to use it*, compare it with its closest alternatives; a small table works well. These pages are about one product, so the vendor-neutral rule above gives way to accuracy: state versions, defaults and limits with the version or date they hold for, and keep marketing language out.
 - **Principle READMEs** (*DevOps & SRE Principles* and *Platform Engineering*) have their own sections, which `npm run new` scaffolds for those categories: *The problem*, *How it works* (the principle or framework itself, attributed to its source), *Putting it into practice* (concrete steps a team takes, with tools named as examples, not requirements), *Where it fits* (the patterns, components and other principles of this catalog it connects to), *When to use it* (where it pays off, and where it doesn't fit or costs more than it returns) and *Common pitfalls* (the usual misreadings and anti-patterns, each with what to do instead). Keep evangelism out: be practical and balanced.
+- **Database READMEs** (*Database Internals & Performance*) add a *Try it* section, which `npm run new` scaffolds for the category: a short SQL script that runs as is on PostgreSQL against a fresh copy of the sample data, with its key output (plans, row counts) as comments; run it before you commit. In *Implementation notes*, say how MySQL/InnoDB and, where it matters, other engines or managed services do the same thing differently, from their official documentation: PostgreSQL's behaviour is not universal.
 - Link to another pattern as `../<slug>/`. It works on GitHub, the site rewrites it to that pattern's page, and `npm run check` rejects links to patterns that aren't animated yet.
 
 ## Thai translation
@@ -182,6 +193,7 @@ Labels inside the diagrams stay in English: they are mostly code, class names an
 | Implementation notes | ข้อควรรู้ตอนลงมือทำ |
 | Putting it into practice | ลงมือทำจริงยังไง |
 | Common pitfalls | กับดักที่เจอบ่อย |
+| Try it | ลองรันดู |
 | Code | โค้ด |
 | Complexity | Complexity |
 

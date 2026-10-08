@@ -27,8 +27,10 @@ export const ghSlug = (s) => s.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\p{Pc} -]
 export const COMPONENT_CATEGORIES = new Set(['system-components', 'aws-services']);
 // Categories whose pages teach a way of working or a framework (DevOps & SRE, Platform Engineering).
 export const PRINCIPLE_CATEGORIES = new Set(['devops-sre', 'platform-engineering']);
+// Categories whose pages explain how databases work inside (Database Internals & Performance).
+export const DATABASE_CATEGORIES = new Set(['database-internals']);
 // Pages outside these categories link back to the pages in them whose related list names them.
-const BACKLINKS = [['components', COMPONENT_CATEGORIES], ['principles', PRINCIPLE_CATEGORIES]];
+const BACKLINKS = [['components', COMPONENT_CATEGORIES], ['principles', PRINCIPLE_CATEGORIES], ['dbtopics', DATABASE_CATEGORIES]];
 
 export function loadCatalog() {
   const { categories } = readJSON('catalog.json');
@@ -253,6 +255,9 @@ export function patternFooter(p, bySlug) {
   }
   if (p.principles?.length) {
     out.push(`## Related principles and frameworks`, ``, ...p.principles.map((s) => relatedLine(s, bySlug, '../')), ``);
+  }
+  if (p.dbtopics?.length) {
+    out.push(`## Related database topics`, ``, ...p.dbtopics.map((s) => relatedLine(s, bySlug, '../')), ``);
   }
   if (p.meta.references?.length) {
     out.push(`## References`, ``, ...p.meta.references.map((r) => `- [${r.title}](${r.url})`), ``);
