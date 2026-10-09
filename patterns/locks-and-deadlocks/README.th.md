@@ -137,7 +137,7 @@ PostgreSQL ถือ lock ที่มันต้องใช้ให้เอ
 
 ## ได้อะไร เสียอะไร
 
-- **การรอดูเหมือนความช้า** statement ที่ถูก block ไม่ได้ใช้ CPU ทำให้ปัญหา lock โผล่มาเป็น latency, connection pool ที่เต็ม และ timeout ฝั่งที่เรียก ให้เฝ้าดู `wait_event_type = 'Lock'` และ `idle in transaction` ไม่ใช่ดูแค่ CPU
+- **การรอดูเหมือนความช้า** statement ที่ถูก block ไม่ได้ใช้ CPU ทำให้ปัญหา lock โผล่มาเป็น latency, [connection pool](../connection-pooling/) ที่เต็ม และ timeout ฝั่งที่เรียก ให้เฝ้าดู `wait_event_type = 'Lock'` และ `idle in transaction` ไม่ใช่ดูแค่ CPU
 - **timeout เปลี่ยนการรอให้เป็น error** `lock_timeout`, `statement_timeout` และการ abort ด้วย 40P01 ล้วนส่ง error กลับไปให้ฝั่งที่เรียก ฝั่งที่เรียกต้อง rollback แล้วรัน transaction ใหม่พร้อม backoff ([retry with backoff](../retry-with-backoff/)) ทำให้ transaction ต้องรันซ้ำได้อย่างปลอดภัย
 - **`deadlock_timeout` คือการชั่งน้ำหนัก** ค่าที่สูงขึ้นช่วยประหยัดการเช็กที่ไม่จำเป็นตอนโหลดหนัก แต่ก็ทำให้ deadlock จริงค้างอยู่นานขึ้น เอกสารแนะนำให้ตั้งค่าให้สูงกว่าเวลาของ transaction ทั่วไปของคุณ และบอกว่า 1 s คือค่าที่ต่ำที่สุดที่ยังคุ้มจะใช้
 - **SKIP LOCKED ให้ภาพที่ไม่ consistent** มันเหมาะกับ queue ที่ row ว่างตัวไหนก็ได้ และไม่เหมาะกับอะไรที่ต้องเห็นทุก row

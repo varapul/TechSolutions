@@ -11,7 +11,7 @@ VALUES (500001, 1, 42, 1, 5290.92), (500001, 2, 128, 2, 7600.18);
 COMMIT;
 ```
 
-พอ COMMIT คืนค่ากลับมา ลูกค้าจะเห็นว่า "สั่งซื้อแล้ว" order นี้เลยต้องรอดจาก crash ที่มาหลังจากนั้นแค่ millisecond เดียว บน [PostgreSQL](../postgresql/) 18.6 กับข้อมูลตัวอย่าง transaction นี้เปลี่ยน page ขนาด 8 kB ไปแปด page ในเจ็ด file: heap page สุดท้ายของ `orders` (block 5057) และของ `order_items` (block 10416), leaf ขวาสุดของ primary key แต่ละตัว, page ของ identity sequence และที่ไม่ค่อยเห็นชัดคือ block 0 ของ `customers` กับ block 0 และ 1 ของ `products` การเช็ก foreign key แต่ละครั้งจะ lock row แม่ที่มันเจอ และ row lock ก็คือการเปลี่ยน page ของ row นั้น
+พอ COMMIT คืนค่ากลับมา ลูกค้าจะเห็นว่า "สั่งซื้อแล้ว" order นี้เลยต้องรอดจาก crash ที่มาหลังจากนั้นแค่ millisecond เดียว บน [PostgreSQL](../postgresql/) 18.6 กับข้อมูลตัวอย่าง transaction นี้เปลี่ยน page ขนาด 8 kB ไปแปด page ในเจ็ด file: heap page สุดท้ายของ `orders` (block 5057) และของ `order_items` (block 10416), leaf ขวาสุดของ primary key แต่ละตัว, page ของ identity sequence และที่ไม่ค่อยเห็นชัดคือ block 0 ของ `customers` กับ block 0 และ 1 ของ `products` การเช็ก foreign key แต่ละครั้งจะ lock row แม่ที่มันเจอ และ [row lock](../locks-and-deadlocks/) ก็คือการเปลี่ยน page ของ row นั้น
 
 วิธีตรง ๆ ที่จะทำให้ commit ทนทานคือเขียน page ทั้งแปดลง file ของมัน แล้ว fsync ทุก file ก่อนที่ COMMIT จะคืนค่า แต่วิธีนี้พังอยู่สองทาง:
 

@@ -4,7 +4,7 @@ prototype ตัวแรกของ Acme เก็บ order แบบที่
 
 ข้อมูลทุกอย่างที่ซ้ำกันอยู่หลายที่ก็ขัดกันเองได้ แล้ว **anomaly** แบบคลาสสิกทั้งสามแบบก็โผล่มาครบ:
 
-- **Update anomaly** พอ customer 1 เปลี่ยน email ตัว email อยู่ใน order line ทั้ง 6,537 line ของเขา ตัว `UPDATE` เลยต้องเขียนใหม่ 6,537 แถว: ใช้ 33 ms และ WAL 2.5 MB (25,425 WAL record) ในการรันแบบ warm ครั้งหนึ่งบน laptop ถ้ารันหลัง checkpoint ทันที statement เดียวกันเขียนไป 38 MB เพราะการเปลี่ยนครั้งแรกของแต่ละ page หลัง checkpoint จะ log ทั้ง page และที่แย่กว่านั้นคือ code path ที่ update แค่ order เดียว (`WHERE order_id = 41`, `UPDATE 2`) จะทำให้ customer 1 มีสอง email คือ email เก่า 6,535 แถวและ email ใหม่ 2 แถว และไม่มีอะไรใน table บอกเลยว่าตัวไหนถูก
+- **Update anomaly** พอ customer 1 เปลี่ยน email ตัว email อยู่ใน order line ทั้ง 6,537 line ของเขา ตัว `UPDATE` เลยต้องเขียนใหม่ 6,537 แถว: ใช้ 33 ms และ [WAL](../write-ahead-log/) 2.5 MB (25,425 WAL record) ในการรันแบบ warm ครั้งหนึ่งบน laptop ถ้ารันหลัง checkpoint ทันที statement เดียวกันเขียนไป 38 MB เพราะการเปลี่ยนครั้งแรกของแต่ละ page หลัง checkpoint จะ log ทั้ง page และที่แย่กว่านั้นคือ code path ที่ update แค่ order เดียว (`WHERE order_id = 41`, `UPDATE 2`) จะทำให้ customer 1 มีสอง email คือ email เก่า 6,535 แถวและ email ใหม่ 2 แถว และไม่มีอะไรใน table บอกเลยว่าตัวไหนถูก
 - **Insert anomaly** ตัว product มีตัวตนได้แค่ในฐานะส่วนหนึ่งของ order line เท่านั้น product ใหม่ หรือราคาใหม่ของ product เก่า ก็ไม่มีที่ให้ใส่จนกว่าจะมีคนสั่ง: การ insert จะ fail ด้วย `null value in column "order_id" of relation "order_lines_wide" violates not-null constraint` และ customer ที่สมัครแล้วแต่ยังไม่เคยสั่งก็เป็นแบบเดียวกัน
 - **Delete anomaly** ตัว order 124446 เป็น order เดียวของ customer 5797 การลบสาม line ของมันก็ลบทุกอย่างที่ร้านรู้เกี่ยวกับ customer 5797 ไปด้วย รวมทั้ง email และประเทศ ใน sample มี customer 11,309 คนที่มี order แค่ตัวเดียวพอดี
 
@@ -32,7 +32,7 @@ copy จะคุ้มที่จะเก็บไว้ก็ต่อเม
 
 | ทำยังไง | copy ถูกต้องเมื่อไร | ต้องจ่ายอะไร |
 |---|---|---|
-| **Trigger** (`AFTER INSERT OR UPDATE OR DELETE ON order_items FOR EACH ROW`) | ตอน commit ใน transaction เดียวกัน | ทุกการเขียน line ต้อง update order ของมันด้วย: line ใหม่ 10,000 line เขียน WAL 5.2 MB ใน 0.20 s แทนที่จะเป็น 2.2 MB ใน 0.10 s และสอง session ที่เพิ่ม line ให้ order เดียวกันต้องรอ row lock ของกันและกัน |
+| **Trigger** (`AFTER INSERT OR UPDATE OR DELETE ON order_items FOR EACH ROW`) | ตอน commit ใน transaction เดียวกัน | ทุกการเขียน line ต้อง update order ของมันด้วย: line ใหม่ 10,000 line เขียน WAL 5.2 MB ใน 0.20 s แทนที่จะเป็น 2.2 MB ใน 0.10 s และสอง session ที่เพิ่ม line ให้ order เดียวกันต้องรอ [row lock](../locks-and-deadlocks/) ของกันและกัน |
 | **โค้ดฝั่งแอป** ใน transaction เดียวกัน | ตอน commit ถ้าทุก code path จำได้ว่าต้องทำ | bulk script, admin tool และ migration ทุกตัวก็ต้องทำด้วย |
 | **Materialized view** ของยอดรวม | หลัง `REFRESH MATERIALIZED VIEW` ที่รัน query ทั้งหมดใหม่อีกรอบ | ข้อมูลค้างเก่าในช่วงระหว่าง refresh แต่ละรอบ ดู [Materialized View](../materialized-view/) |
 | **Change stream** (CDC) กับ consumer | ไม่นานหลัง commit | eventually consistent และมีชิ้นส่วนที่ต้องดูแลเพิ่มอีกหนึ่งชิ้น ดู [Change Data Capture](../change-data-capture/) |

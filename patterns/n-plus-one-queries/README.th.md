@@ -151,4 +151,4 @@ SELECT (SELECT count(*) FROM order_items i JOIN o ON i.order_id = o.id) AS items
 - **SQL Server** รายงาน `execution_count` ต่อ plan ที่ cache ไว้ใน `sys.dm_exec_query_stats` ทำให้ statement N+1 ที่ parameterize แล้วโผล่มาเป็น plan เดียวที่มี count สูงมาก
 - **SQLite** รันอยู่ใน process ของแอป ทำให้ query หนึ่งตัวเสียแค่การเรียก function แทนที่จะเป็น network round trip นี่คือเหตุผลที่เอกสารของมันบอกว่า query เล็ก ๆ จำนวนมากมีประสิทธิภาพ
 - **DynamoDB** ไม่มี join: การดึง item ทีละตัวด้วย `GetItem` ใน loop คือ N+1 เวอร์ชัน key-value ส่วน `BatchGetItem` อ่าน item ได้สูงสุด 100 ตัว (ไม่เกิน 16 MB) ตาม key ใน call เดียว มันอาจคืนผลลัพธ์มาไม่ครบ เลยต้อง retry key ที่มันทิ้งไว้แบบ unprocessed
-- **connection pool แก้ไม่ได้** pooling ประหยัดต้นทุนการเปิด connection แต่ไม่ได้ประหยัด round trip ของแต่ละ statement ตัว query 73 ตัวในการรันนี้ก็วิ่งผ่าน connection ที่เปิดอยู่ตัวเดียวทั้งหมด
+- **[connection pool](../connection-pooling/) แก้ไม่ได้** pooling ประหยัดต้นทุนการเปิด connection แต่ไม่ได้ประหยัด round trip ของแต่ละ statement ตัว query 73 ตัวในการรันนี้ก็วิ่งผ่าน connection ที่เปิดอยู่ตัวเดียวทั้งหมด

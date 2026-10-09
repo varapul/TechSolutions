@@ -110,14 +110,14 @@ ROLLBACK;
 ## ใช้ตอนไหนดี
 
 - query ที่ filter ด้วยสองหรือสาม column พร้อมกัน ปกติจะเป็น equality บนหนึ่งหรือสอง column และ range หรือ sort บน column สุดท้าย: order ของลูกค้าตามวันที่, event ของ tenant ตามเวลา, job ที่ยังเปิดอยู่ของ queue ตาม priority
-- query แบบ top-N และการแบ่งหน้า (`ORDER BY … LIMIT n`) ภายใน parent ตัวเดียว: index คืน row ที่เรียงไว้แล้ว และ scan หยุดหลังได้ n ตัว ส่วน keyset pagination ก็สร้างบนหลักนี้ตรง ๆ
+- query แบบ top-N และการแบ่งหน้า (`ORDER BY … LIMIT n`) ภายใน parent ตัวเดียว: index คืน row ที่เรียงไว้แล้ว และ scan หยุดหลังได้ n ตัว ส่วน [keyset pagination](../keyset-pagination/) ก็สร้างบนหลักนี้ตรง ๆ
 - ใช้แทน single-column index หลายตัวที่ query ใช้คู่กันเสมอ PostgreSQL รวม single-column index ด้วย bitmap AND ได้ก็จริง แต่มันต้อง scan แต่ละตัวตามเงื่อนไขของตัวเอง และเสียลำดับไป ทำให้ `ORDER BY` ต้อง sort แยกอีกรอบ
 - ไม่ใช่ตอนที่ query แต่ละ column แยกกัน: index บน (a, b) ไม่ช่วย query บน b อย่างเดียว ยกเว้น skip scan บน leading column ที่มีค่าไม่กี่ค่า ส่วน workload แบบนี้ single-column index สองตัวอาจรองรับได้ดีกว่า
 - ไม่ใช่ทำไปตามความเคยชิน เอกสารของ PostgreSQL แนะนำให้ใช้ index หลาย column อย่างประหยัด และ index ที่มีเกินสาม column ไม่ค่อยช่วย เว้นแต่ table นั้นถูกใช้ในรูปแบบที่ตายตัวมาก ๆ
 
 ## ได้อะไร เสียอะไร
 
-- **การเขียน** ทุก index ถูก update ทุกครั้งที่ INSERT และทุกครั้งที่ UPDATE เปลี่ยน column ของมัน และการเปลี่ยนแบบนี้ก็ทำให้ row นั้นทำ HOT update ไม่ได้ด้วย การ INSERT หนึ่งครั้งลงใน `orders` เขียน WAL 5 record (380 byte) ตอนมี primary key กับ composite index สามตัว เทียบกับ 2 record (164 byte) ตอนมีแค่ primary key ส่วนการ insert 10,000 row เขียน WAL 4.5 MB เทียบกับ 1.7 MB
+- **การเขียน** ทุก index ถูก update ทุกครั้งที่ INSERT และทุกครั้งที่ UPDATE เปลี่ยน column ของมัน และการเปลี่ยนแบบนี้ก็ทำให้ row นั้นทำ HOT update ไม่ได้ด้วย การ INSERT หนึ่งครั้งลงใน `orders` เขียน [WAL](../write-ahead-log/) 5 record (380 byte) ตอนมี primary key กับ composite index สามตัว เทียบกับ 2 record (164 byte) ตอนมีแค่ primary key ส่วนการ insert 10,000 row เขียน WAL 4.5 MB เทียบกับ 1.7 MB
 - **พื้นที่** composite index สามตัวกินพื้นที่ 49 MB (15, 15 และ 19 MB) ข้าง table ขนาด 40 MB ส่วน partial index `ON orders (created_at) WHERE status = 'pending'` รองรับ dashboard ได้ด้วย 5 page (40 kB) เพราะมันเก็บแค่ order สถานะ pending 990 รายการ มันอ่าน 212 buffer พอ ๆ กับ `(status, created_at)` แต่มีแค่ query ที่มี `status = 'pending'` เท่านั้นที่ใช้มันได้ เรื่อง partial index อยู่ใน [Index types](../index-types/)
 - **prefix ที่ซ้ำซ้อน** `(customer_id, created_at)` ตอบทุก lookup ที่ index บน `(customer_id)` อย่างเดียวตอบได้ รวมถึงการเช็ก `orders.customer_id` ตอนลบลูกค้าด้วย ตัว single-column index มีขนาดเล็กกว่า (5.5 MB ที่นี่) การ scan มันเลยถูกกว่านิดหน่อย แต่น้อยครั้งที่จะถูกพอให้คุ้มกับการดูแล index ทั้งสองตัว
 - **plan ไปตามค่าประเมิน** order 179 รายการของลูกค้า 42 ทำให้ลูกค้าคนนี้อยู่ในรายการ most common values ของ planner (ประเมินไว้ 217 row) เลยได้ index scan แบบมีลำดับ ส่วนลูกค้า 1012 ที่ประเมินไว้ 9 row ได้ bitmap scan ตามด้วย sort ถึง plan ทั้งสองจะเร็ว แต่บน column ที่ข้อมูลเบ้ การรัน `ANALYZE` รอบใหม่อาจย้ายลูกค้าเข้าหรือออกจากรายการนั้น แล้วทำให้ plan เปลี่ยน ส่วนวิธีอ่านค่าประเมินอยู่ใน [Query execution plans](../query-execution-plans/)

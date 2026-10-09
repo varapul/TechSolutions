@@ -170,7 +170,7 @@ SELECT (SELECT count(*) FROM order_items i JOIN o ON i.order_id = o.id) AS items
 - **SQL Server** reports an `execution_count` per cached plan in `sys.dm_exec_query_stats`, so a parameterized N+1 statement shows up as one plan with a very large count.
 - **SQLite** runs in the application's process, so a query costs a function call rather than a network round trip, which is why its documentation calls many small queries efficient.
 - **DynamoDB** has no joins: fetching items one `GetItem` at a time in a loop is the key-value version of N+1, and `BatchGetItem` reads up to 100 items (at most 16 MB) by key in one call. It can return a partial result, so retry the keys it leaves unprocessed.
-- **A connection pool doesn't fix it.** Pooling saves the cost of opening connections, not the round trip of each statement; the 73 queries in this run all went over one open connection.
+- **A [connection pool](../connection-pooling/) doesn't fix it.** Pooling saves the cost of opening connections, not the round trip of each statement; the 73 queries in this run all went over one open connection.
 
 <!-- BEGIN GENERATED: footer (npm run sync; do not edit by hand) -->
 ## Related patterns

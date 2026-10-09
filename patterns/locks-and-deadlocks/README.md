@@ -156,7 +156,7 @@ PostgreSQL takes the locks it needs on its own. Taking more yourself pays off in
 
 ## Trade-offs
 
-- **Waits look like slowness.** A blocked statement uses no CPU, so lock trouble shows up as latency, exhausted connection pools and timeouts at the callers. Watch `wait_event_type = 'Lock'` and `idle in transaction`, not just CPU.
+- **Waits look like slowness.** A blocked statement uses no CPU, so lock trouble shows up as latency, exhausted [connection pools](../connection-pooling/) and timeouts at the callers. Watch `wait_event_type = 'Lock'` and `idle in transaction`, not just CPU.
 - **Timeouts turn waits into errors.** `lock_timeout`, `statement_timeout` and the 40P01 abort all hand the caller an error; the caller has to roll back and run the transaction again with backoff ([retry with backoff](../retry-with-backoff/)), so the transaction must be safe to repeat.
 - **`deadlock_timeout` is a balance.** A higher value saves needless checks under load but leaves a real deadlock stuck for longer. The documentation suggests a value above your typical transaction time and calls 1 s about the smallest worth using.
 - **SKIP LOCKED gives an inconsistent view.** It suits a queue, where any free row will do, and nothing that must see every row.

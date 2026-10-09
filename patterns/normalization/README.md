@@ -23,7 +23,7 @@ Acme's first prototype stored orders the way a spreadsheet would: one wide table
 
 Every fact that is repeated can disagree with itself. The three classic **anomalies** all show up:
 
-- **Update anomaly.** Customer 1 changes their email. It sits in all 6,537 of their order lines, so the `UPDATE` rewrites 6,537 rows: 33 ms and 2.5 MB of WAL (25,425 WAL records) in one warm run on a laptop. Right after a checkpoint the same statement wrote 38 MB, because the first change to each page after a checkpoint logs the whole page. Worse, a code path that updates only one order (`WHERE order_id = 41`, `UPDATE 2`) leaves customer 1 with two emails, 6,535 rows of the old one and 2 of the new, and nothing in the table says which is right.
+- **Update anomaly.** Customer 1 changes their email. It sits in all 6,537 of their order lines, so the `UPDATE` rewrites 6,537 rows: 33 ms and 2.5 MB of [WAL](../write-ahead-log/) (25,425 WAL records) in one warm run on a laptop. Right after a checkpoint the same statement wrote 38 MB, because the first change to each page after a checkpoint logs the whole page. Worse, a code path that updates only one order (`WHERE order_id = 41`, `UPDATE 2`) leaves customer 1 with two emails, 6,535 rows of the old one and 2 of the new, and nothing in the table says which is right.
 - **Insert anomaly.** A product exists only as part of an order line. A new product, or a new price for an old one, has nowhere to go until someone orders it: the insert fails with `null value in column "order_id" of relation "order_lines_wide" violates not-null constraint`. The same goes for a customer who has signed up but not ordered yet.
 - **Delete anomaly.** Order 124446 is customer 5797's only order. Deleting its three lines also deletes everything the shop knew about customer 5797, email and country included. 11,309 customers in the sample have exactly one order.
 
@@ -51,7 +51,7 @@ A copy is only worth keeping if something keeps it right. The diagram uses a row
 
 | How | When the copy is right | What it costs |
 |---|---|---|
-| **Trigger** (`AFTER INSERT OR UPDATE OR DELETE ON order_items FOR EACH ROW`) | At commit, in the same transaction | Every write to a line also updates its order: 10,000 new lines wrote 5.2 MB of WAL in 0.20 s instead of 2.2 MB in 0.10 s, and two sessions adding lines to the same order wait for each other's row lock |
+| **Trigger** (`AFTER INSERT OR UPDATE OR DELETE ON order_items FOR EACH ROW`) | At commit, in the same transaction | Every write to a line also updates its order: 10,000 new lines wrote 5.2 MB of WAL in 0.20 s instead of 2.2 MB in 0.10 s, and two sessions adding lines to the same order wait for each other's [row lock](../locks-and-deadlocks/) |
 | **Application code** in the same transaction | At commit, if every code path remembers | Each bulk script, admin tool and migration has to do it too |
 | **Materialized view** of the totals | After `REFRESH MATERIALIZED VIEW`, which re-runs the whole query | Stale between refreshes; see [Materialized View](../materialized-view/) |
 | **Change stream** (CDC) and a consumer | A moment after the commit | Eventually consistent, one more moving part; see [Change Data Capture](../change-data-capture/) |

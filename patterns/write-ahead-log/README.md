@@ -30,7 +30,7 @@ VALUES (500001, 1, 42, 1, 5290.92), (500001, 2, 128, 2, 7600.18);
 COMMIT;
 ```
 
-Once COMMIT returns, the customer sees "order placed", so the order has to survive a crash that comes a millisecond later. On [PostgreSQL](../postgresql/) 18.6 with the sample data, this transaction changed eight 8 kB pages in seven files: the last heap page of `orders` (block 5057) and of `order_items` (block 10416), the rightmost leaf of each primary key, the page of the identity sequence, and, less obviously, block 0 of `customers` and blocks 0 and 1 of `products`. Each foreign-key check locks the parent row it finds, and a row lock is a change to that row's page.
+Once COMMIT returns, the customer sees "order placed", so the order has to survive a crash that comes a millisecond later. On [PostgreSQL](../postgresql/) 18.6 with the sample data, this transaction changed eight 8 kB pages in seven files: the last heap page of `orders` (block 5057) and of `order_items` (block 10416), the rightmost leaf of each primary key, the page of the identity sequence, and, less obviously, block 0 of `customers` and blocks 0 and 1 of `products`. Each foreign-key check locks the parent row it finds, and a [row lock](../locks-and-deadlocks/) is a change to that row's page.
 
 The direct way to make the commit durable is to write those eight pages to their files and fsync each file before COMMIT returns. That fails twice over:
 

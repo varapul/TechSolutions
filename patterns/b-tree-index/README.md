@@ -60,7 +60,7 @@ The times come from single runs on a laptop with every page cached; the plans an
 
 The bill for 50,000 inserts, measured with `EXPLAIN (ANALYZE, BUFFERS, WAL)`:
 
-| Indexes on `orders` | WAL written | WAL records per row | Pages touched |
+| Indexes on `orders` | [WAL](../write-ahead-log/) written | WAL records per row | Pages touched |
 |---|---|---|---|
 | `orders_pkey` | 8.5 MB | 2 | 152,000 |
 | + `orders_customer_id_idx` | 12.4 MB | 3 | 302,000 |
@@ -161,6 +161,7 @@ ORDER BY pg_relation_size(s.indexrelid) DESC;
 - [Hash Table](../hash-table/) — Hash each key straight to a bucket for O(1) average lookups; colliding keys share a bucket, and the table grows as it fills.
 - [PostgreSQL](../postgresql/) — A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes.
 - [MVCC](../mvcc/) — Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions.
+- [LSM Tree vs B-Tree](../lsm-tree/) — Two storage engine designs: update pages in place, or append in memory and merge sorted files, and what each costs to read and write.
 
 ## References
 

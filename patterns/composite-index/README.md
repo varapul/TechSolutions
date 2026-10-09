@@ -129,14 +129,14 @@ ROLLBACK;
 ## When to use it
 
 - Queries that filter on two or three columns together, usually an equality on one or two of them and a range or a sort on the last: a customer's orders by date, a tenant's events by time, a queue's open jobs by priority.
-- Top-N and paging queries (`ORDER BY … LIMIT n`) inside one parent: the index returns the rows already sorted and the scan stops after n. Keyset pagination is built on exactly this.
+- Top-N and paging queries (`ORDER BY … LIMIT n`) inside one parent: the index returns the rows already sorted and the scan stops after n. [Keyset pagination](../keyset-pagination/) is built on exactly this.
 - Instead of several single-column indexes that queries always use together. PostgreSQL can combine single-column indexes with a bitmap AND, but it scans each one for its own condition and loses their order, so an `ORDER BY` needs a separate sort.
 - Not when the columns are queried separately: an index on (a, b) doesn't help a query on b alone, apart from a skip scan over a leading column with few values. Two single-column indexes may serve such a workload better.
 - Not by reflex. The PostgreSQL documentation advises using multicolumn indexes sparingly, and indexes of more than three columns rarely help unless the table is used in a very fixed way.
 
 ## Trade-offs
 
-- **Writes.** Every index is updated on every INSERT, and on every UPDATE that changes one of its columns, which also rules out a HOT update for that row. One INSERT into `orders` wrote 5 WAL records (380 bytes) with the primary key and the three composite indexes, against 2 records (164 bytes) with the primary key alone; inserting 10,000 rows wrote 4.5 MB of WAL against 1.7 MB.
+- **Writes.** Every index is updated on every INSERT, and on every UPDATE that changes one of its columns, which also rules out a HOT update for that row. One INSERT into `orders` wrote 5 [WAL](../write-ahead-log/) records (380 bytes) with the primary key and the three composite indexes, against 2 records (164 bytes) with the primary key alone; inserting 10,000 rows wrote 4.5 MB of WAL against 1.7 MB.
 - **Space.** The three composite indexes take 49 MB (15, 15 and 19 MB) next to the 40 MB table. A partial index `ON orders (created_at) WHERE status = 'pending'` serves the dashboard in 5 pages (40 kB), because it holds only the 990 pending orders; it reads 212 buffers, about the same as `(status, created_at)`, but only queries that include `status = 'pending'` can use it. [Index types](../index-types/) covers partial indexes.
 - **Redundant prefixes.** `(customer_id, created_at)` answers every lookup an index on `(customer_id)` alone would, including the check on `orders.customer_id` when a customer is deleted. The single-column index is smaller (5.5 MB here), so scanning it is a little cheaper, but rarely by enough to pay for maintaining both.
 - **Plans follow estimates.** Customer 42's 179 orders put it in the planner's list of most common values (estimated at 217 rows), so it gets the ordered index scan; customer 1012, estimated at 9, gets a bitmap scan and a sort. Both are fast, but on a skewed column a new `ANALYZE` can move a customer in or out of that list and change the plan. [Query execution plans](../query-execution-plans/) shows how to read the estimates.

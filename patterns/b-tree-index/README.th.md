@@ -42,7 +42,7 @@ SELECT id, status, created_at, total_thb FROM orders WHERE customer_id = 42;
 
 ค่าใช้จ่ายของการ insert 50,000 ครั้ง วัดด้วย `EXPLAIN (ANALYZE, BUFFERS, WAL)`:
 
-| Index บน `orders` | WAL ที่เขียน | WAL record ต่อ row | Page ที่แตะ |
+| Index บน `orders` | [WAL](../write-ahead-log/) ที่เขียน | WAL record ต่อ row | Page ที่แตะ |
 |---|---|---|---|
 | `orders_pkey` | 8.5 MB | 2 | 152,000 |
 | + `orders_customer_id_idx` | 12.4 MB | 3 | 302,000 |
