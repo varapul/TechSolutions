@@ -1,0 +1,21 @@
+{
+  "summary": "เขียนทุกการเปลี่ยนลง log ก่อนนำไปใช้จริง ทำให้ commit รอดจาก crash ได้ การ recover ก็แค่ replay log และ replica กับ backup ก็ตาม log นี้ไป",
+  "steps": [
+    {
+      "title": "ไม่มี log: ต้องเขียนทุก page",
+      "body": "checkout ของ Acme Shop commit order 500001 ของลูกค้า 42: มี row ใน `orders` หนึ่งตัว และใน `order_items` สองตัว ทำให้เปลี่ยนไป **8 page ใน 7 file**: heap page สอง page กับ index leaf สองตัวสำหรับ row ใหม่, identity sequence และ parent page สาม page ที่ row ของมันถูก lock โดยการเช็ก foreign key ถ้า COMMIT ต้องเขียน page พวกนี้เอง ทุก commit จะต้องรอการเขียนขนาด 8 kB ที่กระจายกันอยู่ และ fsync หนึ่งครั้งต่อ file (checkpoint ที่เขียน page ของ order แบบนี้หนึ่งรายการใช้เวลา 6–7 ms) และถ้า crash กลางทาง ก็อาจเหลือ item อยู่บน disk โดยไม่มี order ของมัน หรือเหลือ **torn page** ที่ใหม่ครึ่งหนึ่งเก่าครึ่งหนึ่ง"
+    },
+    {
+      "title": "เขียน log ก่อน page ค่อยตามมา",
+      "body": "PostgreSQL เขียน log ก่อน: ทุกการเปลี่ยนจะต่อท้าย **WAL record** ลงใน WAL buffer แล้วประทับ **LSN** ของ record นั้นลงบน page ตัว LSN คือตำแหน่ง byte ของมันใน log ส่วน COMMIT เพิ่ม commit record แล้วรอแค่จน WAL ถูก flush ไปถึงตรงนั้น: 12 record, 41,268 byte และ fdatasync หนึ่งครั้ง ใช้ 0.37 ms ในการรันครั้งหนึ่งบน laptop ส่วน page ทั้ง 8 ยัง dirty อยู่ใน shared buffer จนกว่า background writer หรือ checkpoint รอบถัดไปจะเขียนมัน และเพราะเพิ่งรัน CHECKPOINT (redo point 0/76000028) ไปแล้ว ทำให้ record 7 จาก 12 ตัวพก **full-page image** ของ page ที่มันเปลี่ยนไว้ด้วย"
+    },
+    {
+      "title": "replay หลัง crash",
+      "body": "เรา kill server 2 วินาทีหลัง commit ก่อนที่ page ไหนใน 8 page จะถึง disk พอ restart มันอ่าน checkpoint ล่าสุดจาก `pg_control` แล้ว replay WAL ตั้งแต่ redo point 0/76000028 ไปจนจบ โดยกู้แต่ละ page จาก image ของมัน และทำการเปลี่ยนที่เหลือซ้ำ: order 500001 กลับมา แล้ว checkpoint ตอนจบ recovery ก็เขียน page ลง disk ตัว WAL ชุดเดียวกันนี้ stream ไปที่ **standby** โดย standby replay commit นี้เสร็จ 1.6 ms หลัง flush นอกจากนั้น WAL ยังถูกส่งไปที่ **archive** สำหรับ point-in-time recovery และเป็นข้อมูลให้ **logical decoding** สำหรับ [change data capture](../change-data-capture/)"
+    },
+    {
+      "title": "durability ต้องจ่ายอะไร",
+      "body": "ทุก commit ต้องรอ WAL flush ของตัวเอง: client ตัวเดียวทำได้ราว 2,200 order ต่อวินาทีด้วย `synchronous_commit = on` และ 3,400 ด้วย `off` ที่อาจทำ commit ช่วงไม่กี่ร้อย millisecond สุดท้ายหายไปตอน crash แต่ไม่ทำให้ข้อมูลเสียหาย ส่วนตอนมี 8 client ตัว fsync หนึ่งครั้งรองรับเฉลี่ย 2.8 commit ส่วน page image ก็ทำให้การเปลี่ยนครั้งแรกของแต่ละ page หลัง checkpoint แพง (WAL 41,268 byte สำหรับ order แรก และ 742 สำหรับตัวถัดไป) checkpoint เลยห่างกันเป็นนาที และกระจายการเขียนไปตลอด 90% ของช่วงนั้น ส่วน InnoDB ของ MySQL ทำงานแบบเดียวกันด้วย **redo log** และ **doublewrite buffer** ที่เก็บสำเนาของแต่ละ page ไว้ก่อนเขียนทับที่เดิม"
+    }
+  ]
+}

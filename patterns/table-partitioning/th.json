@@ -1,0 +1,21 @@
+{
+  "summary": "แบ่ง table ใหญ่ออกเป็น partition ตาม range, list หรือ hash ทำให้ query ข้าม partition ได้ และลบข้อมูลเก่าทิ้งได้ในพริบตา",
+  "steps": [
+    {
+      "title": "table เดียว ลบของเก่าช้า",
+      "body": "Acme เก็บ `order_events` ไว้ 12 เดือน และ row ทั้ง 1,500,000 ตัว (86 MB เก็บเรียงตามเวลา) อยู่ใน table เดียว report ของหนึ่งสัปดาห์ต้องรัน **Parallel Seq Scan** ครบทั้ง 11,030 page เพื่อนับ 16,408 row ส่วน `DELETE … WHERE happened_at < '2025-10-01'` ของ retention job ก็ mark row 639,726 ตัวว่าตายแล้วในเวลา 0.31 s พร้อมเขียน **WAL 70 MB**: record หนึ่งตัวต่อทุก row และ image ของทุก page ที่มันแตะ จากนั้น VACUUM ก็เขียนเพิ่มอีก 17 MB และทิ้ง page ว่างไว้ 4,703 page แต่ไฟล์ยังมีขนาด 86 MB เท่าเดิม"
+    },
+    {
+      "title": "แบ่ง partition รายเดือน",
+      "body": "`CREATE TABLE … PARTITION BY RANGE (happened_at)` เปลี่ยน `order_events` ให้เป็น parent ที่ไม่เก็บข้อมูลอะไรเลย ส่วน `PARTITION OF … FOR VALUES FROM ('2026-09-01') TO ('2026-10-01')` แต่ละตัวคือ table ธรรมดาที่เก็บ row ตั้งแต่ขอบล่างไปจนถึงขอบบน แต่ไม่รวมขอบบน ทาง Acme สร้างไว้ 25 ตัว ตั้งแต่ธันวาคม 2024 ถึงธันวาคม 2026 แล้วก็อป row เข้าไป: PostgreSQL ส่งทุก row ทั้งเก่าและใหม่ไปที่ partition ที่ range ของมันครอบ `happened_at` ของ row นั้น ส่วน index ที่สร้างบน parent ก็จะถูกสร้างบนทุก partition ด้วย ทำให้ `order_events_2026_09` มี primary key และ index บน `order_id` ของตัวเอง"
+    },
+    {
+      "title": "pruning และ retention",
+      "body": "ถ้า clause `WHERE` ใช้ค่าคงที่ ตัว planner จะ prune อีก 23 partition ทิ้งก่อนสร้าง plan ทำให้ sequential scan สองตัวอ่านแค่ **1,052 page แทน 11,030** (9 ms เทียบกับ 30 ms ในการรันครั้งหนึ่ง) ส่วน retention ก็กลายเป็น `DETACH PARTITION … CONCURRENTLY` กับ `DROP TABLE` สำหรับแต่ละเดือนก่อนตุลาคม 2025: รวม 20 statement, 38 ms และ WAL 159 kB ทั้งหมด โดยคืนพื้นที่ไฟล์ 67 MB ได้ทันทีและไม่มี dead row เลย การ detach ไม่ block report ขณะที่ `DROP TABLE` partition แบบตรง ๆ ทำให้ report หนึ่งตัวต้องต่อคิว 2.04 s แต่ foreign key ไปที่ `orders` ยังทำให้ทั้งสองขั้นต้อง lock `orders` อยู่ดี job นี้เลยรันด้วย `lock_timeout` สั้น ๆ"
+    },
+    {
+      "title": "key, plan และข้อจำกัด",
+      "body": "primary key บน `id` อย่างเดียวจะถูกปฏิเสธ ทำให้ key กลายเป็น `(id, happened_at)` และไม่มี index ไหนเช็กว่า `id` อย่างเดียว unique ส่วน `WHERE order_id = 250000` prune ไม่ได้: มันต้องค้นทั้ง 15 partition อ่าน 28 page เทียบกับ 5 page บน table เดียว และถ้ามี daily partition 368 ตัว แค่การ plan query แบบนี้ก็ใช้ 4.0 ms แทน 0.02 ms ส่วนทุก partition ยังอยู่บน server เดียวกัน ต่างจาก [sharding](../sharding/) และ MySQL 8.4 มีกฎเดียวกันเรื่อง unique key แต่ต่างจาก PostgreSQL ตรงที่ไม่ยอมให้มี foreign key บน InnoDB table ที่แบ่ง partition เลย"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "transaction ที่รันพร้อมกันเห็นงานของกันและกันได้แค่ไหน: anomaly ที่แต่ละ isolation level ยอมให้เกิด และค่า default ที่แต่ละ engine ใช้",
+  "steps": [
+    {
+      "title": "รันสองชุดที่ READ COMMITTED",
+      "body": "ที่ level default ของ PostgreSQL คือ READ COMMITTED แต่ละ statement จะเห็นสิ่งที่ commit ไปแล้วก่อน statement นั้นเริ่ม report การเงินของ Acme (A) อ่านยอดรวมของ order 495179 และจำนวน order ของลูกค้า 42 ระหว่างที่ refund (B) กับ order ใหม่ (C) commit ทำให้ใน transaction เดียวกัน มันอ่านได้ **51,179.03 แล้วก็ 47,193.60** และ **179 แล้วก็ 180** order ส่วนพนักงานสองคนที่ขาย product 2892 อ่าน stock ได้ 10 ทั้งคู่ แล้วเขียน 9: UPDATE ของ B รอ row lock ของ A แล้วก็เขียน 9 เหมือนกัน **ขายไปสองครั้ง แต่ stock ลดจาก 10 เหลือแค่ 9**"
+    },
+    {
+      "title": "ตั้งชื่อให้ anomaly",
+      "body": "PostgreSQL ไม่เคยให้เห็นข้อมูลที่ยังไม่ commit: การอ่านที่ทำก่อน B commit ยังได้ 51,179.03 อยู่ และ READ UNCOMMITTED ก็ทำงานเป็น READ COMMITTED ยอดรวมที่เปลี่ยนไปคือ **non-repeatable read** ส่วน order ใหม่คือ **phantom** และ stock คือ **lost update** ส่วนตอนที่หัวหน้ากะสองคนต่างเห็นว่ามีคนอยู่เวร 2 คน แล้วต่างคนต่างลงจากเวร จนไม่เหลือใครเลย แบบนั้นคือ **write skew** มาตรฐาน SQL นิยาม level ของมันด้วยสามตัวแรก: READ COMMITTED ห้าม dirty read ส่วน REPEATABLE READ ห้าม non-repeatable read ด้วย และ SERIALIZABLE ต้องให้ผลที่การรันเรียงทีละตัวสักลำดับหนึ่งให้ได้ (ช่องเส้นประ)"
+    },
+    {
+      "title": "level ที่เข้มกว่า กับการ retry",
+      "body": "**REPEATABLE READ** อ่านจาก snapshot เดียวที่ถ่ายไว้ตอน statement แรกของ transaction: report เห็น 51,179.03 และ 179 ตลอด ส่วน UPDATE stock ของ B ก็ fail ด้วย *could not serialize access due to concurrent update* หรือ SQLSTATE `40001` แล้ว B ก็ retry โดยอ่านได้ 9 แล้วเขียน 8 ส่วน write skew ยัง commit ได้ เพราะหัวหน้ากะสองคนเปลี่ยนคนละ row ตัว **SERIALIZABLE** (serializable snapshot isolation) ติดตามด้วยว่าแต่ละ transaction อ่านอะไรไปบ้าง แล้วทำให้ COMMIT ของ B fail ด้วย `40001` (*read/write dependencies among transactions*) พอ retry ก็เห็นว่ามีคนอยู่เวร 1 คน Malee เลยอยู่เวรต่อ"
+    },
+    {
+      "title": "ต้นทุน และ engine อื่น",
+      "body": "session แปดตัวขาย product ตัวเดียวกันนาน 10 s (pgbench, median ของการรัน 3 ครั้งบน laptop): การอ่านแล้วเขียนที่ READ COMMITTED บันทึกการขายไว้ 8,537 ครั้ง แต่ stock ลดลงแค่ 1,090 ส่วน REPEATABLE READ ที่ลองได้สูงสุด 10 ครั้งขายได้ 2,707 ครั้ง ต้อง retry 17,059 ครั้ง และยอมแพ้ไป 1,841 ครั้ง ส่วน `SELECT … FOR UPDATE` ขายได้ 6,902 ครั้งด้วยการรอแทน และ `UPDATE … SET qty = qty - 1` ตัวเดียวขายได้ 9,718 ครั้ง ตัว PostgreSQL กับ SQL Server ใช้ READ COMMITTED เป็น default ส่วน InnoDB ของ MySQL ใช้ REPEATABLE READ: การอ่านธรรมดาของมันใช้ snapshot เดียวตลอด แต่การขายแบบเดียวกันบน MySQL 8.4 ก็ยังทำ update หายไปโดยไม่ขึ้น error เลย"
+    }
+  ]
+}

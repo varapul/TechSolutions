@@ -1,0 +1,21 @@
+{
+  "summary": "เก็บค่าของ row เดียวกันไว้ติดกันสำหรับงาน transaction หรือเก็บค่าของ column เดียวกันไว้ติดกันสำหรับงาน analytics และทำไม column store ถึง scan และบีบอัดได้เร็วกว่ากันมาก",
+  "steps": [
+    {
+      "title": "row store ต้องอ่านทั้งหมด",
+      "body": "นักวิเคราะห์ของ Acme อยากได้ยอดขายแยกตามหมวดสินค้าจาก order item ทั้งหมด 1,250,000 รายการ ตัว PostgreSQL เก็บแต่ละ row ไว้ทั้งก้อนบน heap page ขนาด 8 kB หน้าละ 120 row ทำให้ **Parallel Seq Scan** ของมันต้องอ่าน `order_items` ครบทั้ง **10,417 page** กับ `products` อีก 94 page: รวม 82 MB ส่วนแต่ละ row กินพื้นที่ 68 byte ของ page (header 24 byte, pointer 4 byte, padding 9 byte และค่าจริง 31 byte) แต่ query ใช้แค่ 19 byte ในนั้น คือ `product_id`, `qty` และ `price_thb`: ใช้เวลาราว **130 ms** ตอนมี parallel worker สองตัว และ 330 ms ตอนรันใน process เดียว (median ของการรันเก้ารอบบน laptop)"
+    },
+    {
+      "title": "เก็บแต่ละ column แยกกัน",
+      "body": "column store อย่าง **DuckDB** (ที่นี่ใช้ 1.5.6) ตัด table เป็น row group ละไม่เกิน 122,880 row แล้วเก็บแต่ละ column ของ row group เป็น segment ที่บีบอัดแยกของมันเอง ค่าใน column เดียวกันหน้าตาคล้ายกัน ทำให้ **bit-packing** แบบ frame-of-reference เก็บ `qty` กับ `line_no` ได้ในค่าละ 2 bit, `product_id` ใน 14 bit และ `price_thb` (`DECIMAL` ที่เก็บเป็น integer) ใน 20 bit ส่วน delta encoding เก็บ `order_id` ที่เรียงอยู่แล้วได้ในราว 1 bit และ `category` ก็กลายเป็น dictionary ตัว scan อ่านแค่สาม column ที่ query ต้องใช้ และแต่ละ operator รับ **vector ละไม่เกิน 2,048 ค่า** ขณะที่ plan node ของ PostgreSQL ส่ง row ขึ้นไปทีละ row ต่อการเรียกหนึ่งครั้ง"
+    },
+    {
+      "title": "วัดจริง: ข้อมูลน้อยลง 13×",
+      "body": "พอ load row ชุดเดียวกันเข้าไป DuckDB ก็คืนผลรวม 12 ตัวเดียวกันหลังอ่านแค่ **25 block ขนาด 256 kB (6.25 MB)** น้อยกว่า 13 เท่า ในเวลาราว **5 ms** ด้วย 8 thread ส่วนบน core เดียวใช้ 11 ms เทียบกับ 330 ms ของ PostgreSQL การอ่านแค่สามจากห้า column ที่ pack ไว้ใน 36 bit ต่อ row โดยไม่มี header ต่อ row ทำให้ byte ลดลง และ vector ก็ทำให้งานของ CPU ลดลง ถ้ามี filter ตัว **zone map** (ค่าต่ำสุดและสูงสุดของแต่ละ segment) ก็ข้ามได้มากขึ้นอีก: สำหรับ order ของเดือนกันยายน ตัว join ส่ง `order_id` 475,224–498,664 ไปให้ scan แล้ว scan ก็อ่านแค่ 2 จาก 11 row group (2.25 MB, 2 ms) ขณะที่ PostgreSQL อ่านครบทั้ง 15,569 page ของทั้งสาม table (47 ms)"
+    },
+    {
+      "title": "เขียนทีละ row: row store ได้เปรียบ",
+      "body": "ลองเปลี่ยน `qty` ตัวเดียว: PostgreSQL หา row ผ่าน `order_items_pkey` (4 page) แล้วเขียน version ใหม่ขนาด 59 byte ไว้ที่ (10416,81) เพราะ page 0 เหลือที่ว่างแค่ 8 byte และเพิ่ม index entry อีกหนึ่งตัว: WAL 3 record, 235 byte ส่วน DuckDB ต้อง scan key 122,880 ตัวของ row group 0 แล้ว log 147 byte และ `CHECKPOINT` ครั้งถัดไปก็เขียน segment `qty` ของ row group นั้นใหม่ทั้งก้อน 266,240 byte ส่วนทางที่ควรทำคือรัน OLTP บน row store และรัน analytics บน column store แล้วย้ายข้อมูลระหว่างกันด้วย [change data capture](../change-data-capture/) หรือ batch ELT เข้า [medallion architecture](../medallion-architecture/)"
+    }
+  ]
+}

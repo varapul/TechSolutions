@@ -1,0 +1,21 @@
+{
+  "summary": "row lock ทำให้ writer ต้องรอกันเอง ถ้าสอง transaction รอกันและกันก็คือ deadlock แล้ว database จะ abort ตัวหนึ่งทิ้ง",
+  "steps": [
+    {
+      "title": "transaction เดียวที่เปิดค้างไว้",
+      "body": "back-office script ของ Acme รัน `UPDATE orders SET status = 'cancelled' WHERE id = 497003` ใน transaction แล้วก็ค้างอยู่ในสถานะ **idle in transaction**: ยังไม่มีใครพิมพ์ COMMIT ทำให้ row lock ยังอยู่ ตัว warehouse job ที่เพิ่ง update order 499846 ไป กับ shop app ต่างก็พยายาม update 497003 แล้วก็ต้องรอ ที่ 10 s ตัว `pg_stat_activity` แสดงว่าทั้งสองตัวอยู่ใน `Lock` wait มาแล้ว 9.0 และ 8.0 s ส่วน SELECT ของหน้าจอ support คืนผลทันที ที่ 20 s ตัว UPDATE ถัดไปของ script ขอ order 499846 ที่ warehouse job ถืออยู่ ทำให้ตอนนี้สอง transaction รอกันและกัน"
+    },
+    {
+      "title": "row lock กับคิว",
+      "body": "UPDATE ที่ไม่แตะ key column จะถือ row lock แบบ FOR NO KEY UPDATE และ PostgreSQL บันทึก lock นี้ไว้ในตัว row เอง: version ของ 497003 ที่ ctid (774,54) ได้ `xmax = 165763` ที่เป็น transaction ID ของ A ทำให้ row lock ไม่ต้องใช้ shared memory และส่วนใหญ่ก็ไม่โผล่ใน `pg_locks` ตัวที่รอเป็นคนแรกถือ `tuple` lock บน (774,54) แล้วรอ `ShareLock` บน transaction 165763 ที่จะได้ก็ต่อเมื่อ A จบ ส่วน writer ที่มาทีหลังต่อคิวรอ tuple lock และ reader ไม่ถือ row lock เลย ตัว `pg_blocking_pids()` ให้ wait-for graph: C รอ B, B รอ A และ A รอ B เป็น cycle"
+    },
+    {
+      "title": "ตรวจเจอ, abort และป้องกัน",
+      "body": "PostgreSQL ไม่ได้หา deadlock ตั้งแต่ตอนที่เริ่มรอ: หลัง `deadlock_timeout` (1 s โดย default) process ที่รออยู่จะค้น wait-for graph จนเจอ cycle แล้วส่วนใหญ่ก็ abort transaction ของตัวเอง ทำให้ A ได้ `ERROR: deadlock detected` (SQLSTATE 40P01) และ B กับ C ก็เสร็จหลัง 20.0 และ 19.0 s ส่วนในการรันอื่น ๆ การ lock ทั้งสอง order ตามลำดับ id ด้วย `ORDER BY id FOR UPDATE` ทำให้ B รอ 5.5 s โดยไม่เกิด cycle ส่วน `lock_timeout = '2s'` หยุด C หลัง 2.0 s (55P03) และ `idle_in_transaction_session_timeout` ก็ตัดจบ transaction ที่ถูกลืม ถ้าเป็น job queue ตัว `FOR UPDATE SKIP LOCKED` จะให้ packer แต่ละคนได้ paid order คนละตัว ส่วน `NOWAIT` จะ fail ทันทีแทนที่จะรอ"
+    },
+    {
+      "title": "การเปลี่ยน schema กับ InnoDB",
+      "body": "`ALTER TABLE orders ADD COLUMN gift_note text` ต้องใช้ ACCESS EXCLUSIVE lock มันเลยรออยู่ 7.0 s หลัง transaction ที่เปิดค้างของ report ตัวหนึ่ง และ SELECT ธรรมดาทุกตัวที่เข้ามาระหว่างนั้นก็ต่อคิวหลัง ALTER (6.0 และ 5.0 s) ทั้งที่ report ไม่ได้ block reader ตัวไหนเลย พอใช้ `SET lock_timeout = '2s'` ตัว ALTER ก็ยอมแพ้หลัง 2.0 s การอ่านรอนานสุด 1.0 s และการ retry ใช้แค่ 2.6 ms ส่วนบน MySQL 8.4 ตัว InnoDB rollback A ภายใน 5 ms หลัง cycle เดียวกันเกิดขึ้น (`innodb_deadlock_detect` เปิดอยู่โดย default) และภายใต้ REPEATABLE READ ตัว next-key lock และ gap lock ของมันทำให้ order ใหม่ของลูกค้า 1049 และ 1050 ต้องรอ 3.5 และ 4.0 s ขณะที่ PostgreSQL insert ทั้งคู่ได้ทันที"
+    }
+  ]
+}

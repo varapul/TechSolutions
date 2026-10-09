@@ -1,0 +1,21 @@
+{
+  "summary": "ให้ request จำนวนมากใช้ database connection ไม่กี่ตัวร่วมกัน ทำให้การตั้ง connection และ memory ต่อ connection ไม่เป็นตัวจำกัด database อีกต่อไป",
+  "steps": [
+    {
+      "title": "connection เยอะเกินไป",
+      "body": "checkout service ของ Acme รันอยู่ **40 pod** แต่ละ pod มี pool ขนาด **20 connection**: รวม 800 ตัว เทียบกับ `max_connections` ค่า default ของ PostgreSQL ที่มีแค่ **100** และในนั้นสามตัวถูกกันไว้ให้ superuser พอเริ่มพร้อมกัน มีแค่ pod 26, 29 และ 31 ที่ได้ครบ 20 ตัว (60 backend) ส่วนอีก **37** pod ถูกปฏิเสธด้วย `remaining connection slots are reserved for roles with the SUPERUSER attribute` (25) หรือ `sorry, too many clients already` (12) แต่ถ้าเปลี่ยนไปต่อ connection ใหม่ทุก transaction ก็ช้ากว่ากันมาก: ด้วย client 8 ตัว pgbench `-C` รัน checkout ได้ **353** ครั้งต่อวินาที เทียบกับ **15,103** ตอนเปิด connection ค้างไว้"
+    },
+    {
+      "title": "ทำไม connection ถึงมีต้นทุน",
+      "body": "PostgreSQL fork **backend process** หนึ่งตัวต่อทุก connection พอตั้ง `log_connections = setup_durations` (ของใหม่ใน PostgreSQL 18) ตัว server ก็ log ไว้ว่าใช้ **6.4 ms** ต่อ connection ใหม่: fork 0.2 ms, TLS ราว 2.1 ms และ authentication แบบ SCRAM-SHA-256 อีก 3.2 ms โดยส่วนใหญ่คือฝั่ง client hash password 4,096 รอบ ส่วน `ps` แสดง 22 MB ต่อ backend แต่ที่เป็นของ backend นั้นเองจริง ๆ มีแค่ราว **1.7 MB** และตั้งแต่ PostgreSQL 14 เป็นต้นมา connection ที่ idle แทบไม่ทำให้ snapshot ช้าลงแล้ว แต่พอเกินราว 32 connection ที่ busy อยู่ ตัว core ทั้ง 4 ตัวก็มีแต่เพิ่ม latency"
+    },
+    {
+      "title": "pooling ในงานจริง",
+      "body": "แต่ละ pod ยังมี pool ขนาด 20 เหมือนเดิม แต่ต่อเข้า **PgBouncer** ใน **transaction mode** ที่ให้ client ยืมหนึ่งใน **server connection 20 ตัว** ของมันไปใช้ตลอดหนึ่ง transaction ถ้าแต่ละ pod ส่ง checkout 100 ครั้งต่อวินาที ทั้ง 40 pod ก็รันได้หมด: **4,007 tps** ที่ 1.7 ms โดยเฉลี่ย และ `SHOW POOLS` แสดง client ที่ active 800 ตัวโดยไม่มีตัวไหนต้องรอเลย ส่วน pool ขนาด **8** ที่เป็นจุดเริ่มต้นตามสูตร (2 × core) + spindle สำหรับ 4 core ที่ข้อมูลอยู่ใน cache หมดแล้ว ก็รับ load เดียวกันได้ที่ 1.5 ms"
+    },
+    {
+      "title": "pooling ทำอะไรพังบ้าง",
+      "body": "server connection อยู่นานกว่า transaction ทำให้ session state รั่วข้ามกันได้: `SET statement_timeout = '5ms'` ของ pod 7 ค้างอยู่บน server pid 6715 แล้วไป cancel `count(*)` ของ pod 12 ส่วน `LISTEN`, session advisory lock และ temporary table ก็พังแบบเดียวกัน แต่ prepared statement ระดับ protocol ใช้ได้ตั้งแต่ PgBouncer 1.21 ตัว hop ที่เพิ่มขึ้นมาทำให้ checkout ช้าลง 0.26 ms ต่อครั้ง และ PgBouncer รันบน core เดียว เลยควรรันมากกว่าหนึ่งตัว ส่วน Amazon **RDS Proxy** จะ pin client ไว้กับ connection ของมันเมื่อเห็น session state และ **MySQL** ให้แต่ละ connection เป็น thread แทน process"
+    }
+  ]
+}

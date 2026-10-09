@@ -1,0 +1,21 @@
+{
+  "summary": "update row ก็ต่อเมื่อมันยังไม่ถูกเปลี่ยนตั้งแต่ตอนที่เราอ่าน โดยใช้ version column แล้ว retry เมื่อชนกัน แทนการถือ lock ไว้",
+  "steps": [
+    {
+      "title": "ใครเขียนทีหลังก็ชนะ",
+      "body": "agent A กับ B เปิด order 499996 ในเครื่องมือ back-office ของ Acme แล้วแก้ที่อยู่จัดส่งของมันอยู่หลายนาที A แก้บ้านเลขที่เป็น **88/5** แล้วกดบันทึก ต่อมา B ก็บันทึกที่อยู่ที่ B โหลดมา โดยเติมรหัสไปรษณีย์ **10110** เข้าไป การบันทึกทั้งสองครั้งรายงาน `UPDATE 1` ตัว row จบที่ `88 Sukhumvit 11, Bangkok 10110` และสิ่งที่ A แก้ก็หายไปโดยไม่มีใครรู้: นี่คือ **lost update** ที่แม้แต่ transaction แบบ SERIALIZABLE ก็จับไม่ได้ เพราะ B อ่านข้อมูลใน transaction ที่จบไปแล้ว"
+    },
+    {
+      "title": "บันทึกเมื่อยังไม่มีใครแก้",
+      "body": "column `version` (ใช้เวลา 4 ms ในการเพิ่มให้ 500,000 row เพราะ PostgreSQL เก็บค่า default ไว้ใน metadata ของ table แทนการเขียน table ใหม่) ติดไปกับทุกการอ่าน การบันทึกแต่ละครั้งคือ `UPDATE … SET …, version = version + 1 WHERE id = $1 AND version = $2 RETURNING version`: ของ A ตรงและคืน **2** ส่วนของ B ยังถือ version 1 อยู่ ทำให้ตรงกับ **0 row** และเครื่องมือก็รายงานว่าชนกัน ถ้าการบันทึกทั้งสองมาถึงพร้อมกัน ตัว UPDATE ของ B จะรอ row lock ของ A แล้วเช็ก WHERE clause ของตัวเองใหม่กับ row ที่ A commit ไว้ การเช็กกับการเขียนเลยเป็น step เดียวที่ atomic"
+    },
+    {
+      "title": "If-Match ผ่าน HTTP",
+      "body": "API ส่ง version ออกไปเป็น strong ETag (`ETag: \"1\"`) และรอรับมันกลับมาใน `If-Match` ทุกครั้งที่บันทึก แล้วรัน UPDATE แบบมีเช็กตัวเดียวกัน ผลคือ `PUT` ของ A ได้ `200 OK` พร้อม `ETag: \"2\"` ส่วนของ B ได้ **412 Precondition Failed** และไม่มีอะไรถูกเขียน เครื่องมือของ B เลยโหลดใหม่ แสดงการแก้ทั้งสองฝั่ง แล้วบันทึกผลที่รวมกันด้วย `If-Match: \"2\"` (version 3) ส่วน DynamoDB ก็ทำแบบเดียวกันด้วย condition expression บน version attribute และปฏิเสธการเขียนที่ค้างเก่าด้วย `ConditionalCheckFailedException`"
+    },
+    {
+      "title": "ข้อจำกัดและทางเลือกอื่น",
+      "body": "การถือ `SELECT … FOR UPDATE` ไว้ระหว่างที่ A คิด จะ block B ไว้จนกว่า `lock_timeout` จะยกเลิกมัน (`ERROR 55P03`) และด้วยค่า default ที่เป็น 0 ตัว B ก็ต้องรอนานเท่าที่ A คิด ส่วนบน row ที่ hot วิธี optimistic กลับให้ผลตรงข้าม: 8 session ที่บันทึก row stock ตัวเดียวคนละ 100 ครั้ง ต้องพยายาม **5,019 ครั้ง** เพื่อให้ได้ 800 การบันทึก แต่ row lock หรือ `UPDATE … SET qty = qty - 1` ตัวเดียวไม่ต้อง retry เลย ให้ใช้ counter เป็น version: `DATETIME` ของ MySQL เปลี่ยนได้มากสุดแค่วินาทีละครั้ง ส่วน `xmin` ของ PostgreSQL เปลี่ยนทุกครั้งที่ UPDATE แต่เป็น 32-bit และวนกลับได้"
+    }
+  ]
+}

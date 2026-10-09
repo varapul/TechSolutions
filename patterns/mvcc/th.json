@@ -1,0 +1,21 @@
+{
+  "summary": "Multi-version concurrency control: update จะเขียน row version ใหม่ ส่วน reader เห็น snapshot และ vacuum ลบ version ที่ตายแล้วทิ้ง",
+  "steps": [
+    {
+      "title": "lock: reader ปะทะ writer",
+      "body": "report กลางคืนของ Acme ต้องไม่เห็น order เปลี่ยนไประหว่างทาง และถ้าไม่มี row version วิธีเดียวที่จะรับประกันเรื่องนี้ได้ก็คือ lock สิ่งที่มันอ่าน: ตรงนี้มันใช้ `LOCK TABLE orders IN SHARE MODE` ตอนแรกมันรอ transaction ที่เปิดค้างอยู่ของ writer ตัวหนึ่ง 1.5 s แล้วก็ถือ lock ไว้ ทำให้การ cancel order 495179 ของทีม support ต้องรอ จน `lock_timeout` (5 s) ตัดจบด้วย `ERROR: 55P03: canceling statement due to lock timeout` ส่วน InnoDB ที่ `SERIALIZABLE` ก็ทำแบบเดียวกันเอง: report เดียวกันถือ shared record lock ไว้ 502,025 ตัว และการ cancel ก็ fail ด้วย `ERROR 1205`"
+    },
+    {
+      "title": "row version กับ snapshot",
+      "body": "บน PostgreSQL 18.6 ตัว report รันที่ `REPEATABLE READ` ด้วย snapshot `165806:165806:` และไม่ถือ row lock เลย ส่วน writer (transaction 165806) cancel order 495179: page 2392 มีที่ว่างเหลือ 48 bytes ทำให้ version ใหม่ไปอยู่ที่ page 5057 เป็น line pointer 91 (`xmin` 165806) ส่วน version เก่าได้ `xmax` 165806 กับ `t_ctid` ที่ชี้ไปที่ `(5057,91)` และ `orders_pkey` ก็ได้ entry ที่สอง ตัว report ยังอ่านได้ `delivered` เพราะ 165806 ใหม่เกินไปสำหรับ snapshot ของมัน ส่วน statement ถัดไปของ writer อ่านได้ `cancelled` โดยไม่มีใครต้องรอเลย"
+    },
+    {
+      "title": "VACUUM กับ horizon",
+      "body": "คืนนั้นยังไม่จบ: status เปลี่ยนอีก 3,000 ครั้ง ครั้งละหนึ่ง transaction ระหว่างที่ report ยังเปิดอยู่ ทำให้ `n_dead_tup` ขึ้นไปถึง 3,001 และ heap โตจาก 5,058 เป็น 5,087 page แต่ `VACUUM` ไม่ลบอะไรเลย: *3001 are dead but not yet removable* เพราะ `backend_xmin` 165806 ของ report คือจุดตัด หลัง report commit ตัว `VACUUM` ก็ลบทั้ง 3,001 ตัวใน 33 ms ส่วนบน page ที่เต็มพวกนี้ มี update แค่ 104 ครั้งที่เป็น HOT เทียบกับ 3,001 จาก 3,001 ครั้งในการรันเดียวกันบนสำเนาที่ rewrite ใหม่ด้วย `fillfactor = 90`"
+    },
+    {
+      "title": "ต้นทุน และ engine อื่น",
+      "body": "version ที่ตายแล้วกินที่ไว้จนกว่า `VACUUM` จะคืนที่ให้ใช้ซ้ำได้ และ autovacuum จะเริ่มทำงานบน `orders` ก็ต่อเมื่อถึง 50 + 20 % ของจำนวน row: dead row 100,050 ตัว ส่วน transaction ID มีขนาด 32 bit ทำให้ `VACUUM` ต้อง freeze row เก่าด้วยก่อนที่ counter จะวนรอบ และ transaction ที่เปิดค้างไว้แล้วถูกลืมก็รั้งทุกอย่างนี้ไว้ จนกว่า `idle_in_transaction_session_timeout` (ปิดอยู่โดย default) จะตัดจบมัน ส่วน InnoDB update row ในที่เดิม แล้วเก็บ version เก่าไว้ใน undo log จนกว่าจะ purge (history list length เป็น 3,002 ตอน report เปิดอยู่ และเป็น 0 หลังจากนั้น) และ Oracle สร้าง version เก่าขึ้นใหม่จาก undo segment แล้วทำให้ query ยาว ๆ fail ด้วย `ORA-01555` เมื่อ undo ที่มันต้องใช้ถูกเขียนทับไปแล้ว"
+    }
+  ]
+}

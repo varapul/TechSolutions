@@ -1,0 +1,21 @@
+{
+  "summary": "storage engine สองแบบ: update page ที่เดิม หรือต่อท้ายไว้ใน memory แล้ว merge file ที่เรียงแล้ว และแต่ละแบบต้องจ่ายเท่าไรตอนอ่านและตอนเขียน",
+  "steps": [
+    {
+      "title": "B-tree: แก้ page ที่เดิม",
+      "body": "Acme เก็บ `order_events` ไว้ใน PostgreSQL 18.6 โดยที่นี่ใช้สำเนาชื่อ `ev` ที่มี B-tree บน `order_id` ส่วน event 50,000 ตัวถัดไปเข้ามาเกือบเรียงตาม key เพราะ event ของ order หนึ่งมาภายในวันเดียว มันเลยเปลี่ยนแค่ **172 index page** ที่ขอบขวา (166 page ในนั้นเป็น page ใหม่จาก leaf split) มี full-page image 13 ตัว และ WAL 11.5 MB ส่วน review event 50,000 ตัวของ order แบบสุ่มเปลี่ยน **leaf ครบทั้ง 4,927 page**: แต่ละตัวเป็น page ขนาด 8 kB ที่ต้องเขียนกลับตอน checkpoint ถัดไป และการเปลี่ยนครั้งแรกของมันหลัง checkpoint ก็ log full-page image ไว้ รวม 4,932 ตัวใน WAL 36.6 MB หรือ **1,631 byte ต่อ event** แทนที่จะเป็น 341"
+    },
+    {
+      "title": "LSM: log, เรียง แล้ว flush",
+      "body": "LSM tree ไม่เคยแก้ page ที่เดิม ใน Python model ตัวเล็ก ๆ ที่ป้อน review ชุดเดียวกัน 50,000 ตัว ทุก event จะถูกต่อท้ายลงใน write-ahead log (2.4 MB หรือ 48 byte ต่อ event) แล้วใส่เข้าไปใน **memtable** ที่เรียงไว้ใน memory แล้วทุก ๆ 15,000 event ตัว memtable จะถูกเขียนออกเป็น file ที่เรียงแล้วและแก้ไม่ได้ใน level 0 ได้สาม file ขนาด 0.62 MB แต่ละ file ถูกเขียนครั้งเดียวจากต้นจนจบ ส่วนข้อมูลที่เก่ากว่าอยู่ข้างล่างใน L1 ถึง L3 แต่ละ level เป็น sorted run หนึ่งชุดที่ถูกหั่นเป็น file ตามช่วง key"
+    },
+    {
+      "title": "การอ่านและ compaction",
+      "body": "การอ่าน order 181,236 จะเช็ก memtable แล้วเช็ก file ใน L0 จากใหม่ไปเก่า จากนั้นเช็ก file เดียวในแต่ละ level ที่ช่วง key ครอบมัน: **bloom filter** (10 bit ต่อ key) ตัด L0 #227 และ #226 ออก ช่วง key ตัด L1 และ L2 ออก แล้วมีแค่ #225 (review) กับ L3 #86 (placed, paid, shipped) ที่ถูกอ่าน และถ้าวัดกับ order แบบสุ่ม 4,000 ตัว จะเฉลี่ย 1.1 file ต่อ lookup การลบ event ของ order ที่ถูกยกเลิก 9,755 รายการเขียน **tombstone** 30,199 ตัว พอ L0 มี 4 file ตัว **compaction** จะ merge มันเข้ากับ file ใน L1 ที่ช่วง key ทับกัน (เขียน 4.3 MB) ตัว tombstone เดินทางลงไปพร้อมข้อมูล และจะทิ้งได้เฉพาะตรงที่ไม่มีสำเนาที่เก่ากว่าของ key นั้นเหลืออยู่ข้างล่างแล้ว ในทางปฏิบัติก็คือ level สุดท้าย"
+    },
+    {
+      "title": "การเขียน การอ่าน และพื้นที่",
+      "body": "ต่อ event ขนาด 32 byte การรันบน PostgreSQL เขียน 341 byte เมื่อ key เรียงกัน และ 1,631 byte เมื่อ key สุ่ม ส่วน LSM แบบ leveled ใน model เขียน 139 และ 369 byte และแบบ size-tiered เขียน 194 และ 192 byte โดยทั้งหมดเป็นการเขียนต่อเนื่องยาว ๆ ตามลำดับ แต่การอ่านกลับกัน: B-tree หา order เจอด้วย path เดียวจาก root ถึง leaf (index 3 page และ heap 3 page) ขณะที่ LSM ต้องเช็ก bloom filter 4 ตัวและอ่าน 2 file และ range scan ก็ต้อง merge ทุก level **RUM conjecture** (EDBT 2016) บอกว่าไม่มี design ไหนลด overhead ของการอ่าน การ update และ memory ให้ต่ำสุดได้พร้อมกัน: PostgreSQL, InnoDB และ SQL Server ใช้ B-tree ส่วน RocksDB, MyRocks, Cassandra, ScyllaDB และ LevelDB ใช้ LSM tree และจ่ายด้วย compaction ที่รันอยู่เบื้องหลัง และ compaction นี้ทำให้การเขียนสะดุดเมื่อมันตามไม่ทัน"
+    }
+  ]
+}
