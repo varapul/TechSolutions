@@ -160,7 +160,7 @@ ORDER BY pg_relation_size(s.indexrelid) DESC;
 - [Binary Search Tree](../binary-search-tree/) — Smaller keys left, larger right: O(log n) search and insert while the tree stays balanced, O(n) once it degrades into a list.
 - [Hash Table](../hash-table/) — Hash each key straight to a bucket for O(1) average lookups; colliding keys share a bucket, and the table grows as it fills.
 - [PostgreSQL](../postgresql/) — A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes.
-- MVCC *(planned)* — Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions.
+- [MVCC](../mvcc/) — Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions.
 
 ## References
 

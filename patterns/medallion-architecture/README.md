@@ -124,6 +124,11 @@ When **not** to use it:
 
 - [Amazon S3](../amazon-s3/) — Object storage: objects in buckets, addressed by key, stored across Availability Zones, with storage classes, versioning and events.
 
+## Related database topics
+
+- [Row vs Column Storage](../row-vs-column-storage/) — Store rows together for transactions or columns together for analytics, and why a column store scans and compresses so much faster.
+- [Table Partitioning](../table-partitioning/) — Split a large table into partitions by range, list or hash, so queries skip partitions and old data is dropped in an instant.
+
 ## References
 
 - [Databricks — What is the medallion lakehouse architecture?](https://docs.databricks.com/aws/en/lakehouse/medallion)

@@ -1,0 +1,1700 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Connection Pooling</title>
+<desc id="dg-desc">Connection Pooling. Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database. Step 1, Too many connections: 800 connections hit max_connections = 100: 37 pods fail; a connection per checkout is 43× slower. Step 2, Why connections cost: Each connection is its own process: 6.4 ms to set up (TLS, SCRAM), about 1.7 MB of private memory. Step 3, Pooling in practice: PgBouncer in transaction mode: 800 client connections share 20 server connections at 4,007 tps. Step 4, What pooling breaks: Transaction pooling leaks session state to the next client and adds a hop; RDS Proxy pins instead.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Connection Pooling</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Too many connections</text>
+  <text class="step on p1" x="40" y="518">1 · Too many connections</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Why connections cost</text>
+  <text class="step on p2" x="262" y="518">2 · Why connections cost</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Pooling in practice</text>
+  <text class="step on p3" x="484" y="518">3 · Pooling in practice</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · What pooling breaks</text>
+  <text class="step on p4" x="706" y="518">4 · What pooling breaks</text>
+  <text class="caption p1" x="40" y="552">800 connections hit max_connections = 100: 37 pods fail; a connection per checkout is 43× slower.</text>
+  <text class="caption p2" x="40" y="552">Each connection is its own process: 6.4 ms to set up (TLS, SCRAM), about 1.7 MB of private memory.</text>
+  <text class="caption p3" x="40" y="552">PgBouncer in transaction mode: 800 client connections share 20 server connections at 4,007 tps.</text>
+  <text class="caption p4" x="40" y="552">Transaction pooling leaks session state to the next client and adds a hop; RDS Proxy pins instead.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Connection Pooling. Generated by gen.mjs from one set of runs on a laptop: PostgreSQL 18.6 (defaults,
+   max_connections = 100, ssl = on, 4 cores), PgBouncer 1.26.0 (transaction mode, 1 core), pgbench 18.6.
+   0-25%   40 pods x 20 connections connect straight to PostgreSQL: slots fill to 100, 37 pods are refused (FATAL),
+           3 keep 60 backends; pgbench: 15,103 tps with connections kept open, 353 tps with -C
+   25-50%  one new connection, message by message: fork 0.2 ms, TLS ~2.1 ms, SCRAM 3.2 ms, ready at 6.4 ms;
+           a backend's memory (22 MB in ps, 1.7 MB private) and what busy connections do to 4 cores
+   50-75%  PgBouncer in transaction mode: 800 client connections, 20 server connections, six transactions
+           borrow a server connection each; SHOW POOLS; the pooled runs (4,007 tps, 1.7 ms; pool of 8: 1.5 ms)
+   75-100% pod 7's SET stays on server pid 6715 and cancels pod 12's count(*); limits; 19.7-20 s the pooler
+           fades and the direct scene of step 1 starts again */
+.diagram .cp-hd { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; fill: var(--muted); }
+.diagram .cp-lab { font-size: 12px; font-weight: 600; }
+.diagram .cp-ct { font-size: 12px; font-weight: 700; }
+.diagram .cp-m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 11px; }
+.diagram .cp-q { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 10px; }
+.diagram .cp-pn { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 10px; fill: var(--muted); }
+.diagram .cp-tk { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 10px; font-weight: 700; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+.diagram .cp-big { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.diagram .cp-onfill { fill: var(--bg); font-weight: 600; }
+@keyframes cp-try {
+  0% { opacity: 0; }
+  1.75% { opacity: 0; }
+  3% { opacity: 1; }
+  9.5% { opacity: 1; }
+  10.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-try { opacity: 0; animation: cp-try var(--T) linear infinite; }
+@keyframes cp-fail0 {
+  0% { opacity: 0; }
+  9.75% { opacity: 0; }
+  10.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-fail0 { animation: cp-fail0 var(--T) linear infinite; }
+@keyframes cp-fail1 {
+  0% { opacity: 0; }
+  10.45% { opacity: 0; }
+  11.45% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-fail1 { animation: cp-fail1 var(--T) linear infinite; }
+@keyframes cp-fail2 {
+  0% { opacity: 0; }
+  11.15% { opacity: 0; }
+  12.15% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-fail2 { animation: cp-fail2 var(--T) linear infinite; }
+@keyframes cp-fail3 {
+  0% { opacity: 0; }
+  11.85% { opacity: 0; }
+  12.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-fail3 { animation: cp-fail3 var(--T) linear infinite; }
+@keyframes cp-ok {
+  0% { opacity: 0; }
+  12.5% { opacity: 0; }
+  13.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-ok { animation: cp-ok var(--T) linear infinite; }
+@keyframes cp-p7 {
+  0% { opacity: 0; }
+  76.25% { opacity: 0; }
+  77.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-p7 { opacity: 0; animation: cp-p7 var(--T) linear infinite; }
+@keyframes cp-p12b {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  83.25% { opacity: 1; }
+  91.5% { opacity: 1; }
+  92.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-p12b { opacity: 0; animation: cp-p12b var(--T) linear infinite; }
+@keyframes cp-p12r {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-p12r { opacity: 0; animation: cp-p12r var(--T) linear infinite; }
+@keyframes cp-st1 {
+  0% { opacity: 0; }
+  12.75% { opacity: 0; }
+  14% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-st1 { animation: cp-st1 var(--T) linear infinite; }
+@keyframes cp-at0 {
+  0% { transform: translate(264px, 150px); opacity: 0; }
+  1.5% { transform: translate(264px, 150px); opacity: 0; }
+  2% { opacity: 1; }
+  2.8% { transform: translate(264px, 210px); opacity: 0; }
+  3.3% { opacity: 1; }
+  3.5% { transform: translate(578px, 150px); opacity: 1; }
+  4% { transform: translate(578px, 150px); opacity: 0; }
+  4.1% { transform: translate(264px, 270px); opacity: 0; }
+  4.6% { opacity: 1; }
+  4.8% { transform: translate(578px, 210px); opacity: 1; }
+  5.3% { transform: translate(578px, 210px); opacity: 0; }
+  5.4% { transform: translate(264px, 180px); opacity: 0; }
+  5.9% { opacity: 1; }
+  6.1% { transform: translate(578px, 270px); opacity: 1; }
+  6.6% { transform: translate(578px, 270px); opacity: 0; }
+  6.7% { transform: translate(264px, 240px); opacity: 0; }
+  7.2% { opacity: 1; }
+  7.4% { transform: translate(578px, 180px); opacity: 1; }
+  7.9% { transform: translate(578px, 180px); opacity: 0; }
+  8.7% { transform: translate(578px, 240px); opacity: 1; }
+  9.2% { transform: translate(578px, 240px); opacity: 0; }
+  100% { transform: translate(578px, 240px); opacity: 0; }
+}
+.diagram .cp-at0 { opacity: 0; animation: cp-at0 var(--T) linear infinite; }
+@keyframes cp-at1 {
+  0% { transform: translate(264px, 240px); opacity: 0; }
+  1.825% { transform: translate(264px, 240px); opacity: 0; }
+  2.325% { opacity: 1; }
+  3.125% { transform: translate(264px, 150px); opacity: 0; }
+  3.625% { opacity: 1; }
+  3.825% { transform: translate(578px, 240px); opacity: 1; }
+  4.325% { transform: translate(578px, 240px); opacity: 0; }
+  4.425% { transform: translate(264px, 210px); opacity: 0; }
+  4.925% { opacity: 1; }
+  5.125% { transform: translate(578px, 150px); opacity: 1; }
+  5.625% { transform: translate(578px, 150px); opacity: 0; }
+  5.725% { transform: translate(264px, 270px); opacity: 0; }
+  6.225% { opacity: 1; }
+  6.425% { transform: translate(578px, 210px); opacity: 1; }
+  6.925% { transform: translate(578px, 210px); opacity: 0; }
+  7.025% { transform: translate(264px, 180px); opacity: 0; }
+  7.525% { opacity: 1; }
+  7.725% { transform: translate(578px, 270px); opacity: 1; }
+  8.225% { transform: translate(578px, 270px); opacity: 0; }
+  9.025% { transform: translate(578px, 180px); opacity: 1; }
+  9.525% { transform: translate(578px, 180px); opacity: 0; }
+  100% { transform: translate(578px, 180px); opacity: 0; }
+}
+.diagram .cp-at1 { opacity: 0; animation: cp-at1 var(--T) linear infinite; }
+@keyframes cp-at2 {
+  0% { transform: translate(264px, 180px); opacity: 0; }
+  2.15% { transform: translate(264px, 180px); opacity: 0; }
+  2.65% { opacity: 1; }
+  3.45% { transform: translate(264px, 240px); opacity: 0; }
+  3.95% { opacity: 1; }
+  4.15% { transform: translate(578px, 180px); opacity: 1; }
+  4.65% { transform: translate(578px, 180px); opacity: 0; }
+  4.75% { transform: translate(264px, 150px); opacity: 0; }
+  5.25% { opacity: 1; }
+  5.45% { transform: translate(578px, 240px); opacity: 1; }
+  5.95% { transform: translate(578px, 240px); opacity: 0; }
+  6.05% { transform: translate(264px, 210px); opacity: 0; }
+  6.55% { opacity: 1; }
+  6.75% { transform: translate(578px, 150px); opacity: 1; }
+  7.25% { transform: translate(578px, 150px); opacity: 0; }
+  7.35% { transform: translate(264px, 270px); opacity: 0; }
+  7.85% { opacity: 1; }
+  8.05% { transform: translate(578px, 210px); opacity: 1; }
+  8.55% { transform: translate(578px, 210px); opacity: 0; }
+  9.35% { transform: translate(578px, 270px); opacity: 1; }
+  9.85% { transform: translate(578px, 270px); opacity: 0; }
+  100% { transform: translate(578px, 270px); opacity: 0; }
+}
+.diagram .cp-at2 { opacity: 0; animation: cp-at2 var(--T) linear infinite; }
+@keyframes cp-at3 {
+  0% { transform: translate(264px, 270px); opacity: 0; }
+  2.475% { transform: translate(264px, 270px); opacity: 0; }
+  2.975% { opacity: 1; }
+  3.775% { transform: translate(264px, 180px); opacity: 0; }
+  4.275% { opacity: 1; }
+  4.475% { transform: translate(578px, 270px); opacity: 1; }
+  4.975% { transform: translate(578px, 270px); opacity: 0; }
+  5.075% { transform: translate(264px, 240px); opacity: 0; }
+  5.575% { opacity: 1; }
+  5.775% { transform: translate(578px, 180px); opacity: 1; }
+  6.275% { transform: translate(578px, 180px); opacity: 0; }
+  6.375% { transform: translate(264px, 150px); opacity: 0; }
+  6.875% { opacity: 1; }
+  7.075% { transform: translate(578px, 240px); opacity: 1; }
+  7.575% { transform: translate(578px, 240px); opacity: 0; }
+  7.675% { transform: translate(264px, 210px); opacity: 0; }
+  8.175% { opacity: 1; }
+  8.375% { transform: translate(578px, 150px); opacity: 1; }
+  8.875% { transform: translate(578px, 150px); opacity: 0; }
+  9.675% { transform: translate(578px, 210px); opacity: 1; }
+  10.175% { transform: translate(578px, 210px); opacity: 0; }
+  100% { transform: translate(578px, 210px); opacity: 0; }
+}
+.diagram .cp-at3 { opacity: 0; animation: cp-at3 var(--T) linear infinite; }
+@keyframes cp-xa {
+  0% { transform: translate(578px, 180px); opacity: 0; }
+  8.6% { transform: translate(578px, 180px); opacity: 0; }
+  9.1% { opacity: 1; }
+  9.65% { transform: translate(578px, 210px); opacity: 0; }
+  10.15% { opacity: 1; }
+  10.6% { transform: translate(264px, 180px); opacity: 1; }
+  10.7% { transform: translate(578px, 240px); opacity: 0; }
+  11.1% { transform: translate(264px, 180px); opacity: 0; }
+  11.2% { opacity: 1; }
+  11.65% { transform: translate(264px, 210px); opacity: 1; }
+  11.75% { transform: translate(578px, 270px); opacity: 0; }
+  12.15% { transform: translate(264px, 210px); opacity: 0; }
+  12.25% { opacity: 1; }
+  12.7% { transform: translate(264px, 240px); opacity: 1; }
+  13.2% { transform: translate(264px, 240px); opacity: 0; }
+  13.75% { transform: translate(264px, 270px); opacity: 1; }
+  14.25% { transform: translate(264px, 270px); opacity: 0; }
+  100% { transform: translate(264px, 270px); opacity: 0; }
+}
+.diagram .cp-xa { opacity: 0; animation: cp-xa var(--T) linear infinite; }
+@keyframes cp-xb {
+  0% { transform: translate(578px, 240px); opacity: 0; }
+  8.95% { transform: translate(578px, 240px); opacity: 0; }
+  9.45% { opacity: 1; }
+  10% { transform: translate(578px, 270px); opacity: 0; }
+  10.5% { opacity: 1; }
+  10.95% { transform: translate(264px, 240px); opacity: 1; }
+  11.05% { transform: translate(578px, 150px); opacity: 0; }
+  11.45% { transform: translate(264px, 240px); opacity: 0; }
+  11.55% { opacity: 1; }
+  12% { transform: translate(264px, 270px); opacity: 1; }
+  12.1% { transform: translate(578px, 180px); opacity: 0; }
+  12.5% { transform: translate(264px, 270px); opacity: 0; }
+  12.6% { opacity: 1; }
+  13.05% { transform: translate(264px, 150px); opacity: 1; }
+  13.55% { transform: translate(264px, 150px); opacity: 0; }
+  14.1% { transform: translate(264px, 180px); opacity: 1; }
+  14.6% { transform: translate(264px, 180px); opacity: 0; }
+  100% { transform: translate(264px, 180px); opacity: 0; }
+}
+.diagram .cp-xb { opacity: 0; animation: cp-xb var(--T) linear infinite; }
+@keyframes cp-xc {
+  0% { transform: translate(578px, 150px); opacity: 0; }
+  9.3% { transform: translate(578px, 150px); opacity: 0; }
+  9.8% { opacity: 1; }
+  10.35% { transform: translate(578px, 180px); opacity: 0; }
+  10.85% { opacity: 1; }
+  11.3% { transform: translate(264px, 150px); opacity: 1; }
+  11.4% { transform: translate(578px, 210px); opacity: 0; }
+  11.8% { transform: translate(264px, 150px); opacity: 0; }
+  11.9% { opacity: 1; }
+  12.35% { transform: translate(264px, 180px); opacity: 1; }
+  12.45% { transform: translate(578px, 240px); opacity: 0; }
+  12.85% { transform: translate(264px, 180px); opacity: 0; }
+  12.95% { opacity: 1; }
+  13.4% { transform: translate(264px, 210px); opacity: 1; }
+  13.9% { transform: translate(264px, 210px); opacity: 0; }
+  14.45% { transform: translate(264px, 240px); opacity: 1; }
+  14.95% { transform: translate(264px, 240px); opacity: 0; }
+  100% { transform: translate(264px, 240px); opacity: 0; }
+}
+.diagram .cp-xc { opacity: 0; animation: cp-xc var(--T) linear infinite; }
+@keyframes cp-sq {
+  0% { transform: translate(264px, 240px); opacity: 0; }
+  13.5% { transform: translate(264px, 240px); opacity: 0; }
+  13.9% { opacity: 1; }
+  14.7% { transform: translate(264px, 270px); opacity: 0; }
+  15.1% { opacity: 1; }
+  15.3% { transform: translate(578px, 240px); opacity: 1; }
+  15.7% { transform: translate(578px, 240px); opacity: 0; }
+  15.9% { transform: translate(264px, 210px); opacity: 0; }
+  16.3% { opacity: 1; }
+  16.5% { transform: translate(578px, 270px); opacity: 1; }
+  16.9% { transform: translate(578px, 270px); opacity: 0; }
+  17.1% { transform: translate(264px, 240px); opacity: 0; }
+  17.5% { opacity: 1; }
+  17.7% { transform: translate(578px, 210px); opacity: 1; }
+  18.1% { transform: translate(578px, 210px); opacity: 0; }
+  18.3% { transform: translate(264px, 270px); opacity: 0; }
+  18.7% { opacity: 1; }
+  18.9% { transform: translate(578px, 240px); opacity: 1; }
+  19.3% { transform: translate(578px, 240px); opacity: 0; }
+  20.1% { transform: translate(578px, 270px); opacity: 1; }
+  20.5% { transform: translate(578px, 270px); opacity: 0; }
+  100% { transform: translate(578px, 270px); opacity: 0; }
+}
+.diagram .cp-sq { opacity: 0; animation: cp-sq var(--T) linear infinite; }
+@keyframes cp-sr {
+  0% { transform: translate(578px, 240px); opacity: 0; }
+  15.6% { transform: translate(578px, 240px); opacity: 0; }
+  16% { opacity: 1; }
+  16.8% { transform: translate(578px, 270px); opacity: 0; }
+  17.2% { opacity: 1; }
+  17.4% { transform: translate(264px, 240px); opacity: 1; }
+  17.8% { transform: translate(264px, 240px); opacity: 0; }
+  18% { transform: translate(578px, 210px); opacity: 0; }
+  18.4% { opacity: 1; }
+  18.6% { transform: translate(264px, 270px); opacity: 1; }
+  19% { transform: translate(264px, 270px); opacity: 0; }
+  19.2% { transform: translate(578px, 240px); opacity: 0; }
+  19.6% { opacity: 1; }
+  19.8% { transform: translate(264px, 210px); opacity: 1; }
+  20.2% { transform: translate(264px, 210px); opacity: 0; }
+  20.4% { transform: translate(578px, 270px); opacity: 0; }
+  20.8% { opacity: 1; }
+  21% { transform: translate(264px, 240px); opacity: 1; }
+  21.4% { transform: translate(264px, 240px); opacity: 0; }
+  22.2% { transform: translate(264px, 270px); opacity: 1; }
+  22.6% { transform: translate(264px, 270px); opacity: 0; }
+  100% { transform: translate(264px, 270px); opacity: 0; }
+}
+.diagram .cp-sr { opacity: 0; animation: cp-sr var(--T) linear infinite; }
+@keyframes cp-a0 {
+  0% { opacity: 0; }
+  26.75% { opacity: 0; }
+  27.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a0 { opacity: 0; animation: cp-a0 var(--T) linear infinite; }
+@keyframes cp-a1 {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a1 { opacity: 0; animation: cp-a1 var(--T) linear infinite; }
+@keyframes cp-a2 {
+  0% { opacity: 0; }
+  30.5% { opacity: 0; }
+  31.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a2 { opacity: 0; animation: cp-a2 var(--T) linear infinite; }
+@keyframes cp-a3 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a3 { opacity: 0; animation: cp-a3 var(--T) linear infinite; }
+@keyframes cp-a4 {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a4 { opacity: 0; animation: cp-a4 var(--T) linear infinite; }
+@keyframes cp-a5 {
+  0% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a5 { opacity: 0; animation: cp-a5 var(--T) linear infinite; }
+@keyframes cp-a6 {
+  0% { opacity: 0; }
+  35.75% { opacity: 0; }
+  36.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a6 { opacity: 0; animation: cp-a6 var(--T) linear infinite; }
+@keyframes cp-a7 {
+  0% { opacity: 0; }
+  37.25% { opacity: 0; }
+  38% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a7 { opacity: 0; animation: cp-a7 var(--T) linear infinite; }
+@keyframes cp-a8 {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-a8 { opacity: 0; animation: cp-a8 var(--T) linear infinite; }
+@keyframes cp-fk {
+  0% { opacity: 0; }
+  28.1% { opacity: 0; }
+  28.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-fk { opacity: 0; animation: cp-fk var(--T) linear infinite; }
+@keyframes cp-ft {
+  0% { opacity: 0; }
+  40.75% { opacity: 0; }
+  42% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-ft { opacity: 0; animation: cp-ft var(--T) linear infinite; }
+@keyframes cp-hb {
+  0% { transform: translate(268px, 150px); opacity: 0; }
+  26.75% { transform: translate(268px, 150px); opacity: 0; }
+  27.25% { opacity: 1; }
+  27.85% { transform: translate(562px, 150px); opacity: 1; }
+  28.35% { transform: translate(562px, 150px); opacity: 0; }
+  32% { transform: translate(268px, 212px); opacity: 0; }
+  32.5% { opacity: 1; }
+  33.1% { transform: translate(562px, 212px); opacity: 1; }
+  33.6% { transform: translate(562px, 212px); opacity: 0; }
+  100% { transform: translate(562px, 212px); opacity: 0; }
+}
+.diagram .cp-hb { opacity: 0; animation: cp-hb var(--T) linear infinite; }
+@keyframes cp-ho {
+  0% { transform: translate(268px, 182px); opacity: 0; }
+  29.25% { transform: translate(268px, 182px); opacity: 0; }
+  29.75% { opacity: 1; }
+  30.35% { transform: translate(562px, 182px); opacity: 1; }
+  30.5% { transform: translate(564px, 197px); opacity: 0; }
+  30.85% { transform: translate(562px, 182px); opacity: 0; }
+  31% { opacity: 1; }
+  31.6% { transform: translate(270px, 197px); opacity: 1; }
+  32.1% { transform: translate(270px, 197px); opacity: 0; }
+  33.25% { transform: translate(564px, 227px); opacity: 0; }
+  33.75% { opacity: 1; }
+  34.35% { transform: translate(270px, 227px); opacity: 1; }
+  34.5% { transform: translate(268px, 242px); opacity: 0; }
+  34.85% { transform: translate(270px, 227px); opacity: 0; }
+  35% { opacity: 1; }
+  35.6% { transform: translate(562px, 242px); opacity: 1; }
+  35.75% { transform: translate(564px, 257px); opacity: 0; }
+  36.1% { transform: translate(562px, 242px); opacity: 0; }
+  36.25% { opacity: 1; }
+  36.85% { transform: translate(270px, 257px); opacity: 1; }
+  37.25% { transform: translate(268px, 272px); opacity: 0; }
+  37.35% { transform: translate(270px, 257px); opacity: 0; }
+  37.75% { opacity: 1; }
+  38.35% { transform: translate(562px, 272px); opacity: 1; }
+  38.85% { transform: translate(562px, 272px); opacity: 0; }
+  100% { transform: translate(562px, 272px); opacity: 0; }
+}
+.diagram .cp-ho { opacity: 0; animation: cp-ho var(--T) linear infinite; }
+@keyframes cp-hg {
+  0% { transform: translate(564px, 287px); opacity: 0; }
+  39.25% { transform: translate(564px, 287px); opacity: 0; }
+  39.75% { opacity: 1; }
+  40.35% { transform: translate(270px, 287px); opacity: 1; }
+  40.85% { transform: translate(270px, 287px); opacity: 0; }
+  100% { transform: translate(270px, 287px); opacity: 0; }
+}
+.diagram .cp-hg { opacity: 0; animation: cp-hg var(--T) linear infinite; }
+@keyframes cp-x0 {
+  0% { transform: translate(162px, 135px); opacity: 0; }
+  53% { transform: translate(162px, 135px); opacity: 0; }
+  53.4% { opacity: 1; }
+  55% { transform: translate(356px, 173.5px); }
+  56.1% { transform: translate(595.5px, 131px); opacity: 1; }
+  56.5% { transform: translate(595.5px, 131px); opacity: 0; }
+  100% { transform: translate(595.5px, 131px); opacity: 0; }
+}
+.diagram .cp-x0 { opacity: 0; animation: cp-x0 var(--T) linear infinite; }
+@keyframes cp-y0 {
+  0% { transform: translate(595.5px, 131px); opacity: 0; }
+  56.5% { transform: translate(595.5px, 131px); opacity: 0; }
+  56.9% { opacity: 1; }
+  57.6% { transform: translate(356px, 173.5px); }
+  59.6% { transform: translate(162px, 135px); opacity: 1; }
+  60% { transform: translate(162px, 135px); opacity: 0; }
+  100% { transform: translate(162px, 135px); opacity: 0; }
+}
+.diagram .cp-y0 { opacity: 0; animation: cp-y0 var(--T) linear infinite; }
+@keyframes cp-b0 {
+  0% { opacity: 0; }
+  54.9% { opacity: 0; }
+  55.5% { opacity: 1; }
+  58% { opacity: 1; }
+  58.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-b0 { opacity: 0; animation: cp-b0 var(--T) linear infinite; }
+@keyframes cp-g0 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  56.5% { opacity: 1; }
+  56.9% { opacity: 1; }
+  57.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-g0 { opacity: 0; animation: cp-g0 var(--T) linear infinite; }
+@keyframes cp-x1 {
+  0% { transform: translate(162px, 204px); opacity: 0; }
+  55% { transform: translate(162px, 204px); opacity: 0; }
+  55.4% { opacity: 1; }
+  57% { transform: translate(416px, 189.5px); }
+  58.1% { transform: translate(728.5px, 131px); opacity: 1; }
+  58.5% { transform: translate(728.5px, 131px); opacity: 0; }
+  100% { transform: translate(728.5px, 131px); opacity: 0; }
+}
+.diagram .cp-x1 { opacity: 0; animation: cp-x1 var(--T) linear infinite; }
+@keyframes cp-y1 {
+  0% { transform: translate(728.5px, 131px); opacity: 0; }
+  58.5% { transform: translate(728.5px, 131px); opacity: 0; }
+  58.9% { opacity: 1; }
+  59.6% { transform: translate(416px, 189.5px); }
+  61.6% { transform: translate(162px, 204px); opacity: 1; }
+  62% { transform: translate(162px, 204px); opacity: 0; }
+  100% { transform: translate(162px, 204px); opacity: 0; }
+}
+.diagram .cp-y1 { opacity: 0; animation: cp-y1 var(--T) linear infinite; }
+@keyframes cp-b1 {
+  0% { opacity: 0; }
+  56.9% { opacity: 0; }
+  57.5% { opacity: 1; }
+  60% { opacity: 1; }
+  60.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-b1 { opacity: 0; animation: cp-b1 var(--T) linear infinite; }
+@keyframes cp-g1 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.5% { opacity: 1; }
+  58.9% { opacity: 1; }
+  59.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-g1 { opacity: 0; animation: cp-g1 var(--T) linear infinite; }
+@keyframes cp-x2 {
+  0% { transform: translate(78px, 250px); opacity: 0; }
+  57% { transform: translate(78px, 250px); opacity: 0; }
+  57.4% { opacity: 1; }
+  59% { transform: translate(416px, 205.5px); }
+  60.1% { transform: translate(633.5px, 145px); opacity: 1; }
+  60.5% { transform: translate(633.5px, 145px); opacity: 0; }
+  100% { transform: translate(633.5px, 145px); opacity: 0; }
+}
+.diagram .cp-x2 { opacity: 0; animation: cp-x2 var(--T) linear infinite; }
+@keyframes cp-y2 {
+  0% { transform: translate(633.5px, 145px); opacity: 0; }
+  60.5% { transform: translate(633.5px, 145px); opacity: 0; }
+  60.9% { opacity: 1; }
+  61.6% { transform: translate(416px, 205.5px); }
+  63.6% { transform: translate(78px, 250px); opacity: 1; }
+  64% { transform: translate(78px, 250px); opacity: 0; }
+  100% { transform: translate(78px, 250px); opacity: 0; }
+}
+.diagram .cp-y2 { opacity: 0; animation: cp-y2 var(--T) linear infinite; }
+@keyframes cp-b2 {
+  0% { opacity: 0; }
+  58.9% { opacity: 0; }
+  59.5% { opacity: 1; }
+  62% { opacity: 1; }
+  62.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-b2 { opacity: 0; animation: cp-b2 var(--T) linear infinite; }
+@keyframes cp-g2 {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  60.5% { opacity: 1; }
+  60.9% { opacity: 1; }
+  61.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-g2 { opacity: 0; animation: cp-g2 var(--T) linear infinite; }
+@keyframes cp-x3 {
+  0% { transform: translate(204px, 273px); opacity: 0; }
+  59% { transform: translate(204px, 273px); opacity: 0; }
+  59.4% { opacity: 1; }
+  61% { transform: translate(476px, 173.5px); }
+  62.1% { transform: translate(671.5px, 131px); opacity: 1; }
+  62.5% { transform: translate(671.5px, 131px); opacity: 0; }
+  100% { transform: translate(671.5px, 131px); opacity: 0; }
+}
+.diagram .cp-x3 { opacity: 0; animation: cp-x3 var(--T) linear infinite; }
+@keyframes cp-y3 {
+  0% { transform: translate(671.5px, 131px); opacity: 0; }
+  62.5% { transform: translate(671.5px, 131px); opacity: 0; }
+  62.9% { opacity: 1; }
+  63.6% { transform: translate(476px, 173.5px); }
+  65.6% { transform: translate(204px, 273px); opacity: 1; }
+  66% { transform: translate(204px, 273px); opacity: 0; }
+  100% { transform: translate(204px, 273px); opacity: 0; }
+}
+.diagram .cp-y3 { opacity: 0; animation: cp-y3 var(--T) linear infinite; }
+@keyframes cp-b3 {
+  0% { opacity: 0; }
+  60.9% { opacity: 0; }
+  61.5% { opacity: 1; }
+  64% { opacity: 1; }
+  64.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-b3 { opacity: 0; animation: cp-b3 var(--T) linear infinite; }
+@keyframes cp-g3 {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  62.5% { opacity: 1; }
+  62.9% { opacity: 1; }
+  63.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-g3 { opacity: 0; animation: cp-g3 var(--T) linear infinite; }
+@keyframes cp-x4 {
+  0% { transform: translate(246px, 296px); opacity: 0; }
+  61% { transform: translate(246px, 296px); opacity: 0; }
+  61.4% { opacity: 1; }
+  63% { transform: translate(386px, 221.5px); }
+  64.1% { transform: translate(709.5px, 145px); opacity: 1; }
+  64.5% { transform: translate(709.5px, 145px); opacity: 0; }
+  100% { transform: translate(709.5px, 145px); opacity: 0; }
+}
+.diagram .cp-x4 { opacity: 0; animation: cp-x4 var(--T) linear infinite; }
+@keyframes cp-y4 {
+  0% { transform: translate(709.5px, 145px); opacity: 0; }
+  64.5% { transform: translate(709.5px, 145px); opacity: 0; }
+  64.9% { opacity: 1; }
+  65.6% { transform: translate(386px, 221.5px); }
+  67.6% { transform: translate(246px, 296px); opacity: 1; }
+  68% { transform: translate(246px, 296px); opacity: 0; }
+  100% { transform: translate(246px, 296px); opacity: 0; }
+}
+.diagram .cp-y4 { opacity: 0; animation: cp-y4 var(--T) linear infinite; }
+@keyframes cp-b4 {
+  0% { opacity: 0; }
+  62.9% { opacity: 0; }
+  63.5% { opacity: 1; }
+  66% { opacity: 1; }
+  66.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-b4 { opacity: 0; animation: cp-b4 var(--T) linear infinite; }
+@keyframes cp-g4 {
+  0% { opacity: 0; }
+  64% { opacity: 0; }
+  64.5% { opacity: 1; }
+  64.9% { opacity: 1; }
+  65.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-g4 { opacity: 0; animation: cp-g4 var(--T) linear infinite; }
+@keyframes cp-x5 {
+  0% { transform: translate(204px, 158px); opacity: 0; }
+  63% { transform: translate(204px, 158px); opacity: 0; }
+  63.4% { opacity: 1; }
+  65% { transform: translate(476px, 189.5px); }
+  66.1% { transform: translate(766.5px, 131px); opacity: 1; }
+  66.5% { transform: translate(766.5px, 131px); opacity: 0; }
+  100% { transform: translate(766.5px, 131px); opacity: 0; }
+}
+.diagram .cp-x5 { opacity: 0; animation: cp-x5 var(--T) linear infinite; }
+@keyframes cp-y5 {
+  0% { transform: translate(766.5px, 131px); opacity: 0; }
+  66.5% { transform: translate(766.5px, 131px); opacity: 0; }
+  66.9% { opacity: 1; }
+  67.6% { transform: translate(476px, 189.5px); }
+  69.6% { transform: translate(204px, 158px); opacity: 1; }
+  70% { transform: translate(204px, 158px); opacity: 0; }
+  100% { transform: translate(204px, 158px); opacity: 0; }
+}
+.diagram .cp-y5 { opacity: 0; animation: cp-y5 var(--T) linear infinite; }
+@keyframes cp-b5 {
+  0% { opacity: 0; }
+  64.9% { opacity: 0; }
+  65.5% { opacity: 1; }
+  68% { opacity: 1; }
+  68.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-b5 { opacity: 0; animation: cp-b5 var(--T) linear infinite; }
+@keyframes cp-g5 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  66.5% { opacity: 1; }
+  66.9% { opacity: 1; }
+  67.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-g5 { opacity: 0; animation: cp-g5 var(--T) linear infinite; }
+@keyframes cp-b0a {
+  0% { opacity: 0; }
+  79.25% { opacity: 0; }
+  80.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-b0a { opacity: 0; animation: cp-b0a var(--T) linear infinite; }
+@keyframes cp-n4 {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-n4 { opacity: 0; animation: cp-n4 var(--T) linear infinite; }
+@keyframes cp-n5 {
+  0% { opacity: 0; }
+  84.5% { opacity: 0; }
+  85.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-n5 { opacity: 0; animation: cp-n5 var(--T) linear infinite; }
+@keyframes cp-k1 {
+  0% { transform: translate(120px, 158px); opacity: 0; }
+  77% { transform: translate(120px, 158px); opacity: 0; }
+  77.4% { opacity: 1; }
+  79.25% { transform: translate(356px, 173.5px); }
+  80.5% { transform: translate(595.5px, 131px); opacity: 1; }
+  80.9% { transform: translate(595.5px, 131px); opacity: 0; }
+  100% { transform: translate(595.5px, 131px); opacity: 0; }
+}
+.diagram .cp-k1 { opacity: 0; animation: cp-k1 var(--T) linear infinite; }
+@keyframes cp-k2 {
+  0% { transform: translate(120px, 181px); opacity: 0; }
+  83% { transform: translate(120px, 181px); opacity: 0; }
+  83.4% { opacity: 1; }
+  85.25% { transform: translate(356px, 173.5px); }
+  86.5% { transform: translate(595.5px, 131px); opacity: 1; }
+  86.9% { transform: translate(595.5px, 131px); opacity: 0; }
+  100% { transform: translate(595.5px, 131px); opacity: 0; }
+}
+.diagram .cp-k2 { opacity: 0; animation: cp-k2 var(--T) linear infinite; }
+@keyframes cp-k3 {
+  0% { transform: translate(595.5px, 131px); opacity: 0; }
+  87.5% { transform: translate(595.5px, 131px); opacity: 0; }
+  87.9% { opacity: 1; }
+  88.75% { transform: translate(356px, 173.5px); }
+  91.25% { transform: translate(120px, 181px); opacity: 1; }
+  91.65% { transform: translate(120px, 181px); opacity: 0; }
+  100% { transform: translate(120px, 181px); opacity: 0; }
+}
+.diagram .cp-k3 { opacity: 0; animation: cp-k3 var(--T) linear infinite; }
+@keyframes cp-row0 {
+  0% { opacity: 0; }
+  2.5% { opacity: 0; }
+  3.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-row0 { animation: cp-row0 var(--T) linear infinite; }
+@keyframes cp-row1 {
+  0% { opacity: 0; }
+  3.05% { opacity: 0; }
+  3.8% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-row1 { animation: cp-row1 var(--T) linear infinite; }
+@keyframes cp-row2 {
+  0% { opacity: 0; }
+  3.6% { opacity: 0; }
+  4.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-row2 { animation: cp-row2 var(--T) linear infinite; }
+@keyframes cp-row3 {
+  0% { opacity: 0; }
+  4.15% { opacity: 0; }
+  4.9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-row3 { animation: cp-row3 var(--T) linear infinite; }
+@keyframes cp-row4 {
+  0% { opacity: 0; }
+  4.7% { opacity: 0; }
+  5.45% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-row4 { animation: cp-row4 var(--T) linear infinite; }
+@keyframes cp-row5 {
+  0% { opacity: 0; }
+  5.25% { opacity: 0; }
+  6% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-row5 { animation: cp-row5 var(--T) linear infinite; }
+@keyframes cp-row6 {
+  0% { opacity: 0; }
+  5.8% { opacity: 0; }
+  6.55% { opacity: 1; }
+  10.75% { opacity: 1; }
+  11.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-row6 { opacity: 0; animation: cp-row6 var(--T) linear infinite; }
+@keyframes cp-row7 {
+  0% { opacity: 0; }
+  6.35% { opacity: 0; }
+  7.1% { opacity: 1; }
+  11.15% { opacity: 1; }
+  11.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-row7 { opacity: 0; animation: cp-row7 var(--T) linear infinite; }
+@keyframes cp-row8 {
+  0% { opacity: 0; }
+  6.9% { opacity: 0; }
+  7.65% { opacity: 1; }
+  11.55% { opacity: 1; }
+  12.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-row8 { opacity: 0; animation: cp-row8 var(--T) linear infinite; }
+@keyframes cp-row9 {
+  0% { opacity: 0; }
+  7.45% { opacity: 0; }
+  8.2% { opacity: 1; }
+  11.95% { opacity: 1; }
+  12.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-row9 { opacity: 0; animation: cp-row9 var(--T) linear infinite; }
+@keyframes cp-rz {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  8.75% { opacity: 1; }
+  12% { opacity: 1; }
+  12.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-rz { opacity: 0; animation: cp-rz var(--T) linear infinite; }
+@keyframes cp-full {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  8.75% { opacity: 1; }
+  11.5% { opacity: 1; }
+  12.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-full { opacity: 0; animation: cp-full var(--T) linear infinite; }
+@keyframes cp-pk {
+  0% { opacity: 0; }
+  8.1% { opacity: 0; }
+  8.85% { opacity: 1; }
+  12% { opacity: 1; }
+  12.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-pk { opacity: 0; animation: cp-pk var(--T) linear infinite; }
+@keyframes cp-strip {
+  0% { transform: translateY(0px); }
+  2.65% { transform: translateY(0px); }
+  2.8% { transform: translateY(-40px); }
+  3.2% { transform: translateY(-40px); }
+  3.35% { transform: translateY(-80px); }
+  3.75% { transform: translateY(-80px); }
+  3.9% { transform: translateY(-120px); }
+  4.3% { transform: translateY(-120px); }
+  4.45% { transform: translateY(-160px); }
+  4.85% { transform: translateY(-160px); }
+  5% { transform: translateY(-200px); }
+  5.4% { transform: translateY(-200px); }
+  5.55% { transform: translateY(-240px); }
+  5.95% { transform: translateY(-240px); }
+  6.1% { transform: translateY(-280px); }
+  6.5% { transform: translateY(-280px); }
+  6.65% { transform: translateY(-320px); }
+  7.05% { transform: translateY(-320px); }
+  7.2% { transform: translateY(-360px); }
+  7.6% { transform: translateY(-360px); }
+  7.75% { transform: translateY(-400px); }
+  12.25% { transform: translateY(-400px); }
+  13% { transform: translateY(-440px); }
+  100% { transform: translateY(-440px); }
+}
+.diagram .cp-strip { transform: translateY(-440px); animation: cp-strip var(--T) linear infinite; }
+@keyframes cp-fatal {
+  0% { opacity: 0; }
+  9.25% { opacity: 0; }
+  10.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-fatal { animation: cp-fatal var(--T) linear infinite; }
+@keyframes cp-s0a {
+  0% { opacity: 0; }
+  80.5% { opacity: 0; }
+  81.25% { opacity: 1; }
+  87.25% { opacity: 1; }
+  88% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-s0a { opacity: 0; animation: cp-s0a var(--T) linear infinite; }
+@keyframes cp-s0r {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-s0r { opacity: 0; animation: cp-s0r var(--T) linear infinite; }
+@keyframes cp-l1 {
+  0% { opacity: 0; }
+  80.75% { opacity: 0; }
+  82% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-l1 { opacity: 0; animation: cp-l1 var(--T) linear infinite; }
+@keyframes cp-l2 {
+  0% { opacity: 0; }
+  85.5% { opacity: 0; }
+  86.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-l2 { opacity: 0; animation: cp-l2 var(--T) linear infinite; }
+@keyframes cp-l3 {
+  0% { opacity: 0; }
+  87.5% { opacity: 0; }
+  88.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-l3 { opacity: 0; animation: cp-l3 var(--T) linear infinite; }
+@keyframes cp-nb {
+  0% { opacity: 0; }
+  28.1% { opacity: 0; }
+  29.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-nb { opacity: 0; animation: cp-nb var(--T) linear infinite; }
+@keyframes cp-ns1 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.6% { opacity: 1; }
+  39% { opacity: 1; }
+  39.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .cp-ns1 { opacity: 0; animation: cp-ns1 var(--T) linear infinite; }
+@keyframes cp-ns2 {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-ns2 { opacity: 0; animation: cp-ns2 var(--T) linear infinite; }
+@keyframes cp-nh {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-nh { opacity: 0; animation: cp-nh var(--T) linear infinite; }
+@keyframes cp-bar1 {
+  0% { transform: scaleX(0); }
+  14% { transform: scaleX(0); }
+  17.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .cp-bar1 { transform-box: fill-box; transform-origin: 0 50%; animation: cp-bar1 var(--T) linear infinite; }
+@keyframes cp-bar2 {
+  0% { transform: scaleX(0); }
+  15% { transform: scaleX(0); }
+  16.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .cp-bar2 { transform-box: fill-box; transform-origin: 0 50%; animation: cp-bar2 var(--T) linear infinite; }
+@keyframes cp-v1 {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  18.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-v1 { animation: cp-v1 var(--T) linear infinite; }
+@keyframes cp-v2 {
+  0% { opacity: 0; }
+  17% { opacity: 0; }
+  18.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-v2 { animation: cp-v2 var(--T) linear infinite; }
+@keyframes cp-v3 {
+  0% { opacity: 0; }
+  18.75% { opacity: 0; }
+  20.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-v3 { animation: cp-v3 var(--T) linear infinite; }
+@keyframes cp-sg0 {
+  0% { opacity: 0; }
+  28.1% { opacity: 0; }
+  28.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-sg0 { opacity: 0; animation: cp-sg0 var(--T) linear infinite; }
+@keyframes cp-sg1 {
+  0% { opacity: 0; }
+  29.25% { opacity: 0; }
+  30.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-sg1 { opacity: 0; animation: cp-sg1 var(--T) linear infinite; }
+@keyframes cp-sg2 {
+  0% { opacity: 0; }
+  33.25% { opacity: 0; }
+  34.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-sg2 { opacity: 0; animation: cp-sg2 var(--T) linear infinite; }
+@keyframes cp-sg3 {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-sg3 { opacity: 0; animation: cp-sg3 var(--T) linear infinite; }
+@keyframes cp-mem {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  43% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-mem { opacity: 0; animation: cp-mem var(--T) linear infinite; }
+@keyframes cp-cpu {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  45% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-cpu { opacity: 0; animation: cp-cpu var(--T) linear infinite; }
+@keyframes cp-t0 {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  54% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-t0 { opacity: 0; animation: cp-t0 var(--T) linear infinite; }
+@keyframes cp-t1 {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  57% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-t1 { opacity: 0; animation: cp-t1 var(--T) linear infinite; }
+@keyframes cp-t2 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  60% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-t2 { opacity: 0; animation: cp-t2 var(--T) linear infinite; }
+@keyframes cp-t3 {
+  0% { opacity: 0; }
+  62% { opacity: 0; }
+  63.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-t3 { opacity: 0; animation: cp-t3 var(--T) linear infinite; }
+@keyframes cp-c0 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-c0 { opacity: 0; animation: cp-c0 var(--T) linear infinite; }
+@keyframes cp-c1 {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-c1 { opacity: 0; animation: cp-c1 var(--T) linear infinite; }
+@keyframes cp-c2 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-c2 { opacity: 0; animation: cp-c2 var(--T) linear infinite; }
+@keyframes cp-c3 {
+  0% { opacity: 0; }
+  79% { opacity: 0; }
+  80.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-c3 { opacity: 0; animation: cp-c3 var(--T) linear infinite; }
+@keyframes cp-c4 {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .cp-c4 { opacity: 0; animation: cp-c4 var(--T) linear infinite; }
+</style>
+<g class="stage">
+  <!-- CHECKOUT: 40 pods, each with a pool of 20 connections -->
+  <rect class="box" x="30" y="96" width="228" height="228" rx="12"/>
+  <text class="cp-hd" x="44" y="116">CHECKOUT · 40 PODS</text>
+  <rect class="f-bg s-line" x="42" y="126" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="126" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="126" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="126" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="126" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="42" y="149" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="149" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="149" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="149" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="149" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="42" y="172" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="172" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="172" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="172" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="172" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="42" y="195" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="195" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="195" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="195" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="195" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="42" y="218" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="218" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="218" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="218" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="218" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="42" y="241" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="241" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="241" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="241" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="241" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="42" y="264" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="264" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="264" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="264" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="264" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="42" y="287" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="84" y="287" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="126" y="287" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="168" y="287" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <rect class="f-bg s-line" x="210" y="287" width="36" height="18" rx="4" stroke-width="1.2"/>
+  <g class="p1"><g class="f-blue-soft s-blue cp-try" stroke-width="1.2"><rect x="42" y="126" width="36" height="18" rx="4"/><rect x="84" y="126" width="36" height="18" rx="4"/><rect x="126" y="126" width="36" height="18" rx="4"/><rect x="168" y="126" width="36" height="18" rx="4"/><rect x="210" y="126" width="36" height="18" rx="4"/><rect x="42" y="149" width="36" height="18" rx="4"/><rect x="84" y="149" width="36" height="18" rx="4"/><rect x="126" y="149" width="36" height="18" rx="4"/><rect x="168" y="149" width="36" height="18" rx="4"/><rect x="210" y="149" width="36" height="18" rx="4"/><rect x="42" y="172" width="36" height="18" rx="4"/><rect x="84" y="172" width="36" height="18" rx="4"/><rect x="126" y="172" width="36" height="18" rx="4"/><rect x="168" y="172" width="36" height="18" rx="4"/><rect x="210" y="172" width="36" height="18" rx="4"/><rect x="42" y="195" width="36" height="18" rx="4"/><rect x="84" y="195" width="36" height="18" rx="4"/><rect x="126" y="195" width="36" height="18" rx="4"/><rect x="168" y="195" width="36" height="18" rx="4"/><rect x="210" y="195" width="36" height="18" rx="4"/><rect x="42" y="218" width="36" height="18" rx="4"/><rect x="84" y="218" width="36" height="18" rx="4"/><rect x="126" y="218" width="36" height="18" rx="4"/><rect x="168" y="218" width="36" height="18" rx="4"/><rect x="210" y="218" width="36" height="18" rx="4"/><rect x="42" y="241" width="36" height="18" rx="4"/><rect x="84" y="241" width="36" height="18" rx="4"/><rect x="126" y="241" width="36" height="18" rx="4"/><rect x="168" y="241" width="36" height="18" rx="4"/><rect x="210" y="241" width="36" height="18" rx="4"/><rect x="42" y="264" width="36" height="18" rx="4"/><rect x="84" y="264" width="36" height="18" rx="4"/><rect x="126" y="264" width="36" height="18" rx="4"/><rect x="168" y="264" width="36" height="18" rx="4"/><rect x="210" y="264" width="36" height="18" rx="4"/><rect x="42" y="287" width="36" height="18" rx="4"/><rect x="84" y="287" width="36" height="18" rx="4"/><rect x="126" y="287" width="36" height="18" rx="4"/><rect x="168" y="287" width="36" height="18" rx="4"/><rect x="210" y="287" width="36" height="18" rx="4"/></g></g>
+  <g class="p12">
+    <g class="f-red-soft s-red cp-fail0" stroke-width="1.2"><rect x="42" y="126" width="36" height="18" rx="4"/><rect x="210" y="126" width="36" height="18" rx="4"/><rect x="168" y="149" width="36" height="18" rx="4"/><rect x="126" y="172" width="36" height="18" rx="4"/><rect x="84" y="195" width="36" height="18" rx="4"/><rect x="42" y="218" width="36" height="18" rx="4"/><rect x="210" y="218" width="36" height="18" rx="4"/><rect x="84" y="264" width="36" height="18" rx="4"/><rect x="42" y="287" width="36" height="18" rx="4"/><rect x="210" y="287" width="36" height="18" rx="4"/></g>
+    <g class="f-red-soft s-red cp-fail1" stroke-width="1.2"><rect x="84" y="126" width="36" height="18" rx="4"/><rect x="42" y="149" width="36" height="18" rx="4"/><rect x="210" y="149" width="36" height="18" rx="4"/><rect x="168" y="172" width="36" height="18" rx="4"/><rect x="126" y="195" width="36" height="18" rx="4"/><rect x="84" y="218" width="36" height="18" rx="4"/><rect x="84" y="241" width="36" height="18" rx="4"/><rect x="126" y="264" width="36" height="18" rx="4"/><rect x="84" y="287" width="36" height="18" rx="4"/></g>
+    <g class="f-red-soft s-red cp-fail2" stroke-width="1.2"><rect x="126" y="126" width="36" height="18" rx="4"/><rect x="84" y="149" width="36" height="18" rx="4"/><rect x="42" y="172" width="36" height="18" rx="4"/><rect x="210" y="172" width="36" height="18" rx="4"/><rect x="168" y="195" width="36" height="18" rx="4"/><rect x="126" y="218" width="36" height="18" rx="4"/><rect x="126" y="241" width="36" height="18" rx="4"/><rect x="168" y="264" width="36" height="18" rx="4"/><rect x="126" y="287" width="36" height="18" rx="4"/></g>
+    <g class="f-red-soft s-red cp-fail3" stroke-width="1.2"><rect x="168" y="126" width="36" height="18" rx="4"/><rect x="126" y="149" width="36" height="18" rx="4"/><rect x="84" y="172" width="36" height="18" rx="4"/><rect x="42" y="195" width="36" height="18" rx="4"/><rect x="210" y="195" width="36" height="18" rx="4"/><rect x="168" y="218" width="36" height="18" rx="4"/><rect x="210" y="241" width="36" height="18" rx="4"/><rect x="210" y="264" width="36" height="18" rx="4"/><rect x="168" y="287" width="36" height="18" rx="4"/></g>
+    <g class="f-green-soft s-green cp-ok" stroke-width="1.5"><rect x="42" y="241" width="36" height="18" rx="4"/><rect x="168" y="241" width="36" height="18" rx="4"/><rect x="42" y="264" width="36" height="18" rx="4"/></g>
+  </g>
+  <g class="p34 f-green-soft s-green" stroke-width="1.2"><rect x="42" y="126" width="36" height="18" rx="4"/><rect x="84" y="126" width="36" height="18" rx="4"/><rect x="126" y="126" width="36" height="18" rx="4"/><rect x="168" y="126" width="36" height="18" rx="4"/><rect x="210" y="126" width="36" height="18" rx="4"/><rect x="42" y="149" width="36" height="18" rx="4"/><rect x="84" y="149" width="36" height="18" rx="4"/><rect x="126" y="149" width="36" height="18" rx="4"/><rect x="168" y="149" width="36" height="18" rx="4"/><rect x="210" y="149" width="36" height="18" rx="4"/><rect x="42" y="172" width="36" height="18" rx="4"/><rect x="84" y="172" width="36" height="18" rx="4"/><rect x="126" y="172" width="36" height="18" rx="4"/><rect x="168" y="172" width="36" height="18" rx="4"/><rect x="210" y="172" width="36" height="18" rx="4"/><rect x="42" y="195" width="36" height="18" rx="4"/><rect x="84" y="195" width="36" height="18" rx="4"/><rect x="126" y="195" width="36" height="18" rx="4"/><rect x="168" y="195" width="36" height="18" rx="4"/><rect x="210" y="195" width="36" height="18" rx="4"/><rect x="42" y="218" width="36" height="18" rx="4"/><rect x="84" y="218" width="36" height="18" rx="4"/><rect x="126" y="218" width="36" height="18" rx="4"/><rect x="168" y="218" width="36" height="18" rx="4"/><rect x="210" y="218" width="36" height="18" rx="4"/><rect x="42" y="241" width="36" height="18" rx="4"/><rect x="84" y="241" width="36" height="18" rx="4"/><rect x="126" y="241" width="36" height="18" rx="4"/><rect x="168" y="241" width="36" height="18" rx="4"/><rect x="210" y="241" width="36" height="18" rx="4"/><rect x="42" y="264" width="36" height="18" rx="4"/><rect x="84" y="264" width="36" height="18" rx="4"/><rect x="126" y="264" width="36" height="18" rx="4"/><rect x="168" y="264" width="36" height="18" rx="4"/><rect x="210" y="264" width="36" height="18" rx="4"/><rect x="42" y="287" width="36" height="18" rx="4"/><rect x="84" y="287" width="36" height="18" rx="4"/><rect x="126" y="287" width="36" height="18" rx="4"/><rect x="168" y="287" width="36" height="18" rx="4"/><rect x="210" y="287" width="36" height="18" rx="4"/></g>
+  <g class="p4">
+    <rect class="f-amber-soft s-amber cp-p7" x="84" y="149" width="36" height="18" rx="4" stroke-width="2"/>
+    <rect class="f-blue-soft s-blue cp-p12b" x="84" y="172" width="36" height="18" rx="4" stroke-width="2"/>
+    <rect class="f-red-soft s-red cp-p12r" x="84" y="172" width="36" height="18" rx="4" stroke-width="2"/>
+  </g>
+  <text class="cp-pn mid" x="60" y="138.6">1</text>
+  <text class="cp-pn mid" x="102" y="138.6">2</text>
+  <text class="cp-pn mid" x="144" y="138.6">3</text>
+  <text class="cp-pn mid" x="186" y="138.6">4</text>
+  <text class="cp-pn mid" x="228" y="138.6">5</text>
+  <text class="cp-pn mid" x="60" y="161.6">6</text>
+  <text class="cp-pn mid" x="102" y="161.6">7</text>
+  <text class="cp-pn mid" x="144" y="161.6">8</text>
+  <text class="cp-pn mid" x="186" y="161.6">9</text>
+  <text class="cp-pn mid" x="228" y="161.6">10</text>
+  <text class="cp-pn mid" x="60" y="184.6">11</text>
+  <text class="cp-pn mid" x="102" y="184.6">12</text>
+  <text class="cp-pn mid" x="144" y="184.6">13</text>
+  <text class="cp-pn mid" x="186" y="184.6">14</text>
+  <text class="cp-pn mid" x="228" y="184.6">15</text>
+  <text class="cp-pn mid" x="60" y="207.6">16</text>
+  <text class="cp-pn mid" x="102" y="207.6">17</text>
+  <text class="cp-pn mid" x="144" y="207.6">18</text>
+  <text class="cp-pn mid" x="186" y="207.6">19</text>
+  <text class="cp-pn mid" x="228" y="207.6">20</text>
+  <text class="cp-pn mid" x="60" y="230.6">21</text>
+  <text class="cp-pn mid" x="102" y="230.6">22</text>
+  <text class="cp-pn mid" x="144" y="230.6">23</text>
+  <text class="cp-pn mid" x="186" y="230.6">24</text>
+  <text class="cp-pn mid" x="228" y="230.6">25</text>
+  <text class="cp-pn mid" x="60" y="253.6">26</text>
+  <text class="cp-pn mid" x="102" y="253.6">27</text>
+  <text class="cp-pn mid" x="144" y="253.6">28</text>
+  <text class="cp-pn mid" x="186" y="253.6">29</text>
+  <text class="cp-pn mid" x="228" y="253.6">30</text>
+  <text class="cp-pn mid" x="60" y="276.6">31</text>
+  <text class="cp-pn mid" x="102" y="276.6">32</text>
+  <text class="cp-pn mid" x="144" y="276.6">33</text>
+  <text class="cp-pn mid" x="186" y="276.6">34</text>
+  <text class="cp-pn mid" x="228" y="276.6">35</text>
+  <text class="cp-pn mid" x="60" y="299.6">36</text>
+  <text class="cp-pn mid" x="102" y="299.6">37</text>
+  <text class="cp-pn mid" x="144" y="299.6">38</text>
+  <text class="cp-pn mid" x="186" y="299.6">39</text>
+  <text class="cp-pn mid" x="228" y="299.6">40</text>
+  <g class="p12"><g class="cp-st1"><text class="tiny" x="44" y="318"><tspan class="f-green b">3 running</tspan> (26, 29, 31) · <tspan class="f-red b">37 failed</tspan></text></g></g>
+  <g class="p34"><text class="tiny" x="44" y="318"><tspan class="f-green b">40 pods</tspan> × pool of 20 = 800 clients</text></g>
+  <!-- STEP 1: no pooler, every pod connects straight to PostgreSQL -->
+  <g class="p1">
+    <text class="tiny sb mid" x="416" y="134">no pooler: 40 × 20 = <tspan class="f-red b">800</tspan> connections wanted</text>
+    <line class="wire" x1="258" y1="150" x2="574" y2="150" stroke-width="1.5"/>
+    <line class="wire" x1="258" y1="180" x2="574" y2="180" stroke-width="1.5"/>
+    <line class="wire" x1="258" y1="210" x2="574" y2="210" stroke-width="1.5"/>
+    <line class="wire" x1="258" y1="240" x2="574" y2="240" stroke-width="1.5"/>
+    <line class="wire" x1="258" y1="270" x2="574" y2="270" stroke-width="1.5"/>
+    <text class="tiny mid" x="416" y="296">max_connections 100 − 3 reserved = <tspan class="b">97</tspan> for checkout</text>
+  </g>
+  <circle class="pkt f-blue cp-at0" r="5"/>
+  <circle class="pkt f-blue cp-at1" r="5"/>
+  <circle class="pkt f-blue cp-at2" r="5"/>
+  <circle class="pkt f-blue cp-at3" r="5"/>
+  <g class="cp-xa"><circle class="pkt f-red" r="6"/><path class="s-bg" d="M-2.6 -2.6l5.2 5.2M2.6 -2.6l-5.2 5.2" stroke-width="1.6" stroke-linecap="round"/></g>
+  <g class="cp-xb"><circle class="pkt f-red" r="6"/><path class="s-bg" d="M-2.6 -2.6l5.2 5.2M2.6 -2.6l-5.2 5.2" stroke-width="1.6" stroke-linecap="round"/></g>
+  <g class="cp-xc"><circle class="pkt f-red" r="6"/><path class="s-bg" d="M-2.6 -2.6l5.2 5.2M2.6 -2.6l-5.2 5.2" stroke-width="1.6" stroke-linecap="round"/></g>
+  <circle class="pkt f-blue cp-sq" r="5"/><circle class="pkt f-green cp-sr" r="5"/>
+  <!-- STEP 2: opening one connection, as the server log times it -->
+  <g class="p2">
+    <line class="s-line" x1="266" y1="140" x2="266" y2="292" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <line class="s-line" x1="566" y1="140" x2="566" y2="292" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text class="tiny sb" x="272" y="134">pod 26</text><text class="tiny sb end" x="560" y="134">PostgreSQL</text>
+    <g class="cp-a0"><line class="s-blue" x1="268" y1="150" x2="562" y2="150" stroke-width="1.5" marker-end="url(#ah-blue)"/><text class="cp-q mid" x="416" y="146.5">TCP connect, SSLRequest</text></g>
+    <g class="cp-a1"><line class="s-orange" x1="268" y1="182" x2="562" y2="182" stroke-width="1.5" marker-end="url(#ah-orange)"/><text class="cp-q mid" x="416" y="178.5">TLS 1.3 ClientHello</text></g>
+    <g class="cp-a2"><line class="s-orange" x1="564" y1="197" x2="270" y2="197" stroke-width="1.5" marker-end="url(#ah-orange)"/><text class="cp-q mid" x="416" y="193.5">ServerHello … Finished · TLS ≈ 2.1 ms</text></g>
+    <g class="cp-a3"><line class="s-blue" x1="268" y1="212" x2="562" y2="212" stroke-width="1.5" marker-end="url(#ah-blue)"/><text class="cp-q mid" x="416" y="208.5">startup: user=checkout acme_shop</text></g>
+    <g class="cp-a4"><line class="s-orange" x1="564" y1="227" x2="270" y2="227" stroke-width="1.5" marker-end="url(#ah-orange)"/><text class="cp-q mid" x="416" y="223.5">AuthenticationSASL: SCRAM-SHA-256</text></g>
+    <g class="cp-a5"><line class="s-orange" x1="268" y1="242" x2="562" y2="242" stroke-width="1.5" marker-end="url(#ah-orange)"/><text class="cp-q mid" x="416" y="238.5">client-first: nonce</text></g>
+    <g class="cp-a6"><line class="s-orange" x1="564" y1="257" x2="270" y2="257" stroke-width="1.5" marker-end="url(#ah-orange)"/><text class="cp-q mid" x="416" y="253.5">server-first: salt, 4096 iterations</text></g>
+    <g class="cp-a7"><line class="s-orange" x1="268" y1="272" x2="562" y2="272" stroke-width="1.5" marker-end="url(#ah-orange)"/><text class="cp-q mid" x="416" y="268.5">client-final: proof (4,096 HMAC rounds)</text></g>
+    <g class="cp-a8"><line class="s-green" x1="564" y1="287" x2="270" y2="287" stroke-width="1.5" marker-end="url(#ah-green)"/><text class="cp-q mid" x="416" y="283.5">ready for query · 6.4 ms (server log)</text></g>
+    <g class="cp-fk"><rect class="f-panel-2 s-line" x="476" y="155" width="86" height="15" rx="4" stroke-width="1"/><text class="cp-q mid" x="519" y="166">fork() 0.2 ms</text></g>
+    <g class="cp-ft"><text class="tiny mid" x="416" y="306">7.0 ms at the client · 4.7 ms without TLS</text></g>
+  </g>
+  <circle class="pkt f-blue cp-hb" r="5"/><circle class="pkt f-orange cp-ho" r="5"/><circle class="pkt f-green cp-hg" r="5"/>
+  <!-- STEPS 3-4: PgBouncer in transaction mode between the pods and PostgreSQL -->
+  <g class="p34">
+    <line class="s-blue" x1="258" y1="150" x2="324" y2="150" stroke-width="1.5" opacity="0.55"/>
+    <line class="s-blue" x1="258" y1="180" x2="324" y2="180" stroke-width="1.5" opacity="0.55"/>
+    <line class="s-blue" x1="258" y1="210" x2="324" y2="210" stroke-width="1.5" opacity="0.55"/>
+    <line class="s-blue" x1="258" y1="240" x2="324" y2="240" stroke-width="1.5" opacity="0.55"/>
+    <line class="s-blue" x1="258" y1="270" x2="324" y2="270" stroke-width="1.5" opacity="0.55"/>
+    <line class="s-green" x1="508" y1="175" x2="574" y2="175" stroke-width="2"/>
+    <line class="s-green" x1="508" y1="205" x2="574" y2="205" stroke-width="2"/>
+    <line class="s-green" x1="508" y1="235" x2="574" y2="235" stroke-width="2"/>
+    <text class="cp-lab f-blue mid" x="291" y="118">800</text><text class="tiny mid" x="291" y="132">clients</text>
+    <text class="cp-lab f-green mid" x="541" y="118">20</text><text class="tiny mid" x="541" y="132">servers</text>
+    <rect class="box" x="324" y="104" width="184" height="212" rx="10"/>
+    <rect class="f-blue-soft s-blue" x="324" y="104" width="184" height="212" rx="10" stroke-width="1.5"/>
+    <text class="cp-hd" x="336" y="123">PGBOUNCER 1.26</text>
+    <text class="cp-q" x="336" y="140">pool_mode = transaction</text>
+    <text class="cp-q" x="336" y="156">default_pool_size = 20</text>
+    <rect class="f-green-soft s-green" x="344" y="168" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="374" y="168" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="404" y="168" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="434" y="168" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="464" y="168" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="344" y="184" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="374" y="184" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="404" y="184" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="434" y="184" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="464" y="184" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="344" y="200" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="374" y="200" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="404" y="200" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="434" y="200" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="464" y="200" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="344" y="216" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="374" y="216" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="404" y="216" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="434" y="216" width="24" height="11" rx="3" stroke-width="1"/>
+    <rect class="f-green-soft s-green" x="464" y="216" width="24" height="11" rx="3" stroke-width="1"/>
+  </g>
+  <g class="p3">
+    <text class="tiny sb" x="336" y="250">SHOW POOLS, mid-run</text>
+    <text class="cp-q" x="336" y="266">cl_active <tspan class="b f-blue">800</tspan></text><text class="cp-q" x="426" y="266">cl_waiting <tspan class="b">0</tspan></text>
+    <text class="cp-q" x="336" y="282">sv_active <tspan class="b">0</tspan></text><text class="cp-q" x="426" y="282">sv_idle <tspan class="b f-green">20</tspan></text>
+    <text class="cp-q" x="336" y="298">maxwait <tspan class="b">0</tspan></text>
+  </g>
+  <g class="p3"><circle class="pkt f-blue cp-x0" r="4.5"/><circle class="pkt f-green cp-y0" r="4.5"/></g>
+  <g class="p3"><rect class="none s-blue cp-b0" x="342.5" y="166.5" width="27" height="14" rx="4" stroke-width="2.2"/><rect class="none s-blue cp-g0" x="586.5" y="124.5" width="18" height="13" rx="3" stroke-width="2.2"/></g>
+  <g class="p3"><circle class="pkt f-blue cp-x1" r="4.5"/><circle class="pkt f-green cp-y1" r="4.5"/></g>
+  <g class="p3"><rect class="none s-blue cp-b1" x="402.5" y="182.5" width="27" height="14" rx="4" stroke-width="2.2"/><rect class="none s-blue cp-g1" x="719.5" y="124.5" width="18" height="13" rx="3" stroke-width="2.2"/></g>
+  <g class="p3"><circle class="pkt f-blue cp-x2" r="4.5"/><circle class="pkt f-green cp-y2" r="4.5"/></g>
+  <g class="p3"><rect class="none s-blue cp-b2" x="402.5" y="198.5" width="27" height="14" rx="4" stroke-width="2.2"/><rect class="none s-blue cp-g2" x="624.5" y="138.5" width="18" height="13" rx="3" stroke-width="2.2"/></g>
+  <g class="p3"><circle class="pkt f-blue cp-x3" r="4.5"/><circle class="pkt f-green cp-y3" r="4.5"/></g>
+  <g class="p3"><rect class="none s-blue cp-b3" x="462.5" y="166.5" width="27" height="14" rx="4" stroke-width="2.2"/><rect class="none s-blue cp-g3" x="662.5" y="124.5" width="18" height="13" rx="3" stroke-width="2.2"/></g>
+  <g class="p3"><circle class="pkt f-blue cp-x4" r="4.5"/><circle class="pkt f-green cp-y4" r="4.5"/></g>
+  <g class="p3"><rect class="none s-blue cp-b4" x="372.5" y="214.5" width="27" height="14" rx="4" stroke-width="2.2"/><rect class="none s-blue cp-g4" x="700.5" y="138.5" width="18" height="13" rx="3" stroke-width="2.2"/></g>
+  <g class="p3"><circle class="pkt f-blue cp-x5" r="4.5"/><circle class="pkt f-green cp-y5" r="4.5"/></g>
+  <g class="p3"><rect class="none s-blue cp-b5" x="462.5" y="182.5" width="27" height="14" rx="4" stroke-width="2.2"/><rect class="none s-blue cp-g5" x="757.5" y="124.5" width="18" height="13" rx="3" stroke-width="2.2"/></g>
+  <g class="p4">
+    <rect class="f-amber-soft s-amber cp-b0a" x="344" y="168" width="24" height="11" rx="3" stroke-width="2"/>
+    <g class="cp-n4"><text class="tiny b f-amber-ink" x="336" y="250">server pid 6715 keeps</text>
+    <text class="tiny f-amber-ink" x="336" y="264">pod 7’s SET: no reset in</text>
+    <text class="tiny f-amber-ink" x="336" y="278">transaction mode</text></g>
+    <g class="cp-n5"><text class="tiny" x="336" y="298">next client on it: <tspan class="b f-blue">pod 12</tspan></text></g>
+  </g>
+  <g class="p4">
+  <g class="cp-k1"><circle class="pkt f-amber" r="5"/><text class="cp-tk mid f-amber-ink" y="-9">SET</text></g>
+  <g class="cp-k2"><circle class="pkt f-blue" r="5"/><text class="cp-tk mid f-blue" y="-9">count(*)</text></g>
+  <g class="cp-k3"><circle class="pkt f-red" r="5"/><text class="cp-tk mid f-red" y="-9">ERROR</text></g>
+  </g>
+  <!-- POSTGRESQL: 100 connection slots, one backend process each -->
+  <rect class="box" x="574" y="96" width="356" height="228" rx="12"/>
+  <text class="cp-hd" x="588" y="116">POSTGRESQL 18.6</text>
+  <text class="tiny end" x="916" y="116">4 cores · max_connections = 100</text>
+  <g class="p134">
+    <rect class="f-bg s-line" x="588" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="126" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="140" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="154" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="168" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="182" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="196" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="210" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="224" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="238" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="588" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="607" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="626" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="645" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="664" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="683" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="702" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="721" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="740" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="f-bg s-line" x="759" y="252" width="15" height="10" rx="2" stroke-width="1"/>
+    <rect class="none s-amber" x="721" y="252" width="15" height="10" rx="2" stroke-width="1.3" stroke-dasharray="2.5 1.5"/>
+    <rect class="none s-amber" x="740" y="252" width="15" height="10" rx="2" stroke-width="1.3" stroke-dasharray="2.5 1.5"/>
+    <rect class="none s-amber" x="759" y="252" width="15" height="10" rx="2" stroke-width="1.3" stroke-dasharray="2.5 1.5"/>
+  </g>
+  <g class="p1">
+    <g class="f-blue-soft s-blue cp-row0" stroke-width="1"><rect x="588" y="126" width="15" height="10" rx="2"/><rect x="607" y="126" width="15" height="10" rx="2"/><rect x="626" y="126" width="15" height="10" rx="2"/><rect x="645" y="126" width="15" height="10" rx="2"/><rect x="664" y="126" width="15" height="10" rx="2"/><rect x="683" y="126" width="15" height="10" rx="2"/><rect x="702" y="126" width="15" height="10" rx="2"/><rect x="721" y="126" width="15" height="10" rx="2"/><rect x="740" y="126" width="15" height="10" rx="2"/><rect x="759" y="126" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row1" stroke-width="1"><rect x="588" y="140" width="15" height="10" rx="2"/><rect x="607" y="140" width="15" height="10" rx="2"/><rect x="626" y="140" width="15" height="10" rx="2"/><rect x="645" y="140" width="15" height="10" rx="2"/><rect x="664" y="140" width="15" height="10" rx="2"/><rect x="683" y="140" width="15" height="10" rx="2"/><rect x="702" y="140" width="15" height="10" rx="2"/><rect x="721" y="140" width="15" height="10" rx="2"/><rect x="740" y="140" width="15" height="10" rx="2"/><rect x="759" y="140" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row2" stroke-width="1"><rect x="588" y="154" width="15" height="10" rx="2"/><rect x="607" y="154" width="15" height="10" rx="2"/><rect x="626" y="154" width="15" height="10" rx="2"/><rect x="645" y="154" width="15" height="10" rx="2"/><rect x="664" y="154" width="15" height="10" rx="2"/><rect x="683" y="154" width="15" height="10" rx="2"/><rect x="702" y="154" width="15" height="10" rx="2"/><rect x="721" y="154" width="15" height="10" rx="2"/><rect x="740" y="154" width="15" height="10" rx="2"/><rect x="759" y="154" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row3" stroke-width="1"><rect x="588" y="168" width="15" height="10" rx="2"/><rect x="607" y="168" width="15" height="10" rx="2"/><rect x="626" y="168" width="15" height="10" rx="2"/><rect x="645" y="168" width="15" height="10" rx="2"/><rect x="664" y="168" width="15" height="10" rx="2"/><rect x="683" y="168" width="15" height="10" rx="2"/><rect x="702" y="168" width="15" height="10" rx="2"/><rect x="721" y="168" width="15" height="10" rx="2"/><rect x="740" y="168" width="15" height="10" rx="2"/><rect x="759" y="168" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row4" stroke-width="1"><rect x="588" y="182" width="15" height="10" rx="2"/><rect x="607" y="182" width="15" height="10" rx="2"/><rect x="626" y="182" width="15" height="10" rx="2"/><rect x="645" y="182" width="15" height="10" rx="2"/><rect x="664" y="182" width="15" height="10" rx="2"/><rect x="683" y="182" width="15" height="10" rx="2"/><rect x="702" y="182" width="15" height="10" rx="2"/><rect x="721" y="182" width="15" height="10" rx="2"/><rect x="740" y="182" width="15" height="10" rx="2"/><rect x="759" y="182" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row5" stroke-width="1"><rect x="588" y="196" width="15" height="10" rx="2"/><rect x="607" y="196" width="15" height="10" rx="2"/><rect x="626" y="196" width="15" height="10" rx="2"/><rect x="645" y="196" width="15" height="10" rx="2"/><rect x="664" y="196" width="15" height="10" rx="2"/><rect x="683" y="196" width="15" height="10" rx="2"/><rect x="702" y="196" width="15" height="10" rx="2"/><rect x="721" y="196" width="15" height="10" rx="2"/><rect x="740" y="196" width="15" height="10" rx="2"/><rect x="759" y="196" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row6" stroke-width="1"><rect x="588" y="210" width="15" height="10" rx="2"/><rect x="607" y="210" width="15" height="10" rx="2"/><rect x="626" y="210" width="15" height="10" rx="2"/><rect x="645" y="210" width="15" height="10" rx="2"/><rect x="664" y="210" width="15" height="10" rx="2"/><rect x="683" y="210" width="15" height="10" rx="2"/><rect x="702" y="210" width="15" height="10" rx="2"/><rect x="721" y="210" width="15" height="10" rx="2"/><rect x="740" y="210" width="15" height="10" rx="2"/><rect x="759" y="210" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row7" stroke-width="1"><rect x="588" y="224" width="15" height="10" rx="2"/><rect x="607" y="224" width="15" height="10" rx="2"/><rect x="626" y="224" width="15" height="10" rx="2"/><rect x="645" y="224" width="15" height="10" rx="2"/><rect x="664" y="224" width="15" height="10" rx="2"/><rect x="683" y="224" width="15" height="10" rx="2"/><rect x="702" y="224" width="15" height="10" rx="2"/><rect x="721" y="224" width="15" height="10" rx="2"/><rect x="740" y="224" width="15" height="10" rx="2"/><rect x="759" y="224" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row8" stroke-width="1"><rect x="588" y="238" width="15" height="10" rx="2"/><rect x="607" y="238" width="15" height="10" rx="2"/><rect x="626" y="238" width="15" height="10" rx="2"/><rect x="645" y="238" width="15" height="10" rx="2"/><rect x="664" y="238" width="15" height="10" rx="2"/><rect x="683" y="238" width="15" height="10" rx="2"/><rect x="702" y="238" width="15" height="10" rx="2"/><rect x="721" y="238" width="15" height="10" rx="2"/><rect x="740" y="238" width="15" height="10" rx="2"/><rect x="759" y="238" width="15" height="10" rx="2"/></g>
+    <g class="f-blue-soft s-blue cp-row9" stroke-width="1"><rect x="588" y="252" width="15" height="10" rx="2"/><rect x="607" y="252" width="15" height="10" rx="2"/><rect x="626" y="252" width="15" height="10" rx="2"/><rect x="645" y="252" width="15" height="10" rx="2"/><rect x="664" y="252" width="15" height="10" rx="2"/><rect x="683" y="252" width="15" height="10" rx="2"/><rect x="702" y="252" width="15" height="10" rx="2"/></g>
+    <g class="f-red-soft s-red cp-rz" stroke-width="1.3"><rect x="721" y="252" width="15" height="10" rx="2"/><rect x="740" y="252" width="15" height="10" rx="2"/><rect x="759" y="252" width="15" height="10" rx="2"/></g>
+    <rect class="none s-red cp-full" x="582" y="121" width="198" height="146" rx="5" stroke-width="2"/>
+  </g>
+  <defs><clipPath id="cp-cnt"><rect x="790" y="128" width="126" height="40"/></clipPath></defs>
+  <g class="p1"><g clip-path="url(#cp-cnt)"><g class="cp-strip">
+    <text class="cp-big" x="796" y="158">0</text>
+    <text class="cp-big" x="796" y="198">10</text>
+    <text class="cp-big" x="796" y="238">20</text>
+    <text class="cp-big" x="796" y="278">30</text>
+    <text class="cp-big" x="796" y="318">40</text>
+    <text class="cp-big" x="796" y="358">50</text>
+    <text class="cp-big" x="796" y="398">60</text>
+    <text class="cp-big" x="796" y="438">70</text>
+    <text class="cp-big" x="796" y="478">80</text>
+    <text class="cp-big" x="796" y="518">90</text>
+    <text class="cp-big f-red" x="796" y="558">100</text>
+    <text class="cp-big" x="796" y="598">60</text>
+  </g></g>
+    <text class="tiny" x="796" y="180">checkout backends</text>
+    <g class="cp-pk"><text class="tiny b f-red" x="796" y="196">all 100 slots taken</text></g>
+  </g>
+  <g class="p134">
+    <rect class="f-bg s-line" x="796" y="236" width="12" height="8" rx="2" stroke-width="1"/><text class="tiny" x="814" y="244">free slot</text>
+    <rect class="none s-amber" x="796" y="252" width="12" height="8" rx="2" stroke-width="1.3" stroke-dasharray="2.5 1.5"/><text class="tiny" x="814" y="260">superusers only (3)</text>
+  </g>
+  <g class="p1"><rect class="f-blue-soft s-blue" x="796" y="220" width="12" height="8" rx="2" stroke-width="1"/><text class="tiny" x="814" y="228">checkout backend</text></g>
+  <g class="p34"><rect class="f-green-soft s-green" x="796" y="220" width="12" height="8" rx="2" stroke-width="1"/><text class="tiny" x="814" y="228">via PgBouncer</text></g>
+  <g class="p1"><g class="cp-fatal">
+    <text class="cp-q" x="588" y="286"><tspan class="b f-red">×25</tspan></text><text class="cp-q" x="616" y="286">FATAL: remaining connection slots are reserved</text>
+    <text class="cp-q" x="616" y="300">for roles with the SUPERUSER attribute</text>
+    <text class="cp-q" x="588" y="316"><tspan class="b f-red">×12</tspan></text><text class="cp-q" x="616" y="316">FATAL: sorry, too many clients already</text>
+  </g></g>
+  <g class="p34 f-green-soft s-green" stroke-width="1"><rect x="588" y="126" width="15" height="10" rx="2"/><rect x="607" y="126" width="15" height="10" rx="2"/><rect x="626" y="126" width="15" height="10" rx="2"/><rect x="645" y="126" width="15" height="10" rx="2"/><rect x="664" y="126" width="15" height="10" rx="2"/><rect x="683" y="126" width="15" height="10" rx="2"/><rect x="702" y="126" width="15" height="10" rx="2"/><rect x="721" y="126" width="15" height="10" rx="2"/><rect x="740" y="126" width="15" height="10" rx="2"/><rect x="759" y="126" width="15" height="10" rx="2"/><rect x="588" y="140" width="15" height="10" rx="2"/><rect x="607" y="140" width="15" height="10" rx="2"/><rect x="626" y="140" width="15" height="10" rx="2"/><rect x="645" y="140" width="15" height="10" rx="2"/><rect x="664" y="140" width="15" height="10" rx="2"/><rect x="683" y="140" width="15" height="10" rx="2"/><rect x="702" y="140" width="15" height="10" rx="2"/><rect x="721" y="140" width="15" height="10" rx="2"/><rect x="740" y="140" width="15" height="10" rx="2"/><rect x="759" y="140" width="15" height="10" rx="2"/></g>
+  <g class="p34"><text class="cp-big f-green" x="796" y="158">20</text><text class="tiny" x="796" y="180">checkout backends</text></g>
+  <g class="p3"><text class="tiny" x="588" y="290"><tspan class="b f-green">20 backends</tspan>, all PgBouncer’s server connections;</text>
+    <text class="tiny" x="588" y="306">pg_stat_activity shows them idle between transactions</text></g>
+  <g class="p4">
+    <rect class="f-amber-soft s-amber cp-s0a" x="588" y="126" width="15" height="10" rx="2" stroke-width="2"/>
+    <rect class="f-red-soft s-red cp-s0r" x="588" y="126" width="15" height="10" rx="2" stroke-width="2"/>
+    <g class="cp-l1"><text class="cp-q f-amber-ink" x="588" y="286">pid 6715 keeps statement_timeout = 5ms</text></g>
+    <g class="cp-l2"><text class="cp-q" x="588" y="301">pod 12: SELECT count(*) FROM order_items</text></g>
+    <g class="cp-l3"><text class="cp-q b f-red" x="588" y="316">ERROR: canceling statement due to statement timeout</text></g>
+  </g>
+  <g class="p2">
+    <rect class="f-panel-2 s-line" x="588" y="128" width="132" height="20" rx="5" stroke-width="1"/><text class="cp-m" x="598" y="142">postmaster · pid 1</text>
+    <text class="tiny" x="730" y="142">forks a process per connection</text>
+    <text class="tiny" x="588" y="166">also forked: checkpointer, walwriter, 3 io workers …</text>
+    <text class="cp-q" x="588" y="184">postgres: checkout acme_shop 172.18.0.3(44996) idle</text>
+    <text class="cp-q f-muted" x="588" y="198">6403</text><rect class="f-panel-2" x="620" y="190" width="120" height="9" rx="2"/><rect class="f-amber" x="620" y="190" width="8.7" height="9" rx="2"/>
+    <text class="tiny" x="748" y="198"><tspan class="b">22 MB</tspan> in ps, <tspan class="b f-amber-ink">1.6 MB</tspan> private</text>
+    <text class="cp-q" x="588" y="218">postgres: checkout acme_shop 172.18.0.3(45010) idle</text>
+    <text class="cp-q f-muted" x="588" y="232">6404</text><rect class="f-panel-2" x="620" y="224" width="120" height="9" rx="2"/><rect class="f-amber" x="620" y="224" width="9.1" height="9" rx="2"/>
+    <text class="tiny" x="748" y="232"><tspan class="b">22 MB</tspan> in ps, <tspan class="b f-amber-ink">1.7 MB</tspan> private</text>
+    <text class="tiny" x="588" y="256">… one process for every checkout connection</text>
+    <g class="cp-nb"><text class="cp-q" x="588" y="282">postgres: checkout acme_shop 172.18.0.3(45016)</text><text class="tiny end" x="916" y="298">pid 6405, new</text></g>
+    <g class="cp-ns1"><text class="cp-q b f-orange" x="588" y="298">authentication</text></g>
+    <g class="cp-ns2"><text class="cp-q b f-green" x="588" y="298">idle · ready for query</text></g>
+    <g class="cp-nh"><rect class="none s-green" x="582" y="269" width="342" height="36" rx="6" stroke-width="1.5"/></g>
+  </g>
+  <!-- BOTTOM: the measurements -->
+  <rect class="box" x="30" y="336" width="900" height="132" rx="12"/>
+  <g class="p1">
+    <text class="cp-hd" x="44" y="356">PGBENCH · 8 CLIENTS · ONE CHECKOUT TRANSACTION</text>
+    <text class="tiny end" x="916" y="356">one run on a laptop · TLS 1.3 · SCRAM-SHA-256</text>
+    <text class="cp-lab" x="44" y="383">connections kept open</text>
+    <text class="cp-lab" x="44" y="407">new connection each (-C)</text>
+    <g class="cp-bar1"><rect class="f-green-soft s-green" x="230" y="372" width="470" height="14" rx="3" stroke-width="1.2"/></g>
+    <g class="cp-bar2"><rect class="f-red-soft s-red" x="230" y="396" width="11" height="14" rx="3" stroke-width="1.2"/></g>
+    <g class="cp-v1"><text class="cp-m b" x="710" y="383">15,103 tps · 0.53 ms</text></g>
+    <g class="cp-v2"><text class="cp-m b f-red" x="252" y="407">353 tps · 22.6 ms each, 10.5 ms of it to connect</text></g>
+    <g class="cp-v3"><text class="tiny" x="44" y="432"><tspan class="b f-red">43× fewer checkouts:</tspan> each one first pays a TCP connect, a TLS handshake, SCRAM and a new backend process</text></g>
+    <text class="cp-q f-muted" x="44" y="454">BEGIN; SELECT … FROM orders WHERE id = :id; SELECT … FROM order_items WHERE order_id = :id; END;</text>
+  </g>
+  <g class="p2">
+    <text class="cp-hd" x="44" y="356">WHAT EACH CONNECTION COSTS</text>
+    <text class="tiny end" x="916" y="356">one run on a laptop</text>
+    <text class="cp-lab" x="44" y="378">Setup: 6.4 ms of server time</text>
+    <g class="cp-sg0"><rect class="f-teal" x="44" y="386" width="8.5" height="16" stroke-width="1"/></g>
+    <g class="cp-sg1"><rect class="f-orange-soft s-orange" x="52.5" y="386" width="89.25" height="16" stroke-width="1"/><text class="tiny mid f-ink" x="97.13" y="398">TLS 2.1</text></g>
+    <g class="cp-sg2"><rect class="f-orange" x="141.75" y="386" width="136" height="16" stroke-width="1"/><text class="tiny mid cp-onfill" x="209.75" y="398">SCRAM 3.2</text></g>
+    <g class="cp-sg3"><rect class="f-blue-soft s-blue" x="277.75" y="386" width="38.25" height="16" stroke-width="1"/><text class="tiny mid f-ink" x="296.88" y="398">0.9</text></g>
+    <text class="tiny" x="44" y="418">fork 0.2 · TLS · SCRAM · backend start 0.9 ms</text>
+    <text class="cp-q" x="44" y="438">log_connections = setup_durations</text>
+    <text class="tiny" x="44" y="456">7.0 ms at the client, 4.7 ms without TLS</text>
+    <g class="cp-mem">
+    <text class="cp-lab" x="350" y="378">Memory: a process each</text>
+    <rect class="f-panel-2 s-line" x="350" y="386" width="264" height="12" rx="2" stroke-width="1"/><text class="tiny" x="356" y="396">22 MB RSS in ps, mostly shared</text>
+    <rect class="f-amber" x="350" y="402" width="20" height="12" rx="2"/><text class="tiny" x="376" y="412"><tspan class="b f-amber-ink">1.7 MB private</tspan> (smaps_rollup, mean of 40)</text>
+    <text class="tiny" x="350" y="436">800 backends ≈ <tspan class="b">1.3 GB</tspan> private, plus up to</text>
+    <text class="tiny" x="350" y="452">work_mem (4 MB) per sort or hash</text>
+    </g>
+    <g class="cp-cpu">
+    <text class="cp-lab" x="644" y="378">CPU: busy ones share 4 cores</text>
+    <text class="cp-m end" x="668" y="398">32</text><rect class="f-blue-soft s-blue" x="674" y="388" width="102.53" height="12" rx="2" stroke-width="1"/><text class="cp-m" x="784" y="398">24,206 tps · <tspan class="b">1.3 ms</tspan></text>
+    <text class="cp-m end" x="668" y="415">64</text><rect class="f-blue-soft s-blue" x="674" y="405" width="104" height="12" rx="2" stroke-width="1"/><text class="cp-m" x="784" y="415">24,553 tps · <tspan class="b">2.6 ms</tspan></text>
+    <text class="cp-m end" x="668" y="432">90</text><rect class="f-blue-soft s-blue" x="674" y="422" width="90.8" height="12" rx="2" stroke-width="1"/><text class="cp-m" x="784" y="432">21,436 tps · <tspan class="b f-red">4.2 ms</tspan></text>
+    <text class="tiny" x="644" y="456">85 idle: no slowdown (PG 14 snapshot fix)</text>
+    </g>
+  </g>
+  <g class="p3">
+    <text class="cp-hd" x="44" y="356">40 PODS × 20 CONNECTIONS · 100 CHECKOUTS A SECOND PER POD</text>
+    <text class="tiny end" x="916" y="356">one run on a laptop</text>
+    <text class="tiny" x="44" y="376">route</text>
+    <text class="tiny end" x="470" y="376">client conns</text>
+    <text class="tiny end" x="560" y="376">server conns</text>
+    <text class="tiny end" x="660" y="376">pods running</text>
+    <text class="tiny end" x="770" y="376">tps</text>
+    <text class="tiny end" x="870" y="376">avg latency</text>
+    <g class="cp-t0"><text class="cp-m" x="44" y="396">straight to PostgreSQL</text><text class="cp-m end" x="470" y="396">800 wanted</text><text class="cp-m end" x="560" y="396">60</text><text class="cp-m end b f-red" x="660" y="396">3 of 40</text><text class="cp-m end" x="770" y="396">–</text><text class="cp-m end b f-red" x="870" y="396">–</text></g>
+    <g class="cp-t1"><text class="cp-m" x="44" y="415">PgBouncer, default_pool_size = 20</text><text class="cp-m end" x="470" y="415">800</text><text class="cp-m end" x="560" y="415">20</text><text class="cp-m end b f-green" x="660" y="415">40 of 40</text><text class="cp-m end" x="770" y="415">4,007</text><text class="cp-m end b f-green" x="870" y="415">1.7 ms</text></g>
+    <g class="cp-t2"><text class="cp-m" x="44" y="434">PgBouncer, pool_size = 8</text><text class="cp-m end" x="470" y="434">800</text><text class="cp-m end" x="560" y="434">8</text><text class="cp-m end b f-green" x="660" y="434">40 of 40</text><text class="cp-m end" x="770" y="434">3,993</text><text class="cp-m end b f-green" x="870" y="434">1.5 ms</text></g>
+    <g class="cp-t3"><text class="tiny" x="44" y="456">Start near <tspan class="b">(2 × cores) + spindles</tspan> = 8 for 4 cores (PostgreSQL wiki, HikariCP), then measure: past ~32 busy connections only latency grew</text></g>
+  </g>
+  <g class="p4">
+    <g class="cp-c0"><rect class="f-bg s-line" x="44" y="346" width="168" height="112" rx="8" stroke-width="1"/>
+      <text class="cp-ct f-red" x="54" y="364">Session state leaks</text>
+      <text class="tiny" x="54" y="381">Pod 7’s SET stayed on its</text>
+      <text class="tiny" x="54" y="395">server connection and hit</text>
+      <text class="tiny" x="54" y="409">pod 12’s query. LISTEN,</text>
+      <text class="tiny" x="54" y="423">temp tables and session</text>
+      <text class="tiny" x="54" y="437">advisory locks break too.</text>
+    </g>
+    <g class="cp-c1"><rect class="f-bg s-line" x="220" y="346" width="168" height="112" rx="8" stroke-width="1"/>
+      <text class="cp-ct f-amber-ink" x="230" y="364">Prepared statements</text>
+      <text class="tiny" x="230" y="381">Protocol-level ones work</text>
+      <text class="tiny" x="230" y="395">since PgBouncer 1.21 (on</text>
+      <text class="tiny" x="230" y="409">by default since 1.24);</text>
+      <text class="tiny" x="230" y="423">SQL-level PREPARE never.</text>
+      <text class="tiny" x="230" y="437">With the feature off:</text>
+      <text class="tiny" x="230" y="451">"P_0" already exists.</text>
+    </g>
+    <g class="cp-c2"><rect class="f-bg s-line" x="396" y="346" width="168" height="112" rx="8" stroke-width="1"/>
+      <text class="cp-ct f-amber-ink" x="406" y="364">One more hop</text>
+      <text class="tiny" x="406" y="381">0.33 → 0.59 ms per</text>
+      <text class="tiny" x="406" y="395">checkout at one client.</text>
+      <text class="tiny" x="406" y="409">Single-threaded: flat out,</text>
+      <text class="tiny" x="406" y="423">one core capped 800</text>
+      <text class="tiny" x="406" y="437">clients at 10,943 tps;</text>
+      <text class="tiny" x="406" y="451">run more than one.</text>
+    </g>
+    <g class="cp-c3"><rect class="f-bg s-line" x="572" y="346" width="168" height="112" rx="8" stroke-width="1"/>
+      <text class="cp-ct f-amber-ink" x="582" y="364">RDS Proxy pins</text>
+      <text class="tiny" x="582" y="381">Pools for Lambda and other</text>
+      <text class="tiny" x="582" y="395">clients, per transaction;</text>
+      <text class="tiny" x="582" y="409">SET, PREPARE, temp tables</text>
+      <text class="tiny" x="582" y="423">or LISTEN pin a client to</text>
+      <text class="tiny" x="582" y="437">one connection until the</text>
+      <text class="tiny" x="582" y="451">session ends.</text>
+    </g>
+    <g class="cp-c4"><rect class="f-bg s-line" x="748" y="346" width="168" height="112" rx="8" stroke-width="1"/>
+      <text class="cp-ct f-teal" x="758" y="364">MySQL: threads</text>
+      <text class="tiny" x="758" y="381">One thread per connection,</text>
+      <text class="tiny" x="758" y="395">kept in a thread cache;</text>
+      <text class="tiny" x="758" y="409">max_connections = 151,</text>
+      <text class="tiny" x="758" y="423">+1 for CONNECTION_ADMIN.</text>
+      <text class="tiny" x="758" y="437">A thread pool is a plugin</text>
+      <text class="tiny" x="758" y="451">in Enterprise Edition.</text>
+    </g>
+  </g>
+</g>
+</svg>

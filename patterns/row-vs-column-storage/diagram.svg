@@ -1,0 +1,697 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Row vs Column Storage</title>
+<desc id="dg-desc">Row vs Column Storage. Store rows together for transactions or columns together for analytics, and why a column store scans and compresses so much faster. Step 1, A row store reads it all: PostgreSQL reads every page of whole rows, 82 MB, to use 19 of each row's 68 bytes: about 130 ms. Step 2, Store each column apart: DuckDB stores each column apart, bit-packed to 1 to 20 bits a value; the scan reads 3 of 5 columns. Step 3, Measured: 13× less data: Same 12 rows: DuckDB reads 6.25 MB instead of 82 MB and answers in about 5 ms instead of 130 ms. Step 4, One-row writes favour rows: One UPDATE: PostgreSQL writes a new row version; DuckDB's CHECKPOINT rewrites 122,880 qty values.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Row vs Column Storage</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · A row store reads it all</text>
+  <text class="step on p1" x="40" y="518">1 · A row store reads it all</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Store each column apart</text>
+  <text class="step on p2" x="262" y="518">2 · Store each column apart</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Measured: 13× less data</text>
+  <text class="step on p3" x="484" y="518">3 · Measured: 13× less data</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · One-row writes favour rows</text>
+  <text class="step on p4" x="706" y="518">4 · One-row writes favour rows</text>
+  <text class="caption p1" x="40" y="552">PostgreSQL reads every page of whole rows, 82 MB, to use 19 of each row's 68 bytes: about 130 ms.</text>
+  <text class="caption p2" x="40" y="552">DuckDB stores each column apart, bit-packed to 1 to 20 bits a value; the scan reads 3 of 5 columns.</text>
+  <text class="caption p3" x="40" y="552">Same 12 rows: DuckDB reads 6.25 MB instead of 82 MB and answers in about 5 ms instead of 130 ms.</text>
+  <text class="caption p4" x="40" y="552">One UPDATE: PostgreSQL writes a new row version; DuckDB's CHECKPOINT rewrites 122,880 qty values.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Row vs Column Storage. Generated by gen.mjs from runs on PostgreSQL 18.6 and DuckDB 1.5.6 (Acme Shop sample data).
+   0-25%   PostgreSQL: the query token walks heap page 0's five rows (0.8-2.6 s), each read whole: overhead and unused
+           columns red, the 19 used bytes blue; a red sweep covers all 10,417 pages (1.0-3.4 s); the 68-byte breakdown
+           grows (2.8-3.8 s) and sums up (3.6 s)
+   25-50%  DuckDB: the same rows column by column; the scan reads product_id, qty, price_thb and skips two (6.0 s);
+           vectors of 2,048 flow scan -> hash join -> group by (6.9-8.9 s); 12 rows (8.7 s)
+   50-75%  the same scale for both: 10,417 pages vs 800 dots (6.25 MB, 10.6-11.4 s); five reasons (11.8-13.6 s);
+           DuckDB's numbers (10.6 s) and the September zone-map row (12.6 s)
+   75-100% UPDATE: PostgreSQL marks (0,4) dead and writes (10416,81) + an index entry (16.0-16.6 s); DuckDB changes
+           one qty value (17.3 s) and CHECKPOINT rewrites the whole segment (17.7-18.3 s); fits (18.5-18.9 s);
+           everything fades in the last 0.3 s */
+.diagram .rc-cell{fill:var(--bg);stroke:var(--line);stroke-width:1.2}
+.diagram .rc-grid line{stroke:var(--line);stroke-width:1.5;stroke-dasharray:1.5 0.7}
+.diagram .rc-gridg line{stroke:var(--green);stroke-width:1.5;stroke-dasharray:1.5 0.7}
+.diagram .rc-dim{fill:var(--bg);fill-opacity:0.72}
+.diagram .rc-vec{fill:var(--teal-soft);stroke:var(--teal);stroke-width:0.8}
+.diagram .rc-mini{font-size:10px;font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;fill:var(--ink)}
+.diagram .rc-op{font-size:11px;font-weight:700;letter-spacing:0.03em;fill:var(--ink)}
+.diagram .rc-ytop{transform-box:fill-box;transform-origin:50% 0}
+.diagram .rc-xleft{transform-box:fill-box;transform-origin:0 50%}
+.diagram .rc-r0{animation:rc-r0 var(--T) linear infinite}
+.diagram .rc-r1{animation:rc-r1 var(--T) linear infinite}
+.diagram .rc-r2{animation:rc-r2 var(--T) linear infinite}
+.diagram .rc-r3{animation:rc-r3 var(--T) linear infinite}
+.diagram .rc-r4{animation:rc-r4 var(--T) linear infinite}
+.diagram .rc-dead{opacity:0;animation:rc-dead var(--T) linear infinite}
+.diagram .rc-b0{animation:rc-b0 var(--T) linear infinite}
+.diagram .rc-b1{animation:rc-b1 var(--T) linear infinite}
+.diagram .rc-b2{animation:rc-b2 var(--T) linear infinite}
+.diagram .rc-bsum{animation:rc-bsum var(--T) linear infinite}
+.diagram .rc-rd{opacity:0;animation:rc-rd var(--T) linear infinite}
+.diagram .rc-sk{opacity:0;animation:rc-sk var(--T) linear infinite}
+.diagram .rc-qv{opacity:0;animation:rc-qv var(--T) linear infinite}
+.diagram .rc-rw{opacity:0;animation:rc-rw var(--T) linear infinite}
+.diagram .rc-sw{animation:rc-sw var(--T) linear infinite}
+.diagram .rc-dk{animation:rc-dk var(--T) linear infinite}
+.diagram .rc-c0{opacity:0;animation:rc-c0 var(--T) linear infinite}
+.diagram .rc-c1{opacity:0;animation:rc-c1 var(--T) linear infinite}
+.diagram .rc-c2{opacity:0;animation:rc-c2 var(--T) linear infinite}
+.diagram .rc-c3{opacity:0;animation:rc-c3 var(--T) linear infinite}
+.diagram .rc-c4{opacity:0;animation:rc-c4 var(--T) linear infinite}
+.diagram .rc-res{opacity:0;animation:rc-res var(--T) linear infinite}
+.diagram .rc-old{opacity:0;animation:rc-old var(--T) linear infinite}
+.diagram .rc-arw{opacity:0;animation:rc-arw var(--T) linear infinite}
+.diagram .rc-new{opacity:0;animation:rc-new var(--T) linear infinite}
+.diagram .rc-idx{opacity:0;animation:rc-idx var(--T) linear infinite}
+.diagram .rc-vq{opacity:0;animation:rc-vq var(--T) linear infinite}
+.diagram .rc-rw2{opacity:0;animation:rc-rw2 var(--T) linear infinite}
+.diagram .rc-ckl{opacity:0;animation:rc-ckl var(--T) linear infinite}
+.diagram .rc-f0{opacity:0;animation:rc-f0 var(--T) linear infinite}
+.diagram .rc-f1{opacity:0;animation:rc-f1 var(--T) linear infinite}
+.diagram .rc-f2{opacity:0;animation:rc-f2 var(--T) linear infinite}
+.diagram .rc-n2{opacity:0;animation:rc-n2 var(--T) linear infinite}
+.diagram .rc-n3{opacity:0;animation:rc-n3 var(--T) linear infinite}
+.diagram .rc-u1{opacity:0;animation:rc-u1 var(--T) linear infinite}
+.diagram .rc-u2{opacity:0;animation:rc-u2 var(--T) linear infinite}
+.diagram .rc-q1{opacity:0;animation:rc-q1 var(--T) linear infinite}
+.diagram .rc-q2{opacity:0;animation:rc-q2 var(--T) linear infinite}
+.diagram .rc-d0{opacity:0;animation:rc-d0 var(--T) linear infinite}
+.diagram .rc-d1{opacity:0;animation:rc-d1 var(--T) linear infinite}
+.diagram .rc-d2{opacity:0;animation:rc-d2 var(--T) linear infinite}
+.diagram .rc-pd{opacity:0;animation:rc-pd var(--T) linear infinite}
+.diagram .rc-v0{opacity:0;animation:rc-v0 var(--T) linear infinite}
+.diagram .rc-v1{opacity:0;animation:rc-v1 var(--T) linear infinite}
+.diagram .rc-v2{opacity:0;animation:rc-v2 var(--T) linear infinite}
+.diagram .rc-q4{opacity:0;animation:rc-q4 var(--T) linear infinite}
+.diagram .rc-q5{opacity:0;animation:rc-q5 var(--T) linear infinite}
+@keyframes rc-r0 {
+  0% { opacity: 0; }
+  4% { opacity: 0; }
+  5.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-r1 {
+  0% { opacity: 0; }
+  6.25% { opacity: 0; }
+  7.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-r2 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-r3 {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  12% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-r4 {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  14.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-dead {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-b0 {
+  0% { transform: scaleX(0); }
+  14% { transform: scaleX(0); }
+  16% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes rc-b1 {
+  0% { transform: scaleX(0); }
+  15% { transform: scaleX(0); }
+  17% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes rc-b2 {
+  0% { transform: scaleX(0); }
+  16% { transform: scaleX(0); }
+  18% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes rc-bsum {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  19.25% { opacity: 1; }
+  23.5% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-rd {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  31.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-sk {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  31.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-qv {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-rw {
+  0% { transform: scaleX(0); opacity: 0; }
+  88.5% { transform: scaleX(0); opacity: 1; }
+  91.5% { transform: scaleX(1); }
+  98.5% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes rc-sw {
+  0% { transform: scaleY(0); }
+  5% { transform: scaleY(0); }
+  17% { transform: scaleY(1); }
+  100% { transform: scaleY(1); }
+}
+@keyframes rc-dk {
+  0% { transform: scaleX(0); }
+  53% { transform: scaleX(0); }
+  57% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes rc-c0 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-c1 {
+  0% { opacity: 0; }
+  61.25% { opacity: 0; }
+  62.5% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-c2 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.75% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-c3 {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  67% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-c4 {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  69.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-res {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  44.75% { opacity: 1; }
+  48.5% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-old {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-arw {
+  0% { opacity: 0; }
+  80.75% { opacity: 0; }
+  82% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-new {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  82.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-idx {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-vq {
+  0% { opacity: 0; }
+  86.5% { opacity: 0; }
+  87.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-rw2 {
+  0% { transform: scaleX(0); opacity: 0; }
+  88.5% { transform: scaleX(0); opacity: 1; }
+  91.5% { transform: scaleX(1); }
+  98.5% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes rc-ckl {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-f0 {
+  0% { opacity: 0; }
+  92.5% { opacity: 0; }
+  93.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-f1 {
+  0% { opacity: 0; }
+  93.5% { opacity: 0; }
+  94.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-f2 {
+  0% { opacity: 0; }
+  94.5% { opacity: 0; }
+  95.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-n2 {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  54.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-n3 {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  64.25% { opacity: 1; }
+  73.5% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rc-u1 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.25% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-u2 {
+  0% { opacity: 0; }
+  89.5% { opacity: 0; }
+  90.75% { opacity: 1; }
+  98.5% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes rc-q1 {
+  0% { transform: translate(80px, 128px); opacity: 0; }
+  1.5% { transform: translate(80px, 128px); opacity: 0; }
+  1.75% { opacity: 1; }
+  4% { transform: translate(104px, 180px); }
+  13% { transform: translate(104px, 252px); opacity: 1; }
+  13.25% { transform: translate(104px, 252px); opacity: 0; }
+  100% { transform: translate(104px, 252px); opacity: 0; }
+}
+@keyframes rc-q2 {
+  0% { transform: translate(461px, 128px); opacity: 0; }
+  27% { transform: translate(461px, 128px); opacity: 0; }
+  27.25% { opacity: 1; }
+  30% { transform: translate(461px, 338px); opacity: 1; }
+  30.25% { transform: translate(461px, 338px); opacity: 0; }
+  100% { transform: translate(461px, 338px); opacity: 0; }
+}
+@keyframes rc-d0 {
+  0% { transform: translate(452px, 338px); opacity: 0; }
+  30.5% { transform: translate(452px, 338px); opacity: 0; }
+  30.75% { opacity: 1; }
+  33% { transform: translate(482px, 190px); opacity: 1; }
+  33.25% { transform: translate(482px, 190px); opacity: 0; }
+  100% { transform: translate(482px, 190px); opacity: 0; }
+}
+@keyframes rc-d1 {
+  0% { transform: translate(452px, 356px); opacity: 0; }
+  31.1% { transform: translate(452px, 356px); opacity: 0; }
+  31.35% { opacity: 1; }
+  33.6% { transform: translate(482px, 190px); opacity: 1; }
+  33.85% { transform: translate(482px, 190px); opacity: 0; }
+  100% { transform: translate(482px, 190px); opacity: 0; }
+}
+@keyframes rc-d2 {
+  0% { transform: translate(452px, 374px); opacity: 0; }
+  31.7% { transform: translate(452px, 374px); opacity: 0; }
+  31.95% { opacity: 1; }
+  34.2% { transform: translate(482px, 190px); opacity: 1; }
+  34.45% { transform: translate(482px, 190px); opacity: 0; }
+  100% { transform: translate(482px, 190px); opacity: 0; }
+}
+@keyframes rc-pd {
+  0% { transform: translate(818px, 210px); opacity: 0; }
+  33% { transform: translate(818px, 210px); opacity: 0; }
+  33.25% { opacity: 1; }
+  35% { transform: translate(818px, 248px); opacity: 1; }
+  35.25% { transform: translate(818px, 248px); opacity: 0; }
+  100% { transform: translate(818px, 248px); opacity: 0; }
+}
+@keyframes rc-v0 {
+  0% { transform: translate(590px, 214px); opacity: 0; }
+  34.5% { transform: translate(590px, 214px); opacity: 0; }
+  34.75% { opacity: 1; }
+  36.5% { transform: translate(590px, 250px); }
+  38.5% { transform: translate(590px, 310px); opacity: 1; }
+  38.75% { transform: translate(590px, 310px); opacity: 0; }
+  100% { transform: translate(590px, 310px); opacity: 0; }
+}
+@keyframes rc-v1 {
+  0% { transform: translate(590px, 214px); opacity: 0; }
+  37.25% { transform: translate(590px, 214px); opacity: 0; }
+  37.5% { opacity: 1; }
+  39.25% { transform: translate(590px, 250px); }
+  41.25% { transform: translate(590px, 310px); opacity: 1; }
+  41.5% { transform: translate(590px, 310px); opacity: 0; }
+  100% { transform: translate(590px, 310px); opacity: 0; }
+}
+@keyframes rc-v2 {
+  0% { transform: translate(590px, 214px); opacity: 0; }
+  40% { transform: translate(590px, 214px); opacity: 0; }
+  40.25% { opacity: 1; }
+  42% { transform: translate(590px, 250px); }
+  44% { transform: translate(590px, 310px); opacity: 1; }
+  44.25% { transform: translate(590px, 310px); opacity: 0; }
+  100% { transform: translate(590px, 310px); opacity: 0; }
+}
+@keyframes rc-q4 {
+  0% { transform: translate(80px, 128px); opacity: 0; }
+  77% { transform: translate(80px, 128px); opacity: 0; }
+  77.25% { opacity: 1; }
+  80% { transform: translate(104px, 216px); opacity: 1; }
+  80.25% { transform: translate(104px, 216px); opacity: 0; }
+  100% { transform: translate(104px, 216px); opacity: 0; }
+}
+@keyframes rc-q5 {
+  0% { transform: translate(461px, 128px); opacity: 0; }
+  83% { transform: translate(461px, 128px); opacity: 0; }
+  83.25% { opacity: 1; }
+  85% { transform: translate(461px, 356px); }
+  86.5% { transform: translate(239px, 356px); opacity: 1; }
+  86.75% { transform: translate(239px, 356px); opacity: 0; }
+  100% { transform: translate(239px, 356px); opacity: 0; }
+}
+</style>
+<g class="stage">
+<rect class="box" x="30" y="92" width="100" height="36" rx="10"/>
+<text class="label mid p123" x="80" y="115">analysts</text>
+<text class="label mid p4" x="80" y="115">shop app</text>
+<rect class="f-bg s-line" x="140" y="92" width="790" height="36" rx="10" stroke-width="1.5"/>
+<g class="p123"><text class="tiny mono f-ink" x="152" y="107">SELECT p.category, sum(i.qty * i.price_thb) AS revenue</text><text class="tiny mono f-ink" x="152" y="122">FROM order_items i JOIN products p ON p.id = i.product_id GROUP BY p.category ORDER BY revenue DESC</text></g>
+<text class="sub mono f-ink p4" x="152" y="115">UPDATE order_items SET qty = 3 WHERE order_id = 2 AND line_no = 1</text>
+<g class="p1"><rect class="f-red-soft s-red" x="826" y="100" width="96" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="874" y="114">10,417 pages</text></g>
+<g class="p2"><rect class="f-blue-soft s-blue" x="814" y="100" width="108" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="868" y="114">3 of 5 columns</text></g>
+<g class="p3"><rect class="f-green-soft s-green" x="826" y="100" width="96" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="874" y="114">same 12 rows</text></g>
+<g class="p4"><rect class="f-purple-soft s-purple" x="852" y="100" width="70" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="887" y="114">UPDATE 1</text></g>
+<text class="label" x="30" y="150">PostgreSQL · heap page 0</text>
+<text class="tiny end" x="452" y="150">8 kB · 120 rows per page</text>
+<text class="tiny" x="32" y="166">ctid</text>
+<text class="tiny mid" x="104" y="166">tuple header</text>
+<text class="tiny mid" x="164" y="166">order_id</text>
+<text class="tiny mid" x="214" y="166">line_no</text>
+<text class="tiny mid" x="268" y="166">product_id</text>
+<text class="tiny mid" x="318" y="166">qty</text>
+<text class="tiny mid" x="372" y="166">price_thb</text>
+<rect class="rc-cell" x="72" y="172" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="140" y="172" width="48" height="16" rx="4"/>
+<rect class="rc-cell" x="192" y="172" width="44" height="16" rx="4"/>
+<rect class="rc-cell" x="240" y="172" width="56" height="16" rx="4"/>
+<rect class="rc-cell" x="300" y="172" width="36" height="16" rx="4"/>
+<rect class="rc-cell" x="340" y="172" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="72" y="190" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="140" y="190" width="48" height="16" rx="4"/>
+<rect class="rc-cell" x="192" y="190" width="44" height="16" rx="4"/>
+<rect class="rc-cell" x="240" y="190" width="56" height="16" rx="4"/>
+<rect class="rc-cell" x="300" y="190" width="36" height="16" rx="4"/>
+<rect class="rc-cell" x="340" y="190" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="72" y="208" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="140" y="208" width="48" height="16" rx="4"/>
+<rect class="rc-cell" x="192" y="208" width="44" height="16" rx="4"/>
+<rect class="rc-cell" x="240" y="208" width="56" height="16" rx="4"/>
+<rect class="rc-cell" x="300" y="208" width="36" height="16" rx="4"/>
+<rect class="rc-cell" x="340" y="208" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="72" y="226" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="140" y="226" width="48" height="16" rx="4"/>
+<rect class="rc-cell" x="192" y="226" width="44" height="16" rx="4"/>
+<rect class="rc-cell" x="240" y="226" width="56" height="16" rx="4"/>
+<rect class="rc-cell" x="300" y="226" width="36" height="16" rx="4"/>
+<rect class="rc-cell" x="340" y="226" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="72" y="244" width="64" height="16" rx="4"/>
+<rect class="rc-cell" x="140" y="244" width="48" height="16" rx="4"/>
+<rect class="rc-cell" x="192" y="244" width="44" height="16" rx="4"/>
+<rect class="rc-cell" x="240" y="244" width="56" height="16" rx="4"/>
+<rect class="rc-cell" x="300" y="244" width="36" height="16" rx="4"/>
+<rect class="rc-cell" x="340" y="244" width="64" height="16" rx="4"/>
+<g class="rc-r0"><rect class="f-red-soft" x="72" y="172" width="64" height="16" rx="4"/><rect class="f-red-soft" x="140" y="172" width="48" height="16" rx="4"/><rect class="f-red-soft" x="192" y="172" width="44" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="240" y="172" width="56" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="300" y="172" width="36" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="340" y="172" width="64" height="16" rx="4" stroke-width="1.2"/></g>
+<g class="rc-r1"><rect class="f-red-soft" x="72" y="190" width="64" height="16" rx="4"/><rect class="f-red-soft" x="140" y="190" width="48" height="16" rx="4"/><rect class="f-red-soft" x="192" y="190" width="44" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="240" y="190" width="56" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="300" y="190" width="36" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="340" y="190" width="64" height="16" rx="4" stroke-width="1.2"/></g>
+<g class="rc-r2"><rect class="f-red-soft" x="72" y="208" width="64" height="16" rx="4"/><rect class="f-red-soft" x="140" y="208" width="48" height="16" rx="4"/><rect class="f-red-soft" x="192" y="208" width="44" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="240" y="208" width="56" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="300" y="208" width="36" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="340" y="208" width="64" height="16" rx="4" stroke-width="1.2"/></g>
+<g class="rc-r3"><rect class="f-red-soft" x="72" y="226" width="64" height="16" rx="4"/><rect class="f-red-soft" x="140" y="226" width="48" height="16" rx="4"/><rect class="f-red-soft" x="192" y="226" width="44" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="240" y="226" width="56" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="300" y="226" width="36" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="340" y="226" width="64" height="16" rx="4" stroke-width="1.2"/></g>
+<g class="rc-r4"><rect class="f-red-soft" x="72" y="244" width="64" height="16" rx="4"/><rect class="f-red-soft" x="140" y="244" width="48" height="16" rx="4"/><rect class="f-red-soft" x="192" y="244" width="44" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="240" y="244" width="56" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="300" y="244" width="36" height="16" rx="4" stroke-width="1.2"/><rect class="f-blue-soft s-blue" x="340" y="244" width="64" height="16" rx="4" stroke-width="1.2"/></g>
+<text class="tiny mono" x="32" y="184">(0,2)</text>
+<text class="tiny mono mid" x="104" y="184">xmin 774</text>
+<text class="tiny mono mid f-ink" x="164" y="184">1</text>
+<text class="tiny mono mid f-ink" x="214" y="184">1</text>
+<text class="tiny mono mid f-ink" x="268" y="184">1058</text>
+<text class="tiny mono mid f-ink" x="318" y="184">3</text>
+<text class="tiny mono mid f-ink" x="372" y="184">4143.56</text>
+<text class="tiny mono" x="32" y="202">(0,3)</text>
+<text class="tiny mono mid" x="104" y="202">xmin 774</text>
+<text class="tiny mono mid f-ink" x="164" y="202">1</text>
+<text class="tiny mono mid f-ink" x="214" y="202">2</text>
+<text class="tiny mono mid f-ink" x="268" y="202">3699</text>
+<text class="tiny mono mid f-ink" x="318" y="202">1</text>
+<text class="tiny mono mid f-ink" x="372" y="202">3296.63</text>
+<text class="tiny mono" x="32" y="220">(0,4)</text>
+<text class="tiny mono mid" x="104" y="220">xmin 774</text>
+<text class="tiny mono mid f-ink" x="164" y="220">2</text>
+<text class="tiny mono mid f-ink" x="214" y="220">1</text>
+<text class="tiny mono mid f-ink" x="268" y="220">752</text>
+<text class="tiny mono mid f-ink" x="318" y="220">2</text>
+<text class="tiny mono mid f-ink" x="372" y="220">1085.99</text>
+<text class="tiny mono" x="32" y="238">(0,5)</text>
+<text class="tiny mono mid" x="104" y="238">xmin 774</text>
+<text class="tiny mono mid f-ink" x="164" y="238">2</text>
+<text class="tiny mono mid f-ink" x="214" y="238">2</text>
+<text class="tiny mono mid f-ink" x="268" y="238">1341</text>
+<text class="tiny mono mid f-ink" x="318" y="238">2</text>
+<text class="tiny mono mid f-ink" x="372" y="238">2963.27</text>
+<text class="tiny mono" x="32" y="256">(0,6)</text>
+<text class="tiny mono mid" x="104" y="256">xmin 774</text>
+<text class="tiny mono mid f-ink" x="164" y="256">2</text>
+<text class="tiny mono mid f-ink" x="214" y="256">3</text>
+<text class="tiny mono mid f-ink" x="268" y="256">8927</text>
+<text class="tiny mono mid f-ink" x="318" y="256">1</text>
+<text class="tiny mono mid f-ink" x="372" y="256">5179.94</text>
+<g class="rc-dead"><rect class="f-red-soft s-red" x="70" y="207" width="336" height="18" rx="5" stroke-width="1.5"/><rect class="f-bg" x="74" y="210" width="60" height="12" rx="3"/><text class="tiny mono mid f-red sb" x="104" y="220">xmax set</text><line class="s-red" x1="140" y1="216" x2="404" y2="216" stroke-width="1.2"/><text class="tiny sb f-purple" x="412" y="220">→ new</text></g>
+<g class="p1"><text class="label" x="30" y="286">one row on page 0: 68 bytes</text><text class="tiny end" x="452" y="286">pageinspect: lp_len 59, t_hoff 24</text><text class="tiny sb f-blue" x="30" y="306">used 19 B</text><rect class="f-blue-soft s-blue rc-xleft rc-b0" x="116" y="296" width="68.4" height="12" rx="2" stroke-width="1"/><text class="tiny" x="256" y="306">product_id 8 · qty 4 · price_thb 7</text><text class="tiny sb f-red" x="30" y="324">unused 12 B</text><rect class="f-red-soft s-red rc-xleft rc-b1" x="116" y="314" width="43.2" height="12" rx="2" stroke-width="1"/><text class="tiny" x="256" y="324">order_id 8 · line_no 4</text><text class="tiny sb f-red" x="30" y="342">overhead 37 B</text><rect class="f-red-soft s-red rc-xleft rc-b2" x="116" y="332" width="133.2" height="12" rx="2" stroke-width="1"/><text class="tiny" x="256" y="342">header 24 · pointer 4 · padding 9</text><g class="rc-bsum"><text class="sub sb" x="30" y="364">× 1,250,000 rows = <tspan class="f-red">81 MB read</tspan>, <tspan class="f-blue">28% of it used</tspan></text><text class="tiny" x="30" y="382">the 8 kB page is the unit of I/O, so every column comes along</text></g></g>
+<g class="p234"><text class="label" x="30" y="286">DuckDB · row group 0</text><text class="tiny end" x="452" y="286">122,880 rows · 11 row groups</text><rect class="rc-cell" x="108" y="294" width="50" height="16" rx="4"/><rect class="rc-cell" x="161" y="294" width="50" height="16" rx="4"/><rect class="rc-cell" x="214" y="294" width="50" height="16" rx="4"/><rect class="rc-cell" x="267" y="294" width="50" height="16" rx="4"/><rect class="rc-cell" x="320" y="294" width="50" height="16" rx="4"/><rect class="f-teal-soft s-teal" x="390" y="294" width="62" height="16" rx="8" stroke-width="1"/><rect class="rc-cell" x="108" y="312" width="50" height="16" rx="4"/><rect class="rc-cell" x="161" y="312" width="50" height="16" rx="4"/><rect class="rc-cell" x="214" y="312" width="50" height="16" rx="4"/><rect class="rc-cell" x="267" y="312" width="50" height="16" rx="4"/><rect class="rc-cell" x="320" y="312" width="50" height="16" rx="4"/><rect class="f-teal-soft s-teal" x="390" y="312" width="62" height="16" rx="8" stroke-width="1"/><rect class="rc-cell" x="108" y="330" width="50" height="16" rx="4"/><rect class="rc-cell" x="161" y="330" width="50" height="16" rx="4"/><rect class="rc-cell" x="214" y="330" width="50" height="16" rx="4"/><rect class="rc-cell" x="267" y="330" width="50" height="16" rx="4"/><rect class="rc-cell" x="320" y="330" width="50" height="16" rx="4"/><rect class="f-teal-soft s-teal" x="390" y="330" width="62" height="16" rx="8" stroke-width="1"/><rect class="rc-cell" x="108" y="348" width="50" height="16" rx="4"/><rect class="rc-cell" x="161" y="348" width="50" height="16" rx="4"/><rect class="rc-cell" x="214" y="348" width="50" height="16" rx="4"/><rect class="rc-cell" x="267" y="348" width="50" height="16" rx="4"/><rect class="rc-cell" x="320" y="348" width="50" height="16" rx="4"/><rect class="f-teal-soft s-teal" x="390" y="348" width="62" height="16" rx="8" stroke-width="1"/><rect class="rc-cell" x="108" y="366" width="50" height="16" rx="4"/><rect class="rc-cell" x="161" y="366" width="50" height="16" rx="4"/><rect class="rc-cell" x="214" y="366" width="50" height="16" rx="4"/><rect class="rc-cell" x="267" y="366" width="50" height="16" rx="4"/><rect class="rc-cell" x="320" y="366" width="50" height="16" rx="4"/><rect class="f-teal-soft s-teal" x="390" y="366" width="62" height="16" rx="8" stroke-width="1"/><g class="rc-rd"><rect class="f-blue-soft s-blue" x="105" y="329" width="268" height="18" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="105" y="347" width="268" height="18" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="105" y="365" width="268" height="18" rx="5" stroke-width="1.5"/></g><text class="tiny mono end f-ink" x="102" y="306">order_id</text><text class="tiny mono mid f-ink" x="133" y="306">1</text><text class="tiny mono mid f-ink" x="186" y="306">1</text><text class="tiny mono mid f-ink" x="239" y="306">2</text><text class="tiny mono mid f-ink" x="292" y="306">2</text><text class="tiny mono mid f-ink" x="345" y="306">2</text><text class="tiny mid" x="380" y="306">…</text><text class="tiny mid sb f-teal" x="421" y="306">1 bit</text><text class="tiny mono end f-ink" x="102" y="324">line_no</text><text class="tiny mono mid f-ink" x="133" y="324">1</text><text class="tiny mono mid f-ink" x="186" y="324">2</text><text class="tiny mono mid f-ink" x="239" y="324">1</text><text class="tiny mono mid f-ink" x="292" y="324">2</text><text class="tiny mono mid f-ink" x="345" y="324">3</text><text class="tiny mid" x="380" y="324">…</text><text class="tiny mid sb f-teal" x="421" y="324">2 bits</text><text class="tiny mono end f-ink" x="102" y="342">product_id</text><text class="tiny mono mid f-ink" x="133" y="342">1058</text><text class="tiny mono mid f-ink" x="186" y="342">3699</text><text class="tiny mono mid f-ink" x="239" y="342">752</text><text class="tiny mono mid f-ink" x="292" y="342">1341</text><text class="tiny mono mid f-ink" x="345" y="342">8927</text><text class="tiny mid" x="380" y="342">…</text><text class="tiny mid sb f-teal" x="421" y="342">14 bits</text><text class="tiny mono end f-ink" x="102" y="360">qty</text><text class="tiny mono mid f-ink" x="133" y="360">3</text><text class="tiny mono mid f-ink" x="186" y="360">1</text><text class="tiny mono mid f-ink" x="239" y="360">2</text><text class="tiny mono mid f-ink" x="292" y="360">2</text><text class="tiny mono mid f-ink" x="345" y="360">1</text><text class="tiny mid" x="380" y="360">…</text><text class="tiny mid sb f-teal" x="421" y="360">2 bits</text><text class="tiny mono end f-ink" x="102" y="378">price_thb</text><text class="tiny mono mid f-ink" x="133" y="378">4143.56</text><text class="tiny mono mid f-ink" x="186" y="378">3296.63</text><text class="tiny mono mid f-ink" x="239" y="378">1085.99</text><text class="tiny mono mid f-ink" x="292" y="378">2963.27</text><text class="tiny mono mid f-ink" x="345" y="378">5179.94</text><text class="tiny mid" x="380" y="378">…</text><text class="tiny mid sb f-teal" x="421" y="378">20 bits</text><g class="rc-sk"><rect class="rc-dim" x="105" y="293" width="268" height="18" rx="5"/><rect class="f-bg" x="209" y="296" width="60" height="12" rx="3"/><text class="tiny mid sb" x="239" y="306">not read</text><rect class="rc-dim" x="105" y="311" width="268" height="18" rx="5"/><rect class="f-bg" x="209" y="314" width="60" height="12" rx="3"/><text class="tiny mid sb" x="239" y="324">not read</text></g><g class="rc-qv"><rect class="f-bg" x="214" y="348" width="50" height="16" rx="4"/><rect class="f-purple-soft s-purple" x="214" y="348" width="50" height="16" rx="4" stroke-width="1.5"/><text class="tiny mono mid b f-purple" x="239" y="360">3</text></g><rect class="none s-amber rc-xleft rc-rw" x="105" y="346" width="348" height="20" rx="6" stroke-width="2"/></g>
+<g class="p13"><text class="label" x="472" y="150">order_items · heap</text><text class="tiny end" x="928" y="150">10,417 pages × 8 kB · 1 dot = 1 page</text><g class="rc-grid"><line x1="472" y1="158.75" x2="927.4" y2="158.75"/><line x1="472" y1="160.95" x2="927.4" y2="160.95"/><line x1="472" y1="163.15" x2="927.4" y2="163.15"/><line x1="472" y1="165.35" x2="927.4" y2="165.35"/><line x1="472" y1="167.55" x2="927.4" y2="167.55"/><line x1="472" y1="169.75" x2="927.4" y2="169.75"/><line x1="472" y1="171.95" x2="927.4" y2="171.95"/><line x1="472" y1="174.15" x2="927.4" y2="174.15"/><line x1="472" y1="176.35" x2="927.4" y2="176.35"/><line x1="472" y1="178.55" x2="927.4" y2="178.55"/><line x1="472" y1="180.75" x2="927.4" y2="180.75"/><line x1="472" y1="182.95" x2="927.4" y2="182.95"/><line x1="472" y1="185.15" x2="927.4" y2="185.15"/><line x1="472" y1="187.35" x2="927.4" y2="187.35"/><line x1="472" y1="189.55" x2="927.4" y2="189.55"/><line x1="472" y1="191.75" x2="927.4" y2="191.75"/><line x1="472" y1="193.95" x2="927.4" y2="193.95"/><line x1="472" y1="196.15" x2="927.4" y2="196.15"/><line x1="472" y1="198.35" x2="927.4" y2="198.35"/><line x1="472" y1="200.55" x2="927.4" y2="200.55"/><line x1="472" y1="202.75" x2="927.4" y2="202.75"/><line x1="472" y1="204.95" x2="927.4" y2="204.95"/><line x1="472" y1="207.15" x2="927.4" y2="207.15"/><line x1="472" y1="209.35" x2="927.4" y2="209.35"/><line x1="472" y1="211.55" x2="927.4" y2="211.55"/><line x1="472" y1="213.75" x2="927.4" y2="213.75"/><line x1="472" y1="215.95" x2="927.4" y2="215.95"/><line x1="472" y1="218.15" x2="927.4" y2="218.15"/><line x1="472" y1="220.35" x2="927.4" y2="220.35"/><line x1="472" y1="222.55" x2="927.4" y2="222.55"/><line x1="472" y1="224.75" x2="927.4" y2="224.75"/><line x1="472" y1="226.95" x2="927.4" y2="226.95"/><line x1="472" y1="229.15" x2="927.4" y2="229.15"/><line x1="472" y1="231.35" x2="927.4" y2="231.35"/><line x1="472" y1="233.55" x2="927.4" y2="233.55"/><line x1="472" y1="235.75" x2="927.4" y2="235.75"/><line x1="472" y1="237.95" x2="927.4" y2="237.95"/><line x1="472" y1="240.15" x2="927.4" y2="240.15"/><line x1="472" y1="242.35" x2="927.4" y2="242.35"/><line x1="472" y1="244.55" x2="927.4" y2="244.55"/><line x1="472" y1="246.75" x2="927.4" y2="246.75"/><line x1="472" y1="248.95" x2="927.4" y2="248.95"/><line x1="472" y1="251.15" x2="927.4" y2="251.15"/><line x1="472" y1="253.35" x2="927.4" y2="253.35"/><line x1="472" y1="255.55" x2="927.4" y2="255.55"/><line x1="472" y1="257.75" x2="927.4" y2="257.75"/><line x1="472" y1="259.95" x2="927.4" y2="259.95"/><line x1="472" y1="262.15" x2="927.4" y2="262.15"/><line x1="472" y1="264.35" x2="927.4" y2="264.35"/><line x1="472" y1="266.55" x2="927.4" y2="266.55"/><line x1="472" y1="268.75" x2="619.4" y2="268.75"/></g><g class="p1"><rect class="f-red-soft rc-ytop rc-sw" x="471" y="157" width="456.4" height="113.2" rx="2"/><text class="tiny sb f-red" x="472" y="286">Parallel Seq Scan: three processes share every page</text><text class="tiny" x="472" y="302">+ the 94 pages of products, for the hash join</text><rect class="f-panel s-line" x="472" y="312" width="456" height="74" rx="8" stroke-width="1.2"/><text class="tiny mono f-ink" x="482" y="328">-&gt;  Parallel Seq Scan on order_items i</text><text class="tiny mono f-ink" x="510" y="344">(actual rows=416666.67 loops=3)</text><text class="tiny mono f-ink" x="510" y="360">Buffers: shared hit=2048 read=8369</text><text class="tiny mono" x="482" y="376">-- 2,048 + 8,369 = 10,417 pages = 81 MB</text></g><g class="p3"><rect class="f-red-soft" x="471" y="157" width="456.4" height="113.2" rx="2"/><text class="tiny sb f-red" x="472" y="286">PostgreSQL 18.6: 10,417 pages of order_items + 94 of products = 82 MB</text><g class="rc-gridg rc-xleft rc-dk"><line x1="472" y1="294.75" x2="927.4" y2="294.75"/><line x1="472" y1="296.95" x2="927.4" y2="296.95"/><line x1="472" y1="299.15" x2="927.4" y2="299.15"/><line x1="472" y1="301.35" x2="865.8" y2="301.35"/></g><text class="tiny sb f-green" x="472" y="318">DuckDB 1.5.6: 25 blocks of 256 kB = 6.25 MB, both tables, same scale</text><g class="rc-c0"><rect class="f-green-soft s-green" x="472" y="332" width="104" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="524" y="346">3 of 5 columns</text></g><g class="rc-c1"><rect class="f-green-soft s-green" x="584" y="332" width="152" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="660" y="346">2 to 20 bits per value</text></g><g class="rc-c2"><rect class="f-green-soft s-green" x="744" y="332" width="128" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="808" y="346">no per-row headers</text></g><g class="rc-c3"><rect class="f-green-soft s-green" x="472" y="360" width="158" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="551" y="374">vectors of 2,048 values</text></g><g class="rc-c4"><rect class="f-green-soft s-green" x="638" y="360" width="170" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="723" y="374">zone maps skip row groups</text></g></g></g>
+<g class="p2"><text class="label" x="472" y="150">DuckDB plan</text><text class="tiny end" x="928" y="150">1,250,000 rows = 611 vectors of up to 2,048</text><line class="wire" x1="590" y1="208" x2="590" y2="229" marker-end="url(#ah)"/><line class="wire" x1="818" y1="208" x2="818" y2="229" marker-end="url(#ah)"/><line class="wire" x1="590" y1="268" x2="590" y2="289" marker-end="url(#ah)"/><rect class="box" x="480" y="164" width="220" height="44" rx="10"/><text class="rc-op" x="492" y="182">TABLE_SCAN order_items</text><text class="tiny mono f-blue" x="492" y="199">product_id · qty · price_thb</text><rect class="box" x="716" y="164" width="204" height="44" rx="10"/><text class="rc-op" x="728" y="182">TABLE_SCAN products</text><text class="tiny" x="728" y="199">id · category, a dictionary</text><rect class="box" x="560" y="232" width="280" height="36" rx="10"/><text class="rc-op mid" x="700" y="254">HASH_JOIN  product_id = id</text><rect class="box" x="560" y="292" width="280" height="36" rx="10"/><text class="rc-op mid" x="700" y="314">HASH_GROUP_BY  category</text><g class="rc-res"><text class="tiny sb f-green" x="850" y="314">→ 12 rows</text></g><text class="tiny" x="472" y="360">PostgreSQL: each plan node hands up <tspan class="sb f-red">one row per call</tspan></text><text class="tiny" x="472" y="376">DuckDB: each call carries <tspan class="sb f-green">a vector of up to 2,048 values</tspan></text></g>
+<g class="p4"><text class="label" x="472" y="150">one UPDATE, two layouts</text><text class="tiny end" x="928" y="150">order 2, line 1: qty 2 → 3</text><text class="tiny sb" x="472" y="170">PostgreSQL 18.6 · a new row version</text><rect class="box" x="472" y="178" width="200" height="60" rx="6"/><text class="tiny" x="480" y="190">heap page 0 · 8 B free</text><rect class="rc-cell" x="480" y="196" width="184" height="12" rx="3"/><text class="rc-mini" x="484" y="205">(0,3) …</text><rect class="rc-cell" x="480" y="210" width="184" height="12" rx="3"/><text class="rc-mini" x="484" y="219">(0,4)  2  1  752  2  1085.99</text><rect class="rc-cell" x="480" y="224" width="184" height="12" rx="3"/><text class="rc-mini" x="484" y="233">(0,5) …</text><g class="rc-old"><rect class="f-red-soft s-red" x="480" y="210" width="184" height="12" rx="3" stroke-width="1.2"/><line class="s-red" x1="516" y1="216" x2="660" y2="216" stroke-width="1"/></g><g class="rc-arw"><line class="s-purple" x1="666" y1="216" x2="704" y2="216" stroke-width="1.5" marker-end="url(#ah-purple)"/><text class="tiny mid f-purple" x="686" y="210">t_ctid</text></g><rect class="box" x="712" y="178" width="216" height="60" rx="6"/><text class="tiny" x="720" y="190">heap page 10416 · 2,728 B free</text><rect class="rc-cell" x="720" y="196" width="200" height="12" rx="3"/><text class="rc-mini" x="724" y="205">(10416,80) …</text><rect class="rc-cell" x="720" y="210" width="200" height="12" rx="3"/><g class="rc-new"><rect class="f-purple-soft s-purple" x="720" y="210" width="200" height="12" rx="3" stroke-width="1.2"/><text class="rc-mini" x="724" y="219">(10416,81)  2  1  752  3  1085.99</text></g><g class="rc-idx"><text class="tiny f-purple" x="472" y="256">+ an entry (2,1) → (10416,81) in order_items_pkey: no room on page 0, so not HOT</text></g><text class="tiny sb" x="472" y="282">DuckDB 1.5.6 · the qty segment of row group 0: 60 vectors, 122,880 values</text><rect class="rc-vec" x="472" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="479.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="487.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="494.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="502.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="510" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="517.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="525.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="532.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="540.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="548" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="555.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="563.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="570.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="578.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="586" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="593.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="601.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="608.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="616.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="624" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="631.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="639.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="646.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="654.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="662" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="669.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="677.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="684.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="692.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="700" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="707.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="715.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="722.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="730.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="738" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="745.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="753.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="760.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="768.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="776" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="783.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="791.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="798.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="806.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="814" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="821.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="829.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="836.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="844.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="852" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="859.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="867.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="874.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="882.4" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="890" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="897.6" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="905.2" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="912.8" y="290" width="6.4" height="16" rx="1.5"/><rect class="rc-vec" x="920.4" y="290" width="6.4" height="16" rx="1.5"/><g class="rc-vq"><rect class="f-purple s-purple" x="471" y="289" width="8.4" height="18" rx="2"/></g><rect class="f-amber-soft s-amber rc-xleft rc-rw2" x="470" y="287" width="458" height="22" rx="4" stroke-width="1.5"/><g class="rc-ckl"><text class="tiny f-amber-ink sb" x="472" y="324">WAL 147 B, then CHECKPOINT writes all 60 vectors again: 266,240 B</text></g><g class="rc-f0"><rect class="f-purple-soft s-purple" x="472" y="338" width="176" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="560" y="352">OLTP: writes by key → rows</text></g><g class="rc-f1"><rect class="f-blue-soft s-blue" x="656" y="338" width="200" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="756" y="352">analytics: big scans → columns</text></g><g class="rc-f2"><rect class="f-teal-soft s-teal" x="472" y="366" width="200" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-teal" x="572" y="380">between them: CDC or batch ELT</text></g></g>
+<rect class="box" x="30" y="398" width="900" height="72" rx="10"/>
+<g class="p123"><text class="tiny sb" x="40" y="414">engine</text><text class="tiny sb" x="196" y="414">plan · EXPLAIN ANALYZE</text><text class="tiny sb end" x="768" y="414">data read</text><text class="tiny sb end" x="852" y="414">time, laptop</text><text class="tiny sb end" x="920" y="414">one core</text></g>
+<g class="p123"><rect class="f-red" x="40" y="423" width="7" height="7" rx="1.5"/><text class="tiny sb" x="53" y="431">PostgreSQL 18.6 · heap</text><text class="tiny sb f-red" x="196" y="431">Parallel Seq Scan on order_items → Hash Join → Partial HashAggregate</text><text class="tiny mono f-ink end" x="768" y="431">10,511 pages · 82 MB</text><text class="tiny mono f-ink end" x="852" y="431">130 ms</text><text class="tiny mono f-ink end" x="920" y="431">330 ms</text></g>
+<g class="p23"><rect class="f-green" x="40" y="439" width="7" height="7" rx="1.5"/><text class="tiny sb" x="53" y="447">DuckDB 1.5.6 · columns</text><text class="tiny sb f-green" x="196" y="447">TABLE_SCAN product_id, qty, price_thb → HASH_JOIN → HASH_GROUP_BY</text><g class="rc-n2"><text class="tiny mono f-ink end" x="768" y="447">25 blocks · 6.25 MB</text><text class="tiny mono f-ink end" x="852" y="447">5 ms</text><text class="tiny mono f-ink end" x="920" y="447">11 ms</text></g></g>
+<g class="p2"><rect class="f-teal" x="40" y="455" width="7" height="7" rx="1.5"/><text class="tiny sb" x="53" y="463">DuckDB storage</text><text class="tiny f-teal" x="196" y="463">each column segment compressed on its own: DELTA_FOR (order_id), FOR bit-packing (the other four), dictionary (category)</text></g>
+<g class="rc-n3"><rect class="f-amber" x="40" y="455" width="7" height="7" rx="1.5"/><text class="tiny sb" x="53" y="463">DuckDB, September only</text><text class="tiny sb f-amber-ink" x="196" y="463">zone maps: order_id 475,224–498,664 → 2 of 11 row groups</text><text class="tiny mono f-ink end" x="768" y="463">9 blocks · 2.25 MB</text><text class="tiny mono f-ink end" x="852" y="463">2 ms</text><text class="tiny mono f-ink end" x="920" y="463">2 ms</text></g>
+<g class="p4"><text class="tiny sb" x="40" y="414">engine</text><text class="tiny sb" x="196" y="414">find the row: order 2, line 1</text><text class="tiny sb" x="560" y="414">change its qty from 2 to 3</text></g>
+<g class="rc-u1"><rect class="f-purple" x="40" y="423" width="7" height="7" rx="1.5"/><text class="tiny sb" x="53" y="431">PostgreSQL 18.6</text><text class="tiny" x="196" y="431">Index Scan on order_items_pkey: 4 pages, 32 kB</text><text class="tiny f-purple sb" x="560" y="431">new version (10416,81) + index entry · WAL 3 records, 235 B</text></g>
+<g class="rc-u2"><rect class="f-purple" x="40" y="439" width="7" height="7" rx="1.5"/><text class="tiny sb" x="53" y="447">DuckDB 1.5.6</text><text class="tiny" x="196" y="447">zone map → row group 0: 122,880 keys, 1 block of 256 kB</text><text class="tiny f-purple sb" x="560" y="447">WAL 147 B; CHECKPOINT rewrites the segment: 266,240 B</text></g>
+<circle class="pkt f-blue rc-q1" r="6"/>
+<circle class="pkt f-blue rc-q2" r="6"/>
+<circle class="pkt f-blue rc-d0" r="4"/>
+<circle class="pkt f-blue rc-d1" r="4"/>
+<circle class="pkt f-blue rc-d2" r="4"/>
+<circle class="pkt f-blue rc-pd" r="5"/>
+<g class="rc-v0"><rect class="f-bg" x="-20" y="-8" width="40" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="-20" y="-8" width="40" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono mid f-blue sb" x="0" y="4">2,048</text></g>
+<g class="rc-v1"><rect class="f-bg" x="-20" y="-8" width="40" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="-20" y="-8" width="40" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono mid f-blue sb" x="0" y="4">2,048</text></g>
+<g class="rc-v2"><rect class="f-bg" x="-20" y="-8" width="40" height="16" rx="4"/><rect class="f-blue-soft s-blue" x="-20" y="-8" width="40" height="16" rx="4" stroke-width="1.2"/><text class="tiny mono mid f-blue sb" x="0" y="4">2,048</text></g>
+<circle class="pkt f-purple rc-q4" r="6"/>
+<circle class="pkt f-purple rc-q5" r="6"/>
+</g>
+</svg>

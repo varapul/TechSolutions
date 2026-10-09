@@ -134,6 +134,10 @@ Not when:
 - [Service Mesh](../service-mesh/) — Sidecar proxies plus a control plane: mTLS, retries and traffic shifting without touching app code.
 - [Health Endpoint Monitoring](../health-endpoint-monitoring/) — Expose liveness and readiness checks that load balancers and monitors probe.
 
+## Related database topics
+
+- [Connection Pooling](../connection-pooling/) — Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database.
+
 ## References
 
 - [Azure Architecture Center — Bulkhead pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead)

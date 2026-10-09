@@ -71,6 +71,10 @@ Compensation is **semantic**, not an undo. The charge stays in the payments ledg
 
 - [AWS Step Functions](../aws-step-functions/) — Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded.
 
+## Related database topics
+
+- [Transaction Isolation Levels](../isolation-levels/) — What concurrent transactions can see of each other: the anomalies each isolation level allows and the defaults engines use.
+
 ## References
 
 - [Hector Garcia-Molina & Kenneth Salem — Sagas (SIGMOD 1987)](https://dl.acm.org/doi/10.1145/38713.38742)

@@ -87,6 +87,10 @@ When several policies or metrics are active, the larger answer wins. EC2 Auto Sc
 - [Well-Architected Framework](../well-architected-framework/) — Review a workload against six pillars, from operational excellence to sustainability, and decide on the trade-offs between them.
 - [FinOps](../finops/) — Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value.
 
+## Related database topics
+
+- [Connection Pooling](../connection-pooling/) — Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database.
+
 ## References
 
 - [AWS — Target tracking scaling policies for Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-target-tracking.html)

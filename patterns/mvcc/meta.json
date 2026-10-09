@@ -1,0 +1,46 @@
+{
+  "aka": ["multiversion concurrency control", "row versions", "snapshot reads"],
+  "steps": [
+    {
+      "title": "Locks: readers vs writers",
+      "caption": "A report that locks the orders it reads makes the cancel of order 495179 wait 5 s, then fail.",
+      "body": "Acme's nightly report must not see orders change halfway through, and without row versions the only way to promise that is to lock what it reads: here it takes `LOCK TABLE orders IN SHARE MODE`. It first waited 1.5 s for a writer's open transaction, then held the lock, so support's cancel of order 495179 waited until `lock_timeout` (5 s) ended it with `ERROR: 55P03: canceling statement due to lock timeout`. InnoDB at `SERIALIZABLE` does the same by itself: the same report took 502,025 shared record locks, and the cancel failed with `ERROR 1205`."
+    },
+    {
+      "title": "Row versions & snapshots",
+      "caption": "UPDATE writes a new version and sets xmax on the old one; the report's snapshot still sees the old.",
+      "body": "On PostgreSQL 18.6 the report runs at `REPEATABLE READ` with snapshot `165806:165806:` and takes no row locks. The writer, transaction 165806, cancels order 495179: page 2392 had 48 bytes free, so the new version went to page 5057 as line pointer 91 (`xmin` 165806), the old one got `xmax` 165806 and a `t_ctid` pointing to `(5057,91)`, and `orders_pkey` got a second entry. The report keeps reading `delivered`, because 165806 is too new for its snapshot, while the writer's next statement reads `cancelled`; nobody waited."
+    },
+    {
+      "title": "VACUUM and the horizon",
+      "caption": "While the report stays open, VACUUM removes none of 3,001 dead versions; after COMMIT, all of them.",
+      "body": "The night goes on: 3,000 more status changes, one transaction each, while the report stays open. `n_dead_tup` climbs to 3,001 and the heap grows from 5,058 to 5,087 pages, yet `VACUUM` removes nothing: *3001 are dead but not yet removable*, because the report's `backend_xmin` 165806 is the cutoff. After the report commits, `VACUUM` removes all 3,001 in 33 ms. Only 104 of the updates were HOT on these full pages, against 3,001 of 3,001 in the same run on a copy rewritten with `fillfactor = 90`."
+    },
+    {
+      "title": "Costs and other engines",
+      "caption": "Old versions cost bloat, vacuuming and XID freezing; InnoDB and Oracle keep them in undo instead.",
+      "body": "Dead versions hold space until `VACUUM` frees it for reuse, and autovacuum only starts on `orders` at 50 + 20 % of its rows: 100,050 dead rows. Transaction IDs are 32 bits, so `VACUUM` must also freeze old rows before the counter wraps around, and a forgotten open transaction holds all of this back until `idle_in_transaction_session_timeout` (off by default) ends it. InnoDB updates the row in place and keeps the old version in an undo log until purge (history list length 3,002 while the report was open, 0 after it), and Oracle rebuilds old versions from undo segments, failing a long query with `ORA-01555` once the undo it needs is overwritten."
+    }
+  ],
+  "related": ["isolation-levels", "locks-and-deadlocks", "write-ahead-log", "covering-index", "b-tree-index", "postgresql", "read-replicas", "amazon-rds-aurora"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — Concurrency Control: Introduction (MVCC)", "url": "https://www.postgresql.org/docs/18/mvcc-intro.html" },
+    { "title": "PostgreSQL 18 documentation — Routine Vacuuming (dead tuples, visibility map, wraparound, autovacuum)", "url": "https://www.postgresql.org/docs/18/routine-vacuuming.html" },
+    { "title": "PostgreSQL 18 documentation — Heap-Only Tuples (HOT)", "url": "https://www.postgresql.org/docs/18/storage-hot.html" },
+    { "title": "PostgreSQL 18 documentation — Database Page Layout (line pointers, t_xmin, t_xmax, t_ctid)", "url": "https://www.postgresql.org/docs/18/storage-page-layout.html" },
+    { "title": "PostgreSQL 18 documentation — VACUUM", "url": "https://www.postgresql.org/docs/18/sql-vacuum.html" },
+    { "title": "PostgreSQL 18 documentation — Vacuuming settings (autovacuum thresholds, freezing)", "url": "https://www.postgresql.org/docs/18/runtime-config-vacuum.html" },
+    { "title": "PostgreSQL 18 documentation — Client Connection Defaults (lock_timeout, idle_in_transaction_session_timeout)", "url": "https://www.postgresql.org/docs/18/runtime-config-client.html" },
+    { "title": "PostgreSQL 18 documentation — The Cumulative Statistics System (pg_stat_user_tables, pg_stat_activity)", "url": "https://www.postgresql.org/docs/18/monitoring-stats.html" },
+    { "title": "PostgreSQL 18 documentation — Progress Reporting (pg_stat_progress_vacuum)", "url": "https://www.postgresql.org/docs/18/progress-reporting.html" },
+    { "title": "PostgreSQL 18 documentation — pageinspect", "url": "https://www.postgresql.org/docs/18/pageinspect.html" },
+    { "title": "PostgreSQL 18 documentation — Explicit Locking (table-level lock modes)", "url": "https://www.postgresql.org/docs/18/explicit-locking.html" },
+    { "title": "MySQL 8.4 Reference Manual — InnoDB Multi-Versioning", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-multi-versioning.html" },
+    { "title": "MySQL 8.4 Reference Manual — Purge Configuration (history list)", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-purge-configuration.html" },
+    { "title": "MySQL 8.4 Reference Manual — Transaction Isolation Levels", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html" },
+    { "title": "Oracle AI Database 26ai Concepts — Data Concurrency and Consistency (read consistency and undo)", "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/cncpt/data-concurrency-and-consistency.html" },
+    { "title": "Oracle AI Database 26ai Administrator's Guide — Managing Undo", "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/admin/managing-undo.html" },
+    { "title": "Microsoft Learn — Transaction locking and row versioning guide (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-transaction-locking-and-row-versioning-guide" },
+    { "title": "AWS documentation — Working with PostgreSQL autovacuum on Amazon RDS for PostgreSQL", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Autovacuum.html" }
+  ]
+}

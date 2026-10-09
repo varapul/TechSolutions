@@ -1,0 +1,1229 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Locks &amp; Deadlocks</title>
+<desc id="dg-desc">Locks &amp; Deadlocks. Row locks make writers wait for each other; two transactions waiting on each other is a deadlock, and the database aborts one. Step 1, One open transaction: A forgets to COMMIT: B and C queue for order 497003, then A's next UPDATE closes a cycle. Step 2, Row locks and the queue: The row lock is xmax in the row: B waits on A's xid, C on the tuple lock, and readers don't wait. Step 3, Detect, abort, prevent: After deadlock_timeout (1 s) A is aborted with 40P01; sorted locks, timeouts and SKIP LOCKED help. Step 4, Schema changes and InnoDB: A waiting ALTER TABLE queues every read behind it; InnoDB detects deadlocks at once and locks gaps.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Locks &amp; Deadlocks</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · One open transaction</text>
+  <text class="step on p1" x="40" y="518">1 · One open transaction</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Row locks and the queue</text>
+  <text class="step on p2" x="262" y="518">2 · Row locks and the queue</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Detect, abort, prevent</text>
+  <text class="step on p3" x="484" y="518">3 · Detect, abort, prevent</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Schema changes and InnoDB</text>
+  <text class="step on p4" x="706" y="518">4 · Schema changes and InnoDB</text>
+  <text class="caption p1" x="40" y="552">A forgets to COMMIT: B and C queue for order 497003, then A's next UPDATE closes a cycle.</text>
+  <text class="caption p2" x="40" y="552">The row lock is xmax in the row: B waits on A's xid, C on the tuple lock, and readers don't wait.</text>
+  <text class="caption p3" x="40" y="552">After deadlock_timeout (1 s) A is aborted with 40P01; sorted locks, timeouts and SKIP LOCKED help.</text>
+  <text class="caption p4" x="40" y="552">A waiting ALTER TABLE queues every read behind it; InnoDB detects deadlocks at once and locks gaps.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+.diagram .ld-eb { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .ld-h { font-size: 13px; font-weight: 600; }
+.diagram .ld-q { font-size: 11px; }
+.diagram .ld-c { font-size: 10px; }
+.diagram .ld-b { font-weight: 700; }
+.diagram .ld-badge { font-size: 11px; font-weight: 700; }
+.diagram .ld-row { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .ld-tick { stroke: var(--bg); stroke-width: 1.5; }
+.diagram .ld-hold { stroke: var(--orange); stroke-width: 2.5; }
+.diagram .ld-wait { stroke: var(--amber); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+.diagram .ld-cyc { stroke: var(--red); stroke-width: 3; fill: none; }
+.diagram .ld-ring { stroke-dasharray: 3 3; }
+.diagram .ld-1 { animation: ld-1 var(--T) linear infinite; }
+@keyframes ld-1 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+.diagram .ld-2 { opacity: 0; animation: ld-2 var(--T) linear infinite; }
+@keyframes ld-2 {
+  0% { opacity: 0; }
+  76.25% { opacity: 0; }
+  77.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-3 { animation: ld-3 var(--T) linear infinite; }
+@keyframes ld-3 {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.1% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-4 { animation: ld-4 var(--T) linear infinite; }
+@keyframes ld-4 {
+  0% { opacity: 0; }
+  2.75% { opacity: 0; }
+  3.35% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-5 { animation: ld-5 var(--T) linear infinite; }
+@keyframes ld-5 {
+  0% { opacity: 0; }
+  19.5% { opacity: 0; }
+  20% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-6 { animation: ld-6 var(--T) linear infinite; }
+@keyframes ld-6 {
+  0% { opacity: 0; }
+  20.25% { opacity: 0; }
+  20.75% { opacity: 1; }
+  55% { opacity: 1; }
+  55.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-7 { opacity: 0; animation: ld-7 var(--T) linear infinite; }
+@keyframes ld-7 {
+  0% { opacity: 0; }
+  55.6% { opacity: 0; }
+  56.2% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-8 { animation: ld-8 var(--T) linear infinite; }
+@keyframes ld-8 {
+  0% { opacity: 0; }
+  4% { opacity: 0; }
+  4.6% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-9 { animation: ld-9 var(--T) linear infinite; }
+@keyframes ld-9 {
+  0% { opacity: 0; }
+  4.9% { opacity: 0; }
+  5.4% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-10 { animation: ld-10 var(--T) linear infinite; }
+@keyframes ld-10 {
+  0% { opacity: 0; }
+  5.1% { opacity: 0; }
+  5.6% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-11 { animation: ld-11 var(--T) linear infinite; }
+@keyframes ld-11 {
+  0% { opacity: 0; }
+  5.9% { opacity: 0; }
+  6.4% { opacity: 1; }
+  56.5% { opacity: 1; }
+  57.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-12 { opacity: 0; animation: ld-12 var(--T) linear infinite; }
+@keyframes ld-12 {
+  0% { opacity: 0; }
+  57.1% { opacity: 0; }
+  57.7% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-13 { animation: ld-13 var(--T) linear infinite; }
+@keyframes ld-13 {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7.1% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-14 { animation: ld-14 var(--T) linear infinite; }
+@keyframes ld-14 {
+  0% { opacity: 0; }
+  7.2% { opacity: 0; }
+  7.7% { opacity: 1; }
+  58% { opacity: 1; }
+  58.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-15 { opacity: 0; animation: ld-15 var(--T) linear infinite; }
+@keyframes ld-15 {
+  0% { opacity: 0; }
+  58.6% { opacity: 0; }
+  59.2% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-16 { animation: ld-16 var(--T) linear infinite; }
+@keyframes ld-16 {
+  0% { opacity: 0; }
+  7.2% { opacity: 0; }
+  7.8% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-17 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-17 var(--T) linear infinite; }
+@keyframes ld-17 {
+  0% { transform: scaleX(0); }
+  1.5% { transform: scaleX(0); }
+  6.5% { transform: scaleX(0.1); }
+  19.5% { transform: scaleX(1); }
+  75% { transform: scaleX(1); }
+  76.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-18 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-18 var(--T) linear infinite; }
+@keyframes ld-18 {
+  0% { transform: scaleX(0); }
+  4% { transform: scaleX(0); }
+  6.5% { transform: scaleX(0.05263157894736842); }
+  19.5% { transform: scaleX(1); }
+  75% { transform: scaleX(1); }
+  76.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-19 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-19 var(--T) linear infinite; }
+@keyframes ld-19 {
+  0% { transform: scaleX(0); }
+  6.5% { transform: scaleX(0); }
+  19.5% { transform: scaleX(1); }
+  75% { transform: scaleX(1); }
+  76.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-20 { animation: ld-20 var(--T) linear infinite; }
+@keyframes ld-20 {
+  0% { opacity: 0; }
+  7.2% { opacity: 0; }
+  7.7% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-21 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-21 var(--T) linear infinite; }
+@keyframes ld-21 {
+  0% { transform: scaleX(0); }
+  50.25% { transform: scaleX(0); }
+  55.25% { transform: scaleX(1); }
+  75% { transform: scaleX(1); }
+  76.5% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-22 { opacity: 0; animation: ld-22 var(--T) linear infinite; }
+@keyframes ld-22 {
+  0% { opacity: 0; }
+  55.4% { opacity: 0; }
+  55.9% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-23 { opacity: 0; animation: ld-23 var(--T) linear infinite; }
+@keyframes ld-23 {
+  0% { opacity: 0; }
+  57.1% { opacity: 0; }
+  57.6% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-24 { opacity: 0; animation: ld-24 var(--T) linear infinite; }
+@keyframes ld-24 {
+  0% { opacity: 0; }
+  58.6% { opacity: 0; }
+  59.1% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-25 { opacity: 0; animation: ld-25 var(--T) linear infinite; }
+@keyframes ld-25 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-26 { opacity: 0; animation: ld-26 var(--T) linear infinite; }
+@keyframes ld-26 {
+  0% { opacity: 0; }
+  35.5% { opacity: 0; }
+  36.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-27 { opacity: 0; animation: ld-27 var(--T) linear infinite; }
+@keyframes ld-27 {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  37.25% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-28 { opacity: 0; animation: ld-28 var(--T) linear infinite; }
+@keyframes ld-28 {
+  0% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-29 { opacity: 0; animation: ld-29 var(--T) linear infinite; }
+@keyframes ld-29 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  78.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-30 { opacity: 0; animation: ld-30 var(--T) linear infinite; }
+@keyframes ld-30 {
+  0% { opacity: 0; }
+  87.1% { opacity: 0; }
+  87.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-31 { opacity: 0; animation: ld-31 var(--T) linear infinite; }
+@keyframes ld-31 {
+  0% { opacity: 0; }
+  78.7% { opacity: 0; }
+  79.3% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-32 { opacity: 0; animation: ld-32 var(--T) linear infinite; }
+@keyframes ld-32 {
+  0% { opacity: 0; }
+  79.3% { opacity: 0; }
+  79.8% { opacity: 1; }
+  86.5% { opacity: 1; }
+  87.1% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-33 { opacity: 0; animation: ld-33 var(--T) linear infinite; }
+@keyframes ld-33 {
+  0% { opacity: 0; }
+  87.3% { opacity: 0; }
+  87.9% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-34 { opacity: 0; animation: ld-34 var(--T) linear infinite; }
+@keyframes ld-34 {
+  0% { opacity: 0; }
+  79.9% { opacity: 0; }
+  80.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-35 { opacity: 0; animation: ld-35 var(--T) linear infinite; }
+@keyframes ld-35 {
+  0% { opacity: 0; }
+  80.5% { opacity: 0; }
+  81% { opacity: 1; }
+  86.9% { opacity: 1; }
+  87.5% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-36 { opacity: 0; animation: ld-36 var(--T) linear infinite; }
+@keyframes ld-36 {
+  0% { opacity: 0; }
+  87.8% { opacity: 0; }
+  88.4% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-37 { opacity: 0; animation: ld-37 var(--T) linear infinite; }
+@keyframes ld-37 {
+  0% { opacity: 0; }
+  81.1% { opacity: 0; }
+  81.7% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-38 { opacity: 0; animation: ld-38 var(--T) linear infinite; }
+@keyframes ld-38 {
+  0% { opacity: 0; }
+  81.1% { opacity: 0; }
+  81.6% { opacity: 1; }
+  87.35% { opacity: 1; }
+  87.95% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-39 { opacity: 0; animation: ld-39 var(--T) linear infinite; }
+@keyframes ld-39 {
+  0% { opacity: 0; }
+  88.1% { opacity: 0; }
+  88.6% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-40 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-40 var(--T) linear infinite; }
+@keyframes ld-40 {
+  0% { transform: scaleX(0); }
+  77.5% { transform: scaleX(0); }
+  87.1% { transform: scaleX(1); }
+  98% { transform: scaleX(1); }
+  98.75% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-41 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-41 var(--T) linear infinite; }
+@keyframes ld-41 {
+  0% { transform: scaleX(0); }
+  78.7% { transform: scaleX(0); }
+  87.1% { transform: scaleX(1); }
+  98% { transform: scaleX(1); }
+  98.75% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-42 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-42 var(--T) linear infinite; }
+@keyframes ld-42 {
+  0% { transform: scaleX(0); }
+  79.9% { transform: scaleX(0); }
+  87.1% { transform: scaleX(1); }
+  98% { transform: scaleX(1); }
+  98.75% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-43 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-43 var(--T) linear infinite; }
+@keyframes ld-43 {
+  0% { transform: scaleX(0); }
+  81.1% { transform: scaleX(0); }
+  87.1% { transform: scaleX(1); }
+  98% { transform: scaleX(1); }
+  98.75% { transform: scaleX(0); }
+  100% { transform: scaleX(0); }
+}
+.diagram .ld-44 { opacity: 0; animation: ld-44 var(--T) linear infinite; }
+@keyframes ld-44 {
+  0% { opacity: 0; }
+  87.35% { opacity: 0; }
+  87.85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-45 { animation: ld-45 var(--T) linear infinite; }
+@keyframes ld-45 {
+  0% { opacity: 1; }
+  62.25% { opacity: 1; }
+  63.5% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+.diagram .ld-46 { animation: ld-46 var(--T) linear infinite; }
+@keyframes ld-46 {
+  0% { opacity: 1; }
+  56.2% { opacity: 1; }
+  56.8% { opacity: 0; }
+  98.75% { opacity: 0; }
+  100% { opacity: 1; opacity: 1; }
+}
+.diagram .ld-47 { opacity: 0; animation: ld-47 var(--T) linear infinite; }
+@keyframes ld-47 {
+  0% { opacity: 0; }
+  56.9% { opacity: 0; }
+  57.65% { opacity: 1; }
+  62.25% { opacity: 1; }
+  63.5% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-48 { opacity: 0; animation: ld-48 var(--T) linear infinite; }
+@keyframes ld-48 {
+  0% { opacity: 1; }
+  2.5% { opacity: 1; }
+  3% { opacity: 0; }
+  98.75% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+} 
+.diagram .ld-49 { opacity: 0; animation: ld-49 var(--T) linear infinite; }
+@keyframes ld-49 {
+  0% { opacity: 1; }
+  4.9% { opacity: 1; }
+  5.4% { opacity: 0; }
+  98.75% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+} 
+.diagram .ld-50 { animation: ld-50 var(--T) linear infinite; }
+@keyframes ld-50 {
+  0% { opacity: 0; }
+  2.6% { opacity: 0; }
+  3.2% { opacity: 1; }
+  56% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-51 { animation: ld-51 var(--T) linear infinite; }
+@keyframes ld-51 {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  5.6% { opacity: 1; }
+  58% { opacity: 1; }
+  58.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-52 { animation: ld-52 var(--T) linear infinite; }
+@keyframes ld-52 {
+  0% { opacity: 0; }
+  2.5% { opacity: 0; }
+  3% { opacity: 1; }
+  56% { opacity: 1; }
+  56.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-53 { animation: ld-53 var(--T) linear infinite; }
+@keyframes ld-53 {
+  0% { opacity: 0; }
+  4.9% { opacity: 0; }
+  5.4% { opacity: 1; }
+  57.75% { opacity: 1; }
+  58.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-54 { animation: ld-54 var(--T) linear infinite; }
+@keyframes ld-54 {
+  0% { opacity: 0; }
+  5.9% { opacity: 0; }
+  6.4% { opacity: 1; }
+  56.5% { opacity: 1; }
+  57% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-55 { animation: ld-55 var(--T) linear infinite; }
+@keyframes ld-55 {
+  0% { opacity: 0; }
+  7.2% { opacity: 0; }
+  7.7% { opacity: 1; }
+  58% { opacity: 1; }
+  58.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-56 { animation: ld-56 var(--T) linear infinite; }
+@keyframes ld-56 {
+  0% { opacity: 0; }
+  20.25% { opacity: 0; }
+  20.75% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-57 { opacity: 0; animation: ld-57 var(--T) linear infinite; }
+@keyframes ld-57 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  56.9% { opacity: 1; }
+  57.75% { opacity: 1; }
+  58.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-58 { opacity: 0; animation: ld-58 var(--T) linear infinite; }
+@keyframes ld-58 {
+  0% { opacity: 0; }
+  58% { opacity: 0; }
+  58.4% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60.1% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-59 { animation: ld-59 var(--T) linear infinite; }
+@keyframes ld-59 {
+  0% { opacity: 0; }
+  2.5% { opacity: 0; }
+  3% { opacity: 1; }
+  55.75% { opacity: 1; }
+  56.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-60 { animation: ld-60 var(--T) linear infinite; }
+@keyframes ld-60 {
+  0% { opacity: 0; }
+  4.9% { opacity: 0; }
+  5.4% { opacity: 1; }
+  57.75% { opacity: 1; }
+  58.35% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-61 { opacity: 0; animation: ld-61 var(--T) linear infinite; }
+@keyframes ld-61 {
+  0% { opacity: 0; }
+  56.5% { opacity: 0; }
+  56.9% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60.1% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-62 { opacity: 0; animation: ld-62 var(--T) linear infinite; }
+@keyframes ld-62 {
+  0% { transform: translate(552px, 198px); opacity: 0; }
+  1.5% { transform: translate(552px, 198px); opacity: 0; }
+  2.1% { opacity: 1; }
+  2.5% { transform: translate(612px, 152px); opacity: 1; }
+  3.1% { transform: translate(612px, 152px); opacity: 0; }
+  100% { transform: translate(612px, 152px); opacity: 0; }
+}
+.diagram .ld-63 { opacity: 0; animation: ld-63 var(--T) linear infinite; }
+@keyframes ld-63 {
+  0% { transform: translate(886px, 198px); opacity: 0; }
+  4% { transform: translate(886px, 198px); opacity: 0; }
+  4.6% { opacity: 1; }
+  4.9% { transform: translate(844px, 244px); opacity: 1; }
+  5.5% { transform: translate(844px, 244px); opacity: 0; }
+  100% { transform: translate(844px, 244px); opacity: 0; }
+}
+.diagram .ld-64 { opacity: 0; animation: ld-64 var(--T) linear infinite; }
+@keyframes ld-64 {
+  0% { transform: translate(886px, 198px); opacity: 0; }
+  5.1% { transform: translate(886px, 198px); opacity: 0; }
+  5.7% { opacity: 1; }
+  5.9% { transform: translate(850px, 162px); opacity: 1; }
+  6.5% { transform: translate(850px, 162px); opacity: 0; }
+  100% { transform: translate(850px, 162px); opacity: 0; }
+}
+.diagram .ld-65 { opacity: 0; animation: ld-65 var(--T) linear infinite; }
+@keyframes ld-65 {
+  0% { transform: translate(886px, 152px); opacity: 0; }
+  6.5% { transform: translate(886px, 152px); opacity: 0; }
+  7.1% { opacity: 1; }
+  7.2% { transform: translate(852px, 147px); opacity: 1; }
+  7.8% { transform: translate(852px, 147px); opacity: 0; }
+  100% { transform: translate(852px, 147px); opacity: 0; }
+}
+.diagram .ld-66 { opacity: 0; animation: ld-66 var(--T) linear infinite; }
+@keyframes ld-66 {
+  0% { transform: translate(552px, 198px); opacity: 0; }
+  19.5% { transform: translate(552px, 198px); opacity: 0; }
+  20.1% { opacity: 1; }
+  20.25% { transform: translate(606px, 240px); opacity: 1; }
+  20.85% { transform: translate(606px, 240px); opacity: 0; }
+  100% { transform: translate(606px, 240px); opacity: 0; }
+}
+.diagram .ld-67 { animation: ld-67 var(--T) linear infinite; }
+@keyframes ld-67 {
+  0% { opacity: 0; }
+  20.6% { opacity: 0; }
+  21.35% { opacity: 1; }
+  55.25% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-68 { animation: ld-68 var(--T) linear infinite; }
+@keyframes ld-68 {
+  0% { opacity: 0; }
+  20.75% { opacity: 0; }
+  21.5% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-69 { opacity: 0; animation: ld-69 var(--T) linear infinite; }
+@keyframes ld-69 {
+  0% { opacity: 0; }
+  27% { opacity: 0; }
+  28% { opacity: 1; }
+  50% { opacity: 1; }
+  50.5% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-70 { opacity: 0; animation: ld-70 var(--T) linear infinite; }
+@keyframes ld-70 {
+  0% { opacity: 0; }
+  27% { opacity: 0; }
+  28% { opacity: 1; }
+  35% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-71 { opacity: 0; animation: ld-71 var(--T) linear infinite; }
+@keyframes ld-71 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.5% { opacity: 1; }
+  55.25% { opacity: 1; }
+  55.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-72 { opacity: 0; animation: ld-72 var(--T) linear infinite; }
+@keyframes ld-72 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.25% { opacity: 1; }
+  55.25% { opacity: 1; }
+  55.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-73 { transform-box: fill-box; transform-origin: 0 50%; animation: ld-73 var(--T) linear infinite; }
+@keyframes ld-73 {
+  0% { transform: scaleX(0); }
+  50.25% { transform: scaleX(0); }
+  55.25% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .ld-74 { opacity: 0; animation: ld-74 var(--T) linear infinite; }
+@keyframes ld-74 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  50.5% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-75 { opacity: 0; animation: ld-75 var(--T) linear infinite; }
+@keyframes ld-75 {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  55.75% { opacity: 1; }
+  62.25% { opacity: 1; }
+  63.5% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-76 { opacity: 0; animation: ld-76 var(--T) linear infinite; }
+@keyframes ld-76 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-77 { opacity: 0; animation: ld-77 var(--T) linear infinite; }
+@keyframes ld-77 {
+  0% { transform: translate(905px, 168px); opacity: 0; }
+  64.75% { transform: translate(905px, 168px); opacity: 0; }
+  65.35% { opacity: 1; }
+  65.75% { transform: translate(718px, 168px); opacity: 1; }
+  66.35% { transform: translate(718px, 168px); opacity: 0; }
+  100% { transform: translate(718px, 168px); opacity: 0; }
+}
+.diagram .ld-78 { opacity: 0; animation: ld-78 var(--T) linear infinite; }
+@keyframes ld-78 {
+  0% { transform: translate(905px, 168px); opacity: 0; }
+  66.5% { transform: translate(905px, 168px); opacity: 0; }
+  67.1% { opacity: 1; }
+  67.25% { transform: translate(718px, 168px); }
+  68% { transform: translate(718px, 191px); }
+  68.75% { transform: translate(718px, 214px); opacity: 1; }
+  69.35% { transform: translate(718px, 214px); opacity: 0; }
+  100% { transform: translate(718px, 214px); opacity: 0; }
+}
+.diagram .ld-79 { opacity: 0; animation: ld-79 var(--T) linear infinite; }
+@keyframes ld-79 {
+  0% { transform: translate(905px, 168px); opacity: 0; }
+  69% { transform: translate(905px, 168px); opacity: 0; }
+  69.6% { opacity: 1; }
+  69.75% { transform: translate(718px, 168px); }
+  70.25% { transform: translate(718px, 191px); }
+  70.75% { transform: translate(718px, 214px); }
+  71.25% { transform: translate(718px, 237px); opacity: 1; }
+  71.85% { transform: translate(718px, 237px); opacity: 0; }
+  100% { transform: translate(718px, 237px); opacity: 0; }
+}
+.diagram .ld-80 { opacity: 0; animation: ld-80 var(--T) linear infinite; }
+@keyframes ld-80 {
+  0% { transform: translate(905px, 168px); opacity: 0; }
+  71.25% { transform: translate(905px, 168px); opacity: 0; }
+  71.85% { opacity: 1; }
+  71.9% { transform: translate(718px, 168px); opacity: 1; }
+  72.5% { transform: translate(718px, 168px); opacity: 0; }
+  100% { transform: translate(718px, 168px); opacity: 0; }
+}
+.diagram .ld-81 { opacity: 0; animation: ld-81 var(--T) linear infinite; }
+@keyframes ld-81 {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  66.15% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-82 { opacity: 0; animation: ld-82 var(--T) linear infinite; }
+@keyframes ld-82 {
+  0% { opacity: 0; }
+  68.75% { opacity: 0; }
+  69.15% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-83 { opacity: 0; animation: ld-83 var(--T) linear infinite; }
+@keyframes ld-83 {
+  0% { opacity: 0; }
+  71.25% { opacity: 0; }
+  71.65% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-84 { opacity: 0; animation: ld-84 var(--T) linear infinite; }
+@keyframes ld-84 {
+  0% { opacity: 0; }
+  71.9% { opacity: 0; }
+  72.3% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-85 { opacity: 0; animation: ld-85 var(--T) linear infinite; }
+@keyframes ld-85 {
+  0% { opacity: 0; }
+  77.75% { opacity: 0; }
+  78.35% { opacity: 1; }
+  87.1% { opacity: 1; }
+  87.85% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-86 { opacity: 0; animation: ld-86 var(--T) linear infinite; }
+@keyframes ld-86 {
+  0% { opacity: 0; }
+  78.95% { opacity: 0; }
+  79.55% { opacity: 1; }
+  87.85% { opacity: 1; }
+  88.6% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-87 { opacity: 0; animation: ld-87 var(--T) linear infinite; }
+@keyframes ld-87 {
+  0% { opacity: 0; }
+  80.15% { opacity: 0; }
+  80.75% { opacity: 1; }
+  87.85% { opacity: 1; }
+  88.6% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-88 { opacity: 0; animation: ld-88 var(--T) linear infinite; }
+@keyframes ld-88 {
+  0% { opacity: 0; }
+  81.35% { opacity: 0; }
+  81.95% { opacity: 1; }
+  87.85% { opacity: 1; }
+  88.6% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-89 { opacity: 0; animation: ld-89 var(--T) linear infinite; }
+@keyframes ld-89 {
+  0% { opacity: 0; }
+  88.1% { opacity: 0; }
+  88.7% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-90 { opacity: 0; animation: ld-90 var(--T) linear infinite; }
+@keyframes ld-90 {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89.1% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-91 { opacity: 0; animation: ld-91 var(--T) linear infinite; }
+@keyframes ld-91 {
+  0% { opacity: 0; }
+  88.9% { opacity: 0; }
+  89.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-92 { opacity: 0; animation: ld-92 var(--T) linear infinite; }
+@keyframes ld-92 {
+  0% { opacity: 0; }
+  87.6% { opacity: 0; }
+  88.2% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-93 { opacity: 0; animation: ld-93 var(--T) linear infinite; }
+@keyframes ld-93 {
+  0% { opacity: 0; }
+  82.25% { opacity: 0; }
+  83.25% { opacity: 1; }
+  88.75% { opacity: 1; }
+  89.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-94 { opacity: 0; animation: ld-94 var(--T) linear infinite; }
+@keyframes ld-94 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-95 { animation: ld-95 var(--T) linear infinite; }
+@keyframes ld-95 {
+  0% { opacity: 0; }
+  12.3% { opacity: 0; }
+  13.3% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .ld-96 { opacity: 0; animation: ld-96 var(--T) linear infinite; }
+@keyframes ld-96 {
+  0% { opacity: 0; }
+  27.5% { opacity: 0; }
+  28.25% { opacity: 1; }
+  32.5% { opacity: 1; }
+  33.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-97 { opacity: 0; animation: ld-97 var(--T) linear infinite; }
+@keyframes ld-97 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.5% { opacity: 1; }
+  39.5% { opacity: 1; }
+  40.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-98 { opacity: 0; animation: ld-98 var(--T) linear infinite; }
+@keyframes ld-98 {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  40.75% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-99 { opacity: 0; animation: ld-99 var(--T) linear infinite; }
+@keyframes ld-99 {
+  0% { opacity: 0; }
+  27.75% { opacity: 0; }
+  28.5% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-100 { opacity: 0; animation: ld-100 var(--T) linear infinite; }
+@keyframes ld-100 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  33.75% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-101 { opacity: 0; animation: ld-101 var(--T) linear infinite; }
+@keyframes ld-101 {
+  0% { opacity: 0; }
+  40.25% { opacity: 0; }
+  41% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-102 { opacity: 0; animation: ld-102 var(--T) linear infinite; }
+@keyframes ld-102 {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  43% { opacity: 1; }
+  49.25% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-103 { opacity: 0; animation: ld-103 var(--T) linear infinite; }
+@keyframes ld-103 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26% { opacity: 1; }
+  50% { opacity: 1; }
+  50.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-104 { opacity: 0; animation: ld-104 var(--T) linear infinite; }
+@keyframes ld-104 {
+  0% { opacity: 0; }
+  55.5% { opacity: 0; }
+  56.5% { opacity: 1; }
+  62.25% { opacity: 1; }
+  63.25% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-105 { opacity: 0; animation: ld-105 var(--T) linear infinite; }
+@keyframes ld-105 {
+  0% { opacity: 0; }
+  64.5% { opacity: 0; }
+  65.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-106 { opacity: 0; animation: ld-106 var(--T) linear infinite; }
+@keyframes ld-106 {
+  0% { opacity: 0; }
+  65.6% { opacity: 0; }
+  66.35% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-107 { opacity: 0; animation: ld-107 var(--T) linear infinite; }
+@keyframes ld-107 {
+  0% { opacity: 0; }
+  66.7% { opacity: 0; }
+  67.45% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-108 { opacity: 0; animation: ld-108 var(--T) linear infinite; }
+@keyframes ld-108 {
+  0% { opacity: 0; }
+  67.8% { opacity: 0; }
+  68.55% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-109 { opacity: 0; animation: ld-109 var(--T) linear infinite; }
+@keyframes ld-109 {
+  0% { opacity: 0; }
+  68.9% { opacity: 0; }
+  69.65% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-110 { opacity: 0; animation: ld-110 var(--T) linear infinite; }
+@keyframes ld-110 {
+  0% { opacity: 0; }
+  70% { opacity: 0; }
+  70.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-111 { opacity: 0; animation: ld-111 var(--T) linear infinite; }
+@keyframes ld-111 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-112 { opacity: 0; animation: ld-112 var(--T) linear infinite; }
+@keyframes ld-112 {
+  0% { opacity: 0; }
+  83% { opacity: 0; }
+  84% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-113 { opacity: 0; animation: ld-113 var(--T) linear infinite; }
+@keyframes ld-113 {
+  0% { opacity: 0; }
+  89.5% { opacity: 0; }
+  90.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-114 { opacity: 0; animation: ld-114 var(--T) linear infinite; }
+@keyframes ld-114 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+.diagram .ld-115 { opacity: 0; animation: ld-115 var(--T) linear infinite; }
+@keyframes ld-115 {
+  0% { opacity: 0; }
+  93% { opacity: 0; }
+  93.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+} 
+</style>
+<g class="stage">
+<rect class="box" x="30" y="116" width="450" height="96" rx="10"/>
+<rect class="box" x="30" y="217" width="450" height="96" rx="10"/>
+<rect class="box" x="30" y="318" width="450" height="72" rx="10"/>
+<rect class="box" x="30" y="395" width="450" height="56" rx="10"/>
+<g class="ld-1"><circle class="f-panel-2 s-line" cx="44" cy="129" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="133">A</text><text class="ld-h" x="58" y="134">back-office script</text><text class="tiny end" x="470" y="133">pid 14562 · xid 165763</text><circle class="f-panel-2 s-line" cx="44" cy="230" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="234">B</text><text class="ld-h" x="58" y="235">warehouse job</text><text class="tiny end" x="470" y="234">pid 14564 · xid 165764</text><circle class="f-panel-2 s-line" cx="44" cy="331" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="335">C</text><text class="ld-h" x="58" y="336">shop app</text><text class="tiny end" x="470" y="335">pid 14563 · xid 165765</text><circle class="f-panel-2 s-line" cx="44" cy="408" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="412">D</text><text class="ld-h" x="58" y="413">support screen</text><text class="tiny end" x="470" y="412">pid 14565</text><rect class="f-panel-2" x="46" y="200" width="424" height="6" rx="3"/><line class="ld-tick" x1="142.4" y1="200" x2="142.4" y2="206"/><line class="ld-tick" x1="238.7" y1="200" x2="238.7" y2="206"/><line class="ld-tick" x1="335.1" y1="200" x2="335.1" y2="206"/><line class="ld-tick" x1="431.5" y1="200" x2="431.5" y2="206"/><rect class="f-panel-2" x="46" y="301" width="424" height="6" rx="3"/><line class="ld-tick" x1="142.4" y1="301" x2="142.4" y2="307"/><line class="ld-tick" x1="238.7" y1="301" x2="238.7" y2="307"/><line class="ld-tick" x1="335.1" y1="301" x2="335.1" y2="307"/><line class="ld-tick" x1="431.5" y1="301" x2="431.5" y2="307"/><rect class="f-panel-2" x="46" y="376" width="424" height="6" rx="3"/><line class="ld-tick" x1="142.4" y1="376" x2="142.4" y2="382"/><line class="ld-tick" x1="238.7" y1="376" x2="238.7" y2="382"/><line class="ld-tick" x1="335.1" y1="376" x2="335.1" y2="382"/><line class="ld-tick" x1="431.5" y1="376" x2="431.5" y2="382"/><rect class="f-panel-2" x="46" y="438" width="424" height="6" rx="3"/><line class="ld-tick" x1="142.4" y1="438" x2="142.4" y2="444"/><line class="ld-tick" x1="238.7" y1="438" x2="238.7" y2="444"/><line class="ld-tick" x1="335.1" y1="438" x2="335.1" y2="444"/><line class="ld-tick" x1="431.5" y1="438" x2="431.5" y2="444"/><text class="tiny" x="46" y="463">0 s</text><text class="tiny mid" x="142.4" y="463">5</text><text class="tiny mid" x="238.7" y="463">10</text><text class="tiny mid" x="335.1" y="463">15</text><text class="tiny mid" x="431.5" y="463">20 s</text><g class="ld-3"><text class="ld-q mono f-ink" x="42" y="151">BEGIN; UPDATE orders SET status = 'cancelled' WHERE id = 497003;</text></g><g class="ld-4"><text class="ld-q mono f-green" x="42" y="165">UPDATE 1</text><text class="ld-q f-orange" x="104" y="165">… then idle in transaction: no COMMIT</text></g><g class="ld-5"><text class="ld-q mono f-ink" x="42" y="179">UPDATE orders SET status = 'cancelled' WHERE id = 499846;</text></g><g class="ld-6"><text class="ld-q f-amber-ink" x="42" y="193">… waits · Lock: transactionid</text></g><g class="ld-7"><text class="ld-q mono f-red ld-b" x="42" y="193">ERROR:  deadlock detected</text><text class="ld-q f-red" x="214" y="193">· SQLSTATE 40P01 · after 1.0 s</text></g><g class="ld-8"><text class="ld-q mono f-ink" x="42" y="252">BEGIN; UPDATE orders SET status = 'shipped' WHERE id = 499846;</text></g><g class="ld-9"><text class="ld-q mono f-green" x="42" y="266">UPDATE 1</text></g><g class="ld-10"><text class="ld-q mono f-ink" x="42" y="280">UPDATE orders SET status = 'shipped' WHERE id = 497003;</text></g><g class="ld-11"><text class="ld-q f-amber-ink" x="42" y="294">… waits · Lock: transactionid</text></g><g class="ld-12"><text class="ld-q mono f-green" x="42" y="294">UPDATE 1</text><text class="ld-q f-green" x="104" y="294">after 20.0 s, then COMMIT</text></g><g class="ld-13"><text class="ld-q mono f-ink" x="42" y="353">UPDATE orders SET shipping_country = 'TH' WHERE id = 497003;</text></g><g class="ld-14"><text class="ld-q f-amber-ink" x="42" y="367">… waits · Lock: tuple</text></g><g class="ld-15"><text class="ld-q mono f-green" x="42" y="367">UPDATE 1</text><text class="ld-q f-green" x="104" y="367">after 19.0 s</text></g><g class="ld-16"><text class="ld-q mono f-ink" x="42" y="430">SELECT id, status FROM orders WHERE id = 497003;</text><text class="ld-q mono f-green" x="376" y="430">→ paid</text></g><rect class="f-orange ld-17" x="46" y="200" width="385.45" height="6"/><rect class="f-amber ld-18" x="65.27" y="301" width="366.18" height="6"/><rect class="f-amber ld-19" x="84.55" y="376" width="346.91" height="6"/><g class="ld-20"><rect class="f-blue" x="103.82" y="438" width="4.82" height="6"/></g><g class="ld-25"><rect class="f-amber ld-21" x="431.45" y="200" width="19.27" height="6"/><rect class="f-amber ld-21" x="431.45" y="301" width="19.27" height="6"/><rect class="f-amber ld-21" x="431.45" y="376" width="19.27" height="6"/><g class="ld-22"><rect class="f-red" x="450.73" y="200" width="13.49" height="6"/></g><g class="ld-23"><rect class="f-green" x="450.73" y="301" width="19.27" height="6"/></g><g class="ld-24"><rect class="f-green" x="450.73" y="376" width="19.27" height="6"/></g></g><g class="ld-26"><rect class="none s-blue" x="31" y="396" width="448" height="54" rx="9.5" stroke-width="2"/></g><g class="ld-27"><text class="tiny sb f-blue" x="166" y="413">not blocked: it reads the committed row</text></g></g>
+<g class="ld-2"><circle class="f-panel-2 s-line" cx="44" cy="129" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="133">R</text><text class="ld-h" x="58" y="134">nightly report</text><text class="tiny end" x="470" y="133">pid 14454</text><circle class="f-panel-2 s-line" cx="44" cy="230" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="234">E</text><text class="ld-h" x="58" y="235">deploy: migration</text><text class="tiny end" x="470" y="234">pid 14455</text><circle class="f-panel-2 s-line" cx="44" cy="331" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="335">F</text><text class="ld-h" x="58" y="336">shop app</text><text class="tiny end" x="470" y="335">pid 14456</text><circle class="f-panel-2 s-line" cx="44" cy="408" r="8.5" stroke-width="1.2"/><text class="ld-badge mid" x="44" y="412">G</text><text class="ld-h" x="58" y="413">support screen</text><text class="tiny end" x="470" y="412">pid 14457</text><rect class="f-panel-2" x="46" y="200" width="424" height="6" rx="3"/><line class="ld-tick" x1="140.2" y1="200" x2="140.2" y2="206"/><line class="ld-tick" x1="234.4" y1="200" x2="234.4" y2="206"/><line class="ld-tick" x1="328.7" y1="200" x2="328.7" y2="206"/><line class="ld-tick" x1="422.9" y1="200" x2="422.9" y2="206"/><rect class="f-panel-2" x="46" y="301" width="424" height="6" rx="3"/><line class="ld-tick" x1="140.2" y1="301" x2="140.2" y2="307"/><line class="ld-tick" x1="234.4" y1="301" x2="234.4" y2="307"/><line class="ld-tick" x1="328.7" y1="301" x2="328.7" y2="307"/><line class="ld-tick" x1="422.9" y1="301" x2="422.9" y2="307"/><rect class="f-panel-2" x="46" y="376" width="424" height="6" rx="3"/><line class="ld-tick" x1="140.2" y1="376" x2="140.2" y2="382"/><line class="ld-tick" x1="234.4" y1="376" x2="234.4" y2="382"/><line class="ld-tick" x1="328.7" y1="376" x2="328.7" y2="382"/><line class="ld-tick" x1="422.9" y1="376" x2="422.9" y2="382"/><rect class="f-panel-2" x="46" y="438" width="424" height="6" rx="3"/><line class="ld-tick" x1="140.2" y1="438" x2="140.2" y2="444"/><line class="ld-tick" x1="234.4" y1="438" x2="234.4" y2="444"/><line class="ld-tick" x1="328.7" y1="438" x2="328.7" y2="444"/><line class="ld-tick" x1="422.9" y1="438" x2="422.9" y2="444"/><text class="tiny" x="46" y="463">0 s</text><text class="tiny mid" x="140.2" y="463">2</text><text class="tiny mid" x="234.4" y="463">4</text><text class="tiny mid" x="328.7" y="463">6</text><text class="tiny mid" x="422.9" y="463">8 s</text><g class="ld-28"><text class="ld-q mono f-ink" x="42" y="151">BEGIN; SELECT count(*), sum(total_thb)</text><text class="ld-q mono f-ink" x="42" y="165">  FROM orders WHERE status = 'paid';</text></g><g class="ld-29"><text class="ld-q mono f-green" x="42" y="179">998 | 24746790.35</text><text class="ld-q f-orange" x="170" y="179">… then idle in transaction</text></g><g class="ld-30"><text class="ld-q mono f-ink" x="42" y="193">COMMIT;</text><text class="ld-q f-muted" x="100" y="193">at 8 s</text></g><g class="ld-31"><text class="ld-q mono f-ink" x="42" y="252">ALTER TABLE orders ADD COLUMN gift_note text;</text></g><g class="ld-32"><text class="ld-q f-amber-ink" x="42" y="266">… waits · Lock: relation (AccessExclusiveLock)</text></g><g class="ld-33"><text class="ld-q mono f-green" x="42" y="266">ALTER TABLE</text><text class="ld-q f-green" x="124" y="266">after 7.0 s, almost all of it waiting</text></g><g class="ld-34"><text class="ld-q mono f-ink" x="42" y="353">SELECT id, status FROM orders WHERE id = 497001;</text></g><g class="ld-35"><text class="ld-q f-amber-ink" x="42" y="367">… waits · Lock: relation (AccessShareLock)</text></g><g class="ld-36"><text class="ld-q mono f-green" x="42" y="367">497001 | paid</text><text class="ld-q f-green" x="144" y="367">after 6.0 s</text></g><g class="ld-37"><text class="ld-q mono f-ink" x="42" y="430">SELECT id, status FROM orders WHERE id = 497003;</text></g><g class="ld-38"><text class="ld-q f-amber-ink" x="376" y="430">… waits</text></g><g class="ld-39"><text class="ld-q f-green" x="376" y="430">after 5.0 s</text></g><rect class="f-orange ld-40" x="46" y="200" width="376.89" height="6"/><rect class="f-amber ld-41" x="93.11" y="301" width="329.78" height="6"/><rect class="f-amber ld-42" x="140.22" y="376" width="282.67" height="6"/><rect class="f-amber ld-43" x="187.33" y="438" width="235.56" height="6"/><g class="ld-44"><rect class="f-green" x="422.89" y="301" width="14.13" height="6"/><rect class="f-green" x="422.89" y="376" width="14.13" height="6"/><rect class="f-green" x="422.89" y="438" width="14.13" height="6"/></g></g>
+<g class="ld-1"><text class="ld-eb" x="30" y="106">SESSIONS · ONE RUN ON A LAPTOP · POSTGRESQL 18.6</text></g>
+<g class="ld-2"><text class="ld-eb" x="30" y="106">SESSIONS · A SCHEMA CHANGE, ANOTHER RUN</text></g>
+<rect class="box" x="496" y="116" width="434" height="162" rx="10"/>
+<g class="ld-45"><text class="ld-eb" x="496" y="106">ROW LOCKS · WHO WAITS FOR WHOM</text></g>
+<g class="ld-45"><text class="tiny" x="622" y="133">ctid</text><text class="tiny" x="690" y="133">id</text><text class="tiny" x="740" y="133">status</text><text class="tiny" x="792" y="133">xmax</text><text class="tiny sb f-teal" x="506" y="133">orders</text><rect class="ld-row" x="612" y="140" width="232" height="24" rx="6"/><text class="ld-q mono f-muted" x="622" y="156">(774,54)</text><text class="ld-q mono f-ink ld-b" x="690" y="156">497003</text><rect class="ld-row" x="612" y="232" width="232" height="24" rx="6"/><text class="ld-q mono f-muted" x="622" y="248">(2194,90)</text><text class="ld-q mono f-ink ld-b" x="690" y="248">499846</text><g class="ld-46"><text class="ld-q mono f-ink" x="740" y="156">paid</text><text class="ld-q mono f-ink" x="740" y="248">paid</text></g><g class="ld-47"><text class="ld-q mono f-green ld-b" x="740" y="156">shipped</text><text class="ld-q mono f-green ld-b" x="740" y="248">shipped</text></g><g class="ld-48"><text class="ld-q mono f-muted" x="792" y="156">0</text></g><g class="ld-49"><text class="ld-q mono f-muted" x="792" y="248">0</text></g><g class="ld-50"><text class="ld-q mono f-orange ld-b" x="792" y="156">165763</text></g><g class="ld-51"><text class="ld-q mono f-orange ld-b" x="792" y="248">165764</text></g><circle class="f-panel-2 s-line" cx="552" cy="198" r="13" stroke-width="1.5"/><text class="label mid" x="552" y="203">A</text><text class="tiny mid" x="552" y="225">back-office</text><circle class="f-panel-2 s-line" cx="886" cy="198" r="13" stroke-width="1.5"/><text class="label mid" x="886" y="203">B</text><text class="tiny mid" x="886" y="225">warehouse</text><circle class="f-panel-2 s-line" cx="886" cy="152" r="13" stroke-width="1.5"/><text class="label mid" x="886" y="157">C</text><text class="tiny mid" x="886" y="134">shop app</text><g class="ld-52"><line class="ld-hold" x1="563.9" y1="188.9" x2="605.7" y2="156.9"/></g><g class="ld-53"><line class="ld-hold" x1="875.9" y1="209.1" x2="849.4" y2="238.1"/></g><g class="ld-54"><line class="ld-wait" x1="875.1" y1="187.7" x2="847.4" y2="161.4" marker-end="url(#ah-amber)"/></g><g class="ld-55"><line class="ld-wait" x1="871.1" y1="150.1" x2="848" y2="147.2" marker-end="url(#ah-amber)"/></g><g class="ld-56"><line class="ld-wait" x1="564.1" y1="206.8" x2="608.4" y2="238.8" marker-end="url(#ah-amber)"/></g><g class="ld-57"><line class="ld-hold" x1="875.1" y1="187.7" x2="847.4" y2="161.4"/></g><g class="ld-58"><line class="ld-hold" x1="871.1" y1="150.1" x2="848" y2="147.2"/></g><g class="ld-59"><path class="none s-orange" d="M608.4 150.5 v-3 a3.6 3.6 0 0 1 7.2 0 v3" stroke-width="1.9"/><rect class="f-orange" x="606" y="150.5" width="12" height="9.5" rx="2"/><circle class="f-bg" cx="612" cy="154.8" r="1.4"/></g><g class="ld-60"><path class="none s-orange" d="M840.4 242.5 v-3 a3.6 3.6 0 0 1 7.2 0 v3" stroke-width="1.9"/><rect class="f-orange" x="838" y="242.5" width="12" height="9.5" rx="2"/><circle class="f-bg" cx="844" cy="246.8" r="1.4"/></g><g class="ld-61"><path class="none s-orange" d="M840.4 150.5 v-3 a3.6 3.6 0 0 1 7.2 0 v3" stroke-width="1.9"/><rect class="f-orange" x="838" y="150.5" width="12" height="9.5" rx="2"/><circle class="f-bg" cx="844" cy="154.8" r="1.4"/></g><circle class="pkt f-purple ld-62" cx="0" cy="0" r="6"/><circle class="pkt f-purple ld-63" cx="0" cy="0" r="6"/><circle class="pkt f-purple ld-64" cx="0" cy="0" r="6"/><circle class="pkt f-purple ld-65" cx="0" cy="0" r="6"/><circle class="pkt f-purple ld-66" cx="0" cy="0" r="6"/><g class="ld-67"><line class="ld-cyc" x1="563.9" y1="188.9" x2="605.7" y2="156.9"/><line class="ld-cyc" x1="875.1" y1="187.7" x2="847.4" y2="161.4" marker-end="url(#ah-red)"/><line class="ld-cyc" x1="875.9" y1="209.1" x2="849.4" y2="238.1"/><line class="ld-cyc" x1="564.1" y1="206.8" x2="608.4" y2="238.8" marker-end="url(#ah-red)"/></g><g class="ld-68"><text class="ld-h mid f-red" x="728" y="203">deadlock: a cycle</text><text class="tiny mid f-red" x="728" y="218">A waits for B, and B waits for A</text></g><g class="ld-69"><text class="tiny mid sb f-orange" x="728" y="181">row lock = xmax in the row: A’s xid</text></g><g class="ld-70"><rect class="f-orange-soft s-orange" x="787" y="142" width="50" height="20" rx="4" stroke-width="1.5"/></g><g class="ld-71"><text class="ld-h mid f-amber-ink" x="728" y="199">deadlock_timeout = 1s</text><rect class="f-panel-2" x="668" y="207" width="120" height="6" rx="3"/></g><g class="ld-72"><rect class="f-amber ld-73" x="668" y="207" width="120" height="6" rx="3"/></g><g class="ld-74"><circle class="none s-amber ld-ring" cx="552" cy="198" r="18" stroke-width="3"/></g><g class="ld-75"><text class="ld-h mid f-red" x="728" y="199">check finds the cycle: A aborted</text><text class="tiny mid f-green" x="728" y="214">its locks go; B, then C, get row 497003</text></g><g class="ld-75"><circle class="f-red-soft s-red" cx="552" cy="198" r="13" stroke-width="2"/><text class="label mid f-red" x="552" y="203">✕</text></g></g>
+<g class="ld-76"><text class="ld-eb" x="496" y="106">A JOB QUEUE · FOR UPDATE SKIP LOCKED</text></g>
+<g class="ld-76"><text class="ld-q mono f-ink" x="506" y="134">SELECT id FROM orders WHERE status = 'paid'</text><text class="ld-q mono f-ink" x="506" y="148">ORDER BY id LIMIT 1 FOR UPDATE SKIP LOCKED;</text><text class="tiny end" x="920" y="134">3 packers, another run</text><rect class="ld-row" x="560" y="158" width="152" height="19" rx="5"/><text class="ld-q mono f-ink ld-b" x="582" y="172">497001</text><text class="ld-q mono f-muted" x="640" y="172">paid</text><rect class="ld-row" x="560" y="181" width="152" height="19" rx="5"/><text class="ld-q mono f-ink ld-b" x="582" y="195">497003</text><text class="ld-q mono f-muted" x="640" y="195">paid</text><rect class="ld-row" x="560" y="204" width="152" height="19" rx="5"/><text class="ld-q mono f-ink ld-b" x="582" y="218">497005</text><text class="ld-q mono f-muted" x="640" y="218">paid</text><rect class="ld-row" x="560" y="227" width="152" height="19" rx="5"/><text class="ld-q mono f-ink ld-b" x="582" y="241">497008</text><text class="ld-q mono f-muted" x="640" y="241">paid</text><path class="none s-orange" d="M566.94 187.725 v-2.55 a3.06 3.06 0 0 1 6.12 0 v2.55" stroke-width="1.615"/><rect class="f-orange" x="564.9" y="187.725" width="10.2" height="8.075" rx="1.7"/><circle class="f-bg" cx="570" cy="191.38" r="1.19"/><text class="tiny f-orange" x="722" y="195">back-office (UPDATE, open)</text><circle class="pkt f-blue ld-77" cx="0" cy="0" r="6"/><circle class="pkt f-blue ld-78" cx="0" cy="0" r="6"/><circle class="pkt f-blue ld-79" cx="0" cy="0" r="6"/><circle class="pkt f-red ld-80" cx="0" cy="0" r="6"/><g class="ld-81"><path class="none s-orange" d="M566.94 164.725 v-2.55 a3.06 3.06 0 0 1 6.12 0 v2.55" stroke-width="1.615"/><rect class="f-orange" x="564.9" y="164.725" width="10.2" height="8.075" rx="1.7"/><circle class="f-bg" cx="570" cy="168.38" r="1.19"/><text class="tiny sb f-orange" x="722" y="172">packer-1 got it</text></g><g class="ld-82"><path class="none s-orange" d="M566.94 210.725 v-2.55 a3.06 3.06 0 0 1 6.12 0 v2.55" stroke-width="1.615"/><rect class="f-orange" x="564.9" y="210.725" width="10.2" height="8.075" rx="1.7"/><circle class="f-bg" cx="570" cy="214.38" r="1.19"/><text class="tiny sb f-orange" x="722" y="218">packer-2: skipped 2 locked rows</text></g><g class="ld-83"><path class="none s-orange" d="M566.94 233.725 v-2.55 a3.06 3.06 0 0 1 6.12 0 v2.55" stroke-width="1.615"/><rect class="f-orange" x="564.9" y="233.725" width="10.2" height="8.075" rx="1.7"/><circle class="f-bg" cx="570" cy="237.38" r="1.19"/><text class="tiny sb f-orange" x="722" y="241">packer-3: skipped 3</text></g><g class="ld-84"><text class="tiny sb f-red" x="506" y="266">A 4th packer used NOWAIT instead: ERROR 55P03 at 497001, at once</text></g></g>
+<g class="ld-2"><text class="ld-eb" x="496" y="106">TABLE LOCKS ON orders · pg_locks AT 5 s</text></g>
+<g class="ld-2"><rect class="ld-row" x="508" y="140" width="80" height="56" rx="6"/><text class="ld-h mid f-teal" x="548" y="160">orders</text><text class="tiny mid" x="548" y="176">the table</text><path class="none s-orange" d="M544.4 186.5 v-3 a3.6 3.6 0 0 1 7.2 0 v3" stroke-width="1.9"/><rect class="f-orange" x="542" y="186.5" width="12" height="9.5" rx="2"/><circle class="f-bg" cx="548" cy="190.8" r="1.4"/><text class="tiny" x="614" y="134">app</text><text class="tiny" x="670" y="134">mode</text><text class="tiny mid" x="822" y="134">granted</text><text class="tiny end" x="918" y="134">blocked by</text><g class="ld-85"><rect class="f-orange-soft s-orange" x="608" y="146" width="316" height="19" rx="5" stroke-width="1"/><text class="tiny sb f-ink" x="614" y="160">report</text><text class="ld-q mono f-ink" x="670" y="160">AccessShareLock</text><text class="ld-q mono mid ld-b f-orange" x="822" y="160">t</text><text class="ld-q mono end f-ink" x="918" y="160">{}</text></g><g class="ld-85"><line class="ld-hold" x1="606" y1="156" x2="594" y2="168"/></g><g class="ld-86"><rect class="f-amber-soft s-amber" x="608" y="168" width="316" height="19" rx="5" stroke-width="1"/><text class="tiny sb f-ink" x="614" y="182">deploy</text><text class="ld-q mono f-ink" x="670" y="182">AccessExclusiveLock</text><text class="ld-q mono mid ld-b f-amber-ink" x="822" y="182">f</text><text class="ld-q mono end f-ink" x="918" y="182">{14454}</text></g><g class="ld-86"><line class="ld-wait" x1="606" y1="178" x2="594" y2="168" marker-end="url(#ah-amber)"/></g><g class="ld-87"><rect class="f-amber-soft s-amber" x="608" y="190" width="316" height="19" rx="5" stroke-width="1"/><text class="tiny sb f-ink" x="614" y="204">shop-app</text><text class="ld-q mono f-ink" x="670" y="204">AccessShareLock</text><text class="ld-q mono mid ld-b f-amber-ink" x="822" y="204">f</text><text class="ld-q mono end f-ink" x="918" y="204">{14455}</text></g><g class="ld-87"><line class="ld-wait" x1="606" y1="200" x2="594" y2="168" marker-end="url(#ah-amber)"/></g><g class="ld-88"><rect class="f-amber-soft s-amber" x="608" y="212" width="316" height="19" rx="5" stroke-width="1"/><text class="tiny sb f-ink" x="614" y="226">support</text><text class="ld-q mono f-ink" x="670" y="226">AccessShareLock</text><text class="ld-q mono mid ld-b f-amber-ink" x="822" y="226">f</text><text class="ld-q mono end f-ink" x="918" y="226">{14455}</text></g><g class="ld-88"><line class="ld-wait" x1="606" y1="222" x2="594" y2="168" marker-end="url(#ah-amber)"/></g><g class="ld-89"><rect class="f-green-soft s-green" x="608" y="168" width="316" height="19" rx="5" stroke-width="1"/><text class="tiny sb f-ink" x="614" y="182">deploy</text><text class="ld-q f-green" x="670" y="182">ALTER TABLE done after 7.0 s</text></g><g class="ld-90"><rect class="f-green-soft s-green" x="608" y="190" width="316" height="19" rx="5" stroke-width="1"/><text class="tiny sb f-ink" x="614" y="204">shop-app</text><text class="ld-q f-green" x="670" y="204">read after 6.0 s</text></g><g class="ld-91"><rect class="f-green-soft s-green" x="608" y="212" width="316" height="19" rx="5" stroke-width="1"/><text class="tiny sb f-ink" x="614" y="226">support</text><text class="ld-q f-green" x="670" y="226">read after 5.0 s</text></g><g class="ld-92"><text class="tiny sb f-muted" x="614" y="160">report</text><text class="ld-q f-muted" x="670" y="160">COMMIT at 8 s releases the lock</text></g><g class="ld-93"><text class="tiny sb f-amber-ink" x="506" y="252">shop-app and support wait for deploy, not for the report:</text><text class="tiny f-amber-ink" x="506" y="266">a waiting ACCESS EXCLUSIVE request blocks every request behind it</text></g><g class="ld-94"><rect class="f-green-soft s-green" x="502" y="240" width="422" height="32" rx="6" stroke-width="1.2"/><text class="tiny sb f-green" x="510" y="253">Fix: SET lock_timeout = '2s' first. The ALTER gave up after 2.0 s (55P03),</text><text class="tiny f-green" x="510" y="266">reads waited 1.0 s at most, and the retry after the report took 2.6 ms</text></g></g>
+<rect class="box" x="496" y="288" width="434" height="163" rx="10"/>
+<g class="ld-95"><text class="ld-h" x="506" y="308">pg_stat_activity</text><text class="tiny" x="628" y="308">10 s into the run</text><text class="tiny" x="506" y="326">application_name</text><text class="tiny" x="604" y="326">state</text><text class="tiny" x="724" y="326">wait_event_type: wait_event</text><text class="tiny end" x="920" y="326">for</text><rect class="f-orange-soft" x="501" y="332" width="424" height="17" rx="4"/><text class="tiny sb f-ink" x="506" y="344">back-office</text><text class="ld-q f-orange" x="604" y="344">idle in transaction</text><text class="ld-q mono f-orange" x="724" y="344">Client: ClientRead</text><text class="ld-q mono end f-ink" x="920" y="344">10.0 s</text><text class="tiny sb f-ink" x="506" y="361">warehouse</text><text class="ld-q f-amber-ink" x="604" y="361">active</text><text class="ld-q mono f-amber-ink" x="724" y="361">Lock: transactionid</text><text class="ld-q mono end f-ink" x="920" y="361">9.0 s</text><text class="tiny sb f-ink" x="506" y="378">shop-app</text><text class="ld-q f-amber-ink" x="604" y="378">active</text><text class="ld-q mono f-amber-ink" x="724" y="378">Lock: tuple</text><text class="ld-q mono end f-ink" x="920" y="378">8.0 s</text><text class="tiny sb f-ink" x="506" y="395">support</text><text class="ld-q f-muted" x="604" y="395">idle</text><text class="ld-q mono f-muted" x="724" y="395">Client: ClientRead</text><text class="ld-q mono end f-ink" x="920" y="395">—</text><text class="tiny" x="506" y="420">The culprit does nothing: idle in transaction, still holding</text><text class="tiny" x="506" y="434">its row lock. The two writers wait on a lock, not on CPU or I/O.</text></g>
+<g class="ld-103"><text class="ld-h" x="506" y="306">pg_locks</text><text class="tiny" x="570" y="306">at 20.5 s: its transactionid and tuple rows</text><text class="tiny" x="506" y="322">application_name</text><text class="tiny" x="606" y="322">locktype</text><text class="tiny" x="680" y="322">xid / tuple</text><text class="tiny" x="746" y="322">mode</text><text class="tiny mid" x="832" y="322">granted</text><g class="ld-96"><rect class="f-orange-soft" x="501" y="325.5" width="424" height="39" rx="4"/></g><g class="ld-97"><rect class="f-amber-soft" x="501" y="364.5" width="424" height="39" rx="4"/></g><g class="ld-98"><rect class="f-red-soft" x="501" y="403.5" width="424" height="26" rx="4"/></g><text class="tiny sb f-ink" x="506" y="335">back-office</text><text class="ld-q f-ink" x="606" y="335">transactionid</text><text class="ld-q mono f-ink" x="680" y="335">165763</text><text class="ld-q f-ink" x="746" y="335">ExclusiveLock</text><text class="ld-q mono mid ld-b f-ink" x="832" y="335">t</text><text class="tiny sb f-ink" x="506" y="348">warehouse</text><text class="ld-q f-ink" x="606" y="348">transactionid</text><text class="ld-q mono f-ink" x="680" y="348">165764</text><text class="ld-q f-ink" x="746" y="348">ExclusiveLock</text><text class="ld-q mono mid ld-b f-ink" x="832" y="348">t</text><text class="tiny sb f-ink" x="506" y="361">shop-app</text><text class="ld-q f-ink" x="606" y="361">transactionid</text><text class="ld-q mono f-ink" x="680" y="361">165765</text><text class="ld-q f-ink" x="746" y="361">ExclusiveLock</text><text class="ld-q mono mid ld-b f-ink" x="832" y="361">t</text><text class="tiny sb f-ink" x="506" y="374">warehouse</text><text class="ld-q f-ink" x="606" y="374">tuple</text><text class="ld-q mono f-ink" x="680" y="374">(774,54)</text><text class="ld-q f-ink" x="746" y="374">ExclusiveLock</text><text class="ld-q mono mid ld-b f-ink" x="832" y="374">t</text><text class="tiny sb f-ink" x="506" y="387">warehouse</text><text class="ld-q f-ink" x="606" y="387">transactionid</text><text class="ld-q mono f-ink" x="680" y="387">165763</text><text class="ld-q f-ink" x="746" y="387">ShareLock</text><text class="ld-q mono mid ld-b f-amber-ink" x="832" y="387">f</text><text class="tiny sb f-ink" x="506" y="400">shop-app</text><text class="ld-q f-ink" x="606" y="400">tuple</text><text class="ld-q mono f-ink" x="680" y="400">(774,54)</text><text class="ld-q f-ink" x="746" y="400">ExclusiveLock</text><text class="ld-q mono mid ld-b f-amber-ink" x="832" y="400">f</text><text class="tiny sb f-ink" x="506" y="413">back-office</text><text class="ld-q f-ink" x="606" y="413">tuple</text><text class="ld-q mono f-ink" x="680" y="413">(2194,90)</text><text class="ld-q f-ink" x="746" y="413">ExclusiveLock</text><text class="ld-q mono mid ld-b f-ink" x="832" y="413">t</text><text class="tiny sb f-ink" x="506" y="426">back-office</text><text class="ld-q f-ink" x="606" y="426">transactionid</text><text class="ld-q mono f-ink" x="680" y="426">165764</text><text class="ld-q f-ink" x="746" y="426">ShareLock</text><text class="ld-q mono mid ld-b f-red" x="832" y="426">f</text><g class="ld-99"><text class="tiny f-orange" x="848" y="335">its own xid</text><text class="tiny f-orange" x="848" y="348">its own xid</text><text class="tiny f-orange" x="848" y="361">its own xid</text></g><g class="ld-100"><text class="tiny f-amber-ink" x="848" y="374">B: 1st in line</text><text class="tiny f-amber-ink" x="848" y="387">B waits for A</text><text class="tiny f-amber-ink" x="848" y="400">C: behind B</text></g><g class="ld-101"><text class="tiny f-red" x="848" y="413">A, on 499846</text><text class="tiny f-red" x="848" y="426">A waits for B</text></g><g class="ld-102"><text class="tiny sb f-ink" x="506" y="441">pg_blocking_pids:</text><text class="ld-q mono f-ink" x="612" y="441">A {14564} · B {14562} · C {14564}</text></g></g>
+<g class="ld-104"><text class="ld-h" x="506" y="308">What A saw</text><text class="tiny" x="588" y="308">1.0 s after it started waiting (psql, \errverbose: 40P01)</text><text class="ld-q mono f-red ld-b" x="506" y="330">ERROR:  deadlock detected</text><text class="ld-q mono f-ink" x="506" y="345">DETAIL:  Process 14562 waits for ShareLock on</text><text class="ld-q mono f-ink" x="524" y="360">transaction 165764; blocked by process 14564.</text><text class="ld-q mono f-ink" x="524" y="375">Process 14564 waits for ShareLock on transaction</text><text class="ld-q mono f-ink" x="524" y="390">165763; blocked by process 14562.</text><text class="ld-q mono f-muted" x="506" y="405">HINT:  See server log for query details.</text><text class="ld-q mono f-muted" x="506" y="420">CONTEXT:  while updating tuple (2194,90) in relation "orders"</text><text class="tiny" x="506" y="440">A rolls back; its UPDATE of 497003 is undone. Retry the whole transaction.</text></g>
+<g class="ld-111"><text class="ld-h" x="506" y="308">Prevention, measured</text><text class="tiny" x="656" y="308">more runs on the same data</text><g class="ld-105"><text class="tiny sb f-ink" x="506" y="330">Lock in id order:</text><text class="ld-q mono f-ink" x="600" y="330">ORDER BY id FOR UPDATE</text><text class="tiny end sb f-green" x="920" y="330">B waited 5.5 s, no cycle</text></g><g class="ld-106"><text class="ld-q mono f-ink" x="506" y="351">SET lock_timeout = '2s'</text><text class="tiny end sb f-green" x="920" y="351">C gave up after 2.0 s: 55P03</text></g><g class="ld-107"><text class="ld-q mono f-ink" x="506" y="372">SET statement_timeout = '3s'</text><text class="tiny end sb f-green" x="920" y="372">57014 after 3.0 s</text></g><g class="ld-108"><text class="ld-q mono f-ink" x="506" y="393">idle_in_transaction_session_timeout = '5s'</text><text class="tiny end sb f-green" x="920" y="393">B waited 4.0 s</text></g><g class="ld-109"><text class="ld-q mono f-ink" x="506" y="414">FOR UPDATE NOWAIT</text><text class="tiny end sb f-green" x="920" y="414">ERROR 55P03 at once</text></g><g class="ld-110"><text class="tiny sb f-ink" x="506" y="435">Still got 40P01?</text><text class="tiny end sb f-amber-ink" x="920" y="435">retry the whole transaction</text></g></g>
+<g class="ld-2"><text class="ld-h" x="506" y="308">MySQL 8.4 · InnoDB</text><text class="tiny" x="636" y="308">same orders rows, same interleavings</text><g class="ld-112"><text class="tiny sb f-ink" x="506" y="328">Deadlock:</text><text class="ld-q mono f-red" x="566" y="328">ERROR 1213 (40001)</text><text class="tiny f-ink" x="692" y="328">for A, 5 ms after it closed the cycle</text><text class="tiny f-ink" x="566" y="342">innodb_deadlock_detect = ON: found at once, no timer to wait out</text></g><g class="ld-113"><text class="tiny sb f-ink" x="506" y="362">Gap locks:</text><text class="ld-q mono f-ink" x="566" y="362">UPDATE … WHERE customer_id = 1050 AND status = 'paid'</text><text class="tiny" x="566" y="376">REPEATABLE READ: next-key locks on all 27 entries, and the gaps</text><rect class="f-orange-soft s-orange" x="587" y="384" width="14" height="18" rx="2" stroke-width="1" stroke-dasharray="3 2"/><rect class="f-orange-soft s-orange" x="675" y="384" width="14" height="18" rx="2" stroke-width="1" stroke-dasharray="3 2"/><rect class="f-orange-soft s-orange" x="749" y="384" width="14" height="18" rx="2" stroke-width="1" stroke-dasharray="3 2"/><rect class="f-orange-soft s-orange" x="843" y="384" width="14" height="18" rx="2" stroke-width="1" stroke-dasharray="3 2"/><rect class="ld-row" x="508" y="384" width="78" height="18" rx="4" stroke-width="1.2"/><text class="ld-c mono mid f-muted" x="547" y="397">1049, 499236</text><rect class="f-orange-soft s-orange" x="602" y="384" width="72" height="18" rx="4" stroke-width="1.2"/><text class="ld-c mono mid f-orange" x="638" y="397">1050, 59698</text><rect class="f-orange-soft s-orange" x="690" y="384" width="58" height="18" rx="4" stroke-width="1.2"/><text class="ld-c mono mid f-orange" x="719" y="397">+25 more</text><rect class="f-orange-soft s-orange" x="764" y="384" width="78" height="18" rx="4" stroke-width="1.2"/><text class="ld-c mono mid f-orange" x="803" y="397">1050, 499846</text><rect class="ld-row" x="858" y="384" width="62" height="18" rx="4" stroke-width="1.2"/><text class="ld-c mono mid f-muted" x="889" y="397">1051, 1257</text></g><g class="ld-114"><line class="ld-wait" x1="594" y1="408" x2="594" y2="404" marker-end="url(#ah-amber)"/><text class="tiny sb f-amber-ink" x="506" y="420">new order, customer 1049: waited 3.5 s</text><line class="ld-wait" x1="852" y1="408" x2="852" y2="404" marker-end="url(#ah-amber)"/><text class="tiny sb end f-amber-ink" x="920" y="420">customer 1050: waited 4.0 s</text></g><g class="ld-115"><text class="tiny f-green" x="506" y="436">customer 1051: 10 ms. PostgreSQL has no gap locks: both took under 8 ms</text></g></g>
+</g>
+</svg>

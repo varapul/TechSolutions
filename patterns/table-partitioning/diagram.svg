@@ -1,0 +1,1433 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Table Partitioning</title>
+<desc id="dg-desc">Table Partitioning. Split a large table into partitions by range, list or hash, so queries skip partitions and old data is dropped in an instant. Step 1, One table, slow cleanup: A week's report reads all 11,030 pages; deleting old months leaves dead rows and 87 MB of WAL. Step 2, Partition by month: Each month becomes a table of its own with its own indexes, and every row is routed by happened_at. Step 3, Pruning and retention: The week now reads 2 of 25 partitions, and retention detaches and drops 10 old months in 38 ms. Step 4, Keys, plans and limits: Unique keys must include happened_at, queries without it search every partition, all on one server.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Table Partitioning</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · One table, slow cleanup</text>
+  <text class="step on p1" x="40" y="518">1 · One table, slow cleanup</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Partition by month</text>
+  <text class="step on p2" x="262" y="518">2 · Partition by month</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Pruning and retention</text>
+  <text class="step on p3" x="484" y="518">3 · Pruning and retention</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Keys, plans and limits</text>
+  <text class="step on p4" x="706" y="518">4 · Keys, plans and limits</text>
+  <text class="caption p1" x="40" y="552">A week's report reads all 11,030 pages; deleting old months leaves dead rows and 87 MB of WAL.</text>
+  <text class="caption p2" x="40" y="552">Each month becomes a table of its own with its own indexes, and every row is routed by happened_at.</text>
+  <text class="caption p3" x="40" y="552">The week now reads 2 of 25 partitions, and retention detaches and drops 10 old months in 38 ms.</text>
+  <text class="caption p4" x="40" y="552">Unique keys must include happened_at, queries without it search every partition, all on one server.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Table Partitioning. Every number is from runs on PostgreSQL 18.6 (Acme Shop sample data; order_events =
+   1,500,000 rows, 11,030 heap pages, 86 MB, stored in happened_at order). Times are single runs on a laptop.
+   0-25%   one table: the week query sweeps all 11,030 pages (0.25-1.35 s), 16,408 rows on 122 pages; the retention
+           DELETE marks 639,726 rows on 4,704 pages dead (2.25-3.0 s), 70 MB of WAL; VACUUM (3.65-4.15 s) 17 MB,
+           4,703 pages empty but the file stays 11,030 pages
+   25-50%  CREATE TABLE ... PARTITION BY RANGE: 25 monthly partitions cascade in (5.35-6.1 s); INSERT ... SELECT
+           routes the rows (counts 6.85-7.85 s); order_events_2026_09 up close (7.85 s); a new event is routed to
+           order_events_2026_10 (8.5-9.2 s)
+   50-75%  the week again: 23 partitions pruned at planning (10.4 s), two seq scans, 1,052 pages; retention:
+           DETACH ... CONCURRENTLY (outlines 12.55-13.1 s) and DROP TABLE (cells leave 13.5-14.1 s), 38 ms, 159 kB WAL
+   75-100% WHERE order_id = 250000 searches all 15 partitions (15.3-16 s); the primary-key error and the limits
+           (16.75-18.4 s); everything fades out in the last half-second */
+.diagram .tp-v1{animation:tp-v1 var(--T) linear infinite}
+.diagram .tp-v2{opacity:0;animation:tp-v2 var(--T) linear infinite}
+.diagram .tp-v3{opacity:0;animation:tp-v3 var(--T) linear infinite}
+.diagram .tp-v4{opacity:0;animation:tp-v4 var(--T) linear infinite}
+.diagram .tp-v5{opacity:0;animation:tp-v5 var(--T) linear infinite}
+.diagram .tp-v6{opacity:0;animation:tp-v6 var(--T) linear infinite}
+.diagram .tp-v7{animation:tp-v7 var(--T) linear infinite}
+.diagram .tp-v8{opacity:0;animation:tp-v8 var(--T) linear infinite}
+.diagram .tp-v9{opacity:0;animation:tp-v9 var(--T) linear infinite}
+.diagram .tp-v10{opacity:0;animation:tp-v10 var(--T) linear infinite}
+.diagram .tp-v11{opacity:0;animation:tp-v11 var(--T) linear infinite}
+.diagram .tp-v12{opacity:0;animation:tp-v12 var(--T) linear infinite}
+.diagram .tp-v13{opacity:0;animation:tp-v13 var(--T) linear infinite}
+.diagram .tp-v14{opacity:0;animation:tp-v14 var(--T) linear infinite}
+.diagram .tp-v15{opacity:0;animation:tp-v15 var(--T) linear infinite}
+.diagram .tp-v16{opacity:0;animation:tp-v16 var(--T) linear infinite}
+.diagram .tp-v17{animation:tp-v17 var(--T) linear infinite}
+.diagram .tp-v18{opacity:0;animation:tp-v18 var(--T) linear infinite}
+.diagram .tp-v19{opacity:0;animation:tp-v19 var(--T) linear infinite}
+.diagram .tp-v20{opacity:0;animation:tp-v20 var(--T) linear infinite}
+.diagram .tp-v21{opacity:0;animation:tp-v21 var(--T) linear infinite}
+.diagram .tp-v22{opacity:0;animation:tp-v22 var(--T) linear infinite}
+.diagram .tp-v23{opacity:0;animation:tp-v23 var(--T) linear infinite}
+.diagram .tp-v24{opacity:0;animation:tp-v24 var(--T) linear infinite}
+.diagram .tp-v25{opacity:0;animation:tp-v25 var(--T) linear infinite}
+.diagram .tp-v26{opacity:0;animation:tp-v26 var(--T) linear infinite}
+.diagram .tp-g27{opacity:0;transform-box:fill-box;transform-origin:0 50%;animation:tp-g27 var(--T) linear infinite}
+.diagram .tp-k28{opacity:0;animation:tp-k28 var(--T) linear infinite}
+.diagram .tp-v29{animation:tp-v29 var(--T) linear infinite}
+.diagram .tp-v30{animation:tp-v30 var(--T) linear infinite}
+.diagram .tp-v31{animation:tp-v31 var(--T) linear infinite}
+.diagram .tp-g32{transform-box:fill-box;transform-origin:0 50%;animation:tp-g32 var(--T) linear infinite}
+.diagram .tp-v33{animation:tp-v33 var(--T) linear infinite}
+.diagram .tp-g34{opacity:0;transform-box:fill-box;transform-origin:0 50%;animation:tp-g34 var(--T) linear infinite}
+.diagram .tp-v35{opacity:0;animation:tp-v35 var(--T) linear infinite}
+.diagram .tp-v36{opacity:0;animation:tp-v36 var(--T) linear infinite}
+.diagram .tp-v37{opacity:0;animation:tp-v37 var(--T) linear infinite}
+.diagram .tp-v38{animation:tp-v38 var(--T) linear infinite}
+.diagram .tp-v39{opacity:0;animation:tp-v39 var(--T) linear infinite}
+.diagram .tp-v40{animation:tp-v40 var(--T) linear infinite}
+.diagram .tp-v41{animation:tp-v41 var(--T) linear infinite}
+.diagram .tp-v42{opacity:0;animation:tp-v42 var(--T) linear infinite}
+.diagram .tp-g43{transform-box:fill-box;transform-origin:0 50%;animation:tp-g43 var(--T) linear infinite}
+.diagram .tp-v44{animation:tp-v44 var(--T) linear infinite}
+.diagram .tp-g45{transform-box:fill-box;transform-origin:0 50%;animation:tp-g45 var(--T) linear infinite}
+.diagram .tp-v46{animation:tp-v46 var(--T) linear infinite}
+.diagram .tp-g47{transform-box:fill-box;transform-origin:0 50%;animation:tp-g47 var(--T) linear infinite}
+.diagram .tp-v48{animation:tp-v48 var(--T) linear infinite}
+.diagram .tp-v49{animation:tp-v49 var(--T) linear infinite}
+.diagram .tp-v50{animation:tp-v50 var(--T) linear infinite}
+.diagram .tp-v51{animation:tp-v51 var(--T) linear infinite}
+.diagram .tp-v52{animation:tp-v52 var(--T) linear infinite}
+.diagram .tp-v53{animation:tp-v53 var(--T) linear infinite}
+.diagram .tp-v54{animation:tp-v54 var(--T) linear infinite}
+.diagram .tp-v55{opacity:0;animation:tp-v55 var(--T) linear infinite}
+.diagram .tp-v56{opacity:0;animation:tp-v56 var(--T) linear infinite}
+.diagram .tp-v57{opacity:0;animation:tp-v57 var(--T) linear infinite}
+.diagram .tp-v58{opacity:0;animation:tp-v58 var(--T) linear infinite}
+.diagram .tp-v59{opacity:0;animation:tp-v59 var(--T) linear infinite}
+.diagram .tp-v60{opacity:0;animation:tp-v60 var(--T) linear infinite}
+.diagram .tp-v61{opacity:0;animation:tp-v61 var(--T) linear infinite}
+.diagram .tp-v62{opacity:0;animation:tp-v62 var(--T) linear infinite}
+.diagram .tp-v63{opacity:0;animation:tp-v63 var(--T) linear infinite}
+.diagram .tp-v64{opacity:0;animation:tp-v64 var(--T) linear infinite}
+.diagram .tp-v65{opacity:0;animation:tp-v65 var(--T) linear infinite}
+.diagram .tp-v66{opacity:0;animation:tp-v66 var(--T) linear infinite}
+.diagram .tp-v67{opacity:0;animation:tp-v67 var(--T) linear infinite}
+.diagram .tp-v68{opacity:0;animation:tp-v68 var(--T) linear infinite}
+.diagram .tp-v69{opacity:0;animation:tp-v69 var(--T) linear infinite}
+.diagram .tp-v70{opacity:0;animation:tp-v70 var(--T) linear infinite}
+.diagram .tp-v71{opacity:0;animation:tp-v71 var(--T) linear infinite}
+.diagram .tp-v72{opacity:0;animation:tp-v72 var(--T) linear infinite}
+.diagram .tp-v73{opacity:0;animation:tp-v73 var(--T) linear infinite}
+.diagram .tp-v74{opacity:0;animation:tp-v74 var(--T) linear infinite}
+.diagram .tp-v75{opacity:0;animation:tp-v75 var(--T) linear infinite}
+.diagram .tp-v76{opacity:0;animation:tp-v76 var(--T) linear infinite}
+.diagram .tp-v77{opacity:0;animation:tp-v77 var(--T) linear infinite}
+.diagram .tp-v78{opacity:0;animation:tp-v78 var(--T) linear infinite}
+.diagram .tp-v79{opacity:0;animation:tp-v79 var(--T) linear infinite}
+.diagram .tp-v80{opacity:0;animation:tp-v80 var(--T) linear infinite}
+.diagram .tp-v81{opacity:0;animation:tp-v81 var(--T) linear infinite}
+.diagram .tp-v82{opacity:0;animation:tp-v82 var(--T) linear infinite}
+.diagram .tp-v83{opacity:0;animation:tp-v83 var(--T) linear infinite}
+.diagram .tp-v84{opacity:0;animation:tp-v84 var(--T) linear infinite}
+.diagram .tp-v85{opacity:0;animation:tp-v85 var(--T) linear infinite}
+.diagram .tp-v86{opacity:0;animation:tp-v86 var(--T) linear infinite}
+.diagram .tp-v87{opacity:0;animation:tp-v87 var(--T) linear infinite}
+.diagram .tp-v88{opacity:0;animation:tp-v88 var(--T) linear infinite}
+.diagram .tp-v89{opacity:0;animation:tp-v89 var(--T) linear infinite}
+.diagram .tp-v90{opacity:0;animation:tp-v90 var(--T) linear infinite}
+.diagram .tp-v91{opacity:0;animation:tp-v91 var(--T) linear infinite}
+.diagram .tp-v92{opacity:0;animation:tp-v92 var(--T) linear infinite}
+.diagram .tp-v93{opacity:0;animation:tp-v93 var(--T) linear infinite}
+.diagram .tp-v94{opacity:0;animation:tp-v94 var(--T) linear infinite}
+.diagram .tp-v95{opacity:0;animation:tp-v95 var(--T) linear infinite}
+.diagram .tp-v96{opacity:0;animation:tp-v96 var(--T) linear infinite}
+.diagram .tp-v97{opacity:0;animation:tp-v97 var(--T) linear infinite}
+.diagram .tp-v98{opacity:0;animation:tp-v98 var(--T) linear infinite}
+.diagram .tp-v99{opacity:0;animation:tp-v99 var(--T) linear infinite}
+.diagram .tp-v100{opacity:0;animation:tp-v100 var(--T) linear infinite}
+.diagram .tp-v101{opacity:0;animation:tp-v101 var(--T) linear infinite}
+.diagram .tp-v102{opacity:0;animation:tp-v102 var(--T) linear infinite}
+.diagram .tp-v103{opacity:0;animation:tp-v103 var(--T) linear infinite}
+.diagram .tp-v104{opacity:0;animation:tp-v104 var(--T) linear infinite}
+.diagram .tp-v105{opacity:0;animation:tp-v105 var(--T) linear infinite}
+.diagram .tp-v106{opacity:0;animation:tp-v106 var(--T) linear infinite}
+.diagram .tp-v107{opacity:0;animation:tp-v107 var(--T) linear infinite}
+.diagram .tp-v108{opacity:0;animation:tp-v108 var(--T) linear infinite}
+.diagram .tp-v109{opacity:0;animation:tp-v109 var(--T) linear infinite}
+.diagram .tp-v110{opacity:0;animation:tp-v110 var(--T) linear infinite}
+.diagram .tp-v111{opacity:0;animation:tp-v111 var(--T) linear infinite}
+.diagram .tp-v112{opacity:0;animation:tp-v112 var(--T) linear infinite}
+.diagram .tp-v113{opacity:0;animation:tp-v113 var(--T) linear infinite}
+.diagram .tp-v114{opacity:0;animation:tp-v114 var(--T) linear infinite}
+.diagram .tp-v115{opacity:0;animation:tp-v115 var(--T) linear infinite}
+.diagram .tp-v116{opacity:0;animation:tp-v116 var(--T) linear infinite}
+.diagram .tp-v117{opacity:0;animation:tp-v117 var(--T) linear infinite}
+.diagram .tp-v118{opacity:0;animation:tp-v118 var(--T) linear infinite}
+.diagram .tp-v119{opacity:0;animation:tp-v119 var(--T) linear infinite}
+.diagram .tp-v120{opacity:0;animation:tp-v120 var(--T) linear infinite}
+.diagram .tp-v121{opacity:0;animation:tp-v121 var(--T) linear infinite}
+.diagram .tp-v122{opacity:0;animation:tp-v122 var(--T) linear infinite}
+.diagram .tp-v123{opacity:0;animation:tp-v123 var(--T) linear infinite}
+.diagram .tp-v124{opacity:0;animation:tp-v124 var(--T) linear infinite}
+.diagram .tp-v125{opacity:0;animation:tp-v125 var(--T) linear infinite}
+.diagram .tp-v126{opacity:0;animation:tp-v126 var(--T) linear infinite}
+.diagram .tp-v127{opacity:0;animation:tp-v127 var(--T) linear infinite}
+.diagram .tp-v128{opacity:0;animation:tp-v128 var(--T) linear infinite}
+.diagram .tp-k129{opacity:0;animation:tp-k129 var(--T) linear infinite}
+.diagram .tp-k130{opacity:0;animation:tp-k130 var(--T) linear infinite}
+.diagram .tp-k131{opacity:0;animation:tp-k131 var(--T) linear infinite}
+.diagram .tp-k132{opacity:0;animation:tp-k132 var(--T) linear infinite}
+.diagram .tp-k133{opacity:0;animation:tp-k133 var(--T) linear infinite}
+.diagram .tp-k134{opacity:0;animation:tp-k134 var(--T) linear infinite}
+.diagram .tp-k135{opacity:0;animation:tp-k135 var(--T) linear infinite}
+.diagram .tp-k136{opacity:0;animation:tp-k136 var(--T) linear infinite}
+.diagram .tp-k137{opacity:0;animation:tp-k137 var(--T) linear infinite}
+.diagram .tp-k138{opacity:0;animation:tp-k138 var(--T) linear infinite}
+.diagram .tp-v139{opacity:0;animation:tp-v139 var(--T) linear infinite}
+.diagram .tp-v140{opacity:0;animation:tp-v140 var(--T) linear infinite}
+.diagram .tp-v141{opacity:0;animation:tp-v141 var(--T) linear infinite}
+.diagram .tp-v142{opacity:0;animation:tp-v142 var(--T) linear infinite}
+.diagram .tp-v143{opacity:0;animation:tp-v143 var(--T) linear infinite}
+.diagram .tp-v144{opacity:0;animation:tp-v144 var(--T) linear infinite}
+.diagram .tp-v145{opacity:0;animation:tp-v145 var(--T) linear infinite}
+.diagram .tp-v146{opacity:0;animation:tp-v146 var(--T) linear infinite}
+@keyframes tp-v1 {
+  0% { opacity: 0; }
+  0.75% { opacity: 1; }
+  10% { opacity: 1; }
+  10.75% { opacity: 0; }
+  50% { opacity: 0; }
+  50.75% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v2 {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.5% { opacity: 1; }
+  17% { opacity: 1; }
+  17.75% { opacity: 0; }
+  62.25% { opacity: 0; }
+  63% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v3 {
+  0% { opacity: 0; }
+  17.75% { opacity: 0; }
+  18.5% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v4 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  40.75% { opacity: 1; }
+  41.5% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.5% { opacity: 1; }
+  98% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v5 {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42.25% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v6 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  82% { opacity: 1; }
+  82.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v7 {
+  0% { opacity: 0; }
+  0.75% { opacity: 1; }
+  10% { opacity: 1; }
+  10.75% { opacity: 0; }
+  50% { opacity: 0; }
+  50.75% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v8 {
+  0% { opacity: 0; }
+  10.75% { opacity: 0; }
+  11.5% { opacity: 1; }
+  17% { opacity: 1; }
+  17.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v9 {
+  0% { opacity: 0; }
+  17.75% { opacity: 0; }
+  18.5% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v10 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  31.5% { opacity: 1; }
+  32.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v11 {
+  0% { opacity: 0; }
+  32.25% { opacity: 0; }
+  33% { opacity: 1; }
+  40.75% { opacity: 1; }
+  41.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v12 {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42.25% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v13 {
+  0% { opacity: 0; }
+  62.25% { opacity: 0; }
+  63% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v14 {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  68% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v15 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  75.75% { opacity: 1; }
+  82% { opacity: 1; }
+  82.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v16 {
+  0% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.5% { opacity: 1; }
+  98% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v17 {
+  0% { opacity: 0; }
+  6.75% { opacity: 0; }
+  7.5% { opacity: 1; }
+  10% { opacity: 1; }
+  10.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v18 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  15.75% { opacity: 1; }
+  17% { opacity: 1; }
+  17.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v19 {
+  0% { opacity: 0; }
+  20.75% { opacity: 0; }
+  21.5% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v20 {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  30.75% { opacity: 1; }
+  31.5% { opacity: 1; }
+  32.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v21 {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40% { opacity: 1; }
+  40.75% { opacity: 1; }
+  41.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v22 {
+  0% { opacity: 0; }
+  46% { opacity: 0; }
+  46.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v23 {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.5% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v24 {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  71% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v25 {
+  0% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.5% { opacity: 1; }
+  82% { opacity: 1; }
+  82.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v26 {
+  0% { opacity: 0; }
+  84.25% { opacity: 0; }
+  85% { opacity: 1; }
+  98% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-g27 {
+  0% { opacity: 0; transform: scaleX(0); }
+  1% { opacity: 0; transform: scaleX(0); }
+  1.25% { opacity: 1; transform: scaleX(0); }
+  6.75% { transform: scaleX(1); }
+  10% { opacity: 1; }
+  11% { opacity: 0; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+@keyframes tp-k28 {
+  0% { transform: translate(180px, 0px); opacity: 0; }
+  1.25% { transform: translate(180px, 0px); opacity: 0; }
+  1.85% { opacity: 1; }
+  6.75% { transform: translate(920px, 0px); opacity: 1; }
+  7.35% { transform: translate(920px, 0px); opacity: 0; }
+  100% { transform: translate(920px, 0px); opacity: 0; }
+}
+@keyframes tp-v29 {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7.5% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v30 {
+  0% { opacity: 0; }
+  6.75% { opacity: 0; }
+  7.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v31 {
+  0% { opacity: 0; }
+  6.75% { opacity: 0; }
+  7.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-g32 {
+  0% { opacity: 0; transform: scaleX(0); }
+  11% { opacity: 0; transform: scaleX(0); }
+  11.25% { opacity: 1; transform: scaleX(0); }
+  15% { transform: scaleX(1); }
+  18.75% { opacity: 1; }
+  19.75% { opacity: 0; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+@keyframes tp-v33 {
+  0% { opacity: 0; }
+  14.75% { opacity: 0; }
+  15.75% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-g34 {
+  0% { opacity: 0; transform: scaleX(0); }
+  18% { opacity: 0; transform: scaleX(0); }
+  18.25% { opacity: 1; transform: scaleX(0); }
+  20.75% { transform: scaleX(1); opacity: 1; }
+  21.75% { opacity: 0; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+@keyframes tp-v35 {
+  0% { opacity: 0; }
+  19.75% { opacity: 0; }
+  20.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v36 {
+  0% { opacity: 0; }
+  20.25% { opacity: 0; }
+  21.25% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v37 {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.5% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v38 {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.5% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v39 {
+  0% { opacity: 0; }
+  1% { opacity: 1; }
+  11% { opacity: 1; }
+  12% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v40 {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.5% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v41 {
+  0% { opacity: 0; }
+  1% { opacity: 1; }
+  18.75% { opacity: 1; }
+  19.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v42 {
+  0% { opacity: 0; }
+  19.75% { opacity: 0; }
+  20.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-g43 {
+  0% { opacity: 0; transform: scaleX(0); }
+  11% { opacity: 0; transform: scaleX(0); }
+  11.25% { opacity: 1; transform: scaleX(0); }
+  15% { transform: scaleX(1); }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+@keyframes tp-v44 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-g45 {
+  0% { opacity: 0; transform: scaleX(0); }
+  11% { opacity: 0; transform: scaleX(0); }
+  11.25% { opacity: 1; transform: scaleX(0); }
+  15% { transform: scaleX(1); }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+@keyframes tp-v46 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-g47 {
+  0% { opacity: 0; transform: scaleX(0); }
+  18% { opacity: 0; transform: scaleX(0); }
+  18.25% { opacity: 1; transform: scaleX(0); }
+  20.75% { transform: scaleX(1); }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+@keyframes tp-v48 {
+  0% { opacity: 0; }
+  20.75% { opacity: 0; }
+  21.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v49 {
+  0% { opacity: 0; }
+  20.75% { opacity: 0; }
+  21.75% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v50 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v51 {
+  0% { opacity: 0; }
+  21% { opacity: 0; }
+  22% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v52 {
+  0% { opacity: 0; }
+  7% { opacity: 0; }
+  8% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v53 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v54 {
+  0% { opacity: 0; }
+  20.75% { opacity: 0; }
+  21.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v55 {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  55.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v56 {
+  0% { opacity: 0; }
+  70.25% { opacity: 0; }
+  71.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v57 {
+  0% { opacity: 0; }
+  34.25% { opacity: 0; }
+  35.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v58 {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v59 {
+  0% { opacity: 0; }
+  26.75% { opacity: 0; }
+  27.75% { opacity: 1; }
+  67.5% { opacity: 1; }
+  68.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v60 {
+  0% { opacity: 0; }
+  34.458% { opacity: 0; }
+  35.459% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v61 {
+  0% { opacity: 0; }
+  63.05% { opacity: 0; }
+  64.05% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v62 {
+  0% { opacity: 0; }
+  26.9% { opacity: 0; }
+  27.9% { opacity: 1; }
+  67.8% { opacity: 1; }
+  68.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v63 {
+  0% { opacity: 0; }
+  34.667% { opacity: 0; }
+  35.667% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v64 {
+  0% { opacity: 0; }
+  63.35% { opacity: 0; }
+  64.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v65 {
+  0% { opacity: 0; }
+  27.05% { opacity: 0; }
+  28.05% { opacity: 1; }
+  68.1% { opacity: 1; }
+  69.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v66 {
+  0% { opacity: 0; }
+  34.875% { opacity: 0; }
+  35.875% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v67 {
+  0% { opacity: 0; }
+  63.65% { opacity: 0; }
+  64.65% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v68 {
+  0% { opacity: 0; }
+  27.2% { opacity: 0; }
+  28.2% { opacity: 1; }
+  68.4% { opacity: 1; }
+  69.4% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v69 {
+  0% { opacity: 0; }
+  35.084% { opacity: 0; }
+  36.084% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v70 {
+  0% { opacity: 0; }
+  63.95% { opacity: 0; }
+  64.95% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v71 {
+  0% { opacity: 0; }
+  27.35% { opacity: 0; }
+  28.35% { opacity: 1; }
+  68.7% { opacity: 1; }
+  69.7% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v72 {
+  0% { opacity: 0; }
+  35.292% { opacity: 0; }
+  36.292% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v73 {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v74 {
+  0% { opacity: 0; }
+  27.5% { opacity: 0; }
+  28.5% { opacity: 1; }
+  69% { opacity: 1; }
+  70% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v75 {
+  0% { opacity: 0; }
+  35.501% { opacity: 0; }
+  36.501% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v76 {
+  0% { opacity: 0; }
+  64.55% { opacity: 0; }
+  65.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v77 {
+  0% { opacity: 0; }
+  27.65% { opacity: 0; }
+  28.65% { opacity: 1; }
+  69.3% { opacity: 1; }
+  70.3% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v78 {
+  0% { opacity: 0; }
+  35.709% { opacity: 0; }
+  36.709% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v79 {
+  0% { opacity: 0; }
+  64.85% { opacity: 0; }
+  65.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v80 {
+  0% { opacity: 0; }
+  27.8% { opacity: 0; }
+  28.8% { opacity: 1; }
+  69.6% { opacity: 1; }
+  70.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v81 {
+  0% { opacity: 0; }
+  35.918% { opacity: 0; }
+  36.918% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v82 {
+  0% { opacity: 0; }
+  65.15% { opacity: 0; }
+  66.15% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v83 {
+  0% { opacity: 0; }
+  27.95% { opacity: 0; }
+  28.95% { opacity: 1; }
+  69.9% { opacity: 1; }
+  70.9% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v84 {
+  0% { opacity: 0; }
+  36.127% { opacity: 0; }
+  37.127% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v85 {
+  0% { opacity: 0; }
+  65.45% { opacity: 0; }
+  66.45% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v86 {
+  0% { opacity: 0; }
+  28.1% { opacity: 0; }
+  29.1% { opacity: 1; }
+  70.2% { opacity: 1; }
+  71.2% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v87 {
+  0% { opacity: 0; }
+  36.335% { opacity: 0; }
+  37.335% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v88 {
+  0% { opacity: 0; }
+  28.25% { opacity: 0; }
+  29.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v89 {
+  0% { opacity: 0; }
+  36.544% { opacity: 0; }
+  37.544% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v90 {
+  0% { opacity: 0; }
+  28.4% { opacity: 0; }
+  29.4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v91 {
+  0% { opacity: 0; }
+  36.752% { opacity: 0; }
+  37.752% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v92 {
+  0% { opacity: 0; }
+  28.55% { opacity: 0; }
+  29.55% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v93 {
+  0% { opacity: 0; }
+  36.96% { opacity: 0; }
+  37.96% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v94 {
+  0% { opacity: 0; }
+  28.7% { opacity: 0; }
+  29.7% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v95 {
+  0% { opacity: 0; }
+  37.169% { opacity: 0; }
+  38.169% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v96 {
+  0% { opacity: 0; }
+  28.85% { opacity: 0; }
+  29.85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v97 {
+  0% { opacity: 0; }
+  37.377% { opacity: 0; }
+  38.377% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v98 {
+  0% { opacity: 0; }
+  29% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v99 {
+  0% { opacity: 0; }
+  37.586% { opacity: 0; }
+  38.586% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v100 {
+  0% { opacity: 0; }
+  29.15% { opacity: 0; }
+  30.15% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v101 {
+  0% { opacity: 0; }
+  37.794% { opacity: 0; }
+  38.794% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v102 {
+  0% { opacity: 0; }
+  29.3% { opacity: 0; }
+  30.3% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v103 {
+  0% { opacity: 0; }
+  38.003% { opacity: 0; }
+  39.003% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v104 {
+  0% { opacity: 0; }
+  29.45% { opacity: 0; }
+  30.45% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v105 {
+  0% { opacity: 0; }
+  38.212% { opacity: 0; }
+  39.212% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v106 {
+  0% { opacity: 0; }
+  29.6% { opacity: 0; }
+  30.6% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v107 {
+  0% { opacity: 0; }
+  38.42% { opacity: 0; }
+  39.42% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v108 {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  30.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v109 {
+  0% { opacity: 0; }
+  38.629% { opacity: 0; }
+  39.629% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v110 {
+  0% { opacity: 0; }
+  29.9% { opacity: 0; }
+  30.9% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v111 {
+  0% { opacity: 0; }
+  38.837% { opacity: 0; }
+  39.837% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v112 {
+  0% { opacity: 0; }
+  38.837% { opacity: 0; }
+  39.837% { opacity: 1; }
+  46% { opacity: 1; }
+  46.6% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v113 {
+  0% { opacity: 0; }
+  46% { opacity: 0; }
+  46.6% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v114 {
+  0% { opacity: 0; }
+  30.05% { opacity: 0; }
+  31.05% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v115 {
+  0% { opacity: 0; }
+  39.045% { opacity: 0; }
+  40.046% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v116 {
+  0% { opacity: 0; }
+  30.2% { opacity: 0; }
+  31.2% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v117 {
+  0% { opacity: 0; }
+  39.254% { opacity: 0; }
+  40.254% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v118 {
+  0% { opacity: 0; }
+  30.35% { opacity: 0; }
+  31.35% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tp-v119 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v120 {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40.25% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v121 {
+  0% { opacity: 0; }
+  46% { opacity: 0; }
+  46.6% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v122 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v123 {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55.5% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v124 {
+  0% { opacity: 0; }
+  52.25% { opacity: 0; }
+  53.25% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v125 {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v126 {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78% { opacity: 1; }
+  82.25% { opacity: 1; }
+  83.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v127 {
+  0% { opacity: 0; }
+  79.75% { opacity: 0; }
+  80.75% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v128 {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-k129 {
+  0% { transform: translate(197.98px, 164px); opacity: 0; }
+  32.458% { transform: translate(197.98px, 164px); opacity: 0; }
+  33.058% { opacity: 1; }
+  34.458% { transform: translate(247px, 260px); opacity: 1; }
+  35.058% { transform: translate(247px, 260px); opacity: 0; }
+  100% { transform: translate(247px, 260px); opacity: 0; }
+}
+@keyframes tp-k130 {
+  0% { transform: translate(336.587px, 164px); opacity: 0; }
+  33.292% { transform: translate(336.587px, 164px); opacity: 0; }
+  33.892% { opacity: 1; }
+  35.292% { transform: translate(481px, 260px); opacity: 1; }
+  35.892% { transform: translate(481px, 260px); opacity: 0; }
+  100% { transform: translate(481px, 260px); opacity: 0; }
+}
+@keyframes tp-k131 {
+  0% { transform: translate(478.18px, 164px); opacity: 0; }
+  34.127% { transform: translate(478.18px, 164px); opacity: 0; }
+  34.727% { opacity: 1; }
+  36.127% { transform: translate(715px, 260px); opacity: 1; }
+  36.727% { transform: translate(715px, 260px); opacity: 0; }
+  100% { transform: translate(715px, 260px); opacity: 0; }
+}
+@keyframes tp-k132 {
+  0% { transform: translate(619.84px, 164px); opacity: 0; }
+  34.96% { transform: translate(619.84px, 164px); opacity: 0; }
+  35.56% { opacity: 1; }
+  36.96% { transform: translate(247px, 294px); opacity: 1; }
+  37.56% { transform: translate(247px, 294px); opacity: 0; }
+  100% { transform: translate(247px, 294px); opacity: 0; }
+}
+@keyframes tp-k133 {
+  0% { transform: translate(758.582px, 164px); opacity: 0; }
+  35.794% { transform: translate(758.582px, 164px); opacity: 0; }
+  36.394% { opacity: 1; }
+  37.794% { transform: translate(481px, 294px); opacity: 1; }
+  38.394% { transform: translate(481px, 294px); opacity: 0; }
+  100% { transform: translate(481px, 294px); opacity: 0; }
+}
+@keyframes tp-k134 {
+  0% { transform: translate(900.242px, 164px); opacity: 0; }
+  36.628% { transform: translate(900.242px, 164px); opacity: 0; }
+  37.228% { opacity: 1; }
+  38.629% { transform: translate(715px, 294px); opacity: 1; }
+  39.229% { transform: translate(715px, 294px); opacity: 0; }
+  100% { transform: translate(715px, 294px); opacity: 0; }
+}
+@keyframes tp-k135 {
+  0% { transform: translate(156px, 262px); opacity: 0; }
+  42.5% { transform: translate(156px, 262px); opacity: 0; }
+  42.639% { transform: translate(176px, 277px); }
+  43.1% { opacity: 1; }
+  45.958% { transform: translate(773.5px, 277px); }
+  46.053% { transform: translate(773.5px, 294px); opacity: 1; }
+  46.653% { transform: translate(773.5px, 294px); opacity: 0; }
+  100% { transform: translate(773.5px, 294px); opacity: 0; }
+}
+@keyframes tp-k136 {
+  0% { transform: translate(156px, 262px); opacity: 0; }
+  51.75% { transform: translate(156px, 262px); opacity: 0; }
+  51.875% { transform: translate(176px, 277px); }
+  52.35% { opacity: 1; }
+  54.278% { transform: translate(656.5px, 277px); }
+  54.363% { transform: translate(656.5px, 294px); opacity: 1; }
+  54.963% { transform: translate(656.5px, 294px); opacity: 0; }
+  100% { transform: translate(656.5px, 294px); opacity: 0; }
+}
+@keyframes tp-k137 {
+  0% { transform: translate(156px, 262px); opacity: 0; }
+  51.75% { transform: translate(156px, 262px); opacity: 0; }
+  51.875% { transform: translate(176px, 277px); }
+  52.35% { opacity: 1; }
+  54.57% { transform: translate(715px, 277px); }
+  54.655% { transform: translate(715px, 294px); opacity: 1; }
+  55.255% { transform: translate(715px, 294px); opacity: 0; }
+  100% { transform: translate(715px, 294px); opacity: 0; }
+}
+@keyframes tp-k138 {
+  0% { transform: translate(156px, 262px); opacity: 0; }
+  76.5% { transform: translate(156px, 262px); opacity: 0; }
+  76.638% { transform: translate(176px, 243px); }
+  77.1% { opacity: 1; }
+  79.918% { transform: translate(832px, 243px); }
+  80.003% { transform: translate(832px, 260px); opacity: 1; }
+  80.603% { transform: translate(832px, 260px); opacity: 0; }
+  100% { transform: translate(832px, 260px); opacity: 0; }
+}
+@keyframes tp-v139 {
+  0% { opacity: 0; }
+  39% { opacity: 0; }
+  40% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v140 {
+  0% { opacity: 0; }
+  39.25% { opacity: 0; }
+  40.25% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v141 {
+  0% { opacity: 0; }
+  54.5% { opacity: 0; }
+  55.5% { opacity: 1; }
+  61.5% { opacity: 1; }
+  62.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v142 {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.75% { opacity: 1; }
+  74.25% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v143 {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v144 {
+  0% { opacity: 0; }
+  83.75% { opacity: 0; }
+  84.75% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v145 {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88.25% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes tp-v146 {
+  0% { opacity: 0; }
+  90.75% { opacity: 0; }
+  91.75% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<rect class="box" x="30" y="92" width="94" height="32" rx="10"/>
+<rect class="f-bg s-line" x="132" y="92" width="798" height="32" rx="10" stroke-width="1.5"/>
+<text class="label mid tp-v1" x="77" y="113">report</text>
+<text class="label mid tp-v2" x="77" y="113">retention</text>
+<text class="label mid tp-v3" x="77" y="113">vacuum</text>
+<text class="label mid tp-v4" x="77" y="113">migration</text>
+<text class="label mid tp-v5" x="77" y="113">app</text>
+<text class="label mid tp-v6" x="77" y="113">order page</text>
+<text class="sub mono f-ink tp-v7" x="143" y="113">SELECT count(*) FROM order_events WHERE happened_at &gt;= '2026-08-31' AND happened_at &lt; '2026-09-07'</text>
+<text class="sub mono f-ink tp-v8" x="143" y="113">DELETE FROM order_events WHERE happened_at &lt; '2025-10-01'</text>
+<text class="sub mono f-ink tp-v9" x="143" y="113">VACUUM (VERBOSE) order_events</text>
+<text class="sub mono f-ink tp-v10" x="143" y="113">CREATE TABLE order_events (…) PARTITION BY RANGE (happened_at)</text>
+<text class="sub mono f-ink tp-v11" x="143" y="113">INSERT INTO order_events OVERRIDING SYSTEM VALUE SELECT * FROM order_events_old</text>
+<text class="sub mono f-ink tp-v12" x="143" y="113">INSERT INTO order_events VALUES (DEFAULT, 500000, 'delivered', '2026-10-06 09:30')</text>
+<text class="sub mono f-ink tp-v13" x="143" y="113">ALTER TABLE order_events DETACH PARTITION order_events_2024_12 CONCURRENTLY</text>
+<text class="sub mono f-ink tp-v14" x="143" y="113">DROP TABLE order_events_2024_12</text>
+<text class="sub mono f-ink tp-v15" x="143" y="113">SELECT * FROM order_events WHERE order_id = 250000</text>
+<text class="sub mono f-ink tp-v16" x="143" y="113">CREATE TABLE order_events (id bigint PRIMARY KEY, …) PARTITION BY RANGE (happened_at)</text>
+<g class="tp-v17"><rect class="f-green-soft s-green" x="866.5" y="98" width="55.5" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="894.3" y="112">16,408</text></g>
+<g class="tp-v18"><rect class="f-red-soft s-red" x="822.8" y="98" width="99.3" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="872.4" y="112">DELETE 639726</text></g>
+<g class="tp-v19"><rect class="f-amber-soft s-amber" x="747.8" y="98" width="174.3" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-amber-ink" x="834.9" y="112">639,726 dead rows removed</text></g>
+<g class="tp-v20"><rect class="f-teal-soft s-teal" x="822.8" y="98" width="99.3" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-teal" x="872.4" y="112">25 partitions</text></g>
+<g class="tp-v21"><rect class="f-purple-soft s-purple" x="804" y="98" width="118" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="863" y="112">INSERT 0 1500000</text></g>
+<g class="tp-v22"><rect class="f-purple-soft s-purple" x="766.5" y="98" width="155.5" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="844.3" y="112">→ order_events_2026_10</text></g>
+<g class="tp-v23"><rect class="f-green-soft s-green" x="866.5" y="98" width="55.5" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="894.3" y="112">16,408</text></g>
+<g class="tp-v24"><rect class="f-green-soft s-green" x="779" y="98" width="143" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="850.5" y="112">20 statements, 38 ms</text></g>
+<g class="tp-v25"><rect class="f-green-soft s-green" x="866.5" y="98" width="55.5" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-green" x="894.3" y="112">3 rows</text></g>
+<g class="tp-v26"><rect class="f-red-soft s-red" x="872.8" y="98" width="49.3" height="20" rx="10" stroke-width="1.2"/><text class="tiny mid sb f-red" x="897.4" y="112">ERROR</text></g>
+<g class="p12"><text class="sub mono sb f-ink p1" x="30" y="147">order_events</text><text class="sub mono sb f-ink p2" x="30" y="147">order_events_old</text><text class="tiny p1" x="30" y="162">one table · 86 MB</text><text class="tiny p2" x="30" y="162">renamed, then copied</text><text class="tiny" x="30" y="176">11,030 pages, oldest first</text><rect class="box" x="180" y="138" width="740" height="26" rx="3"/><path class="s-line" d="M193.4 139v24M206.8 139v24M220.3 139v24M233.7 139v24M247.1 139v24M260.5 139v24M273.9 139v24M287.3 139v24M300.8 139v24M314.2 139v24M327.6 139v24M341 139v24M354.4 139v24M367.9 139v24M381.3 139v24M394.7 139v24M408.1 139v24M421.5 139v24M434.9 139v24M448.4 139v24M461.8 139v24M475.2 139v24M488.6 139v24M502 139v24M515.4 139v24M528.9 139v24M542.3 139v24M555.7 139v24M569.1 139v24M582.5 139v24M596 139v24M609.4 139v24M622.8 139v24M636.2 139v24M649.6 139v24M663 139v24M676.5 139v24M689.9 139v24M703.3 139v24M716.7 139v24M730.1 139v24M743.6 139v24M757 139v24M770.4 139v24M783.8 139v24M797.2 139v24M810.6 139v24M824.1 139v24M837.5 139v24M850.9 139v24M864.3 139v24M877.7 139v24M891.2 139v24M904.6 139v24M918 139v24" stroke-width="1" fill="none"/><path class="s-wire" d="M215.8 138v26M248.1 138v26M284 138v26M318.7 138v26M354.5 138v26M389.2 138v26M425 138v26M460.8 138v26M495.5 138v26M531.4 138v26M566.1 138v26M637.8 138v26M670.2 138v26M706 138v26M740.7 138v26M776.5 138v26M811.2 138v26M847 138v26M882.9 138v26M917.6 138v26" stroke-width="1" fill="none"/><path class="s-muted" d="M180.2 135v32M601.9 135v32" stroke-width="1.5" fill="none"/><text class="tiny mid" x="198" y="177">Jan 2025</text><text class="tiny mid" x="301.3" y="177">Apr</text><text class="tiny mid" x="407.1" y="177">Jul</text><text class="tiny mid" x="513.5" y="177">Oct</text><text class="tiny mid" x="619.8" y="177">Jan 2026</text><text class="tiny mid" x="723.3" y="177">Apr</text><text class="tiny mid" x="829.1" y="177">Jul</text><g class="p1"><rect class="f-red-soft tp-g27" x="180" y="138" width="740" height="26"/><line class="s-red tp-k28" x1="0" y1="135" x2="0" y2="167" stroke-width="2"/><rect class="f-green s-green tp-v29" x="881.7" y="138" width="8.2" height="26" stroke-width="1"/><text class="tiny f-red tp-v30" x="180" y="191">Parallel Seq Scan: all 11,030 pages read, 1,483,592 rows filtered out</text><text class="tiny sb f-green end tp-v31" x="920" y="191">the week: 16,408 rows on 122 pages</text><rect class="f-red-soft s-red tp-g32" x="180" y="138" width="315.6" height="26" stroke-width="1.2"/><text class="tiny sb mid f-red tp-v33" x="337.8" y="155">639,726 dead rows on 4,704 pages</text><rect class="f-amber-soft tp-g34" x="180" y="138" width="315.6" height="26"/><rect class="f-bg s-amber dash tp-v35" x="180.8" y="138.8" width="314" height="24.4" stroke-width="1.2"/><text class="tiny sb mid f-amber-ink tp-v36" x="337.8" y="155">4,703 empty pages, still in the file</text></g><rect class="f-bg tp-v37" x="180" y="138" width="740" height="26" fill-opacity="0.6"/></g>
+<g class="p1"><text class="tiny sb f-ink" x="40" y="210">heap page 0: the 136 oldest events</text><text class="tiny end" x="460" y="210">8 kB, read with pageinspect</text><rect class="box" x="40" y="216" width="420" height="108" rx="10"/><text class="tiny sb" x="52" y="233">ctid</text><text class="tiny sb end" x="112" y="233">id</text><text class="tiny sb" x="126" y="233">kind</text><text class="tiny sb" x="186" y="233">happened_at</text><text class="tiny sb end" x="380" y="233">xmin</text><text class="tiny sb end" x="448" y="233">xmax</text><line class="s-line" x1="48" y1="238" x2="452" y2="238" stroke-width="1"/><g class="tp-v41"><rect class="f-red-soft tp-v38" x="44" y="242" width="412" height="16" rx="4"/><text class="tiny mono f-ink" x="52" y="254">(0,1)</text><text class="tiny mono f-ink end" x="112" y="254">1</text><text class="tiny mono f-ink" x="126" y="254">placed</text><text class="tiny mono f-ink" x="186" y="254">2024-12-31 17:08:07</text><text class="tiny mono f-ink end" x="380" y="254">777</text><text class="tiny mono f-ink end tp-v39" x="448" y="254">0</text><text class="tiny mono sb f-red end tp-v40" x="448" y="254">631066</text><rect class="f-red-soft tp-v38" x="44" y="258" width="412" height="16" rx="4"/><text class="tiny mono f-ink" x="52" y="270">(0,2)</text><text class="tiny mono f-ink end" x="112" y="270">2</text><text class="tiny mono f-ink" x="126" y="270">paid</text><text class="tiny mono f-ink" x="186" y="270">2024-12-31 17:11:07</text><text class="tiny mono f-ink end" x="380" y="270">777</text><text class="tiny mono f-ink end tp-v39" x="448" y="270">0</text><text class="tiny mono sb f-red end tp-v40" x="448" y="270">631066</text><rect class="f-red-soft tp-v38" x="44" y="274" width="412" height="16" rx="4"/><text class="tiny mono f-ink" x="52" y="286">(0,3)</text><text class="tiny mono f-ink end" x="112" y="286">3</text><text class="tiny mono f-ink" x="126" y="286">placed</text><text class="tiny mono f-ink" x="186" y="286">2024-12-31 17:13:33</text><text class="tiny mono f-ink end" x="380" y="286">777</text><text class="tiny mono f-ink end tp-v39" x="448" y="286">0</text><text class="tiny mono sb f-red end tp-v40" x="448" y="286">631066</text><rect class="f-red-soft tp-v38" x="44" y="290" width="412" height="16" rx="4"/><text class="tiny mono f-ink" x="52" y="302">(0,4)</text><text class="tiny mono f-ink end" x="112" y="302">4</text><text class="tiny mono f-ink" x="126" y="302">placed</text><text class="tiny mono f-ink" x="186" y="302">2024-12-31 17:14:27</text><text class="tiny mono f-ink end" x="380" y="302">777</text><text class="tiny mono f-ink end tp-v39" x="448" y="302">0</text><text class="tiny mono sb f-red end tp-v40" x="448" y="302">631066</text><text class="tiny" x="52" y="316">… 132 more rows on this page</text></g><g class="tp-v42"><text class="sub sb mid f-amber-ink" x="250" y="262">VACUUM removed all 136 rows</text><text class="tiny mid" x="250" y="281">page 0 is empty: 8,164 bytes free</text><text class="tiny mid" x="250" y="297">new rows may reuse it; the file keeps it</text></g><text class="tiny sb f-ink" x="490" y="210">what removing 37 MB of old rows cost</text><text class="tiny" x="490" y="231">deleted rows</text><rect class="f-red-soft s-red tp-g43" x="596" y="220" width="111" height="14" rx="3" stroke-width="1.2"/><text class="tiny sb f-ink tp-v44" x="713" y="231">37 MB · 4,704 pages</text><text class="tiny" x="490" y="253">WAL from DELETE</text><rect class="f-teal-soft s-teal tp-g45" x="596" y="242" width="210" height="14" rx="3" stroke-width="1.2"/><text class="tiny sb f-ink tp-v46" x="812" y="253">70 MB</text><text class="tiny" x="490" y="275">WAL from VACUUM</text><rect class="f-teal-soft s-teal tp-g47" x="596" y="264" width="51" height="14" rx="3" stroke-width="1.2"/><text class="tiny sb f-ink tp-v48" x="653" y="275">17 MB</text><text class="tiny sb f-red tp-v49" x="697" y="275">→ 87 MB of WAL in all</text><text class="tiny f-red tp-v50" x="490" y="300">639,726 rows logged one by one, plus a full image of each page</text><text class="tiny sb f-amber-ink tp-v51" x="490" y="316">after VACUUM the file is still 11,030 pages, 86 MB</text></g>
+<g class="p13"><rect class="box" x="30" y="338" width="900" height="130" rx="10"/><text class="tiny sb" x="44" y="356">statement</text><text class="tiny sb" x="330" y="356">what PostgreSQL did</text><text class="tiny sb end" x="640" y="356">rows</text><text class="tiny sb end" x="730" y="356">pages read</text><text class="tiny sb end" x="810" y="356">WAL</text><text class="tiny sb end" x="918" y="356">time, 1 run</text><line class="s-line" x1="40" y1="362" x2="920" y2="362" stroke-width="1"/><g class="tp-v52"><rect class="f-red" x="44" y="372" width="8" height="8" rx="2"/><text class="tiny mono f-ink" x="58" y="380">SELECT … one week, one table</text><text class="tiny" x="330" y="380">Parallel Seq Scan of every page</text><text class="tiny mono f-ink end" x="640" y="380">16,408</text><text class="tiny mono f-ink end" x="730" y="380">11,030</text><text class="tiny mono f-ink end" x="810" y="380">–</text><text class="tiny mono sb f-ink end" x="918" y="380">30 ms</text></g><g class="tp-v53"><rect class="f-red" x="44" y="390" width="8" height="8" rx="2"/><text class="tiny mono f-ink" x="58" y="398">DELETE … &lt; '2025-10-01'</text><text class="tiny" x="330" y="398">marks 639,726 rows dead, logs each one</text><text class="tiny mono f-ink end" x="640" y="398">639,726</text><text class="tiny mono f-ink end" x="730" y="398">11,030</text><text class="tiny mono f-ink end" x="810" y="398">70 MB</text><text class="tiny mono sb f-ink end" x="918" y="398">0.31 s</text></g><g class="tp-v54"><rect class="f-amber" x="44" y="408" width="8" height="8" rx="2"/><text class="tiny mono f-ink" x="58" y="416">VACUUM order_events</text><text class="tiny" x="330" y="416">4,705 heap + 4,116 index pages; file stays</text><text class="tiny mono f-ink end" x="640" y="416">639,726</text><text class="tiny mono f-ink end" x="730" y="416">8,821</text><text class="tiny mono f-ink end" x="810" y="416">17 MB</text><text class="tiny mono sb f-ink end" x="918" y="416">0.09 s</text></g><g class="tp-v55"><rect class="f-green" x="44" y="426" width="8" height="8" rx="2"/><text class="tiny mono f-ink" x="58" y="434">SELECT … one week, partitioned</text><text class="tiny" x="330" y="434">Append over 2 of 25 partitions</text><text class="tiny mono f-ink end" x="640" y="434">16,408</text><text class="tiny mono f-ink end" x="730" y="434">1,052</text><text class="tiny mono f-ink end" x="810" y="434">–</text><text class="tiny mono sb f-ink end" x="918" y="434">9 ms</text></g><g class="tp-v56"><rect class="f-green" x="44" y="444" width="8" height="8" rx="2"/><text class="tiny mono f-ink" x="58" y="452">DETACH … CONCURRENTLY + DROP, × 10</text><text class="tiny" x="330" y="452">10 old partitions, 20 statements</text><text class="tiny mono f-ink end" x="640" y="452">639,726</text><text class="tiny mono f-ink end" x="730" y="452">–</text><text class="tiny mono f-ink end" x="810" y="452">159 kB</text><text class="tiny mono sb f-ink end" x="918" y="452">38 ms</text></g></g>
+<g class="p234"><rect class="f-panel s-wire dash" x="30" y="212" width="140" height="96" rx="10" stroke-width="1.5"/><text class="sub mono sb f-ink" x="42" y="232">order_events</text><text class="tiny" x="42" y="248">partitioned table</text><text class="tiny mono f-teal" x="42" y="264">RANGE (happened_at)</text><text class="tiny" x="42" y="284">no storage of its own:</text><text class="tiny" x="42" y="298">0 bytes</text><text class="tiny sb end" x="212" y="230">2024</text><text class="tiny sb end" x="212" y="264">2025</text><text class="tiny sb end" x="212" y="298">2026</text><text class="tiny mid" x="247" y="206">Jan</text><text class="tiny mid" x="305.5" y="206">Feb</text><text class="tiny mid" x="364" y="206">Mar</text><text class="tiny mid" x="422.5" y="206">Apr</text><text class="tiny mid" x="481" y="206">May</text><text class="tiny mid" x="539.5" y="206">Jun</text><text class="tiny mid" x="598" y="206">Jul</text><text class="tiny mid" x="656.5" y="206">Aug</text><text class="tiny mid" x="715" y="206">Sep</text><text class="tiny mid" x="773.5" y="206">Oct</text><text class="tiny mid" x="832" y="206">Nov</text><text class="tiny mid" x="890.5" y="206">Dec</text><g class="tp-v59"><rect class="box" x="863.5" y="212" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v57"><rect class="f-teal" x="867.5" y="233" width="1" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="890.5" y="228">442</text></g><rect class="none s-amber dash tp-v58" x="862" y="210.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v62"><rect class="box" x="220" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v60"><rect class="f-teal" x="224" y="267" width="45.6" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="247" y="262">72,091</text></g><rect class="none s-amber dash tp-v61" x="218.5" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v65"><rect class="box" x="278.5" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v63"><rect class="f-teal" x="282.5" y="267" width="41.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="305.5" y="262">65,628</text></g><rect class="none s-amber dash tp-v64" x="277" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v68"><rect class="box" x="337" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v66"><rect class="f-teal" x="341" y="267" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="364" y="262">72,664</text></g><rect class="none s-amber dash tp-v67" x="335.5" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v71"><rect class="box" x="395.5" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v69"><rect class="f-teal" x="399.5" y="267" width="44.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="422.5" y="262">70,309</text></g><rect class="none s-amber dash tp-v70" x="394" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v74"><rect class="box" x="454" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v72"><rect class="f-teal" x="458" y="267" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="481" y="262">72,654</text></g><rect class="none s-amber dash tp-v73" x="452.5" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v77"><rect class="box" x="512.5" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v75"><rect class="f-teal" x="516.5" y="267" width="44.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="539.5" y="262">70,315</text></g><rect class="none s-amber dash tp-v76" x="511" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v80"><rect class="box" x="571" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v78"><rect class="f-teal" x="575" y="267" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="598" y="262">72,650</text></g><rect class="none s-amber dash tp-v79" x="569.5" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v83"><rect class="box" x="629.5" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v81"><rect class="f-teal" x="633.5" y="267" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="656.5" y="262">72,663</text></g><rect class="none s-amber dash tp-v82" x="628" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v86"><rect class="box" x="688" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v84"><rect class="f-teal" x="692" y="267" width="44.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="715" y="262">70,310</text></g><rect class="none s-amber dash tp-v85" x="686.5" y="244.5" width="57" height="31" rx="6" stroke-width="1.8"/></g><g class="tp-v88"><rect class="box" x="746.5" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v87"><rect class="f-teal" x="750.5" y="267" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="773.5" y="262">72,660</text></g></g><g class="tp-v90"><rect class="box" x="805" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v89"><rect class="f-teal" x="809" y="267" width="44.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="832" y="262">70,309</text></g></g><g class="tp-v92"><rect class="box" x="863.5" y="246" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v91"><rect class="f-teal" x="867.5" y="267" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="890.5" y="262">72,656</text></g></g><g class="tp-v94"><rect class="box" x="220" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v93"><rect class="f-teal" x="224" y="301" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="247" y="296">72,654</text></g></g><g class="tp-v96"><rect class="box" x="278.5" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v95"><rect class="f-teal" x="282.5" y="301" width="41.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="305.5" y="296">65,628</text></g></g><g class="tp-v98"><rect class="box" x="337" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v97"><rect class="f-teal" x="341" y="301" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="364" y="296">72,658</text></g></g><g class="tp-v100"><rect class="box" x="395.5" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v99"><rect class="f-teal" x="399.5" y="301" width="44.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="422.5" y="296">70,308</text></g></g><g class="tp-v102"><rect class="box" x="454" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v101"><rect class="f-teal" x="458" y="301" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="481" y="296">72,658</text></g></g><g class="tp-v104"><rect class="box" x="512.5" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v103"><rect class="f-teal" x="516.5" y="301" width="44.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="539.5" y="296">70,316</text></g></g><g class="tp-v106"><rect class="box" x="571" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v105"><rect class="f-teal" x="575" y="301" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="598" y="296">72,651</text></g></g><g class="tp-v108"><rect class="box" x="629.5" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v107"><rect class="f-teal" x="633.5" y="301" width="46" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="656.5" y="296">72,663</text></g></g><g class="tp-v110"><rect class="box" x="688" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v109"><rect class="f-teal" x="692" y="301" width="44.5" height="3" rx="1" fill-opacity="0.55"/><text class="tiny mono mid f-ink" x="715" y="296">70,309</text></g></g><g class="tp-v114"><rect class="box" x="746.5" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v111"><rect class="f-teal" x="750.5" y="301" width="3" height="3" rx="1" fill-opacity="0.55"/></g><text class="tiny mono mid f-ink tp-v112" x="773.5" y="296">4,804</text><text class="tiny mono mid sb f-purple tp-v113" x="773.5" y="296">4,805</text></g><g class="tp-v116"><rect class="f-bg s-wire dash" x="805" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v115"><text class="tiny mono mid f-muted" x="832" y="296">0</text></g></g><g class="tp-v118"><rect class="f-bg s-wire dash" x="863.5" y="280" width="54" height="28" rx="5" stroke-width="1.2"/><g class="tp-v117"><text class="tiny mono mid f-muted" x="890.5" y="296">0</text></g></g><text class="tiny mid f-amber-ink" x="861" y="324">↑ created ahead, empty</text><text class="tiny f-purple tp-v119" x="228" y="230">INSERT into the parent: PostgreSQL routes each row to the partition whose range holds its happened_at</text><g class="tp-v120"><rect class="none s-teal" x="686" y="278" width="58" height="32" rx="6" stroke-width="2"/><line class="s-teal" x1="715" y1="310" x2="715" y2="338" stroke-width="1.5"/></g><rect class="f-purple-soft s-purple tp-v121" x="746.5" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><g class="tp-v122"><rect class="f-bg" x="862.5" y="211" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="219" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="277.5" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="336" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="394.5" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="453" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="511.5" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="570" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="628.5" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="687" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="745.5" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="804" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="862.5" y="245" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="219" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="277.5" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="336" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="394.5" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="453" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="511.5" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="570" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="745.5" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="804" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/><rect class="f-bg" x="862.5" y="279" width="56" height="30" rx="5" fill-opacity="0.72"/></g><g class="tp-v123"><rect class="f-blue-soft s-blue" x="629.5" y="280" width="54" height="28" rx="5" stroke-width="1.8"/><rect class="f-blue-soft s-blue" x="688" y="280" width="54" height="28" rx="5" stroke-width="1.8"/></g><text class="tiny f-blue tp-v124" x="228" y="230">the other 23 partitions were pruned while planning: they are not in the plan at all</text><text class="tiny sb f-green tp-v125" x="228" y="230">the 10 months before October 2025: detached, then dropped; 639,726 rows and 67 MB gone at once</text><g class="tp-v126"><rect class="f-blue-soft s-blue" x="746.5" y="246" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="805" y="246" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="863.5" y="246" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="220" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="278.5" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="337" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="395.5" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="454" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="512.5" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="571" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="629.5" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="688" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="746.5" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="805" y="280" width="54" height="28" rx="5" stroke-width="1.5"/><rect class="f-blue-soft s-blue" x="863.5" y="280" width="54" height="28" rx="5" stroke-width="1.5"/></g><rect class="f-green-soft s-green tp-v127" x="805" y="246" width="54" height="28" rx="5" stroke-width="1.8"/><text class="tiny f-red tp-v128" x="228" y="230">no happened_at in the WHERE clause, so nothing is pruned: all 15 partitions are searched</text><circle class="pkt f-purple tp-k129" r="5"/><circle class="pkt f-purple tp-k130" r="5"/><circle class="pkt f-purple tp-k131" r="5"/><circle class="pkt f-purple tp-k132" r="5"/><circle class="pkt f-purple tp-k133" r="5"/><circle class="pkt f-purple tp-k134" r="5"/><circle class="pkt f-purple tp-k135" r="5"/><circle class="pkt f-blue tp-k136" r="5"/><circle class="pkt f-blue tp-k137" r="5"/><circle class="pkt f-blue tp-k138" r="5"/></g>
+<g class="p2"><rect class="box" x="30" y="338" width="440" height="130" rx="10"/><text class="tiny mono f-ink" x="44" y="355">CREATE TABLE order_events (</text><text class="tiny mono f-ink" x="57.2" y="367">id bigint GENERATED ALWAYS AS IDENTITY,</text><text class="tiny mono f-ink" x="57.2" y="379">order_id bigint NOT NULL REFERENCES orders (id),</text><text class="tiny mono f-ink" x="57.2" y="391">kind text NOT NULL, happened_at timestamptz NOT NULL,</text><text class="tiny mono f-ink" x="57.2" y="403">PRIMARY KEY (id, happened_at)  <tspan class="f-muted">-- must include the key</tspan></text><text class="tiny mono f-ink" x="44" y="415">) <tspan class="f-teal sb">PARTITION BY RANGE (happened_at)</tspan>;</text><text class="tiny mono f-ink" x="44" y="427">CREATE TABLE order_events_2026_09 PARTITION OF order_events</text><text class="tiny mono f-ink" x="57.2" y="439"><tspan class="f-teal sb">FOR VALUES FROM ('2026-09-01') TO ('2026-10-01')</tspan>;</text><text class="tiny mono f-ink" x="44" y="451"><tspan class="f-muted">-- one per month: 2024_12 … 2026_12, 25 in all</tspan></text><text class="tiny mono f-ink tp-v139" x="44" y="463">CREATE INDEX ON order_events (order_id);</text><g class="tp-v140"><rect class="f-panel s-teal" x="490" y="338" width="440" height="130" rx="10" stroke-width="1.5"/><text class="sub mono sb f-ink" x="504" y="357">order_events_2026_09</text><text class="tiny" x="654" y="357">· an ordinary table of its own</text><text class="tiny mono f-teal" x="504" y="374">FOR VALUES FROM ('2026-09-01') TO ('2026-10-01')</text><text class="tiny f-ink" x="504" y="390">70,309 rows · 517 pages · 4,136 kB</text><text class="tiny sb f-ink" x="504" y="408">its own indexes, created from the parent’s:</text><text class="tiny mono f-ink" x="504" y="423">order_events_2026_09_pkey (id, happened_at) · 2,176 kB</text><text class="tiny mono f-ink" x="504" y="438">order_events_2026_09_order_id_idx (order_id) · 1,152 kB</text><text class="tiny" x="504" y="456">a partition created later gets both indexes automatically</text></g></g>
+<g class="p34"><rect class="box" x="30" y="134" width="900" height="58" rx="10"/><g class="tp-v141"><text class="tiny sb f-ink" x="42" y="154">EXPLAIN (ANALYZE, BUFFERS)</text><text class="tiny" x="42" y="170">the same week, partitioned</text><text class="tiny mono f-ink" x="226" y="152">Aggregate → Append</text><text class="tiny sb end" x="560" y="152">rows</text><text class="tiny sb end" x="690" y="152">filtered out</text><text class="tiny sb end" x="780" y="152">pages</text><text class="tiny mono f-ink" x="238" y="167">→ Seq Scan on order_events_2026_08</text><text class="tiny mono f-ink end" x="560" y="167">2,349</text><text class="tiny mono f-ink end" x="690" y="167">70,314</text><text class="tiny mono sb f-ink end" x="780" y="167">535</text><text class="tiny mono f-ink" x="238" y="182">→ Seq Scan on order_events_2026_09</text><text class="tiny mono f-ink end" x="560" y="182">14,059</text><text class="tiny mono f-ink end" x="690" y="182">56,250</text><text class="tiny mono sb f-ink end" x="780" y="182">517</text><text class="sub sb end f-green" x="918" y="160">1,052 pages</text><text class="tiny end" x="918" y="176">instead of 11,030</text></g><g class="tp-v142"><text class="tiny sb f-ink" x="42" y="154">locks during retention</text><text class="tiny" x="42" y="170">one run, during a 3 s query</text><text class="tiny f-ink" x="226" y="151"><tspan class="mono">DROP TABLE</tspan> of a partition → <tspan class="sb f-orange">ACCESS EXCLUSIVE</tspan> on order_events: the next report queued behind it for <tspan class="sb f-red">2.04 s</tspan></text><text class="tiny f-ink" x="226" y="166"><tspan class="mono">DETACH … CONCURRENTLY</tspan> → <tspan class="sb f-orange">SHARE UPDATE EXCLUSIVE</tspan>: the same report ran in <tspan class="sb f-green">0.05 s</tspan></text><text class="tiny f-ink" x="226" y="181">the foreign key to orders still locks <tspan class="mono">orders</tspan> to detach and to drop: run retention with a short <tspan class="mono">lock_timeout</tspan></text></g><g class="tp-v143"><text class="tiny sb f-ink" x="42" y="154">EXPLAIN (ANALYZE, BUFFERS)</text><text class="tiny mono" x="42" y="170">order_id = 250000</text><text class="tiny mono f-ink" x="226" y="152">Append: 15 subplans, none pruned</text><text class="tiny sb end" x="660" y="152">rows</text><text class="tiny sb end" x="745" y="152">pages</text><text class="tiny mono f-ink" x="238" y="167">→ Index Scan using order_events_2025_11_order_id_idx</text><text class="tiny mono f-ink end" x="660" y="167">3</text><text class="tiny mono sb f-ink end" x="745" y="167">4</text><text class="tiny mono f-ink" x="238" y="182">→ 12 more Index Scans, 2 Seq Scans of empty ones</text><text class="tiny mono f-ink end" x="660" y="182">0</text><text class="tiny mono sb f-ink end" x="745" y="182">24</text><text class="sub sb end f-red" x="918" y="160">28 pages</text><text class="tiny end" x="918" y="176">one table: 1 scan, 5 pages</text></g></g>
+<g class="p4"><g class="tp-v144"><rect class="box" x="30" y="338" width="293" height="130" rx="10"/><text class="sub sb f-red" x="44" y="357">Unique keys must include the key</text><text class="tiny" x="44" y="375">a PRIMARY KEY on id alone fails:</text><text class="tiny mono f-red" x="44" y="391">ERROR: unique constraint on</text><text class="tiny mono f-red" x="44" y="405">partitioned table must include all</text><text class="tiny mono f-red" x="44" y="419">partitioning columns</text><text class="tiny" x="44" y="438">so the key is (id, happened_at), and no</text><text class="tiny" x="44" y="452">index checks that id alone is unique</text></g><g class="tp-v145"><rect class="box" x="333.5" y="338" width="293" height="130" rx="10"/><text class="sub sb f-amber-ink" x="347" y="357">More partitions, slower planning</text><text class="tiny" x="347" y="374">planning a query that can’t prune (median of 7)</text><text class="tiny" x="347" y="392">one table</text><rect class="f-amber-soft s-amber" x="452" y="383" width="2" height="10" rx="2" stroke-width="1"/><text class="tiny mono sb f-ink" x="460" y="392">0.02 ms</text><text class="tiny" x="347" y="410">15 partitions</text><rect class="f-amber-soft s-amber" x="452" y="401" width="2.8" height="10" rx="1.4" stroke-width="1"/><text class="tiny mono sb f-ink" x="460.8" y="410">0.10 ms</text><text class="tiny" x="347" y="428">368 daily ones</text><rect class="f-amber-soft s-amber" x="452" y="419" width="112" height="10" rx="2" stroke-width="1"/><text class="tiny mono sb f-ink" x="570" y="428">4.0 ms</text><text class="tiny" x="347" y="446">first run in a new session: 23 ms; 1,107 locks</text><text class="tiny" x="347" y="460">docs: fine up to a few thousand if queries prune</text></g><g class="tp-v146"><rect class="box" x="637" y="338" width="293" height="130" rx="10"/><text class="sub sb f-ink" x="651" y="357">One server, not sharding</text><text class="tiny" x="651" y="375">all 15 partitions share one server’s CPU,</text><text class="tiny" x="651" y="389">memory, disk and WAL; spreading the rows</text><text class="tiny" x="651" y="403">over several servers is sharding</text><text class="tiny sb f-ink" x="651" y="423">MySQL 8.4</text><text class="tiny" x="651" y="438">the same rule for unique keys, and no foreign</text><text class="tiny" x="651" y="452">keys at all on partitioned InnoDB tables</text></g></g>
+</g>
+</svg>

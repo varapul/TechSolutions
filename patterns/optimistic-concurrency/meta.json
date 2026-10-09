@@ -1,0 +1,44 @@
+{
+  "aka": ["Optimistic locking", "Optimistic offline lock", "Compare-and-set update"],
+  "steps": [
+    {
+      "title": "Last write wins",
+      "caption": "Two agents read the order, then save in turn: B's UPDATE overwrites A's fix, and both get UPDATE 1.",
+      "body": "Agents A and B open order 499996 in Acme's back-office tool and edit its shipping address for a few minutes. A fixes the house number to **88/5** and saves; later B saves the address B loaded with the postcode **10110** added. Both saves report `UPDATE 1`, the row ends as `88 Sukhumvit 11, Bangkok 10110`, and A's fix is gone without anyone being told: a **lost update**, which even SERIALIZABLE transactions don't catch, because B's read happened in a transaction that had already ended."
+    },
+    {
+      "title": "Save only if unchanged",
+      "caption": "Each save checks AND version = $2 and bumps it: A's returns version 2, B's matches 0 rows.",
+      "body": "A `version` column (4 ms to add to 500,000 rows, because PostgreSQL stores the default in the table's metadata instead of rewriting it) travels with every read. Each save is `UPDATE … SET …, version = version + 1 WHERE id = $1 AND version = $2 RETURNING version`: A's matches and returns **2**, B's still carries version 1 and matches **0 rows**, which the tool reports as a conflict. When both saves arrive at once, B's UPDATE waits for A's row lock and then re-checks its WHERE clause on the row A committed, so the check and the write are one atomic step."
+    },
+    {
+      "title": "If-Match over HTTP",
+      "caption": "The version travels as an ETag: B's stale If-Match gets 412, so B reloads, merges and saves again.",
+      "body": "The API sends the version as a strong ETag (`ETag: \"1\"`) and expects it back in `If-Match` on every save, running the same checked UPDATE. A's `PUT` gets `200 OK` with `ETag: \"2\"`; B's gets **412 Precondition Failed** and writes nothing, so B's tool reloads, shows both edits and saves the merge with `If-Match: \"2\"` (version 3). DynamoDB does the same with a condition expression on a version attribute and rejects a stale write with `ConditionalCheckFailedException`."
+    },
+    {
+      "title": "Limits and alternatives",
+      "caption": "Never lock through think time; a hot row makes most attempts conflict; a counter beats a timestamp.",
+      "body": "Holding `SELECT … FOR UPDATE` while A thinks blocks B until `lock_timeout` cancels it (`ERROR 55P03`), and with the default of 0 B waits as long as A thinks. On a hot row optimism backfires: 8 sessions saving one stock row 100 times each needed **5,019 attempts** for 800 saves, while row locks or a single `UPDATE … SET qty = qty - 1` needed no retries. Use a counter as the version: a MySQL `DATETIME` changes at most once a second, and PostgreSQL's `xmin` changes on every UPDATE but is 32-bit and wraps."
+    }
+  ],
+  "related": ["isolation-levels", "mvcc", "locks-and-deadlocks", "amazon-dynamodb", "postgresql", "idempotent-consumer", "retry-with-backoff", "event-sourcing"],
+  "references": [
+    { "title": "H. T. Kung and J. T. Robinson — On Optimistic Methods for Concurrency Control (ACM TODS, 1981)", "url": "https://dl.acm.org/doi/10.1145/319566.319567" },
+    { "title": "Martin Fowler — Optimistic Offline Lock (Patterns of Enterprise Application Architecture, by David Rice)", "url": "https://martinfowler.com/eaaCatalog/optimisticOfflineLock.html" },
+    { "title": "RFC 9110 — HTTP Semantics: If-Match", "url": "https://www.rfc-editor.org/rfc/rfc9110#section-13.1.1" },
+    { "title": "RFC 6585 — Additional HTTP Status Codes: 428 Precondition Required", "url": "https://www.rfc-editor.org/rfc/rfc6585#section-3" },
+    { "title": "PostgreSQL 18 — UPDATE", "url": "https://www.postgresql.org/docs/18/sql-update.html" },
+    { "title": "PostgreSQL 18 — Transaction Isolation", "url": "https://www.postgresql.org/docs/18/transaction-iso.html" },
+    { "title": "PostgreSQL 18 — System Columns (xmin)", "url": "https://www.postgresql.org/docs/18/ddl-system-columns.html" },
+    { "title": "PostgreSQL 18 — Client Connection Defaults (lock_timeout)", "url": "https://www.postgresql.org/docs/18/runtime-config-client.html" },
+    { "title": "MySQL 8.4 — Consistent Nonlocking Reads", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-consistent-read.html" },
+    { "title": "MySQL 8.4 — Fractional Seconds in Time Values", "url": "https://dev.mysql.com/doc/refman/8.4/en/fractional-seconds.html" },
+    { "title": "Amazon DynamoDB — Best practices for handling concurrent updates", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/BestPractices_ImplementingVersionControl.html" },
+    { "title": "Amazon DynamoDB — Working with items (conditional writes)", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html" },
+    { "title": "Amazon S3 — Conditional writes", "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html" },
+    { "title": "SQL Server — rowversion", "url": "https://learn.microsoft.com/en-us/sql/t-sql/data-types/rowversion-transact-sql" },
+    { "title": "EF Core — Handling Concurrency Conflicts", "url": "https://learn.microsoft.com/en-us/ef/core/saving/concurrency" },
+    { "title": "Hibernate ORM 7.4 — User Guide (optimistic locking)", "url": "https://docs.hibernate.org/orm/7.4/userguide/html_single/" }
+  ]
+}

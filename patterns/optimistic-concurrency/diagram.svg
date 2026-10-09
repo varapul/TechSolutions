@@ -1,0 +1,1280 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Optimistic Concurrency Control</title>
+<desc id="dg-desc">Optimistic Concurrency Control. Update a row only if it is unchanged since you read it, using a version column, and retry on conflict instead of holding locks. Step 1, Last write wins: Two agents read the order, then save in turn: B's UPDATE overwrites A's fix, and both get UPDATE 1. Step 2, Save only if unchanged: Each save checks AND version = $2 and bumps it: A's returns version 2, B's matches 0 rows. Step 3, If-Match over HTTP: The version travels as an ETag: B's stale If-Match gets 412, so B reloads, merges and saves again. Step 4, Limits and alternatives: Never lock through think time; a hot row makes most attempts conflict; a counter beats a timestamp.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Optimistic Concurrency Control</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Last write wins</text>
+  <text class="step on p1" x="40" y="518">1 · Last write wins</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Save only if unchanged</text>
+  <text class="step on p2" x="262" y="518">2 · Save only if unchanged</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · If-Match over HTTP</text>
+  <text class="step on p3" x="484" y="518">3 · If-Match over HTTP</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Limits and alternatives</text>
+  <text class="step on p4" x="706" y="518">4 · Limits and alternatives</text>
+  <text class="caption p1" x="40" y="552">Two agents read the order, then save in turn: B's UPDATE overwrites A's fix, and both get UPDATE 1.</text>
+  <text class="caption p2" x="40" y="552">Each save checks AND version = $2 and bumps it: A's returns version 2, B's matches 0 rows.</text>
+  <text class="caption p3" x="40" y="552">The version travels as an ETag: B's stale If-Match gets 412, so B reloads, merges and saves again.</text>
+  <text class="caption p4" x="40" y="552">Never lock through think time; a hot row makes most attempts conflict; a counter beats a timestamp.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Optimistic Concurrency Control. Every statement, row count, lock, error and timing is from one run on
+   PostgreSQL 18.6 (Acme Shop sample data, order 499996 with a shipping_address column added) driven by a Node
+   script with one connection per agent; think time was 1 s in the run. Timeline (20s loop, 1s = 5%):
+   0-25%   plain UPDATE: A reads (0.4 s), B reads (0.65 s), A saves 88/5 (1.6 s, lands 1.9 s), B saves 10110
+           (2.6 s, lands 2.9 s): both UPDATE 1, A's /5 is gone; verdict 3.35 s, SERIALIZABLE note 3.75 s
+   25-50%  version column: the same run with UPDATE … AND version = $2 RETURNING version: A gets 2 (6.9 s),
+           B gets 0 rows (7.9 s, conflict back at 8.25 s); the same-instant race from pg_locks at 8.7 s
+   50-75%  over HTTP: GET -> ETag "1" (both), A PUT If-Match "1" -> 200 ETag "2" (11.7 s), B -> 412 (12.65 s),
+           B reloads (13.15 s) and PUTs If-Match "2" -> 200 ETag "3" (13.85 s); DynamoDB note 14.15 s
+   75-100% limits: A holds FOR UPDATE through think time, B is cancelled after lock_timeout (17.2 s), A commits
+           (18.3 s); the hot-row run (8 sessions x 100 saves) grows 15.6-17.5 s; version kinds 15.6-17.2 s;
+           everything fades in the last 0.3 s */
+.diagram .oc-hd { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; fill: var(--muted); }
+.diagram .oc-lab { font-size: 12px; font-weight: 600; }
+.diagram .oc-ev { font-size: 11px; font-weight: 600; }
+.diagram .oc-cl { font-size: 12px; font-weight: 600; }
+.diagram .oc-cn { font-size: 11px; fill: var(--ink); }
+.diagram .oc-note { font-size: 11.5px; fill: var(--muted); }
+.diagram .oc-val { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 10px; }
+.diagram .oc-meta { font-size: 10.5px; fill: var(--muted); }
+.diagram .oc-q { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 10.5px; }
+.diagram .oc-xs { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 9.5px; }
+.diagram .oc-m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 10px; }
+.diagram .oc-lane { stroke: var(--line); stroke-width: 1.5; }
+.diagram .oc-think { stroke: var(--wire); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 1 7; }
+.diagram .oc-lock { stroke: var(--orange); stroke-dasharray: none; stroke-width: 4; opacity: 0.85; }
+.diagram .oc-wait { stroke: var(--orange); stroke-dasharray: 1 6; }
+.diagram .oc-dash { stroke-dasharray: 4 3; }
+.diagram .oc-mk { stroke: var(--bg); stroke-width: 2; }
+.diagram .oc-w1 { animation: oc-w1 var(--T) linear infinite; }
+.diagram .oc-w2 { animation: oc-w2 var(--T) linear infinite; }
+.diagram .oc-w3 { animation: oc-w3 var(--T) linear infinite; }
+.diagram .oc-w4 { animation: oc-w4 var(--T) linear infinite; }
+.diagram .oc-g5 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g5 var(--T) linear infinite; }
+.diagram .oc-w6 { animation: oc-w6 var(--T) linear infinite; }
+.diagram .oc-w7 { animation: oc-w7 var(--T) linear infinite; }
+.diagram .oc-w8 { animation: oc-w8 var(--T) linear infinite; }
+.diagram .oc-w9 { animation: oc-w9 var(--T) linear infinite; }
+.diagram .oc-g10 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g10 var(--T) linear infinite; }
+.diagram .oc-w11 { animation: oc-w11 var(--T) linear infinite; }
+.diagram .oc-w12 { animation: oc-w12 var(--T) linear infinite; }
+.diagram .oc-t13 { opacity: 0; animation: oc-t13 var(--T) linear infinite; }
+.diagram .oc-t14 { opacity: 0; animation: oc-t14 var(--T) linear infinite; }
+.diagram .oc-t15 { opacity: 0; animation: oc-t15 var(--T) linear infinite; }
+.diagram .oc-t16 { opacity: 0; animation: oc-t16 var(--T) linear infinite; }
+.diagram .oc-w17 { animation: oc-w17 var(--T) linear infinite; }
+.diagram .oc-w18 { animation: oc-w18 var(--T) linear infinite; }
+.diagram .oc-w19 { animation: oc-w19 var(--T) linear infinite; }
+.diagram .oc-w20 { animation: oc-w20 var(--T) linear infinite; }
+.diagram .oc-w21 { animation: oc-w21 var(--T) linear infinite; }
+.diagram .oc-w22 { animation: oc-w22 var(--T) linear infinite; }
+.diagram .oc-w23 { animation: oc-w23 var(--T) linear infinite; }
+.diagram .oc-w24 { animation: oc-w24 var(--T) linear infinite; }
+.diagram .oc-w25 { animation: oc-w25 var(--T) linear infinite; }
+.diagram .oc-w26 { animation: oc-w26 var(--T) linear infinite; }
+.diagram .oc-w27 { animation: oc-w27 var(--T) linear infinite; }
+.diagram .oc-w28 { animation: oc-w28 var(--T) linear infinite; }
+.diagram .oc-w29 { animation: oc-w29 var(--T) linear infinite; }
+.diagram .oc-g30 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g30 var(--T) linear infinite; }
+.diagram .oc-w31 { animation: oc-w31 var(--T) linear infinite; }
+.diagram .oc-w32 { animation: oc-w32 var(--T) linear infinite; }
+.diagram .oc-w33 { animation: oc-w33 var(--T) linear infinite; }
+.diagram .oc-g34 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g34 var(--T) linear infinite; }
+.diagram .oc-w35 { animation: oc-w35 var(--T) linear infinite; }
+.diagram .oc-w36 { animation: oc-w36 var(--T) linear infinite; }
+.diagram .oc-w37 { animation: oc-w37 var(--T) linear infinite; }
+.diagram .oc-t38 { opacity: 0; animation: oc-t38 var(--T) linear infinite; }
+.diagram .oc-t39 { opacity: 0; animation: oc-t39 var(--T) linear infinite; }
+.diagram .oc-t40 { opacity: 0; animation: oc-t40 var(--T) linear infinite; }
+.diagram .oc-t41 { opacity: 0; animation: oc-t41 var(--T) linear infinite; }
+.diagram .oc-t42 { opacity: 0; animation: oc-t42 var(--T) linear infinite; }
+.diagram .oc-w43 { animation: oc-w43 var(--T) linear infinite; }
+.diagram .oc-w44 { animation: oc-w44 var(--T) linear infinite; }
+.diagram .oc-w45 { animation: oc-w45 var(--T) linear infinite; }
+.diagram .oc-w46 { animation: oc-w46 var(--T) linear infinite; }
+.diagram .oc-w47 { animation: oc-w47 var(--T) linear infinite; }
+.diagram .oc-w48 { animation: oc-w48 var(--T) linear infinite; }
+.diagram .oc-w49 { animation: oc-w49 var(--T) linear infinite; }
+.diagram .oc-w50 { animation: oc-w50 var(--T) linear infinite; }
+.diagram .oc-w51 { animation: oc-w51 var(--T) linear infinite; }
+.diagram .oc-w52 { animation: oc-w52 var(--T) linear infinite; }
+.diagram .oc-w53 { animation: oc-w53 var(--T) linear infinite; }
+.diagram .oc-w54 { animation: oc-w54 var(--T) linear infinite; }
+.diagram .oc-g55 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g55 var(--T) linear infinite; }
+.diagram .oc-w56 { animation: oc-w56 var(--T) linear infinite; }
+.diagram .oc-w57 { animation: oc-w57 var(--T) linear infinite; }
+.diagram .oc-w58 { animation: oc-w58 var(--T) linear infinite; }
+.diagram .oc-g59 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g59 var(--T) linear infinite; }
+.diagram .oc-w60 { animation: oc-w60 var(--T) linear infinite; }
+.diagram .oc-w61 { animation: oc-w61 var(--T) linear infinite; }
+.diagram .oc-w62 { animation: oc-w62 var(--T) linear infinite; }
+.diagram .oc-w63 { animation: oc-w63 var(--T) linear infinite; }
+.diagram .oc-w64 { animation: oc-w64 var(--T) linear infinite; }
+.diagram .oc-g65 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g65 var(--T) linear infinite; }
+.diagram .oc-w66 { animation: oc-w66 var(--T) linear infinite; }
+.diagram .oc-t67 { opacity: 0; animation: oc-t67 var(--T) linear infinite; }
+.diagram .oc-t68 { opacity: 0; animation: oc-t68 var(--T) linear infinite; }
+.diagram .oc-t69 { opacity: 0; animation: oc-t69 var(--T) linear infinite; }
+.diagram .oc-t70 { opacity: 0; animation: oc-t70 var(--T) linear infinite; }
+.diagram .oc-t71 { opacity: 0; animation: oc-t71 var(--T) linear infinite; }
+.diagram .oc-t72 { opacity: 0; animation: oc-t72 var(--T) linear infinite; }
+.diagram .oc-t73 { opacity: 0; animation: oc-t73 var(--T) linear infinite; }
+.diagram .oc-w74 { animation: oc-w74 var(--T) linear infinite; }
+.diagram .oc-w75 { animation: oc-w75 var(--T) linear infinite; }
+.diagram .oc-w76 { animation: oc-w76 var(--T) linear infinite; }
+.diagram .oc-w77 { animation: oc-w77 var(--T) linear infinite; }
+.diagram .oc-w78 { animation: oc-w78 var(--T) linear infinite; }
+.diagram .oc-w79 { animation: oc-w79 var(--T) linear infinite; }
+.diagram .oc-w80 { animation: oc-w80 var(--T) linear infinite; }
+.diagram .oc-w81 { animation: oc-w81 var(--T) linear infinite; }
+.diagram .oc-w82 { animation: oc-w82 var(--T) linear infinite; }
+.diagram .oc-w83 { animation: oc-w83 var(--T) linear infinite; }
+.diagram .oc-w84 { animation: oc-w84 var(--T) linear infinite; }
+.diagram .oc-w85 { animation: oc-w85 var(--T) linear infinite; }
+.diagram .oc-w86 { animation: oc-w86 var(--T) linear infinite; }
+.diagram .oc-w87 { animation: oc-w87 var(--T) linear infinite; }
+.diagram .oc-w88 { animation: oc-w88 var(--T) linear infinite; }
+.diagram .oc-g89 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g89 var(--T) linear infinite; }
+.diagram .oc-w90 { animation: oc-w90 var(--T) linear infinite; }
+.diagram .oc-w91 { animation: oc-w91 var(--T) linear infinite; }
+.diagram .oc-g92 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g92 var(--T) linear infinite; }
+.diagram .oc-w93 { animation: oc-w93 var(--T) linear infinite; }
+.diagram .oc-w94 { animation: oc-w94 var(--T) linear infinite; }
+.diagram .oc-t95 { opacity: 0; animation: oc-t95 var(--T) linear infinite; }
+.diagram .oc-t96 { opacity: 0; animation: oc-t96 var(--T) linear infinite; }
+.diagram .oc-t97 { opacity: 0; animation: oc-t97 var(--T) linear infinite; }
+.diagram .oc-g98 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g98 var(--T) linear infinite; }
+.diagram .oc-w99 { animation: oc-w99 var(--T) linear infinite; }
+.diagram .oc-g100 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g100 var(--T) linear infinite; }
+.diagram .oc-w101 { animation: oc-w101 var(--T) linear infinite; }
+.diagram .oc-g102 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g102 var(--T) linear infinite; }
+.diagram .oc-w103 { animation: oc-w103 var(--T) linear infinite; }
+.diagram .oc-g104 { transform-box: fill-box; transform-origin: 0 50%; animation: oc-g104 var(--T) linear infinite; }
+.diagram .oc-w105 { animation: oc-w105 var(--T) linear infinite; }
+.diagram .oc-w106 { animation: oc-w106 var(--T) linear infinite; }
+.diagram .oc-w107 { animation: oc-w107 var(--T) linear infinite; }
+.diagram .oc-w108 { animation: oc-w108 var(--T) linear infinite; }
+.diagram .oc-w109 { animation: oc-w109 var(--T) linear infinite; }
+@keyframes oc-w1 {
+  0% { opacity: 0; }
+  9.5% { opacity: 0; }
+  10.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w2 {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w3 {
+  0% { opacity: 0; }
+  2% { opacity: 0; }
+  3.25% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w4 {
+  0% { opacity: 0; }
+  3.5% { opacity: 0; }
+  4.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-g5 {
+  0% { transform: scaleX(0); }
+  3.5% { transform: scaleX(0); }
+  8% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w6 {
+  0% { opacity: 0; }
+  4% { opacity: 0; }
+  5.25% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w7 {
+  0% { opacity: 0; }
+  8% { opacity: 0; }
+  9.25% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w8 {
+  0% { opacity: 0; }
+  3.25% { opacity: 0; }
+  4.5% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w9 {
+  0% { opacity: 0; }
+  4.75% { opacity: 0; }
+  6% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-g10 {
+  0% { transform: scaleX(0); }
+  4.75% { transform: scaleX(0); }
+  13% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w11 {
+  0% { opacity: 0; }
+  5.25% { opacity: 0; }
+  6.5% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w12 {
+  0% { opacity: 0; }
+  13% { opacity: 0; }
+  14.25% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-t13 {
+  0% { transform: translate(135px, 170px); opacity: 0; }
+  2% { transform: translate(135px, 170px); opacity: 0; }
+  2.75% { opacity: 1; }
+  3.5% { transform: translate(135px, 146px); opacity: 1; }
+  4.25% { transform: translate(135px, 146px); opacity: 0; }
+  100% { transform: translate(135px, 146px); opacity: 0; }
+}
+@keyframes oc-t14 {
+  0% { transform: translate(165px, 206px); opacity: 0; }
+  3.25% { transform: translate(165px, 206px); opacity: 0; }
+  4% { opacity: 1; }
+  4.75% { transform: translate(165px, 230px); opacity: 1; }
+  5.5% { transform: translate(165px, 230px); opacity: 0; }
+  100% { transform: translate(165px, 230px); opacity: 0; }
+}
+@keyframes oc-t15 {
+  0% { transform: translate(325px, 146px); opacity: 0; }
+  8% { transform: translate(325px, 146px); opacity: 0; }
+  8.75% { opacity: 1; }
+  9.5% { transform: translate(325px, 170px); opacity: 1; }
+  10.25% { transform: translate(325px, 170px); opacity: 0; }
+  100% { transform: translate(325px, 170px); opacity: 0; }
+}
+@keyframes oc-t16 {
+  0% { transform: translate(495px, 230px); opacity: 0; }
+  13% { transform: translate(495px, 230px); opacity: 0; }
+  13.75% { opacity: 1; }
+  14.5% { transform: translate(495px, 206px); opacity: 1; }
+  15.25% { transform: translate(495px, 206px); opacity: 0; }
+  100% { transform: translate(495px, 206px); opacity: 0; }
+}
+@keyframes oc-w17 {
+  0% { opacity: 0; }
+  3.5% { opacity: 0; }
+  4.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w18 {
+  0% { opacity: 0; }
+  4.75% { opacity: 0; }
+  6% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w19 {
+  0% { opacity: 0; }
+  9.5% { opacity: 0; }
+  10.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w20 {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w21 {
+  0% { opacity: 0; }
+  16.5% { opacity: 0; }
+  17.75% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w22 {
+  0% { opacity: 0; }
+  9.75% { opacity: 0; }
+  11% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w23 {
+  0% { opacity: 0; }
+  14.75% { opacity: 0; }
+  16% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w24 {
+  0% { opacity: 0; }
+  16.75% { opacity: 0; }
+  18% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w25 {
+  0% { opacity: 0; }
+  18.75% { opacity: 0; }
+  20% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w26 {
+  0% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w27 {
+  0% { opacity: 0; }
+  39.5% { opacity: 0; }
+  40.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w28 {
+  0% { opacity: 0; }
+  27% { opacity: 0; }
+  28.25% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w29 {
+  0% { opacity: 0; }
+  28.5% { opacity: 0; }
+  29.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-g30 {
+  0% { transform: scaleX(0); }
+  28.5% { transform: scaleX(0); }
+  33% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w31 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  34.25% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w32 {
+  0% { opacity: 0; }
+  28.25% { opacity: 0; }
+  29.5% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w33 {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  31% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-g34 {
+  0% { transform: scaleX(0); }
+  29.75% { transform: scaleX(0); }
+  38% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w35 {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  39.25% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w36 {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  39.25% { opacity: 1; }
+  41.25% { opacity: 1; }
+  41.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w37 {
+  0% { opacity: 0; }
+  41.25% { opacity: 0; }
+  42.5% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-t38 {
+  0% { transform: translate(135px, 170px); opacity: 0; }
+  27% { transform: translate(135px, 170px); opacity: 0; }
+  27.75% { opacity: 1; }
+  28.5% { transform: translate(135px, 146px); opacity: 1; }
+  29.25% { transform: translate(135px, 146px); opacity: 0; }
+  100% { transform: translate(135px, 146px); opacity: 0; }
+}
+@keyframes oc-t39 {
+  0% { transform: translate(165px, 206px); opacity: 0; }
+  28.25% { transform: translate(165px, 206px); opacity: 0; }
+  29% { opacity: 1; }
+  29.75% { transform: translate(165px, 230px); opacity: 1; }
+  30.5% { transform: translate(165px, 230px); opacity: 0; }
+  100% { transform: translate(165px, 230px); opacity: 0; }
+}
+@keyframes oc-t40 {
+  0% { transform: translate(325px, 146px); opacity: 0; }
+  33% { transform: translate(325px, 146px); opacity: 0; }
+  33.75% { opacity: 1; }
+  34.5% { transform: translate(325px, 170px); opacity: 1; }
+  35.25% { transform: translate(325px, 170px); opacity: 0; }
+  100% { transform: translate(325px, 170px); opacity: 0; }
+}
+@keyframes oc-t41 {
+  0% { transform: translate(495px, 230px); opacity: 0; }
+  38% { transform: translate(495px, 230px); opacity: 0; }
+  38.75% { opacity: 1; }
+  39.5% { transform: translate(495px, 206px); opacity: 1; }
+  40.25% { transform: translate(495px, 206px); opacity: 0; }
+  100% { transform: translate(495px, 206px); opacity: 0; }
+}
+@keyframes oc-t42 {
+  0% { transform: translate(495px, 206px); opacity: 0; }
+  39.75% { transform: translate(495px, 206px); opacity: 0; }
+  40.5% { opacity: 1; }
+  41.25% { transform: translate(495px, 230px); opacity: 1; }
+  42% { transform: translate(495px, 230px); opacity: 0; }
+  100% { transform: translate(495px, 230px); opacity: 0; }
+}
+@keyframes oc-w43 {
+  0% { opacity: 0; }
+  29.75% { opacity: 0; }
+  31% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w44 {
+  0% { opacity: 0; }
+  34.5% { opacity: 0; }
+  35.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w45 {
+  0% { opacity: 0; }
+  41.25% { opacity: 0; }
+  42.5% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w46 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  44.25% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w47 {
+  0% { opacity: 0; }
+  34.75% { opacity: 0; }
+  36% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w48 {
+  0% { opacity: 0; }
+  41.5% { opacity: 0; }
+  42.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w49 {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  44.75% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w50 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w51 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w52 {
+  0% { opacity: 0; }
+  69.25% { opacity: 0; }
+  70.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w53 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w54 {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-g55 {
+  0% { transform: scaleX(0); }
+  53.5% { transform: scaleX(0); }
+  57% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w56 {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  58.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w57 {
+  0% { opacity: 0; }
+  53.25% { opacity: 0; }
+  54.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w58 {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  56% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-g59 {
+  0% { transform: scaleX(0); }
+  54.75% { transform: scaleX(0); }
+  60% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w60 {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  61.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w61 {
+  0% { opacity: 0; }
+  60% { opacity: 0; }
+  61.25% { opacity: 1; }
+  63.25% { opacity: 1; }
+  63.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w62 {
+  0% { opacity: 0; }
+  63.25% { opacity: 0; }
+  64.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w63 {
+  0% { opacity: 0; }
+  64.25% { opacity: 0; }
+  65.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w64 {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  67% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-g65 {
+  0% { transform: scaleX(0); }
+  65.75% { transform: scaleX(0); }
+  67.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w66 {
+  0% { opacity: 0; }
+  67.75% { opacity: 0; }
+  69% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-t67 {
+  0% { transform: translate(135px, 170px); opacity: 0; }
+  52% { transform: translate(135px, 170px); opacity: 0; }
+  52.75% { opacity: 1; }
+  53.5% { transform: translate(135px, 146px); opacity: 1; }
+  54.25% { transform: translate(135px, 146px); opacity: 0; }
+  100% { transform: translate(135px, 146px); opacity: 0; }
+}
+@keyframes oc-t68 {
+  0% { transform: translate(165px, 206px); opacity: 0; }
+  53.25% { transform: translate(165px, 206px); opacity: 0; }
+  54% { opacity: 1; }
+  54.75% { transform: translate(165px, 230px); opacity: 1; }
+  55.5% { transform: translate(165px, 230px); opacity: 0; }
+  100% { transform: translate(165px, 230px); opacity: 0; }
+}
+@keyframes oc-t69 {
+  0% { transform: translate(290px, 146px); opacity: 0; }
+  57% { transform: translate(290px, 146px); opacity: 0; }
+  57.75% { opacity: 1; }
+  58.5% { transform: translate(290px, 170px); opacity: 1; }
+  59.25% { transform: translate(290px, 170px); opacity: 0; }
+  100% { transform: translate(290px, 170px); opacity: 0; }
+}
+@keyframes oc-t70 {
+  0% { transform: translate(345px, 230px); opacity: 0; }
+  60% { transform: translate(345px, 230px); opacity: 0; }
+  60.75% { opacity: 1; }
+  61.5% { transform: translate(345px, 206px); opacity: 1; }
+  62.25% { transform: translate(345px, 206px); opacity: 0; }
+  100% { transform: translate(345px, 206px); opacity: 0; }
+}
+@keyframes oc-t71 {
+  0% { transform: translate(345px, 206px); opacity: 0; }
+  61.75% { transform: translate(345px, 206px); opacity: 0; }
+  62.5% { opacity: 1; }
+  63.25% { transform: translate(345px, 230px); opacity: 1; }
+  64% { transform: translate(345px, 230px); opacity: 0; }
+  100% { transform: translate(345px, 230px); opacity: 0; }
+}
+@keyframes oc-t72 {
+  0% { transform: translate(395px, 206px); opacity: 0; }
+  64.25% { transform: translate(395px, 206px); opacity: 0; }
+  65% { opacity: 1; }
+  65.75% { transform: translate(395px, 230px); opacity: 1; }
+  66.5% { transform: translate(395px, 230px); opacity: 0; }
+  100% { transform: translate(395px, 230px); opacity: 0; }
+}
+@keyframes oc-t73 {
+  0% { transform: translate(470px, 230px); opacity: 0; }
+  67.75% { transform: translate(470px, 230px); opacity: 0; }
+  68.5% { opacity: 1; }
+  69.25% { transform: translate(470px, 206px); opacity: 1; }
+  70% { transform: translate(470px, 206px); opacity: 0; }
+  100% { transform: translate(470px, 206px); opacity: 0; }
+}
+@keyframes oc-w74 {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w75 {
+  0% { opacity: 0; }
+  54.75% { opacity: 0; }
+  56% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w76 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w77 {
+  0% { opacity: 0; }
+  63.25% { opacity: 0; }
+  64.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w78 {
+  0% { opacity: 0; }
+  65.75% { opacity: 0; }
+  67% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w79 {
+  0% { opacity: 0; }
+  69.25% { opacity: 0; }
+  70.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w80 {
+  0% { opacity: 0; }
+  70% { opacity: 0; }
+  71.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w81 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  60% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w82 {
+  0% { opacity: 0; }
+  63.5% { opacity: 0; }
+  64.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w83 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w84 {
+  0% { opacity: 0; }
+  70.75% { opacity: 0; }
+  72% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes oc-w85 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w86 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w87 {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w88 {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  79.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-g89 {
+  0% { transform: scaleX(0); }
+  78.5% { transform: scaleX(0); }
+  90% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w90 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w91 {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-g92 {
+  0% { transform: scaleX(0); }
+  81% { transform: scaleX(0); }
+  86% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w93 {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  82.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w94 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-t95 {
+  0% { transform: translate(135px, 170px); opacity: 0; }
+  77% { transform: translate(135px, 170px); opacity: 0; }
+  77.75% { opacity: 1; }
+  78.5% { transform: translate(135px, 146px); opacity: 1; }
+  79.25% { transform: translate(135px, 146px); opacity: 0; }
+  100% { transform: translate(135px, 146px); opacity: 0; }
+}
+@keyframes oc-t96 {
+  0% { transform: translate(165px, 230px); opacity: 0; }
+  79.5% { transform: translate(165px, 230px); opacity: 0; }
+  80.25% { opacity: 1; }
+  81% { transform: translate(165px, 206px); opacity: 1; }
+  81.75% { transform: translate(165px, 206px); opacity: 0; }
+  100% { transform: translate(165px, 206px); opacity: 0; }
+}
+@keyframes oc-t97 {
+  0% { transform: translate(430px, 146px); opacity: 0; }
+  90% { transform: translate(430px, 146px); opacity: 0; }
+  90.75% { opacity: 1; }
+  91.5% { transform: translate(430px, 170px); opacity: 1; }
+  92.25% { transform: translate(430px, 170px); opacity: 0; }
+  100% { transform: translate(430px, 170px); opacity: 0; }
+}
+@keyframes oc-g98 {
+  0% { transform: scaleX(0); }
+  78% { transform: scaleX(0); }
+  82% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w99 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-g100 {
+  0% { transform: scaleX(0); }
+  79.75% { transform: scaleX(0); }
+  83.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w101 {
+  0% { opacity: 0; }
+  83.75% { opacity: 0; }
+  85% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-g102 {
+  0% { transform: scaleX(0); }
+  81.5% { transform: scaleX(0); }
+  85.5% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w103 {
+  0% { opacity: 0; }
+  85.5% { opacity: 0; }
+  86.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-g104 {
+  0% { transform: scaleX(0); }
+  83.25% { transform: scaleX(0); }
+  87.25% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes oc-w105 {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w106 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w107 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w108 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes oc-w109 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+</style>
+<g class="stage">
+<!-- TIMELINES: two agents, and the order row between them (time runs left to right) -->
+<rect class="box" x="30" y="92" width="670" height="184" rx="12"/>
+<text class="oc-hd p124" x="44" y="113">BACK-OFFICE TOOL · ORDER 499996 (PAID)</text>
+<text class="oc-hd p3" x="44" y="113">BACK-OFFICE TOOL → API → ORDER 499996 (PAID)</text>
+<text class="tiny end" x="686" y="113">time →</text>
+<rect class="f-bg s-line" x="40" y="135" width="72" height="22" rx="11" stroke-width="1.5"/>
+<text class="oc-lab mid" x="76" y="150">agent A</text>
+<line class="oc-lane" x1="122" y1="146" x2="690" y2="146"/>
+<text class="oc-lab" x="44" y="185">orders</text>
+<text class="tiny" x="44" y="199">id 499996</text>
+<rect class="f-bg s-line" x="40" y="219" width="72" height="22" rx="11" stroke-width="1.5"/>
+<text class="oc-lab mid" x="76" y="234">agent B</text>
+<line class="oc-lane" x1="122" y1="230" x2="690" y2="230"/>
+<!-- BOTTOM: what each session ran -->
+<rect class="box" x="30" y="286" width="670" height="184" rx="12"/>
+<!-- RIGHT: the outcome of each save -->
+<rect class="box" x="712" y="92" width="218" height="378" rx="12"/>
+<text class="oc-hd p123" x="726" y="113">OUTCOME OF EACH SAVE</text>
+<text class="oc-hd p4" x="726" y="113">WHAT TO USE AS A VERSION</text>
+<g class="p1">
+<!-- step 1: strip -->
+<rect class="f-bg" x="122" y="170" width="568" height="36" rx="5"/><rect class="f-teal-soft s-teal" x="122" y="170" width="568" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="130" y="185">88 Sukhumvit 11, Bangkok</text><text class="oc-meta" x="130" y="199">before: both agents read this</text>
+<g class="oc-w1"><rect class="f-bg" x="325" y="170" width="365" height="36" rx="5"/><rect class="f-purple-soft s-purple" x="325" y="170" width="365" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="333" y="185">88<tspan class="f-green b">/5</tspan> Sukhumvit 11, Bangkok</text><text class="oc-meta" x="333" y="199">after A’s save</text></g>
+<g class="oc-w2"><rect class="f-bg" x="495" y="170" width="195" height="36" rx="5"/><rect class="f-red-soft s-red" x="495" y="170" width="195" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="503" y="185">88 Sukhumvit 11, Bangkok <tspan class="f-purple b">10110</tspan></text><text class="oc-meta f-red sb" x="503" y="199">after B’s save: /5 is gone</text></g>
+<g class="oc-w3"><line class="s-blue" x1="135" y1="169" x2="135" y2="153" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w4"><circle class="f-blue oc-mk" cx="135" cy="146" r="5"/><text class="oc-ev start f-blue" x="129" y="137">read</text></g>
+<g class="oc-g5"><line class="oc-think" x1="142" y1="146" x2="318" y2="146"/></g>
+<g class="oc-w6"><text class="tiny mid" x="236" y="137">editing for minutes</text></g>
+<g class="oc-w7"><circle class="f-purple oc-mk" cx="325" cy="146" r="5"/><line class="s-purple" x1="325" y1="152" x2="325" y2="168" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev start f-purple" x="333" y="137">save → UPDATE 1</text></g>
+<g class="oc-w8"><line class="s-blue" x1="165" y1="207" x2="165" y2="223" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w9"><circle class="f-blue oc-mk" cx="165" cy="230" r="5"/><text class="oc-ev start f-blue" x="159" y="251">read</text></g>
+<g class="oc-g10"><line class="oc-think" x1="172" y1="230" x2="488" y2="230"/></g>
+<g class="oc-w11"><text class="tiny mid" x="330" y="251">editing for minutes</text></g>
+<g class="oc-w12"><circle class="f-purple oc-mk" cx="495" cy="230" r="5"/><line class="s-purple" x1="495" y1="224" x2="495" y2="208" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev mid f-purple" x="495" y="251">save → UPDATE 1</text></g>
+<circle class="pkt f-blue oc-t13" r="5.5"/>
+<circle class="pkt f-blue oc-t14" r="5.5"/>
+<circle class="pkt f-purple oc-t15" r="5.5"/>
+<circle class="pkt f-purple oc-t16" r="5.5"/>
+<!-- step 1: transcript -->
+<text class="oc-hd" x="44" y="307">WHAT EACH SESSION RAN AND SAW</text>
+<text class="tiny end" x="686" y="307">PostgreSQL 18.6 · each statement commits on its own</text>
+<g class="oc-w17"><rect class="f-panel-2 s-line" x="44" y="320" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="331">A</text><text class="oc-q" x="68" y="331">SELECT shipping_address FROM orders WHERE id = 499996</text><text class="oc-q end f-teal" x="686" y="331">88 Sukhumvit 11, Bangkok</text></g>
+<g class="oc-w18"><rect class="f-panel-2 s-line" x="44" y="341" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="352">B</text><text class="oc-q" x="68" y="352">SELECT shipping_address FROM orders WHERE id = 499996</text><text class="oc-q end f-teal" x="686" y="352">88 Sukhumvit 11, Bangkok</text></g>
+<g class="oc-w19"><rect class="f-panel-2 s-line" x="44" y="362" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="373">A</text><text class="oc-q" x="68" y="373">UPDATE orders SET shipping_address = '88<tspan class="f-green b">/5</tspan> Sukhumvit 11, Bangkok' WHERE id = 499996</text><text class="oc-q end f-green b" x="686" y="373">UPDATE 1</text></g>
+<g class="oc-w20"><rect class="f-panel-2 s-line" x="44" y="383" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="394">B</text><text class="oc-q" x="68" y="394">UPDATE orders SET shipping_address = '88 Sukhumvit 11, Bangkok <tspan class="f-purple b">10110</tspan>' WHERE id = 499996</text><text class="oc-q end f-green b" x="686" y="394">UPDATE 1</text></g>
+<g class="oc-w21"><line class="s-line" x1="44" y1="408" x2="686" y2="408" stroke-width="1"/><text class="oc-note" x="44" y="431">Each agent reads, edits for minutes, then saves. The read and the save are separate transactions,</text><text class="oc-note" x="44" y="448">so B’s UPDATE overwrites a row B never saw: <tspan class="f-red sb">A’s /5 is lost and nobody is told</tspan>.</text></g>
+<!-- step 1: outcomes -->
+<g class="oc-w22"><rect class="f-bg s-line" x="722" y="126" width="198" height="50" rx="8" stroke-width="1.2"/><text class="oc-cl" x="732" y="146">agent A’s save</text><rect class="f-green-soft s-green" x="844" y="133" width="66" height="17" rx="8.5" stroke-width="1.2"/><text class="oc-m b mid f-green" x="877" y="146">UPDATE 1</text><text class="tiny sb f-green" x="732" y="166">✓ saved</text></g>
+<g class="oc-w23"><rect class="f-bg s-line" x="722" y="184" width="198" height="50" rx="8" stroke-width="1.2"/><text class="oc-cl" x="732" y="204">agent B’s save</text><rect class="f-green-soft s-green" x="844" y="191" width="66" height="17" rx="8.5" stroke-width="1.2"/><text class="oc-m b mid f-green" x="877" y="204">UPDATE 1</text><text class="tiny sb f-green" x="732" y="224">✓ saved</text></g>
+<g class="oc-w24"><rect class="f-red-soft s-red" x="722" y="244" width="198" height="92" rx="8" stroke-width="1.2"/><text class="oc-cl f-red b" x="732" y="265">Lost update</text><text class="oc-cn" x="732" y="284">Both saves said UPDATE 1, yet</text><text class="oc-cn" x="732" y="300">A’s /5 is gone: the parcel</text><text class="oc-cn" x="732" y="316">goes to house 88, not 88/5.</text></g>
+<g class="oc-w25"><rect class="none s-line oc-dash" x="722" y="346" width="198" height="112" rx="8" stroke-width="1.2"/><text class="oc-cl sb" x="732" y="366">Not an isolation problem</text><text class="oc-cn" x="732" y="385">Run each save in a SERIALIZABLE</text><text class="oc-cn" x="732" y="401">transaction: both still commit.</text><text class="oc-cn" x="732" y="417">B read minutes earlier, in a</text><text class="oc-cn" x="732" y="433">transaction that had ended.</text></g>
+</g>
+<g class="p2">
+<!-- step 2: strip -->
+<rect class="f-bg" x="122" y="170" width="568" height="36" rx="5"/><rect class="f-teal-soft s-teal" x="122" y="170" width="568" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="130" y="185">88 Sukhumvit 11, Bangkok</text><text class="oc-meta" x="130" y="199">version 1</text>
+<g class="oc-w26"><rect class="f-bg" x="325" y="170" width="365" height="36" rx="5"/><rect class="f-purple-soft s-purple" x="325" y="170" width="365" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="333" y="185">88<tspan class="f-green b">/5</tspan> Sukhumvit 11, Bangkok</text><text class="oc-meta" x="333" y="199">version 2 · A’s save</text></g>
+<g class="oc-w27"><g><circle class="f-bg s-amber" cx="495" cy="214" r="6.5" stroke-width="1.5"/><path class="s-amber" d="M492.3 211.3l5.4 5.4M497.7 211.3l-5.4 5.4" stroke-width="1.6" stroke-linecap="round"/></g></g>
+<g class="oc-w28"><line class="s-blue" x1="135" y1="169" x2="135" y2="153" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w29"><circle class="f-blue oc-mk" cx="135" cy="146" r="5"/><text class="oc-ev start f-blue" x="129" y="137">read: version 1</text></g>
+<g class="oc-g30"><line class="oc-think" x1="142" y1="146" x2="318" y2="146"/></g>
+<g class="oc-w31"><circle class="f-purple oc-mk" cx="325" cy="146" r="5"/><line class="s-purple" x1="325" y1="152" x2="325" y2="168" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev mid f-purple" x="325" y="137">save if version 1 → 2</text></g>
+<g class="oc-w32"><line class="s-blue" x1="165" y1="207" x2="165" y2="223" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w33"><circle class="f-blue oc-mk" cx="165" cy="230" r="5"/><text class="oc-ev start f-blue" x="159" y="251">read: version 1</text></g>
+<g class="oc-g34"><line class="oc-think" x1="172" y1="230" x2="488" y2="230"/></g>
+<g class="oc-w35"><line class="s-purple" x1="495" y1="224" x2="495" y2="208" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev mid f-purple" x="495" y="251">save if version 1</text></g>
+<g class="oc-w36"><circle class="f-purple oc-mk" cx="495" cy="230" r="5"/></g>
+<g class="oc-w37"><circle class="f-amber oc-mk" cx="495" cy="230" r="5"/><text class="oc-ev mid f-amber-ink" x="495" y="265">→ 0 rows: conflict</text></g>
+<circle class="pkt f-blue oc-t38" r="5.5"/>
+<circle class="pkt f-blue oc-t39" r="5.5"/>
+<circle class="pkt f-purple oc-t40" r="5.5"/>
+<circle class="pkt f-purple oc-t41" r="5.5"/>
+<circle class="pkt f-amber oc-t42" r="5.5"/>
+<!-- step 2: statements -->
+<text class="oc-hd" x="44" y="307">SAVE ONLY IF THE VERSION IS UNCHANGED</text>
+<text class="tiny end" x="686" y="307">PostgreSQL 18.6</text>
+<text class="oc-q" x="44" y="330">ALTER TABLE orders ADD COLUMN version integer NOT NULL DEFAULT 1</text>
+<text class="tiny end" x="686" y="330">4 ms on 500,000 rows: no rewrite</text>
+<text class="oc-q" x="44" y="350">SELECT shipping_address, version FROM orders WHERE id = $1</text>
+<g class="oc-w43"><text class="oc-q end f-teal" x="686" y="350">A, B: version 1</text></g>
+<text class="oc-q" x="44" y="372">UPDATE orders SET shipping_address = $3, <tspan class="f-purple b">version = version + 1</tspan></text>
+<text class="oc-q" x="44" y="388"> WHERE id = $1 <tspan class="f-amber-ink b">AND version = $2</tspan> RETURNING version</text>
+<g class="oc-w44"><rect class="f-panel-2 s-line" x="44" y="403" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="414">A</text><text class="oc-q" x="68" y="414">$1 = 499996  $2 = 1  $3 = '88<tspan class="f-green b">/5</tspan> Sukhumvit 11, Bangkok'</text><text class="oc-q end f-green b" x="686" y="414">version 2 · UPDATE 1</text></g>
+<g class="oc-w45"><rect class="f-panel-2 s-line" x="44" y="424" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="435">B</text><text class="oc-q" x="68" y="435">$1 = 499996  $2 = 1  $3 = '88 Sukhumvit 11, Bangkok <tspan class="f-purple b">10110</tspan>'</text><text class="oc-q end f-amber-ink b" x="686" y="435">0 rows · UPDATE 0</text></g>
+<g class="oc-w46"><text class="oc-note" x="44" y="457">Zero rows is not an error in SQL: the app checks the count and turns UPDATE 0 into a conflict.</text></g>
+<g class="oc-w47"><rect class="f-bg s-line" x="722" y="126" width="198" height="50" rx="8" stroke-width="1.2"/><text class="oc-cl" x="732" y="146">agent A’s save</text><rect class="f-green-soft s-green" x="844" y="133" width="66" height="17" rx="8.5" stroke-width="1.2"/><text class="oc-m b mid f-green" x="877" y="146">UPDATE 1</text><text class="tiny sb f-green" x="732" y="166">✓ RETURNING version → 2</text></g>
+<g class="oc-w48"><rect class="f-amber-soft s-amber" x="722" y="184" width="198" height="66" rx="8" stroke-width="1.2"/><text class="oc-cl" x="732" y="204">agent B’s save</text><rect class="f-amber-soft s-amber" x="844" y="191" width="66" height="17" rx="8.5" stroke-width="1.2"/><text class="oc-m b mid f-amber-ink" x="877" y="204">UPDATE 0</text><text class="tiny sb f-amber-ink" x="732" y="223">conflict: nothing was written</text><text class="tiny" x="732" y="239">the tool shows B the new row</text></g>
+<g class="oc-w49"><rect class="f-orange-soft s-orange" x="722" y="260" width="198" height="198" rx="8" stroke-width="1.2"/><text class="oc-cl sb f-orange" x="732" y="279">If both saves land at once</text><text class="oc-cn" x="732" y="297">A’s UPDATE holds the row lock</text><text class="oc-cn" x="732" y="312">until it commits; B’s UPDATE waits.</text><text class="tiny" x="732" y="330">pg_locks, while B waits:</text><text class="oc-m" x="732" y="345">transactionid 148865 (A)</text><text class="oc-m" x="732" y="359">ShareLock · granted = f</text><text class="oc-cn" x="732" y="378">Then B re-checks its WHERE on</text><text class="oc-cn" x="732" y="393">A’s new row: version 2, so</text><text class="oc-cn" x="732" y="408">UPDATE 0. Check and write are</text><text class="oc-cn" x="732" y="423">one step. In REPEATABLE READ:</text><text class="oc-m f-red" x="732" y="441">ERROR 40001 instead</text></g>
+</g>
+<g class="p3">
+<!-- step 3: strip -->
+<rect class="f-bg" x="122" y="170" width="568" height="36" rx="5"/><rect class="f-teal-soft s-teal" x="122" y="170" width="568" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="130" y="185">88 Sukhumvit 11, Bangkok</text><text class="oc-meta" x="130" y="199">version 1 · ETag "1"</text>
+<g class="oc-w50"><rect class="f-bg" x="290" y="170" width="400" height="36" rx="5"/><rect class="f-purple-soft s-purple" x="290" y="170" width="400" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="298" y="185">88<tspan class="f-green b">/5</tspan> Sukhumvit 11, Bangkok</text><text class="oc-meta" x="298" y="199">version 2 · ETag "2"</text></g>
+<g class="oc-w51"><g><circle class="f-bg s-amber" cx="345" cy="214" r="6.5" stroke-width="1.5"/><path class="s-amber" d="M342.3 211.3l5.4 5.4M347.7 211.3l-5.4 5.4" stroke-width="1.6" stroke-linecap="round"/></g></g>
+<g class="oc-w52"><rect class="f-bg" x="470" y="170" width="220" height="36" rx="5"/><rect class="f-green-soft s-green" x="470" y="170" width="220" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="478" y="185">88<tspan class="f-green b">/5</tspan> Sukhumvit 11, Bangkok <tspan class="f-purple b">10110</tspan></text><text class="oc-meta f-green sb" x="478" y="199">version 3 · ETag "3" · both edits</text></g>
+<g class="oc-w53"><line class="s-blue" x1="135" y1="169" x2="135" y2="153" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w54"><circle class="f-blue oc-mk" cx="135" cy="146" r="5"/><text class="oc-ev start f-blue" x="129" y="137">GET · ETag "1"</text></g>
+<g class="oc-g55"><line class="oc-think" x1="142" y1="146" x2="283" y2="146"/></g>
+<g class="oc-w56"><circle class="f-purple oc-mk" cx="290" cy="146" r="5"/><line class="s-purple" x1="290" y1="152" x2="290" y2="168" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev mid f-purple" x="294" y="137">PUT If-Match "1" → 200</text></g>
+<g class="oc-w57"><line class="s-blue" x1="165" y1="207" x2="165" y2="223" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w58"><circle class="f-blue oc-mk" cx="165" cy="230" r="5"/><text class="oc-ev start f-blue" x="159" y="251">GET · ETag "1"</text></g>
+<g class="oc-g59"><line class="oc-think" x1="172" y1="230" x2="338" y2="230"/></g>
+<g class="oc-w60"><line class="s-purple" x1="345" y1="224" x2="345" y2="208" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev end f-purple" x="339" y="251">PUT If-Match "1"</text></g>
+<g class="oc-w61"><circle class="f-purple oc-mk" cx="345" cy="230" r="5"/></g>
+<g class="oc-w62"><circle class="f-amber oc-mk" cx="345" cy="230" r="5"/><text class="oc-ev end f-amber-ink" x="339" y="265">→ 412</text></g>
+<g class="oc-w63"><line class="s-blue" x1="395" y1="207" x2="395" y2="223" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w64"><circle class="f-blue oc-mk" cx="395" cy="230" r="5"/><text class="oc-ev start f-blue" x="389" y="265">GET · ETag "2"</text></g>
+<g class="oc-g65"><line class="oc-think" x1="402" y1="230" x2="463" y2="230"/></g>
+<g class="oc-w66"><circle class="f-purple oc-mk" cx="470" cy="230" r="5"/><line class="s-purple" x1="470" y1="224" x2="470" y2="208" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev start f-purple" x="464" y="251">PUT If-Match "2" → 200</text></g>
+<circle class="pkt f-blue oc-t67" r="5.5"/>
+<circle class="pkt f-blue oc-t68" r="5.5"/>
+<circle class="pkt f-purple oc-t69" r="5.5"/>
+<circle class="pkt f-purple oc-t70" r="5.5"/>
+<circle class="pkt f-amber oc-t71" r="5.5"/>
+<circle class="pkt f-blue oc-t72" r="5.5"/>
+<circle class="pkt f-purple oc-t73" r="5.5"/>
+<!-- step 3: the API -->
+<text class="oc-hd" x="44" y="307">THE API: HTTP IN, THE SAME CHECK IN SQL</text>
+<text class="tiny end" x="686" y="307">ETag · If-Match · 412 (RFC 9110)</text>
+<g class="oc-w74"><rect class="f-panel-2 s-line" x="44" y="318" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="329">A</text><text class="oc-q" x="68" y="329">GET /orders/499996</text><text class="oc-q b f-green" x="300" y="329">200 OK  ETag: "1"</text><text class="oc-q end f-muted" x="686" y="329">SELECT … version</text></g>
+<g class="oc-w75"><rect class="f-panel-2 s-line" x="44" y="338" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="349">B</text><text class="oc-q" x="68" y="349">GET /orders/499996</text><text class="oc-q b f-green" x="300" y="349">200 OK  ETag: "1"</text><text class="oc-q end f-muted" x="686" y="349">SELECT … version</text></g>
+<g class="oc-w76"><rect class="f-panel-2 s-line" x="44" y="358" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="369">A</text><text class="oc-q" x="68" y="369">PUT /orders/499996  <tspan class="f-purple b">If-Match</tspan>: "1"</text><text class="oc-q b f-green" x="300" y="369">200 OK  ETag: "2"</text><text class="oc-q end f-muted" x="686" y="369">UPDATE … version = 1 → 2</text></g>
+<g class="oc-w77"><rect class="f-panel-2 s-line" x="44" y="378" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="389">B</text><text class="oc-q" x="68" y="389">PUT /orders/499996  <tspan class="f-purple b">If-Match</tspan>: "1"</text><text class="oc-q b f-amber-ink" x="300" y="389">412 Precondition Failed</text><text class="oc-q end f-muted" x="686" y="389">UPDATE 0</text></g>
+<g class="oc-w78"><rect class="f-panel-2 s-line" x="44" y="398" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="409">B</text><text class="oc-q" x="68" y="409">GET /orders/499996</text><text class="oc-q b f-green" x="300" y="409">200 OK  ETag: "2"</text><text class="oc-q end f-muted" x="686" y="409">reload: show both edits</text></g>
+<g class="oc-w79"><rect class="f-panel-2 s-line" x="44" y="418" width="16" height="15" rx="4" stroke-width="1"/><text class="tiny sb mid f-ink" x="52" y="429">B</text><text class="oc-q" x="68" y="429">PUT /orders/499996  <tspan class="f-purple b">If-Match</tspan>: "2"</text><text class="oc-q b f-green" x="300" y="429">200 OK  ETag: "3"</text><text class="oc-q end f-muted" x="686" y="429">UPDATE … version = 2 → 3</text></g>
+<g class="oc-w80"><text class="oc-note" x="44" y="457">The 412 wrote nothing, so reloading and saving again is safe. A PUT without If-Match gets 428.</text></g>
+<g class="oc-w81"><rect class="f-bg s-line" x="722" y="126" width="198" height="50" rx="8" stroke-width="1.2"/><text class="oc-cl" x="732" y="146">agent A · PUT</text><rect class="f-green-soft s-green" x="854" y="133" width="56" height="17" rx="8.5" stroke-width="1.2"/><text class="oc-m b mid f-green" x="882" y="146">200 OK</text><text class="oc-m f-green" x="732" y="166">ETag: "2"</text></g>
+<g class="oc-w82"><rect class="f-amber-soft s-amber" x="722" y="184" width="198" height="66" rx="8" stroke-width="1.2"/><text class="oc-cl" x="732" y="204">agent B · PUT</text><rect class="f-amber-soft s-amber" x="870" y="191" width="40" height="17" rx="8.5" stroke-width="1.2"/><text class="oc-m b mid f-amber-ink" x="890" y="204">412</text><text class="tiny sb f-amber-ink" x="732" y="223">Precondition Failed</text><text class="tiny" x="732" y="239">the tool reloads and shows both</text></g>
+<g class="oc-w83"><rect class="f-bg s-line" x="722" y="258" width="198" height="66" rx="8" stroke-width="1.2"/><text class="oc-cl" x="732" y="278">B merges · PUT</text><rect class="f-green-soft s-green" x="854" y="265" width="56" height="17" rx="8.5" stroke-width="1.2"/><text class="oc-m b mid f-green" x="882" y="278">200 OK</text><text class="oc-m f-green" x="732" y="297">ETag: "3"</text><text class="tiny" x="732" y="313">88/5 and 10110 both kept</text></g>
+<g class="oc-w84"><rect class="none s-line oc-dash" x="722" y="334" width="198" height="124" rx="8" stroke-width="1.2"/><text class="oc-cl sb" x="732" y="353">Same idea elsewhere</text><text class="oc-cn" x="732" y="372">DynamoDB: a ConditionExpression</text><text class="oc-cn" x="732" y="387">on a version attribute; a stale</text><text class="oc-cn" x="732" y="402">write fails with HTTP 400</text><text class="oc-xs" x="732" y="418">ConditionalCheckFailedException</text><text class="oc-cn" x="732" y="437">and writes nothing.</text></g>
+</g>
+<g class="p4">
+<!-- step 4: strip -->
+<rect class="f-bg" x="122" y="170" width="568" height="36" rx="5"/><rect class="f-teal-soft s-teal" x="122" y="170" width="568" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="130" y="185">88 Sukhumvit 11, Bangkok</text><text class="oc-meta" x="130" y="199">version 1</text>
+<g class="oc-w85"><rect class="f-orange-soft s-orange oc-dash" x="135" y="173" width="295" height="30" rx="4" stroke-width="1.4"/><text class="oc-meta end f-orange sb" x="422" y="199">locked by A (FOR UPDATE)</text></g>
+<g class="oc-w86"><rect class="f-bg" x="430" y="170" width="260" height="36" rx="5"/><rect class="f-purple-soft s-purple" x="430" y="170" width="260" height="36" rx="5" stroke-width="1.2"/><text class="oc-val" x="438" y="185">88<tspan class="f-green b">/5</tspan> Sukhumvit 11, Bangkok</text><text class="oc-meta" x="438" y="199">version 2 · A commits</text></g>
+<g class="oc-w87"><line class="s-blue" x1="135" y1="169" x2="135" y2="153" stroke-width="1.6" marker-end="url(#ah-blue)"/></g>
+<g class="oc-w88"><circle class="f-orange oc-mk" cx="135" cy="146" r="5"/><text class="oc-ev start f-orange" x="129" y="137">BEGIN; SELECT … FOR UPDATE</text></g>
+<g class="oc-g89"><line class="oc-think oc-lock" x1="142" y1="146" x2="423" y2="146"/></g>
+<g class="oc-w90"><circle class="f-purple oc-mk" cx="430" cy="146" r="5"/><line class="s-purple" x1="430" y1="152" x2="430" y2="168" stroke-width="1.6" marker-end="url(#ah-purple)"/><text class="oc-ev mid f-purple" x="436" y="137">UPDATE …; COMMIT</text></g>
+<g class="oc-w91"><circle class="f-orange oc-mk" cx="165" cy="230" r="5"/><line class="s-orange" x1="165" y1="224" x2="165" y2="208" stroke-width="1.6" marker-end="url(#ah-orange)"/><text class="oc-ev start f-orange" x="159" y="251">SELECT … FOR UPDATE</text></g>
+<g class="oc-g92"><line class="oc-think oc-wait" x1="172" y1="230" x2="281" y2="230"/></g>
+<g class="oc-w93"><text class="oc-ev start f-orange" x="169" y="265">waits for A’s lock</text></g>
+<g class="oc-w94"><g><circle class="f-bg s-red" cx="290" cy="230" r="6.5" stroke-width="1.5"/><path class="s-red" d="M287.3 227.3l5.4 5.4M292.7 227.3l-5.4 5.4" stroke-width="1.6" stroke-linecap="round"/></g><text class="oc-ev start f-red" x="302" y="251">ERROR 55P03: canceling statement due to lock timeout</text><text class="tiny" x="302" y="265">after lock_timeout = 5s; the default 0 waits until A’s transaction ends</text></g>
+<circle class="pkt f-blue oc-t95" r="5.5"/>
+<circle class="pkt f-orange oc-t96" r="5.5"/>
+<circle class="pkt f-purple oc-t97" r="5.5"/>
+<!-- step 4: hot row -->
+<text class="oc-hd" x="44" y="307">ONE HOT ROW: 8 SESSIONS × 100 SAVES</text>
+<text class="tiny end" x="686" y="307">stock of product 7689 · one run on a laptop</text>
+<text class="tiny" x="226" y="327">attempts for 800 saves:</text>
+<rect class="f-green" x="352" y="319" width="9" height="9" rx="2"/><text class="tiny" x="365" y="327">saved</text><rect class="f-red" x="400" y="319" width="9" height="9" rx="2"/><text class="tiny" x="413" y="327">conflict, retried</text>
+<text class="tiny end" x="686" y="327">time</text>
+<text class="oc-q" x="44" y="351">optimistic, retry at once</text>
+<g class="oc-g98"><rect class="f-green" x="226" y="341" width="35.1" height="12" rx="2"/><rect class="f-red" x="262.1" y="341" width="184.9" height="12" rx="2"/></g>
+<g class="oc-w99"><text class="tiny f-red sb" x="455" y="351">5,019 attempts, 4,219 conflicts</text><text class="oc-q end b" x="686" y="351">1.1 s</text></g>
+<text class="oc-q" x="44" y="375">SELECT … FOR UPDATE</text>
+<g class="oc-g100"><rect class="f-green" x="226" y="365" width="35.1" height="12" rx="2"/></g>
+<g class="oc-w101"><text class="tiny " x="270.0667463638175" y="375">800: they queue on the row lock</text><text class="oc-q end b" x="686" y="375">0.7 s</text></g>
+<text class="oc-q" x="44" y="399">UPDATE … qty = qty - 1</text>
+<g class="oc-g102"><rect class="f-green" x="226" y="389" width="35.1" height="12" rx="2"/></g>
+<g class="oc-w103"><text class="tiny " x="270.0667463638175" y="399">800: no read, nothing to check</text><text class="oc-q end b" x="686" y="399">0.19 s</text></g>
+<text class="oc-q" x="44" y="423">optimistic, 8 other rows</text>
+<g class="oc-g104"><rect class="f-green" x="226" y="413" width="35.1" height="12" rx="2"/></g>
+<g class="oc-w105"><text class="tiny " x="270.0667463638175" y="423">800: no conflicts</text><text class="oc-q end b" x="686" y="423">0.16 s</text></g>
+<g class="oc-w106"><text class="oc-note" x="44" y="457">Conflicts grow with contention: 84% of the optimistic attempts failed and were retried.</text></g>
+<g class="oc-w107"><rect class="f-green-soft s-green" x="722" y="126" width="198" height="58" rx="8" stroke-width="1.2"/><text class="oc-cl sb" x="732" y="146">version integer</text><text class="oc-cl b f-green end" x="910" y="146">✓</text><text class="oc-cn" x="732" y="163">+1 on every save, never</text><text class="oc-cn" x="732" y="177">repeats, any engine</text></g>
+<g class="oc-w108"><rect class="f-red-soft s-red" x="722" y="192" width="198" height="128" rx="8" stroke-width="1.2"/><text class="oc-cl sb" x="732" y="212">updated_at timestamp</text><text class="oc-cl b f-red end" x="910" y="212">✗</text><text class="oc-cn" x="732" y="230">Only as fine as its clock: in</text><text class="oc-cn" x="732" y="246">MySQL 8.4 a DATETIME keeps</text><text class="oc-cn" x="732" y="262">whole seconds. A saved in the</text><text class="oc-cn" x="732" y="278">second B read it: no change,</text><text class="oc-cn" x="732" y="294">B’s check passed, /5 was lost.</text><text class="tiny" x="732" y="310">HTTP-date has 1 s steps too.</text></g>
+<g class="oc-w109"><rect class="f-amber-soft s-amber" x="722" y="328" width="198" height="130" rx="8" stroke-width="1.2"/><text class="oc-cl sb" x="732" y="348">xmin (PostgreSQL)</text><text class="oc-cl b f-amber-ink end" x="910" y="348">~</text><text class="oc-cn" x="732" y="366">The row version’s transaction</text><text class="oc-cn" x="732" y="382">id: new on every UPDATE, even</text><text class="oc-cn" x="732" y="398">one that changes nothing:</text><text class="oc-m" x="732" y="414">148870 → 148878, version 1</text><text class="oc-cn" x="732" y="432">32-bit and wraps; a restore</text><text class="oc-cn" x="732" y="448">gives every row a new one.</text></g>
+</g>
+</g>
+</svg>

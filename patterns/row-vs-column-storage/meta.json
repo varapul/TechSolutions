@@ -1,0 +1,45 @@
+{
+  "aka": ["columnar storage", "column store", "row store"],
+  "steps": [
+    {
+      "title": "A row store reads it all",
+      "caption": "PostgreSQL reads every page of whole rows, 82 MB, to use 19 of each row's 68 bytes: about 130 ms.",
+      "body": "Acme's analysts want revenue per product category over all 1,250,000 order items. PostgreSQL keeps each row whole on 8 kB heap pages, 120 to a page, so its **Parallel Seq Scan** reads all **10,417 pages** of `order_items` and the 94 pages of `products`: 82 MB. A row takes 68 bytes of its page (a 24-byte header, a 4-byte pointer, 9 bytes of padding and 31 bytes of values) and the query uses 19 of them, `product_id`, `qty` and `price_thb`: about **130 ms** with two parallel workers and 330 ms in one process (medians of nine runs on a laptop)."
+    },
+    {
+      "title": "Store each column apart",
+      "caption": "DuckDB stores each column apart, bit-packed to 1 to 20 bits a value; the scan reads 3 of 5 columns.",
+      "body": "A column store such as **DuckDB** (1.5.6 here) cuts a table into row groups of up to 122,880 rows and stores each column of a row group as its own compressed segment. One column's values look alike, so frame-of-reference **bit-packing** fits `qty` and `line_no` in 2 bits a value, `product_id` in 14 and `price_thb` (a `DECIMAL` kept as an integer) in 20, delta encoding fits the sorted `order_id` in about 1 bit, and `category` becomes a dictionary. The scan reads only the three columns the query needs, and each operator takes **vectors of up to 2,048 values** where PostgreSQL's plan nodes hand up one row per call."
+    },
+    {
+      "title": "Measured: 13× less data",
+      "caption": "Same 12 rows: DuckDB reads 6.25 MB instead of 82 MB and answers in about 5 ms instead of 130 ms.",
+      "body": "Loaded with the same rows, DuckDB returns the same 12 sums after reading **25 blocks of 256 kB (6.25 MB)**, 13 times less, in about **5 ms** with 8 threads; on one core it takes 11 ms against PostgreSQL's 330 ms. Three of five columns, packed into 36 bits a row with no per-row headers, shrink the bytes, and vectors shrink the CPU work. With a filter, **zone maps** (each segment's minimum and maximum) skip more: for September's orders the join passed `order_id` 475,224–498,664 to the scan, which read 2 of 11 row groups (2.25 MB, 2 ms), while PostgreSQL read all 15,569 pages of the three tables (47 ms)."
+    },
+    {
+      "title": "One-row writes favour rows",
+      "caption": "One UPDATE: PostgreSQL writes a new row version; DuckDB's CHECKPOINT rewrites 122,880 qty values.",
+      "body": "Change one `qty`: PostgreSQL finds the row through `order_items_pkey` (4 pages) and writes a new 59-byte version at (10416,81), since page 0 has 8 bytes free, plus an index entry: 3 WAL records, 235 bytes. DuckDB scans the 122,880 keys of row group 0, logs 147 bytes, and its next `CHECKPOINT` rewrites the whole `qty` segment of that row group, 266,240 bytes. Run OLTP on a row store and analytics on a column store, and move the data between them with [change data capture](../change-data-capture/) or batch ELT into a [medallion architecture](../medallion-architecture/)."
+    }
+  ],
+  "related": ["medallion-architecture", "change-data-capture", "materialized-view", "cqrs", "join-algorithms", "index-types", "postgresql", "amazon-s3", "lsm-tree"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — Database Page Layout", "url": "https://www.postgresql.org/docs/18/storage-page-layout.html" },
+    { "title": "PostgreSQL 18 documentation — Executor (one row per call)", "url": "https://www.postgresql.org/docs/18/executor.html" },
+    { "title": "PostgreSQL 18 documentation — Heap-Only Tuples (HOT)", "url": "https://www.postgresql.org/docs/18/storage-hot.html" },
+    { "title": "PostgreSQL 18 documentation — BRIN Indexes", "url": "https://www.postgresql.org/docs/18/brin.html" },
+    { "title": "DuckDB documentation — Storage Versions and Format (compression algorithms, row groups)", "url": "https://duckdb.org/docs/current/internals/storage.html" },
+    { "title": "DuckDB documentation — Execution Format (vectors)", "url": "https://duckdb.org/docs/current/internals/vector.html" },
+    { "title": "DuckDB documentation — Indexing (zonemaps and ART indexes)", "url": "https://duckdb.org/docs/current/guides/performance/indexing.html" },
+    { "title": "DuckDB documentation — Concurrency", "url": "https://duckdb.org/docs/current/connect/concurrency.html" },
+    { "title": "DuckDB blog — Lightweight Compression in DuckDB (2022)", "url": "https://duckdb.org/2022/10/28/lightweight-compression.html" },
+    { "title": "Apache Parquet — Encodings", "url": "https://parquet.apache.org/docs/file-format/data-pages/encodings/" },
+    { "title": "Mike Stonebraker et al. — C-Store: A Column-oriented DBMS (VLDB 2005)", "url": "https://www.vldb.org/archives/website/2005/program/paper/thu/p553-stonebraker.pdf" },
+    { "title": "Daniel Abadi, Peter Boncz, Stavros Harizopoulos, Stratos Idreos and Samuel Madden — The Design and Implementation of Modern Column-Oriented Database Systems (Foundations and Trends in Databases, 2013)", "url": "https://www.cs.umd.edu/~abadi/papers/abadi-column-stores.pdf" },
+    { "title": "Peter Boncz, Marcin Zukowski and Niels Nes — MonetDB/X100: Hyper-Pipelining Query Execution (CIDR 2005)", "url": "https://www.cidrdb.org/cidr2005/papers/P19.pdf" },
+    { "title": "MySQL 8.4 Reference Manual — InnoDB Row Formats", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-row-format.html" },
+    { "title": "Microsoft Learn — Columnstore indexes: Overview (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/indexes/columnstore-indexes-overview" },
+    { "title": "Amazon Redshift Database Developer Guide — Columnar storage", "url": "https://docs.aws.amazon.com/redshift/latest/dg/c_columnar_storage_disk_mem_mgmnt.html" },
+    { "title": "Amazon Aurora User Guide — Aurora zero-ETL integrations", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/zero-etl.html" }
+  ]
+}

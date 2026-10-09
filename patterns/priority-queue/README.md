@@ -76,6 +76,10 @@ In the diagram, four workers each finish 2.5 jobs a second (10 in total, 0.4 s p
 
 - [RabbitMQ](../rabbitmq/) — A message broker: exchanges route each message into queues, and a consumer holds it until it acknowledges or rejects it.
 
+## Related database topics
+
+- [Locks & Deadlocks](../locks-and-deadlocks/) — Row locks make writers wait for each other; two transactions waiting on each other is a deadlock, and the database aborts one.
+
 ## References
 
 - [Azure Architecture Center — Priority Queue pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/priority-queue)

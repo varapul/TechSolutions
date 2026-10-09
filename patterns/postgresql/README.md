@@ -222,6 +222,15 @@ ORDER BY n_dead_tup DESC LIMIT 5;
 - [N+1 Queries](../n-plus-one-queries/) — One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it.
 - [Keyset Pagination](../keyset-pagination/) — Page with WHERE key > last seen instead of OFFSET, so page 1,000 is as fast as page 1 and no row repeats or goes missing.
 - [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
+- [Transaction Isolation Levels](../isolation-levels/) — What concurrent transactions can see of each other: the anomalies each isolation level allows and the defaults engines use.
+- [MVCC](../mvcc/) — Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions.
+- [Locks & Deadlocks](../locks-and-deadlocks/) — Row locks make writers wait for each other; two transactions waiting on each other is a deadlock, and the database aborts one.
+- [Optimistic Concurrency Control](../optimistic-concurrency/) — Update a row only if it is unchanged since you read it, using a version column, and retry on conflict instead of holding locks.
+- [Write-Ahead Log](../write-ahead-log/) — Log each change before applying it, so a commit survives a crash, recovery replays the log, and replicas and backups follow it.
+- [LSM Tree vs B-Tree](../lsm-tree/) — Two storage engine designs: update pages in place, or append in memory and merge sorted files, and what each costs to read and write.
+- [Row vs Column Storage](../row-vs-column-storage/) — Store rows together for transactions or columns together for analytics, and why a column store scans and compresses so much faster.
+- [Connection Pooling](../connection-pooling/) — Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database.
+- [Table Partitioning](../table-partitioning/) — Split a large table into partitions by range, list or hash, so queries skip partitions and old data is dropped in an instant.
 
 ## References
 

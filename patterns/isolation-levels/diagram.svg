@@ -1,0 +1,1814 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Transaction Isolation Levels</title>
+<desc id="dg-desc">Transaction Isolation Levels. What concurrent transactions can see of each other: the anomalies each isolation level allows and the defaults engines use. Step 1, Two runs at READ COMMITTED: At READ COMMITTED the report reads 51,179.03, then 47,193.60, and two sales take stock from 10 to 9. Step 2, The anomalies, named: Named: never a dirty read, but a non-repeatable read, a phantom, a lost update and write skew. Step 3, Stronger levels, retried: REPEATABLE READ keeps one snapshot and aborts B with 40001; only SERIALIZABLE stops the write skew. Step 4, Costs and other engines: Retries cost throughput and FOR UPDATE waits; MySQL's default still loses the update, with no error.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Transaction Isolation Levels</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Two runs at READ COMMITTED</text>
+  <text class="step on p1" x="40" y="518">1 · Two runs at READ COMMITTED</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · The anomalies, named</text>
+  <text class="step on p2" x="262" y="518">2 · The anomalies, named</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Stronger levels, retried</text>
+  <text class="step on p3" x="484" y="518">3 · Stronger levels, retried</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Costs and other engines</text>
+  <text class="step on p4" x="706" y="518">4 · Costs and other engines</text>
+  <text class="caption p1" x="40" y="552">At READ COMMITTED the report reads 51,179.03, then 47,193.60, and two sales take stock from 10 to 9.</text>
+  <text class="caption p2" x="40" y="552">Named: never a dirty read, but a non-repeatable read, a phantom, a lost update and write skew.</text>
+  <text class="caption p3" x="40" y="552">REPEATABLE READ keeps one snapshot and aborts B with 40001; only SERIALIZABLE stops the write skew.</text>
+  <text class="caption p4" x="40" y="552">Retries cost throughput and FOR UPDATE waits; MySQL's default still loses the update, with no error.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Transaction Isolation Levels. Real runs on PostgreSQL 18.6 (Acme Shop sample data, copy isolation_levels)
+   and MySQL 8.4.11; each session is a separate psql/mysql process driven in a fixed order by a script.
+   (a) report: order 495179 total 51,179.03, customer 42 has 179 orders; B refunds line 3 (3,985.43), C adds order 500001
+       RC: 51,179.03 / 51,179.03 (B uncommitted) / 47,193.60 and 179 / 180.  RR, SER: 51,179.03 x3 and 179 / 179.
+   (b) stock 2892 qty 10, two read-then-write sales. RC: qty 9 (lost update). RR, SER: B gets 40001, retries, qty 8.
+   (c) shift_leads 1 Anan, 2 Malee on duty. RC, RR: both commit, 0 on duty (write skew). SER: B's COMMIT fails with
+       40001 (read/write dependencies), retry sees 1 on duty.
+   0-25%   READ COMMITTED: (a) and (b) run
+   25-50%  the anomalies named, the SQL standard (dashed), (c) runs at READ COMMITTED
+   50-75%  REPEATABLE READ: (a) fixed, (b) 40001 + retry, (c) still passes; SERIALIZABLE: (c) 40001 at COMMIT
+   75-100% costs (pgbench, 8 sessions x 10 s, median of 3), SELECT ... FOR UPDATE, MySQL 8.4 lost update,
+           the table per engine; 19.5-20 s the scene resets to the start of step 1 */
+.diagram .il-m { font-size: 11px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+.diagram .il-h { font-size: 12px; font-weight: 600; }
+.diagram .il-eb { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; fill: var(--muted); }
+.diagram .il-bl { font-size: 9px; font-weight: 700; }
+.diagram .il-pill { font-size: 10px; font-weight: 700; }
+.diagram .il-sel { animation: il-sel var(--T) linear infinite; }
+.diagram .il-s1 { animation: il-s1 var(--T) linear infinite; }
+.diagram .il-s2 { opacity: 0; animation: il-s2 var(--T) linear infinite; }
+.diagram .il-s3 { opacity: 0; animation: il-s3 var(--T) linear infinite; }
+.diagram .il-s4 { opacity: 0; animation: il-s4 var(--T) linear infinite; }
+.diagram .il-s5 { opacity: 0; animation: il-s5 var(--T) linear infinite; }
+.diagram .il-s6 { opacity: 0; animation: il-s6 var(--T) linear infinite; }
+.diagram .il-s7 { opacity: 0; animation: il-s7 var(--T) linear infinite; }
+.diagram .il-s8 { opacity: 0; animation: il-s8 var(--T) linear infinite; }
+.diagram .il-s9 { opacity: 0; animation: il-s9 var(--T) linear infinite; }
+.diagram .il-s10 { opacity: 0; animation: il-s10 var(--T) linear infinite; }
+.diagram .il-s11 { opacity: 0; animation: il-s11 var(--T) linear infinite; }
+.diagram .il-s12 { opacity: 0; animation: il-s12 var(--T) linear infinite; }
+.diagram .il-h13 { animation: il-h13 var(--T) linear infinite; }
+.diagram .il-h14 { animation: il-h14 var(--T) linear infinite; }
+.diagram .il-l15 { animation: il-l15 var(--T) linear infinite; }
+.diagram .il-n16 { opacity: 0; animation: il-n16 var(--T) linear infinite; }
+.diagram .il-r17 { animation: il-r17 var(--T) linear infinite; }
+.diagram .il-r18 { animation: il-r18 var(--T) linear infinite; }
+.diagram .il-r19 { animation: il-r19 var(--T) linear infinite; }
+.diagram .il-r20 { animation: il-r20 var(--T) linear infinite; }
+.diagram .il-r21 { animation: il-r21 var(--T) linear infinite; }
+.diagram .il-n22 { animation: il-n22 var(--T) linear infinite; }
+.diagram .il-n23 { opacity: 0; animation: il-n23 var(--T) linear infinite; }
+.diagram .il-r24 { animation: il-r24 var(--T) linear infinite; }
+.diagram .il-r25 { animation: il-r25 var(--T) linear infinite; }
+.diagram .il-r26 { animation: il-r26 var(--T) linear infinite; }
+.diagram .il-n27 { animation: il-n27 var(--T) linear infinite; }
+.diagram .il-n28 { animation: il-n28 var(--T) linear infinite; }
+.diagram .il-n29 { opacity: 0; animation: il-n29 var(--T) linear infinite; }
+.diagram .il-n30 { opacity: 0; animation: il-n30 var(--T) linear infinite; }
+.diagram .il-n31 { opacity: 0; animation: il-n31 var(--T) linear infinite; }
+.diagram .il-r32 { animation: il-r32 var(--T) linear infinite; }
+.diagram .il-n33 { animation: il-n33 var(--T) linear infinite; }
+.diagram .il-n34 { animation: il-n34 var(--T) linear infinite; }
+.diagram .il-n35 { opacity: 0; animation: il-n35 var(--T) linear infinite; }
+.diagram .il-n36 { opacity: 0; animation: il-n36 var(--T) linear infinite; }
+.diagram .il-n37 { opacity: 0; animation: il-n37 var(--T) linear infinite; }
+.diagram .il-h38 { animation: il-h38 var(--T) linear infinite; }
+.diagram .il-c39 { opacity: 0; animation: il-c39 var(--T) linear infinite; }
+.diagram .il-c40 { animation: il-c40 var(--T) linear infinite; }
+.diagram .il-c41 { opacity: 0; animation: il-c41 var(--T) linear infinite; }
+.diagram .il-r42 { animation: il-r42 var(--T) linear infinite; }
+.diagram .il-r43 { animation: il-r43 var(--T) linear infinite; }
+.diagram .il-r44 { animation: il-r44 var(--T) linear infinite; }
+.diagram .il-r45 { animation: il-r45 var(--T) linear infinite; }
+.diagram .il-w46 { opacity: 0; animation: il-w46 var(--T) linear infinite; }
+.diagram .il-r47 { animation: il-r47 var(--T) linear infinite; }
+.diagram .il-r48 { animation: il-r48 var(--T) linear infinite; }
+.diagram .il-n49 { animation: il-n49 var(--T) linear infinite; }
+.diagram .il-n50 { animation: il-n50 var(--T) linear infinite; }
+.diagram .il-n51 { opacity: 0; animation: il-n51 var(--T) linear infinite; }
+.diagram .il-r52 { opacity: 0; animation: il-r52 var(--T) linear infinite; }
+.diagram .il-r53 { opacity: 0; animation: il-r53 var(--T) linear infinite; }
+.diagram .il-h54 { animation: il-h54 var(--T) linear infinite; }
+.diagram .il-h55 { animation: il-h55 var(--T) linear infinite; }
+.diagram .il-d56 { animation: il-d56 var(--T) linear infinite; }
+.diagram .il-d57 { opacity: 0; animation: il-d57 var(--T) linear infinite; }
+.diagram .il-d58 { animation: il-d58 var(--T) linear infinite; }
+.diagram .il-d59 { opacity: 0; animation: il-d59 var(--T) linear infinite; }
+.diagram .il-l60 { animation: il-l60 var(--T) linear infinite; }
+.diagram .il-q61 { animation: il-q61 var(--T) linear infinite; }
+.diagram .il-q62 { animation: il-q62 var(--T) linear infinite; }
+.diagram .il-q63 { animation: il-q63 var(--T) linear infinite; }
+.diagram .il-q64 { animation: il-q64 var(--T) linear infinite; }
+.diagram .il-q65 { animation: il-q65 var(--T) linear infinite; }
+.diagram .il-q66 { animation: il-q66 var(--T) linear infinite; }
+.diagram .il-q67 { animation: il-q67 var(--T) linear infinite; }
+.diagram .il-r68 { opacity: 0; animation: il-r68 var(--T) linear infinite; }
+.diagram .il-r69 { opacity: 0; animation: il-r69 var(--T) linear infinite; }
+.diagram .il-r70 { opacity: 0; animation: il-r70 var(--T) linear infinite; }
+.diagram .il-r71 { opacity: 0; animation: il-r71 var(--T) linear infinite; }
+.diagram .il-r72 { opacity: 0; animation: il-r72 var(--T) linear infinite; }
+.diagram .il-r73 { opacity: 0; animation: il-r73 var(--T) linear infinite; }
+.diagram .il-n74 { opacity: 0; animation: il-n74 var(--T) linear infinite; }
+.diagram .il-n75 { opacity: 0; animation: il-n75 var(--T) linear infinite; }
+.diagram .il-r76 { opacity: 0; animation: il-r76 var(--T) linear infinite; }
+.diagram .il-r77 { opacity: 0; animation: il-r77 var(--T) linear infinite; }
+.diagram .il-r78 { opacity: 0; animation: il-r78 var(--T) linear infinite; }
+.diagram .il-o79 { animation: il-o79 var(--T) linear infinite; }
+.diagram .il-o80 { opacity: 0; animation: il-o80 var(--T) linear infinite; }
+.diagram .il-o81 { opacity: 0; animation: il-o81 var(--T) linear infinite; }
+.diagram .il-o82 { opacity: 0; animation: il-o82 var(--T) linear infinite; }
+.diagram .il-o83 { animation: il-o83 var(--T) linear infinite; }
+.diagram .il-o84 { opacity: 0; animation: il-o84 var(--T) linear infinite; }
+.diagram .il-o85 { opacity: 0; animation: il-o85 var(--T) linear infinite; }
+.diagram .il-o86 { opacity: 0; animation: il-o86 var(--T) linear infinite; }
+.diagram .il-t87 { animation: il-t87 var(--T) linear infinite; }
+.diagram .il-t88 { opacity: 0; animation: il-t88 var(--T) linear infinite; }
+.diagram .il-t89 { animation: il-t89 var(--T) linear infinite; }
+.diagram .il-t90 { animation: il-t90 var(--T) linear infinite; }
+.diagram .il-t91 { animation: il-t91 var(--T) linear infinite; }
+.diagram .il-t92 { opacity: 0; animation: il-t92 var(--T) linear infinite; }
+.diagram .il-t93 { opacity: 0; animation: il-t93 var(--T) linear infinite; }
+.diagram .il-t94 { opacity: 0; animation: il-t94 var(--T) linear infinite; }
+.diagram .il-t95 { opacity: 0; animation: il-t95 var(--T) linear infinite; }
+.diagram .il-k96 { animation: il-k96 var(--T) linear infinite; }
+.diagram .il-k97 { animation: il-k97 var(--T) linear infinite; }
+.diagram .il-k98 { animation: il-k98 var(--T) linear infinite; }
+.diagram .il-k99 { animation: il-k99 var(--T) linear infinite; }
+.diagram .il-k100 { opacity: 0; animation: il-k100 var(--T) linear infinite; }
+.diagram .il-k101 { opacity: 0; animation: il-k101 var(--T) linear infinite; }
+.diagram .il-k102 { opacity: 0; animation: il-k102 var(--T) linear infinite; }
+.diagram .il-k103 { opacity: 0; animation: il-k103 var(--T) linear infinite; }
+.diagram .il-k104 { opacity: 0; animation: il-k104 var(--T) linear infinite; }
+.diagram .il-k105 { opacity: 0; animation: il-k105 var(--T) linear infinite; }
+.diagram .il-k106 { opacity: 0; animation: il-k106 var(--T) linear infinite; }
+.diagram .il-k107 { opacity: 0; animation: il-k107 var(--T) linear infinite; }
+.diagram .il-k108 { opacity: 0; animation: il-k108 var(--T) linear infinite; }
+.diagram .il-k109 { opacity: 0; animation: il-k109 var(--T) linear infinite; }
+.diagram .il-k110 { opacity: 0; animation: il-k110 var(--T) linear infinite; }
+.diagram .il-k111 { opacity: 0; animation: il-k111 var(--T) linear infinite; }
+.diagram .il-k112 { opacity: 0; animation: il-k112 var(--T) linear infinite; }
+.diagram .il-k113 { opacity: 0; animation: il-k113 var(--T) linear infinite; }
+.diagram .il-k114 { opacity: 0; animation: il-k114 var(--T) linear infinite; }
+.diagram .il-k115 { opacity: 0; animation: il-k115 var(--T) linear infinite; }
+.diagram .il-k116 { opacity: 0; animation: il-k116 var(--T) linear infinite; }
+.diagram .il-k117 { opacity: 0; animation: il-k117 var(--T) linear infinite; }
+.diagram .il-k118 { opacity: 0; animation: il-k118 var(--T) linear infinite; }
+.diagram .il-k119 { opacity: 0; animation: il-k119 var(--T) linear infinite; }
+.diagram .il-k120 { opacity: 0; animation: il-k120 var(--T) linear infinite; }
+.diagram .il-k121 { opacity: 0; animation: il-k121 var(--T) linear infinite; }
+.diagram .il-k122 { opacity: 0; animation: il-k122 var(--T) linear infinite; }
+.diagram .il-k123 { opacity: 0; animation: il-k123 var(--T) linear infinite; }
+.diagram .il-k124 { opacity: 0; animation: il-k124 var(--T) linear infinite; }
+.diagram .il-k125 { opacity: 0; animation: il-k125 var(--T) linear infinite; }
+.diagram .il-t126 { animation: il-t126 var(--T) linear infinite; }
+.diagram .il-t127 { opacity: 0; animation: il-t127 var(--T) linear infinite; }
+.diagram .il-t128 { opacity: 0; animation: il-t128 var(--T) linear infinite; }
+.diagram .il-x129 { opacity: 0; animation: il-x129 var(--T) linear infinite; }
+.diagram .il-x130 { opacity: 0; animation: il-x130 var(--T) linear infinite; }
+.diagram .il-x131 { opacity: 0; animation: il-x131 var(--T) linear infinite; }
+.diagram .il-x132 { opacity: 0; animation: il-x132 var(--T) linear infinite; }
+.diagram .il-x133 { opacity: 0; animation: il-x133 var(--T) linear infinite; }
+.diagram .il-x134 { opacity: 0; animation: il-x134 var(--T) linear infinite; }
+.diagram .il-y135 { opacity: 0; animation: il-y135 var(--T) linear infinite; }
+.diagram .il-c136 { opacity: 0; animation: il-c136 var(--T) linear infinite; }
+.diagram .il-c137 { opacity: 0; animation: il-c137 var(--T) linear infinite; }
+.diagram .il-c138 { opacity: 0; animation: il-c138 var(--T) linear infinite; }
+.diagram .il-y139 { opacity: 0; animation: il-y139 var(--T) linear infinite; }
+.diagram .il-r140 { opacity: 0; animation: il-r140 var(--T) linear infinite; }
+.diagram .il-r141 { opacity: 0; animation: il-r141 var(--T) linear infinite; }
+.diagram .il-r142 { opacity: 0; animation: il-r142 var(--T) linear infinite; }
+.diagram .il-r143 { opacity: 0; animation: il-r143 var(--T) linear infinite; }
+.diagram .il-r144 { opacity: 0; animation: il-r144 var(--T) linear infinite; }
+.diagram .il-r145 { opacity: 0; animation: il-r145 var(--T) linear infinite; }
+.diagram .il-r146 { opacity: 0; animation: il-r146 var(--T) linear infinite; }
+.diagram .il-z147 { opacity: 0; animation: il-z147 var(--T) linear infinite; }
+.diagram .il-c148 { opacity: 0; animation: il-c148 var(--T) linear infinite; }
+.diagram .il-c149 { opacity: 0; animation: il-c149 var(--T) linear infinite; }
+.diagram .il-r150 { opacity: 0; animation: il-r150 var(--T) linear infinite; }
+.diagram .il-r151 { opacity: 0; animation: il-r151 var(--T) linear infinite; }
+.diagram .il-r152 { opacity: 0; animation: il-r152 var(--T) linear infinite; }
+.diagram .il-r153 { opacity: 0; animation: il-r153 var(--T) linear infinite; }
+.diagram .il-r154 { opacity: 0; animation: il-r154 var(--T) linear infinite; }
+.diagram .il-r155 { opacity: 0; animation: il-r155 var(--T) linear infinite; }
+.diagram .il-z156 { opacity: 0; animation: il-z156 var(--T) linear infinite; }
+.diagram .il-z157 { opacity: 0; animation: il-z157 var(--T) linear infinite; }
+.diagram .il-z158 { opacity: 0; animation: il-z158 var(--T) linear infinite; }
+.diagram .il-z159 { opacity: 0; animation: il-z159 var(--T) linear infinite; }
+@keyframes il-sel {
+  0% { transform: translate(0px, 0px); opacity: 1; }
+  50% { transform: translate(0px, 0px); opacity: 1; }
+  52.5% { transform: translate(189px, 0px); opacity: 1; }
+  63% { transform: translate(189px, 0px); opacity: 1; }
+  65.5% { transform: translate(378px, 0px); opacity: 1; }
+  75% { transform: translate(378px, 0px); opacity: 1; }
+  76.5% { transform: translate(378px, 0px); opacity: 0; }
+  98% { transform: translate(0px, 0px); opacity: 0; }
+  99% { transform: translate(0px, 0px); opacity: 1; }
+  100% { transform: translate(0px, 0px); opacity: 1; }
+}
+@keyframes il-s1 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-s2 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s3 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s4 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s5 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s6 {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  52% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s7 {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  52% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s8 {
+  0% { opacity: 0; }
+  51% { opacity: 0; }
+  52% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s9 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s10 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s11 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-s12 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-h13 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-h14 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-l15 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-n16 {
+  0% { opacity: 0; }
+  52% { opacity: 0; }
+  53% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r17 {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r18 {
+  0% { opacity: 0; }
+  3.25% { opacity: 0; }
+  4.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r19 {
+  0% { opacity: 0; }
+  5% { opacity: 0; }
+  6% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r20 {
+  0% { opacity: 0; }
+  5.75% { opacity: 0; }
+  6.75% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r21 {
+  0% { opacity: 0; }
+  7.5% { opacity: 0; }
+  8.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n22 {
+  0% { opacity: 0; }
+  8.75% { opacity: 0; }
+  9.75% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n23 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r24 {
+  0% { opacity: 0; }
+  10.25% { opacity: 0; }
+  11.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r25 {
+  0% { opacity: 0; }
+  12% { opacity: 0; }
+  13% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r26 {
+  0% { opacity: 0; }
+  14% { opacity: 0; }
+  15% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n27 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  52.5% { opacity: 1; }
+  53.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n28 {
+  0% { opacity: 0; }
+  15.5% { opacity: 0; }
+  16.5% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n29 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.5% { opacity: 1; }
+  52.5% { opacity: 1; }
+  53.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n30 {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n31 {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  54% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r32 {
+  0% { opacity: 0; }
+  16.25% { opacity: 0; }
+  17.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n33 {
+  0% { opacity: 0; }
+  17.25% { opacity: 0; }
+  18.25% { opacity: 1; }
+  53.5% { opacity: 1; }
+  54.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n34 {
+  0% { opacity: 0; }
+  17.75% { opacity: 0; }
+  18.75% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n35 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.5% { opacity: 1; }
+  53.5% { opacity: 1; }
+  54.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n36 {
+  0% { opacity: 0; }
+  53.5% { opacity: 0; }
+  54.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n37 {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  55% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-h38 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-c39 {
+  0% { opacity: 1; }
+  15% { opacity: 1; }
+  16% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-c40 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  59.5% { opacity: 1; }
+  60.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-c41 {
+  0% { opacity: 0; }
+  59.5% { opacity: 0; }
+  60.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r42 {
+  0% { opacity: 0; }
+  4.5% { opacity: 0; }
+  5.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r43 {
+  0% { opacity: 0; }
+  6.5% { opacity: 0; }
+  7.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r44 {
+  0% { opacity: 0; }
+  8.5% { opacity: 0; }
+  9.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r45 {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-w46 {
+  0% { opacity: 0; }
+  11.5% { opacity: 0; }
+  12.5% { opacity: 1; }
+  15% { opacity: 1; }
+  16% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r47 {
+  0% { opacity: 0; }
+  14.5% { opacity: 0; }
+  15.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r48 {
+  0% { opacity: 0; }
+  15.75% { opacity: 0; }
+  16.75% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n49 {
+  0% { opacity: 0; }
+  15.75% { opacity: 0; }
+  16.75% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n50 {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  19% { opacity: 1; }
+  26.5% { opacity: 1; }
+  27.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n51 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.5% { opacity: 1; }
+  55.5% { opacity: 1; }
+  56.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r52 {
+  0% { opacity: 0; }
+  56% { opacity: 0; }
+  57% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r53 {
+  0% { opacity: 0; }
+  58.5% { opacity: 0; }
+  59.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-h54 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-h55 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-d56 {
+  0% { opacity: 1; }
+  38.5% { opacity: 1; }
+  39.5% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-d57 {
+  0% { opacity: 0; }
+  38.5% { opacity: 0; }
+  39.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-d58 {
+  0% { opacity: 1; }
+  40.5% { opacity: 1; }
+  41.5% { opacity: 0; }
+  66.5% { opacity: 0; }
+  67.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-d59 {
+  0% { opacity: 0; }
+  40.5% { opacity: 0; }
+  41.5% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-l60 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-q61 {
+  0% { opacity: 1; }
+  30% { opacity: 1; }
+  31% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-q62 {
+  0% { opacity: 1; }
+  32% { opacity: 1; }
+  33% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-q63 {
+  0% { opacity: 1; }
+  34% { opacity: 1; }
+  35% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-q64 {
+  0% { opacity: 1; }
+  36% { opacity: 1; }
+  37% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-q65 {
+  0% { opacity: 1; }
+  38% { opacity: 1; }
+  39% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-q66 {
+  0% { opacity: 1; }
+  40% { opacity: 1; }
+  41% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-q67 {
+  0% { opacity: 1; }
+  28% { opacity: 1; }
+  29% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-r68 {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  31% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r69 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  33% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r70 {
+  0% { opacity: 0; }
+  34% { opacity: 0; }
+  35% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r71 {
+  0% { opacity: 0; }
+  36% { opacity: 0; }
+  37% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r72 {
+  0% { opacity: 0; }
+  38% { opacity: 0; }
+  39% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r73 {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  41% { opacity: 1; }
+  65.5% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n74 {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  43% { opacity: 1; }
+  61% { opacity: 1; }
+  62% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-n75 {
+  0% { opacity: 0; }
+  61% { opacity: 0; }
+  62% { opacity: 1; }
+  67.5% { opacity: 1; }
+  68.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r76 {
+  0% { opacity: 0; }
+  65.5% { opacity: 0; }
+  66.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r77 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r78 {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  69% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-o79 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-o80 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-o81 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-o82 {
+  0% { opacity: 0; }
+  93% { opacity: 0; }
+  94% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-o83 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-o84 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  50% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-o85 {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-o86 {
+  0% { opacity: 0; }
+  93% { opacity: 0; }
+  94% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-t87 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-t88 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-t89 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-t90 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-t91 {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-t92 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-t93 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-t94 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-t95 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k96 {
+  0% { opacity: 0; }
+  9.5% { opacity: 0; }
+  10.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k97 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k98 {
+  0% { opacity: 0; }
+  17.25% { opacity: 0; }
+  18.25% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k99 {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  19% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k100 {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  43% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k101 {
+  0% { opacity: 0; }
+  52.5% { opacity: 0; }
+  53.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k102 {
+  0% { opacity: 0; }
+  53% { opacity: 0; }
+  54% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k103 {
+  0% { opacity: 0; }
+  54% { opacity: 0; }
+  55% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k104 {
+  0% { opacity: 0; }
+  59% { opacity: 0; }
+  60% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k105 {
+  0% { opacity: 0; }
+  61.5% { opacity: 0; }
+  62.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k106 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k107 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k108 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k109 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k110 {
+  0% { opacity: 0; }
+  68.5% { opacity: 0; }
+  69.5% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k111 {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k112 {
+  0% { opacity: 0; }
+  89.25% { opacity: 0; }
+  90.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k113 {
+  0% { opacity: 0; }
+  91% { opacity: 0; }
+  92% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k114 {
+  0% { opacity: 0; }
+  77.25% { opacity: 0; }
+  78.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k115 {
+  0% { opacity: 0; }
+  89.5% { opacity: 0; }
+  90.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k116 {
+  0% { opacity: 0; }
+  91.25% { opacity: 0; }
+  92.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k117 {
+  0% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k118 {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  90.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k119 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k120 {
+  0% { opacity: 0; }
+  77.75% { opacity: 0; }
+  78.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k121 {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k122 {
+  0% { opacity: 0; }
+  91.75% { opacity: 0; }
+  92.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k123 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k124 {
+  0% { opacity: 0; }
+  90.25% { opacity: 0; }
+  91.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-k125 {
+  0% { opacity: 0; }
+  92% { opacity: 0; }
+  93% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-t126 {
+  0% { opacity: 1; }
+  25% { opacity: 1; }
+  26% { opacity: 0; }
+  98% { opacity: 0; }
+  99% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes il-t127 {
+  0% { opacity: 0; }
+  26% { opacity: 0; }
+  27% { opacity: 1; }
+  75% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-t128 {
+  0% { opacity: 0; }
+  77% { opacity: 0; }
+  78% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-x129 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-x130 {
+  0% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-x131 {
+  0% { opacity: 0; }
+  79.25% { opacity: 0; }
+  80.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-x132 {
+  0% { opacity: 0; }
+  81% { opacity: 0; }
+  82% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-x133 {
+  0% { opacity: 0; }
+  82.75% { opacity: 0; }
+  83.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-x134 {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-y135 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-c136 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  84% { opacity: 1; }
+  85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-c137 {
+  0% { opacity: 0; }
+  84% { opacity: 0; }
+  85% { opacity: 1; }
+  88.5% { opacity: 1; }
+  89.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-c138 {
+  0% { opacity: 0; }
+  88.5% { opacity: 0; }
+  89.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-y139 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r140 {
+  0% { opacity: 0; }
+  77.5% { opacity: 0; }
+  78.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r141 {
+  0% { opacity: 0; }
+  79.5% { opacity: 0; }
+  80.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r142 {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  82.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r143 {
+  0% { opacity: 0; }
+  83.5% { opacity: 0; }
+  84.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r144 {
+  0% { opacity: 0; }
+  84.75% { opacity: 0; }
+  85.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r145 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r146 {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  88.75% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-z147 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-c148 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  86% { opacity: 1; }
+  87% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-c149 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r150 {
+  0% { opacity: 0; }
+  78% { opacity: 0; }
+  79% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r151 {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r152 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r153 {
+  0% { opacity: 0; }
+  84% { opacity: 0; }
+  85% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r154 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-r155 {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-z156 {
+  0% { opacity: 0; }
+  87.25% { opacity: 0; }
+  88.25% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-z157 {
+  0% { opacity: 0; }
+  89% { opacity: 0; }
+  90% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-z158 {
+  0% { opacity: 0; }
+  90.5% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes il-z159 {
+  0% { opacity: 0; }
+  76% { opacity: 0; }
+  77% { opacity: 1; }
+  97.5% { opacity: 1; }
+  98.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<!-- the isolation level every transaction starts with -->
+<text class="il-m f-muted" x="30" y="113">BEGIN ISOLATION LEVEL</text>
+<rect class="box" x="182" y="99" width="181" height="20" rx="10"/>
+<rect class="box" x="371" y="99" width="181" height="20" rx="10"/>
+<rect class="box" x="560" y="99" width="181" height="20" rx="10"/>
+<rect class="box" x="749" y="99" width="181" height="20" rx="10"/>
+<rect class="f-amber-soft s-amber il-sel" x="371" y="99" width="181" height="20" rx="10" stroke-width="1.5"/>
+<text class="il-m sb mid" x="272.5" y="113">READ UNCOMMITTED</text>
+<text class="il-m sb mid" x="461.5" y="113">READ COMMITTED</text>
+<text class="il-m sb mid" x="650.5" y="113">REPEATABLE READ</text>
+<text class="il-m sb mid" x="839.5" y="113">SERIALIZABLE</text>
+<text class="tiny sb mid f-amber-ink il-s1" x="461.5" y="135">PostgreSQL’s default</text>
+<text class="tiny sb mid f-green il-s2" x="272.5" y="135">runs as READ COMMITTED here</text>
+<text class="tiny sb mid f-muted il-s3" x="461.5" y="135">standard: no dirty reads</text>
+<text class="tiny sb mid f-muted il-s4" x="650.5" y="135">+ no non-repeatable reads</text>
+<text class="tiny sb mid f-muted il-s5" x="839.5" y="135">+ no phantoms, serial result</text>
+<text class="tiny sb mid f-teal il-s6" x="461.5" y="135">new snapshot per statement</text>
+<text class="tiny sb mid f-teal il-s7" x="650.5" y="135">one snapshot per transaction</text>
+<text class="tiny sb mid f-teal il-s8" x="839.5" y="135">snapshot + SSI conflict checks</text>
+<text class="tiny sb mid f-muted il-s9" x="272.5" y="135">MySQL: allows dirty reads</text>
+<text class="tiny sb mid f-amber-ink il-s10" x="461.5" y="135">PostgreSQL, SQL Server default</text>
+<text class="tiny sb mid f-amber-ink il-s11" x="650.5" y="135">MySQL InnoDB default</text>
+<text class="tiny sb mid f-muted il-s12" x="839.5" y="135">the SQL standard’s default</text>
+<!-- (a) the finance report: order 495179's total and customer 42's order count, read twice -->
+<rect class="box" x="30" y="146" width="436" height="160" rx="10"/>
+<g class="il-h13"><circle class="f-panel-2 s-muted" cx="39" cy="159" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="39" y="162.2">A</text><text class="il-h" x="48" y="163">finance report</text><circle class="f-panel-2 s-muted" cx="457" cy="159" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="457" y="162.2">C</text><text class="il-h end" x="448" y="163">new order</text><circle class="f-panel-2 s-muted" cx="363.9" cy="159" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="363.9" y="162.2">B</text><text class="il-h end" x="354.9" y="163">refund</text></g>
+<text class="tiny mid il-h14" x="230" y="163">order 495179 · customer 42</text>
+<g class="il-l15"><line class="s-line" x1="39" y1="172" x2="39" y2="301" stroke-width="1" stroke-dasharray="2 3"/><line class="s-line" x1="457" y1="172" x2="457" y2="301" stroke-width="1" stroke-dasharray="2 3"/></g>
+<line class="s-teal il-n16" x1="39" y1="181" x2="39" y2="293" stroke-width="2.5"/>
+<g class="il-r17"><circle class="f-blue-soft s-blue" cx="39" cy="181" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="39" y="184.2">A</text><text class="il-m" x="48" y="185">SELECT total_thb FROM orders WHERE id = 495179</text><text class="il-m b f-ink" x="359.1" y="185">→ 51,179.03</text></g>
+<g class="il-r18"><circle class="f-blue-soft s-blue" cx="39" cy="195" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="39" y="198.2">A</text><text class="il-m" x="48" y="199">SELECT count(*) FROM orders WHERE customer_id = 42</text><text class="il-m b f-ink" x="385.6" y="199">→ 179</text></g>
+<g class="il-r19"><circle class="f-purple-soft s-purple" cx="457" cy="209" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="457" y="212.2">B</text><text class="il-m end" x="448" y="213">UPDATE orders SET total_thb = total_thb - 3985.43</text></g>
+<g class="il-r20"><circle class="f-purple-soft s-purple" cx="457" cy="223" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="457" y="226.2">B</text><text class="il-m b end f-ink" x="448" y="227">→ UPDATE 1</text><text class="il-m end" x="375.2" y="227">WHERE id = 495179</text><text class="tiny sb f-muted" x="48" y="227">refund line 3: 1 × 3,985.43</text></g>
+<g class="il-r21"><circle class="f-blue-soft s-blue" cx="39" cy="237" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="39" y="240.2">A</text><text class="il-m" x="48" y="241">SELECT total_thb …</text><text class="il-m b f-ink" x="173.8" y="241">→ 51,179.03</text></g>
+<text class="tiny sb f-muted il-n22" x="256.6" y="241">B has not committed yet</text>
+<text class="tiny sb f-green il-n23" x="256.6" y="241">no dirty read: B not committed</text>
+<g class="il-r24"><circle class="f-green-soft s-green" cx="457" cy="251" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="457" y="254.2">B</text><text class="il-m end" x="448" y="255">COMMIT</text><text class="tiny sb f-muted" x="48" y="255">total_thb is now 47,193.60</text></g>
+<g class="il-r25"><circle class="f-purple-soft s-purple" cx="457" cy="265" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="457" y="268.2">C</text><text class="il-m b end f-ink" x="448" y="269">→ 500001</text><text class="il-m end" x="388.4" y="269">INSERT INTO orders (customer_id, …) VALUES (42, …)</text></g>
+<g class="il-r26"><circle class="f-blue-soft s-blue" cx="39" cy="279" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="39" y="282.2">A</text><text class="il-m" x="48" y="283">SELECT total_thb …</text></g>
+<text class="il-m b f-red il-n27" x="173.8" y="283">→ 47,193.60</text>
+<text class="tiny sb f-red il-n28" x="256.6" y="283">changed inside one transaction</text>
+<text class="tiny b f-red il-n29" x="256.6" y="283">non-repeatable read</text>
+<text class="il-m b f-green il-n30" x="173.8" y="283">→ 51,179.03</text>
+<text class="tiny sb f-teal il-n31" x="256.6" y="283">same snapshot as the first read</text>
+<g class="il-r32"><circle class="f-blue-soft s-blue" cx="39" cy="293" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="39" y="296.2">A</text><text class="il-m" x="48" y="297">SELECT count(*) …</text></g>
+<text class="il-m b f-red il-n33" x="167.2" y="297">→ 180</text>
+<text class="tiny sb f-red il-n34" x="210.3" y="297">order 500001 appeared</text>
+<text class="tiny b f-red il-n35" x="210.3" y="297">phantom</text>
+<text class="il-m b f-green il-n36" x="167.2" y="297">→ 179</text>
+<text class="tiny sb f-teal il-n37" x="210.3" y="297">no phantom either</text>
+<!-- (b) two staff sell product 2892: read the stock, then write the new value -->
+<rect class="box" x="482" y="146" width="448" height="134" rx="10"/>
+<circle class="f-panel-2 s-muted" cx="491" cy="159" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="491" y="162.2">A</text><text class="il-h" x="500" y="163">staff 1</text><circle class="f-panel-2 s-muted" cx="921" cy="159" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="921" y="162.2">B</text><text class="il-h end" x="912" y="163">staff 2</text>
+<g class="il-h38"><rect class="f-teal-soft s-teal" x="622" y="151" width="168" height="17" rx="4" stroke-width="1"/><text class="il-m f-teal" x="630" y="163">stock 2892  qty</text><text class="il-m b end f-ink il-c39" x="782" y="163">10</text><text class="il-m b end f-red il-c40" x="782" y="163">9</text><text class="il-m b end f-green il-c41" x="782" y="163">8</text></g>
+<line class="s-line" x1="491" y1="172" x2="491" y2="273" stroke-width="1" stroke-dasharray="2 3"/><line class="s-line" x1="921" y1="172" x2="921" y2="273" stroke-width="1" stroke-dasharray="2 3"/>
+<g class="il-r42"><circle class="f-blue-soft s-blue" cx="491" cy="181" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="491" y="184.2">A</text><text class="il-m" x="500" y="185">SELECT qty FROM stock WHERE product_id = 2892</text><text class="il-m b f-ink" x="804.5" y="185">→ 10</text></g>
+<g class="il-r43"><circle class="f-blue-soft s-blue" cx="921" cy="195" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="921" y="198.2">B</text><text class="il-m b end f-ink" x="912" y="199">→ 10</text><text class="il-m end" x="878.9" y="199">SELECT qty FROM stock WHERE product_id = 2892</text></g>
+<g class="il-r44"><circle class="f-purple-soft s-purple" cx="491" cy="209" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="491" y="212.2">A</text><text class="il-m" x="500" y="213">UPDATE stock SET qty = 9 WHERE product_id = 2892</text><text class="il-m b f-ink" x="824.4" y="213">→ UPDATE 1</text></g>
+<g class="il-r45"><circle class="f-orange-soft s-orange" cx="921" cy="223" r="6" stroke-width="1.2"/><text class="il-bl mid f-orange" x="921" y="226.2">B</text><text class="il-m end" x="912" y="227">UPDATE stock SET qty = 9 …</text><text class="tiny sb f-orange" x="500" y="227">waits for A’s row lock</text></g>
+<g class="il-w46"><circle class="f-orange pulse" cx="634" cy="223" r="3"/></g>
+<g class="il-r47"><circle class="f-green-soft s-green" cx="491" cy="237" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="491" y="240.2">A</text><text class="il-m" x="500" y="241">COMMIT</text></g>
+<g class="il-r48"><circle class="f-green-soft s-green" cx="921" cy="251" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="921" y="254.2">B</text><text class="il-m end" x="912" y="255">COMMIT</text><text class="tiny sb f-muted" x="500" y="255">re-checks the row, writes 9 too</text></g>
+<text class="il-m b end f-ink il-n49" x="865.7" y="255">→ UPDATE 1 ·</text>
+<text class="tiny sb f-red il-n50" x="500" y="269">two sales, but the stock fell from 10 to 9: one decrement is gone</text>
+<text class="tiny b f-red il-n51" x="500" y="269">lost update: two sales, stock 10 → 9</text>
+<g class="il-r52"><circle class="f-red-soft s-red" cx="921" cy="251" r="6" stroke-width="1.2"/><text class="il-bl mid f-red" x="921" y="254.2">B</text><text class="il-m b end f-red" x="912" y="255">ERROR: could not serialize access due to concurrent update</text></g>
+<g class="il-r53"><rect class="f-amber-soft s-amber" x="498" y="258" width="40" height="14" rx="7" stroke-width="1"/><text class="il-pill mid f-amber-ink" x="518" y="268.5">40001</text><circle class="f-green-soft s-green" cx="921" cy="265" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="921" y="268.2">B</text><text class="il-m end f-green" x="912" y="269">ROLLBACK · retry: reads 9 · sets qty = 8 · COMMIT</text></g>
+<!-- (c) write skew: at least one of the two shift leads must stay on duty -->
+<rect class="box" x="482" y="288" width="448" height="148" rx="10"/>
+<g class="il-h54"><circle class="f-panel-2 s-muted" cx="491" cy="301" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="491" y="304.2">A</text><text class="il-h" x="500" y="305">Anan signs off</text><circle class="f-panel-2 s-muted" cx="921" cy="301" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="921" y="304.2">B</text><text class="il-h end" x="912" y="305">Malee signs off</text></g>
+<g class="il-h55"><rect class="f-teal-soft s-teal" x="622" y="293" width="168" height="17" rx="4" stroke-width="1"/><text class="il-m f-teal" x="630" y="305">1 Anan</text><text class="il-m f-teal" x="708" y="305">2 Malee</text></g>
+<circle class="f-green il-d56" cx="686" cy="301" r="4"/>
+<circle class="f-line il-d57" cx="686" cy="301" r="4"/>
+<circle class="f-green il-d58" cx="772" cy="301" r="4"/>
+<circle class="f-line il-d59" cx="772" cy="301" r="4"/>
+<g class="il-l60"><line class="s-line" x1="491" y1="314" x2="491" y2="429" stroke-width="1" stroke-dasharray="2 3"/><line class="s-line" x1="921" y1="314" x2="921" y2="429" stroke-width="1" stroke-dasharray="2 3"/></g>
+<text class="il-m f-faint il-q61" x="500" y="327">SELECT count(*) FROM shift_leads WHERE on_duty</text>
+<text class="il-m f-faint il-q62 end" x="912" y="341">SELECT count(*) FROM shift_leads WHERE on_duty</text>
+<text class="il-m f-faint il-q63" x="500" y="355">UPDATE shift_leads SET on_duty = false WHERE id = 1</text>
+<text class="il-m f-faint il-q64 end" x="912" y="369">UPDATE shift_leads SET on_duty = false WHERE id = 2</text>
+<text class="il-m f-faint il-q65" x="500" y="383">COMMIT</text>
+<text class="il-m f-faint il-q66 end" x="912" y="397">COMMIT</text>
+<text class="tiny f-faint il-q67" x="500" y="425">Rule: at least one lead stays on duty. Runs in step 2.</text>
+<g class="il-r68"><circle class="f-blue-soft s-blue" cx="491" cy="323" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="491" y="326.2">A</text><text class="il-m" x="500" y="327">SELECT count(*) FROM shift_leads WHERE on_duty</text><text class="il-m b f-ink" x="811.1" y="327">→ 2</text></g>
+<g class="il-r69"><circle class="f-blue-soft s-blue" cx="921" cy="337" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="921" y="340.2">B</text><text class="il-m b end f-ink" x="912" y="341">→ 2</text><text class="il-m end" x="885.5" y="341">SELECT count(*) FROM shift_leads WHERE on_duty</text></g>
+<g class="il-r70"><circle class="f-purple-soft s-purple" cx="491" cy="351" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="491" y="354.2">A</text><text class="il-m" x="500" y="355">UPDATE shift_leads SET on_duty = false WHERE id = 1</text><text class="il-m b f-ink" x="844.2" y="355">→ UPDATE 1</text></g>
+<g class="il-r71"><circle class="f-purple-soft s-purple" cx="921" cy="365" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="921" y="368.2">B</text><text class="il-m b end f-ink" x="912" y="369">→ UPDATE 1</text><text class="il-m end" x="839.2" y="369">UPDATE shift_leads SET on_duty = false WHERE id = 2</text></g>
+<g class="il-r72"><circle class="f-green-soft s-green" cx="491" cy="379" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="491" y="382.2">A</text><text class="il-m" x="500" y="383">COMMIT</text></g>
+<g class="il-r73"><circle class="f-green-soft s-green" cx="921" cy="393" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="921" y="396.2">B</text><text class="il-m end" x="912" y="397">COMMIT</text></g>
+<text class="tiny b f-red il-n74" x="500" y="425">both committed: 0 leads on duty, the rule is broken · write skew</text>
+<text class="tiny b f-red il-n75" x="500" y="425">REPEATABLE READ: both commit too, 0 on duty · write skew</text>
+<g class="il-r76"><circle class="f-red-soft s-red" cx="921" cy="393" r="6" stroke-width="1.2"/><text class="il-bl mid f-red" x="921" y="396.2">B</text><text class="il-m b end f-red" x="912" y="397">→ ERROR: could not serialize access due to read/write</text><text class="il-m end" x="554.5" y="397">COMMIT</text></g>
+<g class="il-r77"><text class="il-m b end f-red" x="912" y="411">dependencies among transactions</text></g>
+<g class="il-r78"><rect class="f-amber-soft s-amber" x="498" y="414" width="40" height="14" rx="7" stroke-width="1"/><text class="il-pill mid f-amber-ink" x="518" y="424.5">40001</text><text class="tiny b f-green" x="548" y="425">B retries: count(*) is now 1, so Malee stays on duty</text></g>
+<!-- notes under the right column -->
+<text class="tiny il-o79" x="484" y="452">Sessions are separate psql processes; a script runs them in this exact order.</text>
+<text class="tiny il-o80" x="484" y="452">Write skew: each saw 2 on duty and changed a different row, so nothing blocked.</text>
+<text class="tiny il-o81" x="484" y="452">Retry loop: on SQLSTATE 40001, roll back and rerun the whole transaction.</text>
+<text class="tiny il-o82" x="484" y="452">Long transactions keep their snapshot longer, so they meet more 40001s.</text>
+<text class="tiny il-o83" x="484" y="466">Every transaction: BEGIN ISOLATION LEVEL &lt;the highlighted level&gt;.</text>
+<text class="tiny il-o84" x="484" y="466">PostgreSQL never shows uncommitted data, even at READ UNCOMMITTED.</text>
+<text class="tiny il-o85" x="484" y="466">Retry deadlocks (40P01) too, and back off between attempts.</text>
+<text class="tiny il-o86" x="484" y="466">SERIALIZABLE READ ONLY DEFERRABLE: waits once, then can’t fail with 40001.</text>
+<!-- what each run saw: anomalies by isolation level, then by engine -->
+<text class="il-eb il-t87" x="30" y="323">WHAT EACH RUN SAW · POSTGRESQL 18.6</text>
+<text class="il-eb il-t88" x="30" y="323">AT EACH ENGINE’S DEFAULT LEVEL</text>
+<rect class="box" x="30" y="330" width="436" height="120" rx="8"/>
+<rect class="f-panel-2" x="31" y="331" width="434" height="19" rx="7"/>
+<line class="s-line" x1="31" y1="370" x2="465" y2="370" stroke-width="1"/>
+<line class="s-line" x1="31" y1="390" x2="465" y2="390" stroke-width="1"/>
+<line class="s-line" x1="31" y1="410" x2="465" y2="410" stroke-width="1"/>
+<line class="s-line" x1="31" y1="430" x2="465" y2="430" stroke-width="1"/>
+<line class="s-line" x1="31" y1="350" x2="465" y2="350" stroke-width="1"/>
+<line class="s-line" x1="150" y1="330" x2="150" y2="450" stroke-width="1"/>
+<line class="s-line" x1="255" y1="330" x2="255" y2="450" stroke-width="1"/>
+<line class="s-line" x1="360" y1="330" x2="360" y2="450" stroke-width="1"/>
+<text class="il-m sb mid il-t89" x="202.5" y="344">READ COMMITTED</text>
+<text class="il-m sb mid il-t90" x="307.5" y="344">REPEATABLE READ</text>
+<text class="il-m sb mid il-t91" x="413" y="344">SERIALIZABLE</text>
+<text class="il-m sb mid il-t92" x="202.5" y="344">PostgreSQL · RC</text>
+<text class="il-m sb mid il-t93" x="307.5" y="344">MySQL 8.4 · RR</text>
+<text class="il-m sb mid il-t94" x="413" y="344">SQL Server · RC</text>
+<text class="tiny f-ink" x="38" y="364">dirty read</text>
+<text class="tiny f-ink" x="38" y="384">non-repeatable read</text>
+<text class="tiny f-ink" x="38" y="404">phantom</text>
+<text class="tiny f-ink" x="38" y="424">lost update</text>
+<text class="tiny f-ink" x="38" y="444">write skew</text>
+<g class="il-t95"><rect class="none s-muted" x="154" y="353" width="97" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/><rect class="none s-muted" x="259" y="353" width="97" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/><rect class="none s-muted" x="259" y="373" width="97" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/><rect class="none s-muted" x="364" y="353" width="98" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/><rect class="none s-muted" x="364" y="373" width="98" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/><rect class="none s-muted" x="364" y="393" width="98" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/><rect class="none s-muted" x="364" y="413" width="98" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/><rect class="none s-muted" x="364" y="433" width="98" height="14" rx="4" stroke-width="1" stroke-dasharray="3 3"/></g>
+<text class="tiny b mid f-green il-k96" x="202.5" y="364">no</text>
+<text class="tiny b mid f-red il-k97" x="202.5" y="384">seen: 47,193.60</text>
+<text class="tiny b mid f-red il-k98" x="202.5" y="404">seen: 180</text>
+<text class="tiny b mid f-red il-k99" x="202.5" y="424">seen: qty 9</text>
+<text class="tiny b mid f-red il-k100" x="202.5" y="444">seen: 0 on duty</text>
+<text class="tiny b mid f-green il-k101" x="307.5" y="364">no</text>
+<text class="tiny b mid f-green il-k102" x="307.5" y="384">no: 51,179.03</text>
+<text class="tiny b mid f-green il-k103" x="307.5" y="404">no: 179</text>
+<text class="tiny b mid f-amber-ink il-k104" x="307.5" y="424">40001, retried: 8</text>
+<text class="tiny b mid f-red il-k105" x="307.5" y="444">seen: 0 on duty</text>
+<text class="tiny b mid f-green il-k106" x="413" y="364">no</text>
+<text class="tiny b mid f-green il-k107" x="413" y="384">no</text>
+<text class="tiny b mid f-green il-k108" x="413" y="404">no</text>
+<text class="tiny b mid f-amber-ink il-k109" x="413" y="424">40001, retried</text>
+<text class="tiny b mid f-amber-ink il-k110" x="413" y="444">40001, retried</text>
+<text class="tiny b mid f-green il-k111" x="202.5" y="364">no</text>
+<text class="tiny b mid f-green il-k112" x="307.5" y="364">no</text>
+<text class="tiny b mid f-green il-k113" x="413" y="364">no</text>
+<text class="tiny b mid f-red il-k114" x="202.5" y="384">seen</text>
+<text class="tiny b mid f-green il-k115" x="307.5" y="384">no: 51,179.03</text>
+<text class="tiny b mid f-red il-k116" x="413" y="384">possible</text>
+<text class="tiny b mid f-red il-k117" x="202.5" y="404">seen</text>
+<text class="tiny b mid f-green il-k118" x="307.5" y="404">no *</text>
+<text class="tiny b mid f-red il-k119" x="413" y="404">possible</text>
+<text class="tiny b mid f-red il-k120" x="202.5" y="424">seen</text>
+<text class="tiny b mid f-red il-k121" x="307.5" y="424">seen: qty 9</text>
+<text class="tiny b mid f-red il-k122" x="413" y="424">possible</text>
+<text class="tiny b mid f-red il-k123" x="202.5" y="444">seen</text>
+<text class="tiny b mid f-red il-k124" x="307.5" y="444">seen</text>
+<text class="tiny b mid f-red il-k125" x="413" y="444">possible</text>
+<text class="tiny il-t126" x="30" y="466">Red: the anomaly happened in our run. Green: it did not. 40001: one aborted.</text>
+<text class="tiny il-t127" x="30" y="466">Dashed: the SQL standard forbids it at that level.</text>
+<text class="tiny il-t128" x="30" y="466">MySQL: our runs on 8.4. SQL Server: from its documentation. * plain SELECTs</text>
+<!-- step 4: what each fix costs under contention (pgbench, median of 3 runs) -->
+<g class="il-x129"><text class="il-h" x="42" y="164">8 sessions sell product 2892, 10 s</text><text class="tiny end" x="454" y="164">pgbench, median of 3 runs</text></g>
+<g class="il-x130"><text class="tiny sb f-ink" x="42" y="186">READ COMMITTED, read then write</text><rect class="f-red-soft s-red" x="42" y="191" width="202" height="9" rx="2" stroke-width="1"/><text class="tiny b f-red" x="252" y="199">8,537 sales, stock down only 1,090</text></g>
+<g class="il-x131"><text class="tiny sb f-ink" x="42" y="215">REPEATABLE READ, up to 10 tries</text><rect class="f-amber-soft s-amber" x="42" y="220" width="64.1" height="9" rx="2" stroke-width="1"/><text class="tiny b f-amber-ink" x="114.1" y="228">2,707 sales · 17,059 retries · 1,841 gave up</text></g>
+<g class="il-x132"><text class="tiny sb f-ink" x="42" y="244">READ COMMITTED + SELECT … FOR UPDATE</text><rect class="f-green-soft s-green" x="42" y="249" width="163.4" height="9" rx="2" stroke-width="1"/><text class="tiny b f-green" x="213.4" y="257">6,902 sales · B waits, no retries</text></g>
+<g class="il-x133"><text class="il-m f-ink" x="42" y="273">UPDATE stock SET qty = qty - 1</text><rect class="f-green-soft s-green" x="42" y="278" width="230" height="9" rx="2" stroke-width="1"/><text class="tiny b f-green" x="280" y="286">9,718 sales</text></g>
+<text class="tiny il-x134" x="42" y="300">Retries redo work; FOR UPDATE waits; a single UPDATE locks the row briefly.</text>
+<!-- step 4: the stock run with SELECT ... FOR UPDATE on PostgreSQL -->
+<g class="il-y135"><rect class="f-teal-soft s-teal" x="622" y="151" width="168" height="17" rx="4" stroke-width="1"/><text class="il-m f-teal" x="630" y="163">stock 2892  qty</text><text class="il-m b end f-ink il-c136" x="782" y="163">10</text><text class="il-m b end f-ink il-c137" x="782" y="163">9</text><text class="il-m b end f-green il-c138" x="782" y="163">8</text></g>
+<text class="tiny sb mid f-amber-ink il-y139" x="706" y="177">PostgreSQL · READ COMMITTED · locking read</text>
+<g class="il-r140"><circle class="f-blue-soft s-blue" cx="491" cy="185" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="491" y="188.2">A</text><text class="il-m" x="500" y="189">SELECT qty FROM stock WHERE product_id = 2892 FOR UPDATE</text><text class="il-m b f-ink" x="877.3" y="189">→ 10</text></g>
+<g class="il-r141"><circle class="f-orange-soft s-orange" cx="921" cy="199" r="6" stroke-width="1.2"/><text class="il-bl mid f-orange" x="921" y="202.2">B</text><text class="il-m end" x="912" y="203">SELECT qty … FOR UPDATE</text><text class="tiny sb f-orange" x="500" y="203">waits for A’s row lock</text></g>
+<g class="il-r142"><circle class="f-purple-soft s-purple" cx="491" cy="213" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="491" y="216.2">A</text><text class="il-m" x="500" y="217">UPDATE stock SET qty = 9 WHERE product_id = 2892</text><text class="il-m b f-ink" x="824.4" y="217">→ UPDATE 1</text></g>
+<g class="il-r143"><circle class="f-green-soft s-green" cx="491" cy="227" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="491" y="230.2">A</text><text class="il-m" x="500" y="231">COMMIT</text></g>
+<g class="il-r144"><circle class="f-blue-soft s-blue" cx="921" cy="241" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="921" y="244.2">B</text><text class="il-m b end f-ink" x="912" y="245">→ 9</text><text class="tiny sb f-muted" x="500" y="245">reads A’s committed 9</text></g>
+<g class="il-r145"><circle class="f-purple-soft s-purple" cx="921" cy="255" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="921" y="258.2">B</text><text class="il-m b end f-ink" x="912" y="259">→ UPDATE 1</text><text class="il-m end" x="839.2" y="259">UPDATE stock SET qty = 8 WHERE product_id = 2892</text></g>
+<g class="il-r146"><circle class="f-green-soft s-green" cx="921" cy="269" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="921" y="272.2">B</text><text class="il-m end" x="912" y="273">COMMIT</text><text class="tiny sb f-green" x="500" y="273">stock 8 after two sales, no retry</text></g>
+<!-- step 4: the same stock run on MySQL 8.4 at its default, REPEATABLE READ -->
+<g class="il-z147"><circle class="f-panel-2 s-muted" cx="491" cy="301" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="491" y="304.2">A</text><text class="il-h" x="500" y="305">staff 1</text><circle class="f-panel-2 s-muted" cx="921" cy="301" r="6" stroke-width="1.2"/><text class="il-bl mid f-ink" x="921" y="304.2">B</text><text class="il-h end" x="912" y="305">staff 2</text><rect class="f-teal-soft s-teal" x="622" y="293" width="168" height="17" rx="4" stroke-width="1"/><text class="il-m f-teal" x="630" y="305">MySQL stock  qty</text><text class="il-m b end f-ink il-c148" x="782" y="305">10</text><text class="il-m b end f-red il-c149" x="782" y="305">9</text><line class="s-line" x1="491" y1="314" x2="491" y2="429" stroke-width="1" stroke-dasharray="2 3"/><line class="s-line" x1="921" y1="314" x2="921" y2="429" stroke-width="1" stroke-dasharray="2 3"/></g>
+<g class="il-r150"><circle class="f-blue-soft s-blue" cx="491" cy="328" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="491" y="331.2">A</text><text class="il-m" x="500" y="332">SELECT qty FROM stock WHERE product_id = 2892</text><text class="il-m b f-ink" x="804.5" y="332">→ 10</text></g>
+<g class="il-r151"><circle class="f-blue-soft s-blue" cx="921" cy="342" r="6" stroke-width="1.2"/><text class="il-bl mid f-blue" x="921" y="345.2">B</text><text class="il-m b end f-ink" x="912" y="346">→ 10</text><text class="il-m end" x="878.9" y="346">SELECT qty FROM stock WHERE product_id = 2892</text></g>
+<g class="il-r152"><circle class="f-purple-soft s-purple" cx="491" cy="356" r="6" stroke-width="1.2"/><text class="il-bl mid f-purple" x="491" y="359.2">A</text><text class="il-m" x="500" y="360">UPDATE stock SET qty = 9 WHERE product_id = 2892</text><text class="il-m b f-ink" x="824.4" y="360">→ Changed: 1</text></g>
+<g class="il-r153"><circle class="f-orange-soft s-orange" cx="921" cy="370" r="6" stroke-width="1.2"/><text class="il-bl mid f-orange" x="921" y="373.2">B</text><text class="il-m end" x="912" y="374">UPDATE stock SET qty = 9 …</text><text class="tiny sb f-orange" x="500" y="374">waits for A’s row lock</text></g>
+<g class="il-r154"><circle class="f-green-soft s-green" cx="491" cy="384" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="491" y="387.2">A</text><text class="il-m" x="500" y="388">COMMIT</text></g>
+<g class="il-r155"><circle class="f-green-soft s-green" cx="921" cy="398" r="6" stroke-width="1.2"/><text class="il-bl mid f-green" x="921" y="401.2">B</text><text class="il-m end" x="912" y="402">COMMIT</text><text class="tiny sb f-muted" x="500" y="402">sets 9 again</text></g>
+<text class="il-m b end f-ink il-z156" x="865.7" y="402">→ Rows matched: 1, Changed: 0 ·</text>
+<text class="tiny b f-red il-z157" x="500" y="416">stock 9 after two sales: a lost update, and no error at REPEATABLE READ</text>
+<text class="tiny sb f-amber-ink il-z158" x="500" y="430">With FOR UPDATE: 8. At SERIALIZABLE: ERROR 1213 (40001), a deadlock.</text>
+<text class="tiny sb mid f-amber-ink il-z159" x="706" y="319">MySQL 8.4 InnoDB · REPEATABLE READ, its default</text>
+</g>
+</svg>

@@ -1,0 +1,1327 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">LSM Tree vs B-Tree</title>
+<desc id="dg-desc">LSM Tree vs B-Tree. Two storage engine designs: update pages in place, or append in memory and merge sorted files, and what each costs to read and write. Step 1, B-tree: pages in place: In time order, 50,000 inserts dirty 172 index pages; for random orders they dirty all 4,927 leaves. Step 2, LSM: log, sort, flush: The LSM model appends the 50,000 reviews to a WAL, sorts them in memory and flushes 3 sorted files. Step 3, Reads and compaction: Order 181,236: bloom filters skip 2 files and key ranges 2 levels; 2 files read. Then L0 compacts. Step 4, Write, read, space: B-tree: one root-to-leaf path per read, pages rewritten in place. LSM: cheap writes, more to merge.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">LSM Tree vs B-Tree</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · B-tree: pages in place</text>
+  <text class="step on p1" x="40" y="518">1 · B-tree: pages in place</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · LSM: log, sort, flush</text>
+  <text class="step on p2" x="262" y="518">2 · LSM: log, sort, flush</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Reads and compaction</text>
+  <text class="step on p3" x="484" y="518">3 · Reads and compaction</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Write, read, space</text>
+  <text class="step on p4" x="706" y="518">4 · Write, read, space</text>
+  <text class="caption p1" x="40" y="552">In time order, 50,000 inserts dirty 172 index pages; for random orders they dirty all 4,927 leaves.</text>
+  <text class="caption p2" x="40" y="552">The LSM model appends the 50,000 reviews to a WAL, sorts them in memory and flushes 3 sorted files.</text>
+  <text class="caption p3" x="40" y="552">Order 181,236: bloom filters skip 2 files and key ranges 2 levels; 2 files read. Then L0 compacts.</text>
+  <text class="caption p4" x="40" y="552">B-tree: one root-to-leaf path per read, pages rewritten in place. LSM: cheap writes, more to merge.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* LSM Tree vs B-Tree. PostgreSQL numbers: one run of tryit.sql on PostgreSQL 18.6 (Acme Shop sample data).
+   LSM numbers: lsm2.py, a simplified LSM model in Python (memtable 600 kB = 15,000 events, L0 trigger 4,
+   L1 2.4 MB, x10 per level, 0.6 MB files, bloom 10 bits/key, 7 probes), driven by the same events.
+   x = order_id on both lanes (240..690); the leaf band is column-major, 33 leaves per column.
+   0-5 s    in-order batch: 3 tokens to the right edge (0.35-1.6 s), 171 leaves purple (1.2 s);
+            random batch: 6 tokens (2.3-3.5 s), every leaf red in 10 interleaved groups (3.0-4.1 s)
+   5-10 s   B-tree dims; 6 reviews -> WAL -> memtable (5.45-7.0 s); flushes #225 (7.0), #226 (7.95), #227 (8.75)
+   10-15 s  get(181236): memtable, L0 #227 skip, #226 skip, #225 read, L1/L2 no file, L3 #86 read (10.1-12.8 s);
+            purge tombstones flush #228 (13.0-13.35), L0 = 4 -> compaction into 7 L1 files (13.7-14.1)
+   15-20 s  B-tree read 412 -> 1842 -> leaf 1797 (15.2-16.5), amplification table (15.5-17.5), notes (18.0);
+            everything returns to the step-1 start in the last half-second */
+.diagram .lt-pg{fill:var(--teal-soft);stroke:var(--teal);stroke-width:1}
+.diagram .lt-mem{fill:var(--purple-soft);stroke:var(--purple);stroke-width:1;stroke-dasharray:3 2}
+.diagram .lt-dots path{fill:none;stroke:var(--teal);stroke-width:2;stroke-dasharray:2 1;opacity:.45}
+.diagram .lt-red path{fill:none;stroke:var(--red);stroke-width:2;stroke-dasharray:2 1}
+.diagram .lt-pur path{fill:none;stroke:var(--purple);stroke-width:2;stroke-dasharray:2 1}
+.diagram .lt-tex{stroke:var(--purple);stroke-width:6;stroke-dasharray:1 1.6}
+.diagram .lt-tex2{stroke:var(--purple);stroke-width:6;stroke-dasharray:1 4.6}
+.diagram .lt-tomb{stroke:var(--purple);stroke-width:1.4}
+.diagram .lt-k{font-size:10px;fill:var(--muted)}
+.diagram .lt-v{font-size:11px;font-weight:600;fill:var(--ink)}
+.diagram .lt-fill{transform-box:fill-box;transform-origin:0 50%}
+.diagram .lt-guide{stroke:var(--blue);stroke-width:1.2;stroke-dasharray:3 3}
+.diagram .lt-dimbt{animation:lt-dimbt var(--T) linear infinite}
+.diagram .lt-dimls{animation:lt-dimls var(--T) linear infinite}
+.diagram .lt-dimls{opacity:.42}
+.diagram .lt-who1{opacity:1;animation:lt-who1 var(--T) linear infinite}
+.diagram .lt-who2{opacity:0;animation:lt-who2 var(--T) linear infinite}
+.diagram .lt-s1a{opacity:0;animation:lt-s1a var(--T) linear infinite}
+.diagram .lt-s1b{opacity:1;animation:lt-s1b var(--T) linear infinite}
+.diagram .lt-s2{opacity:0;animation:lt-s2 var(--T) linear infinite}
+.diagram .lt-s3a{opacity:0;animation:lt-s3a var(--T) linear infinite}
+.diagram .lt-s3b{opacity:0;animation:lt-s3b var(--T) linear infinite}
+.diagram .lt-s4{opacity:0;animation:lt-s4 var(--T) linear infinite}
+.diagram .lt-pl1{opacity:0;animation:lt-pl1 var(--T) linear infinite}
+.diagram .lt-pl2{opacity:1;animation:lt-pl2 var(--T) linear infinite}
+.diagram .lt-pl3{opacity:0;animation:lt-pl3 var(--T) linear infinite}
+.diagram .lt-pl4{opacity:0;animation:lt-pl4 var(--T) linear infinite}
+.diagram .lt-pl5{opacity:0;animation:lt-pl5 var(--T) linear infinite}
+.diagram .lt-pl6{opacity:0;animation:lt-pl6 var(--T) linear infinite}
+.diagram .lt-subA{opacity:0;animation:lt-subA var(--T) linear infinite}
+.diagram .lt-subB{opacity:1;animation:lt-subB var(--T) linear infinite}
+.diagram .lt-hl181{opacity:0;animation:lt-hl181 var(--T) linear infinite}
+.diagram .lt-rowsA{opacity:0;animation:lt-rowsA var(--T) linear infinite}
+.diagram .lt-rowsB{opacity:1;animation:lt-rowsB var(--T) linear infinite}
+.diagram .lt-ll1{opacity:1;animation:lt-ll1 var(--T) linear infinite}
+.diagram .lt-ll2{opacity:0;animation:lt-ll2 var(--T) linear infinite}
+.diagram .lt-ll3{opacity:0;animation:lt-ll3 var(--T) linear infinite}
+.diagram .lt-ll4{opacity:0;animation:lt-ll4 var(--T) linear infinite}
+.diagram .lt-purov{opacity:0;animation:lt-purov var(--T) linear infinite}
+.diagram .lt-red3{opacity:1;animation:lt-red3 var(--T) linear infinite}
+.diagram .lt-red7{opacity:1;animation:lt-red7 var(--T) linear infinite}
+.diagram .lt-red0{opacity:1;animation:lt-red0 var(--T) linear infinite}
+.diagram .lt-red5{opacity:1;animation:lt-red5 var(--T) linear infinite}
+.diagram .lt-red9{opacity:1;animation:lt-red9 var(--T) linear infinite}
+.diagram .lt-red2{opacity:1;animation:lt-red2 var(--T) linear infinite}
+.diagram .lt-red6{opacity:1;animation:lt-red6 var(--T) linear infinite}
+.diagram .lt-red1{opacity:1;animation:lt-red1 var(--T) linear infinite}
+.diagram .lt-red8{opacity:1;animation:lt-red8 var(--T) linear infinite}
+.diagram .lt-red4{opacity:1;animation:lt-red4 var(--T) linear infinite}
+.diagram .lt-b4root{opacity:0;animation:lt-b4root var(--T) linear infinite}
+.diagram .lt-b4int{opacity:0;animation:lt-b4int var(--T) linear infinite}
+.diagram .lt-b4leaf{opacity:0;animation:lt-b4leaf var(--T) linear infinite}
+.diagram .lt-b4chip{opacity:0;animation:lt-b4chip var(--T) linear infinite}
+.diagram .lt-tk4{opacity:0;animation:lt-tk4 var(--T) linear infinite}
+.diagram .lt-wal{opacity:0;animation:lt-wal var(--T) linear infinite}
+.diagram .lt-wal{transform:scaleX(0)}
+.diagram .lt-l1a{opacity:1;animation:lt-l1a var(--T) linear infinite}
+.diagram .lt-l1b{opacity:0;animation:lt-l1b var(--T) linear infinite}
+.diagram .lt-tk20{opacity:0;animation:lt-tk20 var(--T) linear infinite}
+.diagram .lt-md0{opacity:0;animation:lt-md0 var(--T) linear infinite}
+.diagram .lt-tk21{opacity:0;animation:lt-tk21 var(--T) linear infinite}
+.diagram .lt-md1{opacity:0;animation:lt-md1 var(--T) linear infinite}
+.diagram .lt-tk22{opacity:0;animation:lt-tk22 var(--T) linear infinite}
+.diagram .lt-md2{opacity:0;animation:lt-md2 var(--T) linear infinite}
+.diagram .lt-tk23{opacity:0;animation:lt-tk23 var(--T) linear infinite}
+.diagram .lt-md3{opacity:0;animation:lt-md3 var(--T) linear infinite}
+.diagram .lt-tk24{opacity:0;animation:lt-tk24 var(--T) linear infinite}
+.diagram .lt-md4{opacity:0;animation:lt-md4 var(--T) linear infinite}
+.diagram .lt-tk25{opacity:0;animation:lt-tk25 var(--T) linear infinite}
+.diagram .lt-md5{opacity:0;animation:lt-md5 var(--T) linear infinite}
+.diagram .lt-f1m{animation:lt-f1m var(--T) linear infinite}
+.diagram .lt-f1{opacity:0;animation:lt-f1 var(--T) linear infinite}
+.diagram .lt-f2m{animation:lt-f2m var(--T) linear infinite}
+.diagram .lt-f2{opacity:0;animation:lt-f2 var(--T) linear infinite}
+.diagram .lt-f3m{animation:lt-f3m var(--T) linear infinite}
+.diagram .lt-f3{opacity:0;animation:lt-f3 var(--T) linear infinite}
+.diagram .lt-f4m{animation:lt-f4m var(--T) linear infinite}
+.diagram .lt-f4{opacity:0;animation:lt-f4 var(--T) linear infinite}
+.diagram .lt-memtomb{opacity:0;animation:lt-memtomb var(--T) linear infinite}
+.diagram .lt-cmp{animation:lt-cmp var(--T) linear infinite}
+.diagram .lt-b225{opacity:0;animation:lt-b225 var(--T) linear infinite}
+.diagram .lt-b226{opacity:0;animation:lt-b226 var(--T) linear infinite}
+.diagram .lt-b227{opacity:0;animation:lt-b227 var(--T) linear infinite}
+.diagram .lt-b228{opacity:0;animation:lt-b228 var(--T) linear infinite}
+.diagram .lt-b225i{opacity:0;animation:lt-b225i var(--T) linear infinite}
+.diagram .lt-b226i{opacity:0;animation:lt-b226i var(--T) linear infinite}
+.diagram .lt-b227i{opacity:0;animation:lt-b227i var(--T) linear infinite}
+.diagram .lt-b228i{opacity:0;animation:lt-b228i var(--T) linear infinite}
+.diagram .lt-l0amb{opacity:0;animation:lt-l0amb var(--T) linear infinite}
+.diagram .lt-guide{opacity:0;animation:lt-guide var(--T) linear infinite}
+.diagram .lt-tk3{opacity:0;animation:lt-tk3 var(--T) linear infinite}
+.diagram .lt-m0{opacity:0;animation:lt-m0 var(--T) linear infinite}
+.diagram .lt-m1{opacity:0;animation:lt-m1 var(--T) linear infinite}
+.diagram .lt-m2{opacity:0;animation:lt-m2 var(--T) linear infinite}
+.diagram .lt-m3{opacity:0;animation:lt-m3 var(--T) linear infinite}
+.diagram .lt-m4{opacity:0;animation:lt-m4 var(--T) linear infinite}
+.diagram .lt-m5{opacity:0;animation:lt-m5 var(--T) linear infinite}
+.diagram .lt-m6{opacity:0;animation:lt-m6 var(--T) linear infinite}
+.diagram .lt-f86{opacity:0;animation:lt-f86 var(--T) linear infinite}
+.diagram .lt-f86t{opacity:0;animation:lt-f86t var(--T) linear infinite}
+.diagram .lt-tk1a0{opacity:0;animation:lt-tk1a0 var(--T) linear infinite}
+.diagram .lt-tk1a1{opacity:0;animation:lt-tk1a1 var(--T) linear infinite}
+.diagram .lt-tk1a2{opacity:0;animation:lt-tk1a2 var(--T) linear infinite}
+.diagram .lt-tk1b0{opacity:0;animation:lt-tk1b0 var(--T) linear infinite}
+.diagram .lt-tk1b1{opacity:0;animation:lt-tk1b1 var(--T) linear infinite}
+.diagram .lt-tk1b2{opacity:0;animation:lt-tk1b2 var(--T) linear infinite}
+.diagram .lt-tk1b3{opacity:0;animation:lt-tk1b3 var(--T) linear infinite}
+.diagram .lt-tk1b4{opacity:0;animation:lt-tk1b4 var(--T) linear infinite}
+.diagram .lt-tk1b5{opacity:0;animation:lt-tk1b5 var(--T) linear infinite}
+.diagram .lt-p1c1{opacity:1;animation:lt-p1c1 var(--T) linear infinite}
+.diagram .lt-p1c2{opacity:1;animation:lt-p1c2 var(--T) linear infinite}
+.diagram .lt-p1n2{opacity:1;animation:lt-p1n2 var(--T) linear infinite}
+.diagram .lt-p2v0{opacity:0;animation:lt-p2v0 var(--T) linear infinite}
+.diagram .lt-p2v1{opacity:0;animation:lt-p2v1 var(--T) linear infinite}
+.diagram .lt-p2v2{opacity:0;animation:lt-p2v2 var(--T) linear infinite}
+.diagram .lt-p2v3{opacity:0;animation:lt-p2v3 var(--T) linear infinite}
+.diagram .lt-p2v4{opacity:0;animation:lt-p2v4 var(--T) linear infinite}
+.diagram .lt-p2v5{opacity:0;animation:lt-p2v5 var(--T) linear infinite}
+.diagram .lt-p3v0{opacity:0;animation:lt-p3v0 var(--T) linear infinite}
+.diagram .lt-p3v1{opacity:0;animation:lt-p3v1 var(--T) linear infinite}
+.diagram .lt-p3v2{opacity:0;animation:lt-p3v2 var(--T) linear infinite}
+.diagram .lt-p3v3{opacity:0;animation:lt-p3v3 var(--T) linear infinite}
+.diagram .lt-p3v4{opacity:0;animation:lt-p3v4 var(--T) linear infinite}
+.diagram .lt-p3v5{opacity:0;animation:lt-p3v5 var(--T) linear infinite}
+.diagram .lt-p3s{opacity:0;animation:lt-p3s var(--T) linear infinite}
+.diagram .lt-p3c0{opacity:0;animation:lt-p3c0 var(--T) linear infinite}
+.diagram .lt-p3c1{opacity:0;animation:lt-p3c1 var(--T) linear infinite}
+.diagram .lt-p3c2{opacity:0;animation:lt-p3c2 var(--T) linear infinite}
+.diagram .lt-p3c3{opacity:0;animation:lt-p3c3 var(--T) linear infinite}
+.diagram .lt-p3c4{opacity:0;animation:lt-p3c4 var(--T) linear infinite}
+.diagram .lt-p3c5{opacity:0;animation:lt-p3c5 var(--T) linear infinite}
+.diagram .lt-p4g0{opacity:0;animation:lt-p4g0 var(--T) linear infinite}
+.diagram .lt-p4g1{opacity:0;animation:lt-p4g1 var(--T) linear infinite}
+.diagram .lt-p4g2{opacity:0;animation:lt-p4g2 var(--T) linear infinite}
+.diagram .lt-p4n{opacity:0;animation:lt-p4n var(--T) linear infinite}
+@keyframes lt-dimbt {
+  0% { opacity:1; }
+  25% { opacity:1; }
+  27% { opacity:0.32; }
+  75% { opacity:0.32; }
+  77% { opacity:1; }
+  100% { opacity:1; }
+}
+@keyframes lt-dimls {
+  0% { opacity:0.42; }
+  25% { opacity:0.42; }
+  27% { opacity:1; }
+  97.5% { opacity:1; }
+  99.5% { opacity:0.42; }
+  100% { opacity:0.42; }
+}
+@keyframes lt-who1 {
+  0% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  98.25% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes lt-who2 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51% { opacity: 1; }
+  97% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-s1a {
+  0% { opacity: 1; }
+  9.5% { opacity: 1; }
+  10.5% { opacity: 0; }
+  98.25% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes lt-s1b {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11.5% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-s2 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-s3a {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51% { opacity: 1; }
+  63.75% { opacity: 1; }
+  64.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-s3b {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  65.75% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-s4 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76% { opacity: 1; }
+  97% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-pl1 {
+  0% { opacity: 0; }
+  7% { opacity: 0; }
+  8.25% { opacity: 1; }
+  9.5% { opacity: 1; }
+  10.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-pl2 {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  19.25% { opacity: 1; }
+  23.75% { opacity: 1; }
+  25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-pl3 {
+  0% { opacity: 0; }
+  43.5% { opacity: 0; }
+  44.75% { opacity: 1; }
+  48.75% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-pl4 {
+  0% { opacity: 0; }
+  63% { opacity: 0; }
+  63.75% { opacity: 1; }
+  64.25% { opacity: 1; }
+  65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-pl5 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  67.25% { opacity: 1; }
+  73.75% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-pl6 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.25% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-subA {
+  0% { opacity: 1; }
+  9.5% { opacity: 1; }
+  10.5% { opacity: 0; }
+  98.25% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes lt-subB {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11.5% { opacity: 1; }
+  97% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-hl181 {
+  0% { opacity: 0; }
+  50.5% { opacity: 0; }
+  52% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-rowsA {
+  0% { opacity: 1; }
+  9.5% { opacity: 1; }
+  10.5% { opacity: 0; }
+  98.25% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes lt-rowsB {
+  0% { opacity: 0; }
+  10.5% { opacity: 0; }
+  11.5% { opacity: 1; }
+  97% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-ll1 {
+  0% { opacity: 1; }
+  23.75% { opacity: 1; }
+  24.75% { opacity: 0; }
+  98.25% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes lt-ll2 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  26% { opacity: 1; }
+  48.75% { opacity: 1; }
+  49.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-ll3 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51% { opacity: 1; }
+  73.75% { opacity: 1; }
+  74.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-ll4 {
+  0% { opacity: 0; }
+  75% { opacity: 0; }
+  76% { opacity: 1; }
+  97% { opacity: 1; }
+  98% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-purov {
+  0% { opacity: 0; }
+  6% { opacity: 0; }
+  7.75% { opacity: 1; }
+  10% { opacity: 1; }
+  11.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red3 {
+  0% { opacity: 0; }
+  15% { opacity: 0; }
+  16.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red7 {
+  0% { opacity: 0; }
+  15.425% { opacity: 0; }
+  16.925% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red0 {
+  0% { opacity: 0; }
+  15.85% { opacity: 0; }
+  17.35% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red5 {
+  0% { opacity: 0; }
+  16.275% { opacity: 0; }
+  17.775% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red9 {
+  0% { opacity: 0; }
+  16.7% { opacity: 0; }
+  18.2% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red2 {
+  0% { opacity: 0; }
+  17.125% { opacity: 0; }
+  18.625% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red6 {
+  0% { opacity: 0; }
+  17.55% { opacity: 0; }
+  19.05% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red1 {
+  0% { opacity: 0; }
+  17.975% { opacity: 0; }
+  19.475% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red8 {
+  0% { opacity: 0; }
+  18.4% { opacity: 0; }
+  19.9% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-red4 {
+  0% { opacity: 0; }
+  18.825% { opacity: 0; }
+  20.325% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b4root {
+  0% { opacity: 0; }
+  78.5% { opacity: 0; }
+  80% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b4int {
+  0% { opacity: 0; }
+  80% { opacity: 0; }
+  81.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b4leaf {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  83% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b4chip {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk4 {
+  0% { transform: translate(403px, 124px); opacity: 0; }
+  76% { transform: translate(403px, 124px); opacity: 0; }
+  76.25% { opacity: 1; }
+  78.5% { transform: translate(465px, 152px); }
+  80% { transform: translate(409.3px, 174px); }
+  81.5% { transform: translate(403px, 200px); }
+  82.5% { transform: translate(403px, 200px); opacity: 1; }
+  82.75% { transform: translate(403px, 200px); opacity: 0; }
+  100% { transform: translate(403px, 200px); opacity: 0; }
+}
+@keyframes lt-wal {
+  0% { transform:scaleX(0); }
+  27% { transform:scaleX(0); }
+  44% { transform:scaleX(1); }
+  97.5% { transform:scaleX(1); }
+  99.5% { transform:scaleX(0); }
+  100% { transform:scaleX(0); }
+}
+@keyframes lt-l1a {
+  0% { opacity: 1; }
+  69% { opacity: 1; }
+  70.75% { opacity: 0; }
+  98% { opacity: 0; }
+  99.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes lt-l1b {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  71.25% { opacity: 1; }
+  97% { opacity: 1; }
+  98.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk20 {
+  0% { transform: translate(170px, 196px); opacity: 0; }
+  27.25% { transform: translate(170px, 196px); opacity: 0; }
+  27.5% { opacity: 1; }
+  29% { transform: translate(292.941px, 322px); }
+  30.5% { transform: translate(574.325px, 335px); opacity: 1; }
+  30.75% { transform: translate(574.325px, 335px); opacity: 0; }
+  100% { transform: translate(574.325px, 335px); opacity: 0; }
+}
+@keyframes lt-md0 {
+  0% { opacity: 0; }
+  30.5% { opacity: 0; }
+  31% { opacity: 1; }
+  35.25% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk21 {
+  0% { transform: translate(170px, 212px); opacity: 0; }
+  28% { transform: translate(170px, 212px); opacity: 0; }
+  28.25% { opacity: 1; }
+  29.75% { transform: translate(312.794px, 322px); }
+  31.25% { transform: translate(403.112px, 335px); opacity: 1; }
+  31.5% { transform: translate(403.112px, 335px); opacity: 0; }
+  100% { transform: translate(403.112px, 335px); opacity: 0; }
+}
+@keyframes lt-md1 {
+  0% { opacity: 0; }
+  31.25% { opacity: 0; }
+  31.75% { opacity: 1; }
+  35.25% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk22 {
+  0% { transform: translate(170px, 228px); opacity: 0; }
+  28.75% { transform: translate(170px, 228px); opacity: 0; }
+  29% { opacity: 1; }
+  30.5% { transform: translate(332.647px, 322px); }
+  32% { transform: translate(661.473px, 335px); opacity: 1; }
+  32.25% { transform: translate(661.473px, 335px); opacity: 0; }
+  100% { transform: translate(661.473px, 335px); opacity: 0; }
+}
+@keyframes lt-md2 {
+  0% { opacity: 0; }
+  32% { opacity: 0; }
+  32.5% { opacity: 1; }
+  35.25% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk23 {
+  0% { transform: translate(170px, 244px); opacity: 0; }
+  29.5% { transform: translate(170px, 244px); opacity: 0; }
+  29.75% { opacity: 1; }
+  31.25% { transform: translate(352.5px, 322px); }
+  32.75% { transform: translate(268.944px, 335px); opacity: 1; }
+  33% { transform: translate(268.944px, 335px); opacity: 0; }
+  100% { transform: translate(268.944px, 335px); opacity: 0; }
+}
+@keyframes lt-md3 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  33.25% { opacity: 1; }
+  35.25% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk24 {
+  0% { transform: translate(170px, 260px); opacity: 0; }
+  30.25% { transform: translate(170px, 260px); opacity: 0; }
+  30.5% { opacity: 1; }
+  32% { transform: translate(372.353px, 322px); }
+  33.5% { transform: translate(282.415px, 335px); opacity: 1; }
+  33.75% { transform: translate(282.415px, 335px); opacity: 0; }
+  100% { transform: translate(282.415px, 335px); opacity: 0; }
+}
+@keyframes lt-md4 {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34% { opacity: 1; }
+  35.25% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk25 {
+  0% { transform: translate(170px, 276px); opacity: 0; }
+  31% { transform: translate(170px, 276px); opacity: 0; }
+  31.25% { opacity: 1; }
+  32.75% { transform: translate(392.206px, 322px); }
+  34.25% { transform: translate(336.239px, 335px); opacity: 1; }
+  34.5% { transform: translate(336.239px, 335px); opacity: 0; }
+  100% { transform: translate(336.239px, 335px); opacity: 0; }
+}
+@keyframes lt-md5 {
+  0% { opacity: 0; }
+  34.25% { opacity: 0; }
+  34.75% { opacity: 1; }
+  35.25% { opacity: 1; }
+  36% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-f1m {
+  0% { transform:translate(0px,0px); }
+  35% { transform:translate(0px,0px); }
+  36.75% { transform:translate(0px,43px); }
+  100% { transform:translate(0px,43px); }
+}
+@keyframes lt-f1 {
+  0% { opacity: 0; }
+  32.75% { opacity: 0; }
+  34% { opacity: 1; }
+  36.5% { opacity: 1; }
+  37.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-f2m {
+  0% { transform:translate(0px,0px); }
+  39.75% { transform:translate(0px,0px); }
+  41.5% { transform:translate(0px,33px); }
+  100% { transform:translate(0px,33px); }
+}
+@keyframes lt-f2 {
+  0% { opacity: 0; }
+  37.75% { opacity: 0; }
+  39% { opacity: 1; }
+  41.25% { opacity: 1; }
+  42% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-f3m {
+  0% { transform:translate(0px,0px); }
+  43.75% { transform:translate(0px,0px); }
+  45.5% { transform:translate(0px,23px); }
+  100% { transform:translate(0px,23px); }
+}
+@keyframes lt-f3 {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  43.25% { opacity: 1; }
+  45.25% { opacity: 1; }
+  46% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-f4m {
+  0% { transform:translate(0px,0px); }
+  65% { transform:translate(0px,0px); }
+  66.75% { transform:translate(0px,13px); }
+  100% { transform:translate(0px,13px); }
+}
+@keyframes lt-f4 {
+  0% { opacity: 0; }
+  45.75% { opacity: 0; }
+  47% { opacity: 1; }
+  66.5% { opacity: 1; }
+  67.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-memtomb {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  68.5% { opacity: 1; }
+  97% { opacity: 1; }
+  98.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-cmp {
+  0% { transform:translate(0px,0px); }
+  68.5% { transform:translate(0px,0px); }
+  70.25% { transform:translate(0px,30px); }
+  100% { transform:translate(0px,30px); }
+}
+@keyframes lt-b225 {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  37.25% { opacity: 1; }
+  69.75% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b226 {
+  0% { opacity: 0; }
+  41% { opacity: 0; }
+  42% { opacity: 1; }
+  69.75% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b227 {
+  0% { opacity: 0; }
+  45% { opacity: 0; }
+  46% { opacity: 1; }
+  69.75% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b228 {
+  0% { opacity: 0; }
+  66.25% { opacity: 0; }
+  67.25% { opacity: 1; }
+  69.75% { opacity: 1; }
+  70.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b225i {
+  0% { opacity: 0; }
+  36.25% { opacity: 0; }
+  37.25% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b226i {
+  0% { opacity: 0; }
+  41% { opacity: 0; }
+  42% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b227i {
+  0% { opacity: 0; }
+  45% { opacity: 0; }
+  46% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-b228i {
+  0% { opacity: 0; }
+  66.25% { opacity: 0; }
+  67.25% { opacity: 1; }
+  68.5% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-l0amb {
+  0% { opacity: 0; }
+  67% { opacity: 0; }
+  67.75% { opacity: 1; }
+  69% { opacity: 1; }
+  69.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-guide {
+  0% { opacity: 0; }
+  51.25% { opacity: 0; }
+  52.75% { opacity: 1; }
+  68% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk3 {
+  0% { transform: translate(403.112px, 124px); opacity: 0; }
+  50.5% { transform: translate(403.112px, 124px); opacity: 0; }
+  50.75% { opacity: 1; }
+  53.75% { transform: translate(403.112px, 335px); }
+  55.25% { transform: translate(403.112px, 358px); }
+  57% { transform: translate(403.112px, 368px); }
+  58.75% { transform: translate(403.112px, 378px); }
+  60.25% { transform: translate(403.112px, 395px); }
+  61.25% { transform: translate(403.112px, 413px); }
+  62.5% { transform: translate(403.112px, 431px); }
+  64% { transform: translate(403.112px, 431px); opacity: 1; }
+  64.25% { transform: translate(403.112px, 431px); opacity: 0; }
+  100% { transform: translate(403.112px, 431px); opacity: 0; }
+}
+@keyframes lt-m0 {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54.5% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-m1 {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  56% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-m2 {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  57.75% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-m3 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.5% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-m4 {
+  0% { opacity: 0; }
+  60.25% { opacity: 0; }
+  61% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-m5 {
+  0% { opacity: 0; }
+  61.25% { opacity: 0; }
+  62% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-m6 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.25% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-f86 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.25% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-f86t {
+  0% { opacity: 0; }
+  62.75% { opacity: 0; }
+  63.5% { opacity: 1; }
+  68% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-tk1a0 {
+  0% { transform: translate(170px, 196px); opacity: 0; }
+  1.75% { transform: translate(170px, 196px); opacity: 0; }
+  2% { opacity: 1; }
+  4.75% { transform: translate(675.236px, 189px); opacity: 1; }
+  5% { transform: translate(675.236px, 189px); opacity: 0; }
+  100% { transform: translate(675.236px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1a1 {
+  0% { transform: translate(170px, 212px); opacity: 0; }
+  2.85% { transform: translate(170px, 212px); opacity: 0; }
+  3.1% { opacity: 1; }
+  5.85% { transform: translate(674.528px, 189px); opacity: 1; }
+  6.1% { transform: translate(674.528px, 189px); opacity: 0; }
+  100% { transform: translate(674.528px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1a2 {
+  0% { transform: translate(170px, 228px); opacity: 0; }
+  3.95% { transform: translate(170px, 228px); opacity: 0; }
+  4.2% { opacity: 1; }
+  6.95% { transform: translate(675.241px, 189px); opacity: 1; }
+  7.2% { transform: translate(675.241px, 189px); opacity: 0; }
+  100% { transform: translate(675.241px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1b0 {
+  0% { transform: translate(170px, 196px); opacity: 0; }
+  11.5% { transform: translate(170px, 196px); opacity: 0; }
+  11.75% { opacity: 1; }
+  14.5% { transform: translate(574.325px, 189px); opacity: 1; }
+  14.75% { transform: translate(574.325px, 189px); opacity: 0; }
+  100% { transform: translate(574.325px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1b1 {
+  0% { transform: translate(170px, 212px); opacity: 0; }
+  12.1% { transform: translate(170px, 212px); opacity: 0; }
+  12.35% { opacity: 1; }
+  15.1% { transform: translate(403.112px, 189px); opacity: 1; }
+  15.35% { transform: translate(403.112px, 189px); opacity: 0; }
+  100% { transform: translate(403.112px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1b2 {
+  0% { transform: translate(170px, 228px); opacity: 0; }
+  12.7% { transform: translate(170px, 228px); opacity: 0; }
+  12.95% { opacity: 1; }
+  15.7% { transform: translate(661.473px, 189px); opacity: 1; }
+  15.95% { transform: translate(661.473px, 189px); opacity: 0; }
+  100% { transform: translate(661.473px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1b3 {
+  0% { transform: translate(170px, 244px); opacity: 0; }
+  13.3% { transform: translate(170px, 244px); opacity: 0; }
+  13.55% { opacity: 1; }
+  16.3% { transform: translate(268.944px, 189px); opacity: 1; }
+  16.55% { transform: translate(268.944px, 189px); opacity: 0; }
+  100% { transform: translate(268.944px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1b4 {
+  0% { transform: translate(170px, 260px); opacity: 0; }
+  13.9% { transform: translate(170px, 260px); opacity: 0; }
+  14.15% { opacity: 1; }
+  16.9% { transform: translate(282.415px, 189px); opacity: 1; }
+  17.15% { transform: translate(282.415px, 189px); opacity: 0; }
+  100% { transform: translate(282.415px, 189px); opacity: 0; }
+}
+@keyframes lt-tk1b5 {
+  0% { transform: translate(170px, 276px); opacity: 0; }
+  14.5% { transform: translate(170px, 276px); opacity: 0; }
+  14.75% { opacity: 1; }
+  17.5% { transform: translate(336.239px, 189px); opacity: 1; }
+  17.75% { transform: translate(336.239px, 189px); opacity: 0; }
+  100% { transform: translate(336.239px, 189px); opacity: 0; }
+}
+@keyframes lt-p1c1 {
+  0% { opacity: 0; }
+  7% { opacity: 0; }
+  8.5% { opacity: 1; }
+  24.5% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p1c2 {
+  0% { opacity: 0; }
+  18% { opacity: 0; }
+  19.5% { opacity: 1; }
+  24.5% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p1n2 {
+  0% { opacity: 0; }
+  7.5% { opacity: 0; }
+  9% { opacity: 1; }
+  24.5% { opacity: 1; }
+  26% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p2v0 {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  31% { opacity: 1; }
+  49.5% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p2v1 {
+  0% { opacity: 0; }
+  29.5% { opacity: 0; }
+  31% { opacity: 1; }
+  49.5% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p2v2 {
+  0% { opacity: 0; }
+  33% { opacity: 0; }
+  34.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p2v3 {
+  0% { opacity: 0; }
+  45.5% { opacity: 0; }
+  47% { opacity: 1; }
+  49.5% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p2v4 {
+  0% { opacity: 0; }
+  46% { opacity: 0; }
+  47.5% { opacity: 1; }
+  49.5% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p2v5 {
+  0% { opacity: 0; }
+  46.5% { opacity: 0; }
+  48% { opacity: 1; }
+  49.5% { opacity: 1; }
+  51% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3v0 {
+  0% { opacity: 0; }
+  53.75% { opacity: 0; }
+  54.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3v1 {
+  0% { opacity: 0; }
+  55.25% { opacity: 0; }
+  56% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3v2 {
+  0% { opacity: 0; }
+  57% { opacity: 0; }
+  57.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3v3 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3v4 {
+  0% { opacity: 0; }
+  60.75% { opacity: 0; }
+  61.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3v5 {
+  0% { opacity: 0; }
+  62.5% { opacity: 0; }
+  63.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3s {
+  0% { opacity: 0; }
+  63.25% { opacity: 0; }
+  64.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3c0 {
+  0% { opacity: 0; }
+  65.25% { opacity: 0; }
+  66.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3c1 {
+  0% { opacity: 0; }
+  65.25% { opacity: 0; }
+  66.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3c2 {
+  0% { opacity: 0; }
+  67.25% { opacity: 0; }
+  68.25% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3c3 {
+  0% { opacity: 0; }
+  69.75% { opacity: 0; }
+  70.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3c4 {
+  0% { opacity: 0; }
+  69.75% { opacity: 0; }
+  70.75% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p3c5 {
+  0% { opacity: 0; }
+  70.5% { opacity: 0; }
+  71.5% { opacity: 1; }
+  74.5% { opacity: 1; }
+  75.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p4g0 {
+  0% { opacity: 0; }
+  77.5% { opacity: 0; }
+  79% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p4g1 {
+  0% { opacity: 0; }
+  82% { opacity: 0; }
+  83.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p4g2 {
+  0% { opacity: 0; }
+  86% { opacity: 0; }
+  87.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes lt-p4n {
+  0% { opacity: 0; }
+  90% { opacity: 0; }
+  91.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  99% { opacity: 0; }
+  100% { opacity: 0; }
+}
+</style>
+<g class="stage">
+<rect class="box" x="30" y="92" width="90" height="30" rx="10"/>
+<text class="sub sb mid f-ink lt-who1" x="75" y="111">ingest job</text>
+<text class="sub sb mid f-ink lt-who2" x="75" y="111">support tool</text>
+<rect class="f-bg s-line" x="128" y="92" width="802" height="30" rx="10" stroke-width="1.5"/>
+<text class="sub mono f-ink lt-s1a" x="140" y="112">INSERT INTO ev SELECT * FROM order_events WHERE id &gt; 1450000   -- next 50,000, time order</text>
+<text class="sub mono f-ink lt-s1b" x="140" y="112">CHECKPOINT; INSERT INTO ev SELECT * FROM late_events   -- 50,000 reviews, random orders</text>
+<text class="sub mono f-ink lt-s2" x="140" y="112">db.put((order_id, id), event) × 50,000   -- the same reviews, Python LSM model</text>
+<text class="sub mono f-ink lt-s3a" x="140" y="112">db.get(181236)   -- every event of order 181,236: memtable, L0 newest first, L1 to L3</text>
+<text class="sub mono f-ink lt-s3b" x="140" y="112">db.delete((order_id, id)) for the 30,199 events of 9,755 cancelled orders</text>
+<text class="sub mono f-ink lt-s4" x="140" y="112">SELECT * FROM ev WHERE order_id = 181236   -- the same read in the B-tree</text>
+<g class="lt-pl1"><rect class="f-purple-soft s-purple" x="836" y="98" width="86" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="879" y="111">172 pages</text></g>
+<g class="lt-pl2"><rect class="f-red-soft s-red" x="836" y="98" width="86" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-red" x="879" y="111">4,927 leaves</text></g>
+<g class="lt-pl3"><rect class="f-teal-soft s-teal" x="836" y="98" width="86" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-teal" x="879" y="111">3 flushes</text></g>
+<g class="lt-pl4"><rect class="f-blue-soft s-blue" x="836" y="98" width="86" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="879" y="111">4 events</text></g>
+<g class="lt-pl5"><rect class="f-purple-soft s-purple" x="806" y="98" width="116" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-purple" x="864" y="111">30,199 tombstones</text></g>
+<g class="lt-pl6"><rect class="f-blue-soft s-blue" x="822" y="98" width="100" height="18" rx="9" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="872" y="111">4 rows · 6 pages</text></g>
+<rect class="box" x="30" y="132" width="146" height="166" rx="10"/>
+<text class="sub sb f-ink" x="40" y="150">incoming events</text>
+<text class="tiny lt-subA" x="40" y="165">next 50,000 · time order</text>
+<text class="tiny lt-subB" x="40" y="165">50,000 random reviews</text>
+<text class="tiny sb end" x="96" y="184">order_id</text>
+<text class="tiny sb" x="106" y="184">kind</text>
+<line class="s-line" x1="38" y1="189" x2="168" y2="189" stroke-width="1"/>
+<rect class="f-blue-soft s-blue lt-hl181" x="36" y="204" width="134" height="15" rx="4" stroke-width="1.2"/>
+<g class="lt-rowsA"><text class="sub mono end f-ink" x="96" y="200">483,596</text><text class="sub f-ink" x="106" y="200">paid</text><text class="sub mono end f-ink" x="96" y="216">482,809</text><text class="sub f-ink" x="106" y="216">shipped</text><text class="sub mono end f-ink" x="96" y="232">483,601</text><text class="sub f-ink" x="106" y="232">placed</text><text class="sub mono end f-ink" x="96" y="248">482,819</text><text class="sub f-ink" x="106" y="248">shipped</text><text class="sub mono end f-ink" x="96" y="264">483,592</text><text class="sub f-ink" x="106" y="264">placed</text><text class="sub mono end f-ink" x="96" y="280">483,600</text><text class="sub f-ink" x="106" y="280">placed</text></g>
+<g class="lt-rowsB"><text class="sub mono end f-ink" x="96" y="200">371,473</text><text class="sub f-ink" x="106" y="200">reviewed</text><text class="sub mono end f-ink" x="96" y="216">181,236</text><text class="sub f-ink" x="106" y="216">reviewed</text><text class="sub mono end f-ink" x="96" y="232">468,303</text><text class="sub f-ink" x="106" y="232">reviewed</text><text class="sub mono end f-ink" x="96" y="248">32,161</text><text class="sub f-ink" x="106" y="248">reviewed</text><text class="sub mono end f-ink" x="96" y="264">47,129</text><text class="sub f-ink" x="106" y="264">reviewed</text><text class="sub mono end f-ink" x="96" y="280">106,933</text><text class="sub f-ink" x="106" y="280">reviewed</text></g>
+<text class="tiny" x="40" y="294">… and 49,994 more</text>
+<rect class="box" x="30" y="306" width="146" height="164" rx="10"/>
+<g class="lt-ll1"><text class="tiny f-ink" x="40" y="326">PostgreSQL writes each</text><text class="tiny f-ink" x="40" y="342">event 3 times in place:</text><text class="tiny f-ink" x="40" y="358">a heap row, an ev_pkey</text><text class="tiny f-ink" x="40" y="374">entry and an entry in</text><text class="tiny f-ink" x="40" y="390">ev_order_id_idx, each</text><text class="tiny f-ink" x="40" y="406">with a WAL record.</text></g>
+<g class="lt-ll2"><text class="tiny f-ink" x="40" y="326">LSM model: key</text><text class="tiny f-ink" x="40" y="342">(order_id, id), value</text><text class="tiny f-ink" x="40" y="358">(kind, happened_at),</text><text class="tiny f-ink" x="40" y="374">32 bytes an event; one</text><text class="tiny f-ink" x="40" y="390">48-byte WAL record; no</text><text class="tiny f-ink" x="40" y="406">page changed in place.</text></g>
+<g class="lt-ll3"><text class="tiny f-ink" x="40" y="326">Bloom filter per file:</text><text class="tiny f-ink" x="40" y="342">10 bits per order_id,</text><text class="tiny f-ink" x="40" y="358">7 hash probes. A no is</text><text class="tiny f-ink" x="40" y="374">certain; a maybe was</text><text class="tiny f-ink" x="40" y="390">wrong 0.024 times per</text><text class="tiny f-ink" x="40" y="406">lookup in this run.</text></g>
+<g class="lt-ll4"><text class="tiny f-ink" x="40" y="326">B-trees: PostgreSQL,</text><text class="tiny f-ink" x="40" y="342">MySQL InnoDB, SQL</text><text class="tiny f-ink" x="40" y="358">Server, DynamoDB's</text><text class="tiny f-ink" x="40" y="374">storage replicas.</text><text class="tiny f-ink" x="40" y="390">LSM trees: RocksDB,</text><text class="tiny f-ink" x="40" y="406">MyRocks, Cassandra,</text><text class="tiny f-ink" x="40" y="422">ScyllaDB, LevelDB.</text></g>
+<g class="lt-dimbt"><text class="sub sb f-teal" x="186" y="140">B-tree · ev_order_id_idx · 4,946 pages · PostgreSQL 18.6</text><path class="wire" d="M465 159L253.01 168M465 159L279.05 168M465 159L305.08 168M465 159L331.12 168M465 159L357.15 168M465 159L383.19 168M465 159L409.22 168M465 159L435.26 168M465 159L461.29 168M465 159L487.33 168M465 159L513.36 168M465 159L539.4 168M465 159L565.43 168M465 159L591.47 168M465 159L617.5 168M465 159L643.54 168M465 159L673.28 168" stroke-width="1" opacity=".55"/><rect class="lt-pg" x="433" y="145" width="64" height="14" rx="3"/><text class="lt-k mid" x="465" y="156">root 412</text><rect class="lt-pg" x="240.6" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="266.63" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="292.67" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="318.7" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="344.74" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="370.77" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="396.81" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="422.84" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="448.88" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="474.9" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="500.95" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="526.97" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="553.02" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="579.04" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="605.09" y="168" width="24.83" height="12" rx="2"/><rect class="lt-pg" x="631.11" y="168" width="24.84" height="12" rx="2"/><rect class="lt-pg" x="657.16" y="168" width="32.24" height="12" rx="2"/><text class="lt-k end" x="234" y="156">root</text><text class="lt-k end" x="234" y="178">level 1</text><text class="tiny sb end f-ink" x="234" y="222">leaves</text><text class="lt-k end" x="234" y="236">4,927 pages</text><text class="lt-k end" x="234" y="260">1 dot = 1</text><text class="lt-k end" x="234" y="272">leaf page</text><g class="lt-dots"><path class="" d="M240 191H689M240 194H689M240 197H689M240 200H689M240 203H689M240 206H689M240 209H689M240 212H689M240 215H689M240 218H689M240 221H686M240 224H686M240 227H686M240 230H686M240 233H686M240 236H686M240 239H686M240 242H686M240 245H686M240 248H686M240 251H686M240 254H686M240 257H686M240 260H686M240 263H686M240 266H686M240 269H686M240 272H686M240 275H686M240 278H686M240 281H686M240 284H686M240 287H686"/></g><text class="lt-k" x="240" y="300">order_id 1</text><text class="lt-k end" x="690" y="300">500,000</text><g class="lt-pur lt-purov"><path class="" d="M673 202V288M676 190V288M679 190V288M682 190V288M685 190V288M688 190V219"/></g><g class="lt-red lt-red3"><path class="" d="M250 190V288M280 190V288M310 190V288M340 190V288M370 190V288M400 190V288M430 190V288M460 190V288M490 190V288M520 190V288M550 190V288M580 190V288M610 190V288M640 190V288M670 190V288"/></g><g class="lt-red lt-red7"><path class="" d="M262 190V288M292 190V288M322 190V288M352 190V288M382 190V288M412 190V288M442 190V288M472 190V288M502 190V288M532 190V288M562 190V288M592 190V288M622 190V288M652 190V288M682 190V288"/></g><g class="lt-red lt-red0"><path class="" d="M241 190V288M271 190V288M301 190V288M331 190V288M361 190V288M391 190V288M421 190V288M451 190V288M481 190V288M511 190V288M541 190V288M571 190V288M601 190V288M631 190V288M661 190V288"/></g><g class="lt-red lt-red5"><path class="" d="M256 190V288M286 190V288M316 190V288M346 190V288M376 190V288M406 190V288M436 190V288M466 190V288M496 190V288M526 190V288M556 190V288M586 190V288M616 190V288M646 190V288M676 190V288"/></g><g class="lt-red lt-red9"><path class="" d="M268 190V288M298 190V288M328 190V288M358 190V288M388 190V288M418 190V288M448 190V288M478 190V288M508 190V288M538 190V288M568 190V288M598 190V288M628 190V288M658 190V288M688 190V219"/></g><g class="lt-red lt-red2"><path class="" d="M247 190V288M277 190V288M307 190V288M337 190V288M367 190V288M397 190V288M427 190V288M457 190V288M487 190V288M517 190V288M547 190V288M577 190V288M607 190V288M637 190V288M667 190V288"/></g><g class="lt-red lt-red6"><path class="" d="M259 190V288M289 190V288M319 190V288M349 190V288M379 190V288M409 190V288M439 190V288M469 190V288M499 190V288M529 190V288M559 190V288M589 190V288M619 190V288M649 190V288M679 190V288"/></g><g class="lt-red lt-red1"><path class="" d="M244 190V288M274 190V288M304 190V288M334 190V288M364 190V288M394 190V288M424 190V288M454 190V288M484 190V288M514 190V288M544 190V288M574 190V288M604 190V288M634 190V288M664 190V288"/></g><g class="lt-red lt-red8"><path class="" d="M265 190V288M295 190V288M325 190V288M355 190V288M385 190V288M415 190V288M445 190V288M475 190V288M505 190V288M535 190V288M565 190V288M595 190V288M625 190V288M655 190V288M685 190V288"/></g><g class="lt-red lt-red4"><path class="" d="M253 190V288M283 190V288M313 190V288M343 190V288M373 190V288M403 190V288M433 190V288M463 190V288M493 190V288M523 190V288M553 190V288M583 190V288M613 190V288M643 190V288M673 190V288"/></g><rect class="none s-blue lt-b4root" x="433" y="145" width="64" height="14" rx="3" stroke-width="2"/><rect class="none s-blue lt-b4int" x="396.81" y="168" width="24.83" height="12" rx="2" stroke-width="2"/><circle class="none s-blue lt-b4leaf" cx="403" cy="200" r="4.5" stroke-width="2"/><g class="lt-b4chip"><rect class="f-bg s-blue" x="412" y="192" width="236" height="16" rx="8" stroke-width="1.2"/><text class="tiny mid sb f-blue" x="530" y="204">412 → 1842 → leaf 1797 → 3 heap pages</text></g><circle class="pkt f-blue lt-tk4" r="5"/></g>
+<g class="lt-dimls"><text class="sub sb f-teal" x="186" y="312">LSM tree · simplified model in Python · same events</text><rect class="none s-teal" x="240" y="318" width="450" height="8" rx="2" stroke-width="1"/><rect class="f-teal lt-fill lt-wal" x="240" y="318" width="450" height="8" rx="2" opacity=".55"/><text class="lt-k end" x="234" y="325">WAL</text><rect class="lt-mem" x="240" y="330" width="450" height="10" rx="2"/><text class="lt-k end" x="234" y="338">memtable</text><text class="tiny sb f-ink" x="190" y="366">L0</text><text class="tiny sb f-ink" x="190" y="398">L1</text><text class="tiny sb f-ink" x="190" y="416">L2</text><text class="tiny sb f-ink" x="190" y="434">L3</text><path class="lt-pg" d="M501.4 408h3.79v10h-3.79zM505.9 408h3.79v10h-3.79zM510.4 408h3.79v10h-3.79zM514.9 408h3.79v10h-3.79zM519.4 408h3.79v10h-3.79zM523.9 408h3.79v10h-3.79zM528.4 408h3.79v10h-3.79zM532.9 408h3.79v10h-3.79zM537.4 408h3.79v10h-3.79zM541.9 408h3.79v10h-3.79zM546.4 408h3.79v10h-3.79zM550.9 408h3.79v10h-3.79zM555.4 408h3.79v10h-3.79zM559.9 408h3.79v10h-3.79zM564.4 408h3.79v10h-3.79zM568.9 408h3.79v10h-3.79zM573.4 408h3.79v10h-3.79zM577.9 408h3.79v10h-3.79zM582.4 408h3.79v10h-3.79zM586.9 408h3.79v10h-3.79zM591.4 408h3.79v10h-3.79zM595.9 408h3.79v10h-3.79zM600.4 408h3.79v10h-3.79zM604.9 408h3.79v10h-3.79zM609.4 408h3.79v10h-3.79zM613.9 408h3.79v10h-3.79zM618.4 408h3.79v10h-3.79zM622.9 408h3.79v10h-3.79zM627.4 408h3.79v10h-3.79zM631.9 408h3.79v10h-3.79zM636.4 408h3.79v10h-3.79zM640.9 408h3.79v10h-3.79zM645.4 408h3.79v10h-3.79zM649.9 408h3.79v10h-3.79zM654.4 408h3.79v10h-3.79zM658.9 408h3.79v10h-3.79zM663.4 408h3.79v10h-3.79zM667.9 408h3.79v10h-3.79zM672.4 408h3.79v10h-3.79z"/><path class="lt-pg" d="M240.4 426h3.79v10h-3.79zM244.9 426h3.79v10h-3.79zM249.4 426h3.79v10h-3.79zM253.9 426h3.79v10h-3.79zM258.4 426h3.79v10h-3.79zM262.9 426h3.79v10h-3.79zM267.4 426h3.79v10h-3.79zM271.9 426h3.79v10h-3.79zM276.4 426h3.79v10h-3.79zM280.9 426h3.79v10h-3.79zM285.4 426h3.79v10h-3.79zM289.9 426h3.79v10h-3.79zM294.4 426h3.79v10h-3.79zM298.9 426h3.79v10h-3.79zM303.4 426h3.79v10h-3.79zM307.9 426h3.79v10h-3.79zM312.4 426h3.79v10h-3.79zM316.9 426h3.79v10h-3.79zM321.4 426h3.79v10h-3.79zM325.9 426h3.79v10h-3.79zM330.4 426h3.79v10h-3.79zM334.9 426h3.79v10h-3.79zM339.4 426h3.79v10h-3.79zM343.9 426h3.79v10h-3.79zM348.4 426h3.79v10h-3.79zM352.9 426h3.79v10h-3.79zM357.4 426h3.79v10h-3.79zM361.9 426h3.79v10h-3.79zM366.4 426h3.79v10h-3.79zM370.9 426h3.79v10h-3.79zM375.4 426h3.79v10h-3.79zM379.9 426h3.79v10h-3.79zM384.4 426h3.79v10h-3.79zM388.9 426h3.79v10h-3.79zM393.4 426h3.79v10h-3.79zM397.9 426h3.79v10h-3.79zM402.4 426h3.79v10h-3.79zM406.9 426h3.79v10h-3.79zM411.4 426h3.79v10h-3.79zM415.9 426h3.79v10h-3.79zM420.4 426h3.79v10h-3.79zM424.9 426h3.79v10h-3.79zM429.4 426h3.79v10h-3.79zM433.9 426h3.79v10h-3.79zM438.4 426h3.79v10h-3.79zM442.9 426h3.79v10h-3.79zM447.4 426h3.79v10h-3.79zM451.9 426h3.79v10h-3.79zM456.4 426h3.79v10h-3.79zM460.9 426h3.79v10h-3.79zM465.4 426h3.79v10h-3.79zM469.9 426h3.79v10h-3.79zM474.4 426h3.79v10h-3.79zM478.9 426h3.79v10h-3.79zM483.4 426h3.79v10h-3.79zM487.9 426h3.79v10h-3.79zM492.4 426h3.79v10h-3.79zM496.9 426h3.79v10h-3.79z"/><text class="lt-k end" x="496" y="416">39 files · orders 290,001–485,000</text><text class="lt-k" x="506" y="434">58 files · orders 1–290,000</text><g class="lt-l1a"><rect class="lt-pg" x="676.9" y="390" width="3.79" height="10" rx="1"/><rect class="lt-pg" x="681.4" y="390" width="3.79" height="10" rx="1"/><rect class="lt-pg" x="685.9" y="390" width="3.79" height="10" rx="1"/><text class="lt-k end" x="672" y="398">3 files · orders 485,001–500,000</text></g><g class="lt-l1b"><rect class="lt-pg" x="240.41" y="390" width="100.81" height="10" rx="1"/><text class="lt-k mid f-teal" x="290.81" y="398">#229</text><rect class="lt-pg" x="342.02" y="390" width="98.38" height="10" rx="1"/><text class="lt-k mid f-teal" x="391.21" y="398">#230</text><rect class="lt-pg" x="441.2" y="390" width="114.45" height="10" rx="1"/><text class="lt-k mid f-teal" x="498.43" y="398">#231</text><rect class="lt-pg" x="556.47" y="390" width="120.08" height="10" rx="1"/><text class="lt-k mid f-teal" x="616.5" y="398">#232</text><rect class="lt-pg" x="677.34" y="390" width="3.55" height="10" rx="1"/><rect class="lt-pg" x="681.7" y="390" width="3.56" height="10" rx="1"/><rect class="lt-pg" x="686.05" y="390" width="3.55" height="10" rx="1"/></g><line class="s-line" x1="240" y1="442" x2="690" y2="442" stroke-width="1"/><line class="s-line" x1="240" y1="442" x2="240" y2="446" stroke-width="1"/><text class="lt-k " x="240" y="456">1</text><line class="s-line" x1="330" y1="442" x2="330" y2="446" stroke-width="1"/><text class="lt-k mid" x="330" y="456">100,000</text><line class="s-line" x1="420" y1="442" x2="420" y2="446" stroke-width="1"/><text class="lt-k mid" x="420" y="456">200,000</text><line class="s-line" x1="510" y1="442" x2="510" y2="446" stroke-width="1"/><text class="lt-k mid" x="510" y="456">300,000</text><line class="s-line" x1="600" y1="442" x2="600" y2="446" stroke-width="1"/><text class="lt-k mid" x="600" y="456">400,000</text><line class="s-line" x1="690" y1="442" x2="690" y2="446" stroke-width="1"/><text class="lt-k end" x="690" y="456">500,000</text><text class="lt-k end" x="234" y="456">order_id</text><circle class="pkt f-purple lt-tk20" r="4.5"/><circle class="f-purple lt-md0" cx="574.33" cy="335" r="2.6"/><circle class="pkt f-purple lt-tk21" r="4.5"/><circle class="f-purple lt-md1" cx="403.11" cy="335" r="2.6"/><circle class="pkt f-purple lt-tk22" r="4.5"/><circle class="f-purple lt-md2" cx="661.47" cy="335" r="2.6"/><circle class="pkt f-purple lt-tk23" r="4.5"/><circle class="f-purple lt-md3" cx="268.94" cy="335" r="2.6"/><circle class="pkt f-purple lt-tk24" r="4.5"/><circle class="f-purple lt-md4" cx="282.42" cy="335" r="2.6"/><circle class="pkt f-purple lt-tk25" r="4.5"/><circle class="f-purple lt-md5" cx="336.24" cy="335" r="2.6"/><g class="lt-f1"><g class="lt-f1m"><line class="lt-tex" x1="241" y1="335" x2="689" y2="335"/></g></g><g class="lt-f2"><g class="lt-f2m"><line class="lt-tex" x1="241" y1="335" x2="689" y2="335"/></g></g><g class="lt-f3"><g class="lt-f3m"><line class="lt-tex" x1="241" y1="335" x2="689" y2="335"/></g></g><g class="lt-f4"><g class="lt-f4m"><line class="lt-tex2" x1="241" y1="335" x2="689" y2="335"/></g></g><g class="lt-memtomb"><path class="lt-tomb none" d="M247 333l4 4m0 -4l-4 4M264.8 333l4 4m0 -4l-4 4M282.6 333l4 4m0 -4l-4 4M300.4 333l4 4m0 -4l-4 4M318.2 333l4 4m0 -4l-4 4M336 333l4 4m0 -4l-4 4M353.8 333l4 4m0 -4l-4 4M371.6 333l4 4m0 -4l-4 4M389.4 333l4 4m0 -4l-4 4M407.2 333l4 4m0 -4l-4 4M425 333l4 4m0 -4l-4 4M442.8 333l4 4m0 -4l-4 4M460.6 333l4 4m0 -4l-4 4M478.4 333l4 4m0 -4l-4 4M496.2 333l4 4m0 -4l-4 4M514 333l4 4m0 -4l-4 4M531.8 333l4 4m0 -4l-4 4M549.6 333l4 4m0 -4l-4 4M567.4 333l4 4m0 -4l-4 4M585.2 333l4 4m0 -4l-4 4M603 333l4 4m0 -4l-4 4M620.8 333l4 4m0 -4l-4 4M638.6 333l4 4m0 -4l-4 4M656.4 333l4 4m0 -4l-4 4M674.2 333l4 4m0 -4l-4 4"/></g><g class="lt-cmp"><g class="lt-b225"><rect class="lt-pg" x="240.1" y="374" width="449.88" height="8" rx="2"/></g><g class="lt-b226"><rect class="lt-pg" x="240.07" y="364" width="449.9" height="8" rx="2"/></g><g class="lt-b227"><rect class="lt-pg" x="240.01" y="354" width="449.99" height="8" rx="2"/></g><g class="lt-b228"><rect class="lt-pg" x="240.03" y="344" width="449.91" height="8" rx="2"/><path class="lt-tomb none" d="M244 346l4 4m0 -4l-4 4M256.4 346l4 4m0 -4l-4 4M268.8 346l4 4m0 -4l-4 4M281.2 346l4 4m0 -4l-4 4M293.6 346l4 4m0 -4l-4 4M306 346l4 4m0 -4l-4 4M318.4 346l4 4m0 -4l-4 4M330.8 346l4 4m0 -4l-4 4M343.2 346l4 4m0 -4l-4 4M355.6 346l4 4m0 -4l-4 4M368 346l4 4m0 -4l-4 4M380.4 346l4 4m0 -4l-4 4M392.8 346l4 4m0 -4l-4 4M405.2 346l4 4m0 -4l-4 4M417.6 346l4 4m0 -4l-4 4M430 346l4 4m0 -4l-4 4M442.4 346l4 4m0 -4l-4 4M454.8 346l4 4m0 -4l-4 4M467.2 346l4 4m0 -4l-4 4M479.6 346l4 4m0 -4l-4 4M492 346l4 4m0 -4l-4 4M504.4 346l4 4m0 -4l-4 4M516.8 346l4 4m0 -4l-4 4M529.2 346l4 4m0 -4l-4 4M541.6 346l4 4m0 -4l-4 4M554 346l4 4m0 -4l-4 4M566.4 346l4 4m0 -4l-4 4M578.8 346l4 4m0 -4l-4 4M591.2 346l4 4m0 -4l-4 4M603.6 346l4 4m0 -4l-4 4M616 346l4 4m0 -4l-4 4M628.4 346l4 4m0 -4l-4 4M640.8 346l4 4m0 -4l-4 4M653.2 346l4 4m0 -4l-4 4M665.6 346l4 4m0 -4l-4 4M678 346l4 4m0 -4l-4 4"/></g></g><text class="lt-k end f-teal lt-b225i" x="236" y="381.5">#225</text><text class="lt-k end f-teal lt-b226i" x="236" y="371.5">#226</text><text class="lt-k end f-teal lt-b227i" x="236" y="361.5">#227</text><text class="lt-k end f-teal lt-b228i" x="236" y="351.5">#228</text><rect class="none s-amber lt-l0amb" x="237" y="342" width="456" height="40" rx="4" stroke-width="1.6" stroke-dasharray="4 3"/><line class="lt-guide lt-guide" x1="403.11" y1="327" x2="403.11" y2="440"/><circle class="pkt f-blue lt-tk3" r="5"/><line class="s-muted lt-m0" x1="410.11" y1="335" x2="418.11" y2="335" stroke-width="2"/><rect class="f-bg s-green lt-m1" x="410.11" y="354" width="8" height="8" rx="2" stroke-width="1.5"/><rect class="f-bg s-green lt-m2" x="410.11" y="364" width="8" height="8" rx="2" stroke-width="1.5"/><rect class="f-blue lt-m3" x="410.11" y="374" width="8" height="8" rx="2"/><line class="s-muted lt-m4" x1="410.11" y1="395" x2="418.11" y2="395" stroke-width="2"/><line class="s-muted lt-m5" x1="410.11" y1="413" x2="418.11" y2="413" stroke-width="2"/><rect class="f-blue lt-m6" x="410.11" y="427" width="8" height="8" rx="2"/><rect class="none s-blue lt-f86" x="401" y="424" width="6.5" height="14" rx="2" stroke-width="2"/><g class="lt-f86t"><rect class="f-bg" x="374.11" y="425" width="22" height="12" rx="3"/><text class="lt-k end f-blue sb" x="395.11" y="434.5">#86</text></g></g>
+<circle class="pkt f-purple lt-tk1a0" r="4.5"/>
+<circle class="pkt f-purple lt-tk1a1" r="4.5"/>
+<circle class="pkt f-purple lt-tk1a2" r="4.5"/>
+<circle class="pkt f-purple lt-tk1b0" r="4.5"/>
+<circle class="pkt f-purple lt-tk1b1" r="4.5"/>
+<circle class="pkt f-purple lt-tk1b2" r="4.5"/>
+<circle class="pkt f-purple lt-tk1b3" r="4.5"/>
+<circle class="pkt f-purple lt-tk1b4" r="4.5"/>
+<circle class="pkt f-purple lt-tk1b5" r="4.5"/>
+<rect class="box" x="712" y="130" width="218" height="340" rx="10"/>
+<g class="p1"><text class="sub sb f-ink" x="722" y="150">50,000 inserts after</text><text class="sub sb f-ink" x="722" y="165">a CHECKPOINT</text><text class="tiny sb end f-purple" x="862" y="186">time order</text><text class="tiny sb end f-red" x="922" y="186">random</text><text class="tiny" x="722" y="204">index pages dirtied</text><text class="tiny" x="722" y="222">full-page images</text><text class="tiny" x="722" y="240">WAL written</text><text class="tiny" x="722" y="258">pages to write</text><text class="tiny" x="722" y="276">bytes per event</text><g class="lt-p1c1"><text class="lt-v mono end f-purple" x="862" y="204">172</text><text class="lt-v mono end f-purple" x="862" y="222">13</text><text class="lt-v mono end f-purple" x="862" y="240">11.5 MB</text><text class="lt-v mono end f-purple" x="862" y="258">680</text><text class="lt-v mono end f-purple" x="862" y="276">341</text></g><g class="lt-p1c2"><text class="lt-v mono end f-red" x="922" y="204">4,927</text><text class="lt-v mono end f-red" x="922" y="222">4,932</text><text class="lt-v mono end f-red" x="922" y="240">36.6 MB</text><text class="lt-v mono end f-red" x="922" y="258">5,485</text><text class="lt-v mono end f-red" x="922" y="276">1,631</text></g><text class="tiny f-ink" x="722" y="308">Each dirtied page is an 8 kB write</text><text class="tiny f-ink" x="722" y="322">at the next checkpoint. Its first</text><text class="tiny f-ink" x="722" y="336">change after a checkpoint also logs</text><text class="tiny f-ink" x="722" y="350">a full-page image in the WAL.</text><g class="lt-p1n2"><text class="tiny" x="722" y="380">In time order, entries land at the</text><text class="tiny" x="722" y="394">right edge: 166 splits, the first</text><text class="tiny" x="722" y="408">moving half of leaf 4,771 to page</text><text class="tiny" x="722" y="422">4,780. Random keys hit every leaf.</text></g></g>
+<g class="p2"><text class="sub sb f-ink" x="722" y="150">LSM write path</text><text class="tiny" x="722" y="165">Python model · same 50,000 reviews</text><text class="tiny" x="722" y="190">WAL appended</text><text class="lt-v mono end f-teal lt-p2v0" x="922" y="190">2.4 MB</text><text class="tiny" x="722" y="208">per event</text><text class="lt-v mono end f-teal lt-p2v1" x="922" y="208">48 B</text><text class="tiny" x="722" y="226">memtable</text><text class="lt-v mono end f-teal lt-p2v2" x="922" y="226">15,000 events</text><text class="tiny" x="722" y="244">flushed to L0</text><text class="lt-v mono end f-teal lt-p2v3" x="922" y="244">3 × 0.62 MB</text><text class="tiny" x="722" y="262">still in memtable</text><text class="lt-v mono end f-teal lt-p2v4" x="922" y="262">5,000</text><text class="tiny" x="722" y="280">pages changed in place</text><text class="lt-v mono end f-teal lt-p2v5" x="922" y="280">0</text><text class="tiny f-ink" x="722" y="312">A flush writes one immutable file,</text><text class="tiny f-ink" x="722" y="326">sorted by (order_id, id), front to</text><text class="tiny f-ink" x="722" y="340">back. Below L0, each level is one</text><text class="tiny f-ink" x="722" y="354">sorted run cut into 0.6 MB files.</text><text class="tiny" x="722" y="384">Model sizes are about 1/100 of</text><text class="tiny" x="722" y="398">RocksDB defaults: memtable 64 MiB,</text><text class="tiny" x="722" y="412">L1 256 MiB, ×10 per level, and</text><text class="tiny" x="722" y="426">compaction at 4 L0 files.</text></g>
+<g class="p3"><text class="sub sb f-ink" x="722" y="150">get(181236)</text><text class="tiny" x="722" y="165">every file that may hold the order</text><text class="tiny" x="722" y="186">memtable</text><text class="tiny sb end f-muted lt-p3v0" x="922" y="186">none</text><text class="tiny" x="722" y="202">L0 #227</text><text class="tiny sb end f-green lt-p3v1" x="922" y="202">bloom: skip</text><text class="tiny" x="722" y="218">L0 #226</text><text class="tiny sb end f-green lt-p3v2" x="922" y="218">bloom: skip</text><text class="tiny" x="722" y="234">L0 #225</text><text class="tiny sb end f-blue lt-p3v3" x="922" y="234">read: reviewed</text><text class="tiny" x="722" y="250">L1, L2</text><text class="tiny sb end f-green lt-p3v4" x="922" y="250">key range: skip</text><text class="tiny" x="722" y="266">L3 #86</text><text class="tiny sb end f-blue lt-p3v5" x="922" y="266">read: placed, paid, shipped</text><g class="lt-p3s"><text class="tiny sb f-ink" x="722" y="294">4 bloom checks · 2 files read</text><text class="tiny" x="722" y="308">4,000 random orders: 1.1 files each</text></g><text class="tiny sb f-purple lt-p3c0" x="722" y="336">Deleting cancelled orders writes</text><text class="tiny lt-p3c1" x="722" y="351">30,199 tombstones; 16,667 fill #228.</text><text class="tiny sb f-amber-ink lt-p3c2" x="722" y="366">L0 holds 4 files: compaction merges</text><text class="tiny lt-p3c3" x="722" y="381">them with L1: 7 files in, 7 out,</text><text class="tiny lt-p3c4" x="722" y="396">4.3 MB written, tombstones kept:</text><text class="tiny lt-p3c5" x="722" y="411">only at L3 can they be dropped.</text></g>
+<g class="p4"><text class="sub sb f-ink" x="722" y="150">Amplification</text><text class="tiny" x="722" y="165">PostgreSQL run vs the LSM model</text><text class="tiny sb end f-teal" x="818" y="184">B-tree</text><text class="tiny sb end f-ink" x="872" y="184">leveled</text><text class="tiny sb end f-ink" x="922" y="184">tiered</text><g class="lt-p4g0"><text class="tiny sb f-ink" x="722" y="204">write: bytes per event</text><text class="tiny" x="722" y="220">in order</text><text class="lt-v mono end" x="818" y="220">341</text><text class="lt-v mono end" x="872" y="220">139</text><text class="lt-v mono end" x="922" y="220">194</text><text class="tiny" x="722" y="236">random</text><text class="lt-v mono end" x="818" y="236">1,631</text><text class="lt-v mono end" x="872" y="236">369</text><text class="lt-v mono end" x="922" y="236">192</text></g><g class="lt-p4g1"><text class="tiny sb f-ink" x="722" y="260">read: order 181,236</text><text class="tiny" x="722" y="276">pages, files</text><text class="lt-v mono end" x="818" y="276">6</text><text class="lt-v mono end" x="872" y="276">2</text><text class="lt-v mono end" x="922" y="276">2</text><text class="tiny" x="722" y="292">bloom checks</text><text class="lt-v mono end" x="818" y="292">–</text><text class="lt-v mono end" x="872" y="292">4</text><text class="lt-v mono end" x="922" y="292">4</text></g><g class="lt-p4g2"><text class="tiny sb f-ink" x="722" y="316">space: ÷ a fresh copy</text><text class="tiny" x="722" y="332">now</text><text class="lt-v mono end" x="818" y="332">1.64×</text><text class="lt-v mono end" x="872" y="332">1.03×</text><text class="lt-v mono end" x="922" y="332">1.03×</text><text class="tiny" x="722" y="348">at peak</text><text class="lt-v mono end" x="818" y="348"></text><text class="lt-v mono end" x="872" y="348">1.17×</text><text class="lt-v mono end" x="922" y="348">1.26×</text></g><g class="lt-p4n"><text class="tiny f-ink" x="722" y="384">RUM conjecture (EDBT 2016): bound</text><text class="tiny f-ink" x="722" y="398">two of read, update and memory</text><text class="tiny f-ink" x="722" y="412">overhead, and the third has a floor.</text><text class="tiny" x="722" y="434">RocksDB slows writes at 20 L0</text><text class="tiny" x="722" y="448">files and stops them at 36.</text></g></g>
+</g>
+</svg>

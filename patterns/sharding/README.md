@@ -168,6 +168,10 @@ Sharding is hard to undo: once the data is spread out, every query, report, migr
 - [Elasticsearch & OpenSearch](../elasticsearch/) — Search engines built on inverted indexes: full-text queries ranked by relevance, and aggregations over sharded indexes.
 - [Amazon DynamoDB](../amazon-dynamodb/) — A serverless key-value and document database: the partition key spreads items across partitions for single-digit-millisecond reads.
 
+## Related database topics
+
+- [Table Partitioning](../table-partitioning/) — Split a large table into partitions by range, list or hash, so queries skip partitions and old data is dropped in an instant.
+
 ## References
 
 - [Azure Architecture Center — Sharding pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding)

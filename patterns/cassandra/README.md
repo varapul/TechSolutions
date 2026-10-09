@@ -226,6 +226,11 @@ Figures and terms from the Apache Cassandra 5.0, ScyllaDB, Amazon DynamoDB and M
 - [Materialized View](../materialized-view/) — Precompute query-shaped views so reads don't pay for joins and aggregations.
 - [Read Replicas](../read-replicas/) — Send writes to the primary and spread reads across asynchronously updated replicas.
 
+## Related database topics
+
+- [LSM Tree vs B-Tree](../lsm-tree/) — Two storage engine designs: update pages in place, or append in memory and merge sorted files, and what each costs to read and write.
+- [Table Partitioning](../table-partitioning/) — Split a large table into partitions by range, list or hash, so queries skip partitions and old data is dropped in an instant.
+
 ## References
 
 - [Apache Cassandra 5.0 documentation — Dynamo (partitioning, replication, consistency, gossip)](https://cassandra.apache.org/doc/5.0/cassandra/architecture/dynamo.html)

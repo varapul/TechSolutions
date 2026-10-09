@@ -1,0 +1,46 @@
+{
+  "aka": ["Isolation levels", "Read Committed", "Repeatable Read", "Serializable", "Snapshot isolation", "Write skew"],
+  "steps": [
+    {
+      "title": "Two runs at READ COMMITTED",
+      "caption": "At READ COMMITTED the report reads 51,179.03, then 47,193.60, and two sales take stock from 10 to 9.",
+      "body": "At PostgreSQL's default level, READ COMMITTED, each statement sees what was committed before that statement began. Acme's finance report (A) reads order 495179's total and customer 42's order count while a refund (B) and a new order (C) commit, so in one transaction it reads **51,179.03, then 47,193.60**, and **179, then 180** orders. Two staff selling product 2892 both read a stock of 10 and write 9: B's UPDATE waits for A's row lock, then writes 9 as well, so **two sales take the stock from 10 to 9**."
+    },
+    {
+      "title": "The anomalies, named",
+      "caption": "Named: never a dirty read, but a non-repeatable read, a phantom, a lost update and write skew.",
+      "body": "PostgreSQL never shows uncommitted data: the read taken before B committed still returned 51,179.03, and READ UNCOMMITTED runs as READ COMMITTED. The changed total is a **non-repeatable read**, the new order a **phantom** and the stock a **lost update**; when both shift leads see 2 on duty and each signs off, leaving none, that is **write skew**. The SQL standard defines its levels by the first three: READ COMMITTED forbids dirty reads, REPEATABLE READ non-repeatable reads too, and SERIALIZABLE must give a result that some serial order could give (the dashed cells)."
+    },
+    {
+      "title": "Stronger levels, retried",
+      "caption": "REPEATABLE READ keeps one snapshot and aborts B with 40001; only SERIALIZABLE stops the write skew.",
+      "body": "**REPEATABLE READ** reads from one snapshot, taken at the transaction's first statement: the report sees 51,179.03 and 179 throughout, and B's stock UPDATE fails with *could not serialize access due to concurrent update*, SQLSTATE `40001`; B retries, reads 9 and writes 8. Write skew still commits, because the two leads changed different rows. **SERIALIZABLE** (serializable snapshot isolation) also tracks what each transaction read, and fails B's COMMIT with `40001` (*read/write dependencies among transactions*); the retry sees 1 on duty, so Malee stays."
+    },
+    {
+      "title": "Costs and other engines",
+      "caption": "Retries cost throughput and FOR UPDATE waits; MySQL's default still loses the update, with no error.",
+      "body": "Eight sessions selling one product for 10 s (pgbench, median of 3 runs on a laptop): read-then-write at READ COMMITTED recorded 8,537 sales while the stock fell by only 1,090; REPEATABLE READ with up to 10 tries sold 2,707, retried 17,059 times and gave up on 1,841; `SELECT … FOR UPDATE` sold 6,902 by waiting instead, and one `UPDATE … SET qty = qty - 1` sold 9,718. PostgreSQL and SQL Server default to READ COMMITTED, MySQL's InnoDB to REPEATABLE READ: its plain reads keep one snapshot, yet the same stock run on MySQL 8.4 lost an update and raised no error."
+    }
+  ],
+  "related": ["mvcc", "locks-and-deadlocks", "optimistic-concurrency", "write-ahead-log", "postgresql", "idempotent-consumer", "retry-with-backoff", "saga-orchestration"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — Transaction Isolation", "url": "https://www.postgresql.org/docs/18/transaction-iso.html" },
+    { "title": "PostgreSQL 18 documentation — Serialization Failure Handling", "url": "https://www.postgresql.org/docs/18/mvcc-serialization-failure-handling.html" },
+    { "title": "PostgreSQL 18 documentation — Data Consistency Checks at the Application Level", "url": "https://www.postgresql.org/docs/18/applevel-consistency.html" },
+    { "title": "PostgreSQL 18 documentation — SET TRANSACTION", "url": "https://www.postgresql.org/docs/18/sql-set-transaction.html" },
+    { "title": "PostgreSQL 18 documentation — Client Connection Defaults (transaction_timeout)", "url": "https://www.postgresql.org/docs/18/runtime-config-client.html" },
+    { "title": "PostgreSQL 18 documentation — pgbench (serialization and deadlock retries)", "url": "https://www.postgresql.org/docs/18/pgbench.html" },
+    { "title": "PostgreSQL source — README-SSI, the serializable implementation (REL_18_STABLE)", "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/storage/lmgr/README-SSI" },
+    { "title": "Berenson, Bernstein, Gray, Melton, O'Neil and O'Neil — A Critique of ANSI SQL Isolation Levels (SIGMOD 1995)", "url": "https://arxiv.org/abs/cs/0701157" },
+    { "title": "Ports and Grittner — Serializable Snapshot Isolation in PostgreSQL (PVLDB 5(12), 2012)", "url": "https://www.vldb.org/pvldb/vol5/p1850_danrkports_vldb2012.pdf" },
+    { "title": "MySQL 8.4 Reference Manual — Transaction Isolation Levels", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html" },
+    { "title": "MySQL 8.4 Reference Manual — Consistent Nonlocking Reads", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-consistent-read.html" },
+    { "title": "MySQL 8.4 Reference Manual — Locking Reads", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html" },
+    { "title": "MySQL 8.4 Reference Manual — Phantom Rows (next-key locking)", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-next-key-locking.html" },
+    { "title": "Microsoft Learn — SET TRANSACTION ISOLATION LEVEL (Transact-SQL)", "url": "https://learn.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql" },
+    { "title": "Microsoft Learn — Transaction locking and row versioning guide", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-transaction-locking-and-row-versioning-guide" },
+    { "title": "Oracle AI Database 26ai Concepts — Data Concurrency and Consistency", "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/cncpt/data-concurrency-and-consistency.html" },
+    { "title": "Amazon Aurora User Guide — Aurora MySQL isolation levels", "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.IsolationLevels.html" },
+    { "title": "Amazon DynamoDB Developer Guide — Transactions: how it works (isolation levels)", "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html" }
+  ]
+}

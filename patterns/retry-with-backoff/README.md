@@ -70,6 +70,12 @@ The numbers in the animation come from a small model: six clients send 100 ms ca
 
 - [AWS Step Functions](../aws-step-functions/) — Workflows as state machines: sequence, branch, retry, wait and run in parallel across services, with every step recorded.
 
+## Related database topics
+
+- [Transaction Isolation Levels](../isolation-levels/) — What concurrent transactions can see of each other: the anomalies each isolation level allows and the defaults engines use.
+- [Locks & Deadlocks](../locks-and-deadlocks/) — Row locks make writers wait for each other; two transactions waiting on each other is a deadlock, and the database aborts one.
+- [Optimistic Concurrency Control](../optimistic-concurrency/) — Update a row only if it is unchanged since you read it, using a version column, and retry on conflict instead of holding locks.
+
 ## References
 
 - [AWS Architecture Blog — Exponential Backoff And Jitter (Marc Brooker)](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)

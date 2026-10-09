@@ -200,6 +200,10 @@ Recent features blur the line with file systems: S3 Express One Zone directory b
 
 - [FinOps](../finops/) — Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value.
 
+## Related database topics
+
+- [Row vs Column Storage](../row-vs-column-storage/) — Store rows together for transactions or columns together for analytics, and why a column store scans and compresses so much faster.
+
 ## References
 
 - [Amazon S3 User Guide — Amazon S3 data consistency model](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html#ConsistencyModel)

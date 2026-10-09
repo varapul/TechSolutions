@@ -1,0 +1,1143 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">MVCC</title>
+<desc id="dg-desc">MVCC. Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions. Step 1, Locks: readers vs writers: A report that locks the orders it reads makes the cancel of order 495179 wait 5 s, then fail. Step 2, Row versions &amp; snapshots: UPDATE writes a new version and sets xmax on the old one; the report's snapshot still sees the old. Step 3, VACUUM and the horizon: While the report stays open, VACUUM removes none of 3,001 dead versions; after COMMIT, all of them. Step 4, Costs and other engines: Old versions cost bloat, vacuuming and XID freezing; InnoDB and Oracle keep them in undo instead.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">MVCC</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · Locks: readers vs writers</text>
+  <text class="step on p1" x="40" y="518">1 · Locks: readers vs writers</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Row versions &amp; snapshots</text>
+  <text class="step on p2" x="262" y="518">2 · Row versions &amp; snapshots</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · VACUUM and the horizon</text>
+  <text class="step on p3" x="484" y="518">3 · VACUUM and the horizon</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · Costs and other engines</text>
+  <text class="step on p4" x="706" y="518">4 · Costs and other engines</text>
+  <text class="caption p1" x="40" y="552">A report that locks the orders it reads makes the cancel of order 495179 wait 5 s, then fail.</text>
+  <text class="caption p2" x="40" y="552">UPDATE writes a new version and sets xmax on the old one; the report's snapshot still sees the old.</text>
+  <text class="caption p3" x="40" y="552">While the report stays open, VACUUM removes none of 3,001 dead versions; after COMMIT, all of them.</text>
+  <text class="caption p4" x="40" y="552">Old versions cost bloat, vacuuming and XID freezing; InnoDB and Oracle keep them in undo instead.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* MVCC. Timeline (20s loop, 1s = 5%), PostgreSQL 18.6 and MySQL 8.4.11, Acme Shop sample data, runs in a fixed interleaving:
+   0-25%   lock-based: the report takes LOCK TABLE orders IN SHARE MODE, waits 1.5 s for an open UPDATE, then the cancel of
+           order 495179 waits 5.0 s and fails: ERROR 55P03 (lock_timeout 5s)
+   25-50%  MVCC: REPEATABLE READ report (snapshot 165806:165806:), writer xid 165806 updates 495179: new version (5057,91),
+           old version gets xmax 165806; the report keeps reading delivered, a new snapshot reads cancelled
+   50-75%  3,000 more updates while the report stays open: n_dead_tup 3,001, VACUUM removes 0 (cutoff 165806); after COMMIT
+           VACUUM removes 3,001; HOT 104 of 3,001 (full pages) vs 3,001 of 3,001 with fillfactor 90
+   75-100% costs (bloat, autovacuum threshold, XID freezing, idle-in-transaction timeout) and InnoDB / Oracle undo */
+.diagram .mv-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--muted); }
+.diagram .mv-hd-amber { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; fill: var(--amber-ink); }
+.diagram .mv-10 { font-size: 10px; }
+.diagram .mv-9 { font-size: 9px; }
+.diagram .mv-pan { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+.diagram .mv-in { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+.diagram .mv-row { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .mv-cell { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.diagram .mv-cell2 { fill: var(--panel-2); stroke: var(--line); stroke-width: 1; }
+.diagram .mv-free { fill: var(--bg); stroke: var(--wire); stroke-width: 1; stroke-dasharray: 3 2; }
+.diagram .mv-track { stroke: var(--line); stroke-width: 1.5; }
+.diagram .mv-axis { stroke: var(--line); stroke-width: 1; }
+.diagram .mv-ptr { fill: none; stroke: var(--wire); stroke-width: 1.2; }
+.diagram .mv-vline { stroke-width: 1.5; stroke-dasharray: 4 3; }
+.diagram .mv-open { fill: var(--panel-2); stroke: var(--wire); stroke-width: 1; }
+.diagram .mv-sep { stroke: var(--line); stroke-width: 1; }
+@keyframes mv-a-w1 {
+  0% { opacity: 0; }
+  1.5% { opacity: 0; }
+  2.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-a-w1 { animation: mv-a-w1 var(--T) linear infinite; }
+@keyframes mv-a-w1o {
+  0% { transform: scaleX(0); }
+  1.52% { transform: scaleX(0); }
+  5.458% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-a-w1o { transform-box: fill-box; transform-origin: 0 50%; animation: mv-a-w1o var(--T) linear infinite; }
+@keyframes mv-a-w1c {
+  0% { opacity: 0; }
+  5.458% { opacity: 0; }
+  6.708% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-a-w1c { animation: mv-a-w1c var(--T) linear infinite; }
+@keyframes mv-a-r1 {
+  0% { opacity: 0; }
+  2.514% { opacity: 0; }
+  3.764% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-a-r1 { animation: mv-a-r1 var(--T) linear infinite; }
+@keyframes mv-a-r1b {
+  0% { transform: scaleX(0); }
+  2.514% { transform: scaleX(0); }
+  5.478% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-a-r1b { transform-box: fill-box; transform-origin: 0 50%; animation: mv-a-r1b var(--T) linear infinite; }
+@keyframes mv-a-r2b {
+  0% { transform: scaleX(0); }
+  5.478% { transform: scaleX(0); }
+  19.206% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-a-r2b { transform-box: fill-box; transform-origin: 0 50%; animation: mv-a-r2b var(--T) linear infinite; }
+@keyframes mv-a-r2 {
+  0% { opacity: 0; }
+  5.985% { opacity: 0; }
+  7.235% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-a-r2 { animation: mv-a-r2 var(--T) linear infinite; }
+@keyframes mv-a-r3 {
+  0% { opacity: 0; }
+  19.206% { opacity: 0; }
+  20.456% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-a-r3 { animation: mv-a-r3 var(--T) linear infinite; }
+@keyframes mv-a-w2 {
+  0% { opacity: 0; }
+  7.487% { opacity: 0; }
+  8.737% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-a-w2 { animation: mv-a-w2 var(--T) linear infinite; }
+@keyframes mv-a-w2b {
+  0% { transform: scaleX(0); }
+  7.487% { transform: scaleX(0); }
+  17.256% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-a-w2b { transform-box: fill-box; transform-origin: 0 50%; animation: mv-a-w2b var(--T) linear infinite; }
+@keyframes mv-a-w3 {
+  0% { opacity: 0; }
+  17.256% { opacity: 0; }
+  18.506% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-a-w3 { animation: mv-a-w3 var(--T) linear infinite; }
+@keyframes mv-ph1 {
+  0% { transform: translate(118px, 0px); opacity: 0; }
+  1.5% { transform: translate(118px, 0px); opacity: 0; }
+  1.75% { opacity: 1; }
+  21% { transform: translate(922px, 0px); }
+  23.5% { transform: translate(922px, 0px); opacity: 1; }
+  23.75% { transform: translate(922px, 0px); opacity: 0; }
+  100% { transform: translate(922px, 0px); opacity: 0; }
+}
+.diagram .mv-ph1 { opacity: 0; animation: mv-ph1 var(--T) linear infinite; }
+@keyframes mv-b-r1 {
+  0% { opacity: 0; }
+  26.5% { opacity: 0; }
+  27.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-b-r1 { opacity: 0; animation: mv-b-r1 var(--T) linear infinite; }
+@keyframes mv-b-r1o {
+  0% { transform: scaleX(0); }
+  26.639% { transform: scaleX(0); }
+  30.25% { transform: scaleX(0.34144); }
+  36.75% { transform: scaleX(0.5136799999999999); }
+  39.75% { transform: scaleX(0.68592); }
+  42.5% { transform: scaleX(0.85478); }
+  44.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-b-r1o { transform-box: fill-box; transform-origin: 0 50%; animation: mv-b-r1o var(--T) linear infinite; }
+@keyframes mv-b-w1 {
+  0% { opacity: 0; }
+  30.25% { opacity: 0; }
+  31.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-b-w1 { opacity: 0; animation: mv-b-w1 var(--T) linear infinite; }
+@keyframes mv-b-w1o {
+  0% { transform: scaleX(0); }
+  30.339% { transform: scaleX(0); }
+  36.75% { transform: scaleX(0.49654000000000004); }
+  39.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-b-w1o { transform-box: fill-box; transform-origin: 0 50%; animation: mv-b-w1o var(--T) linear infinite; }
+@keyframes mv-b-w2 {
+  0% { opacity: 0; }
+  39.75% { opacity: 0; }
+  41% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-b-w2 { opacity: 0; animation: mv-b-w2 var(--T) linear infinite; }
+@keyframes mv-b-r2 {
+  0% { opacity: 0; }
+  36.75% { opacity: 0; }
+  38% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-b-r2 { opacity: 0; animation: mv-b-r2 var(--T) linear infinite; }
+@keyframes mv-b-r3 {
+  0% { opacity: 0; }
+  42.5% { opacity: 0; }
+  43.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-b-r3 { opacity: 0; animation: mv-b-r3 var(--T) linear infinite; }
+@keyframes mv-ph2 {
+  0% { transform: translate(118px, 0px); opacity: 0; }
+  26.5% { transform: translate(118px, 0px); opacity: 0; }
+  26.75% { opacity: 1; }
+  30.25% { transform: translate(399.4px, 0px); }
+  36.75% { transform: translate(536.08px, 0px); }
+  39.75% { transform: translate(672.76px, 0px); }
+  42.5% { transform: translate(806.76px, 0px); }
+  44.75% { transform: translate(922px, 0px); }
+  48.5% { transform: translate(922px, 0px); opacity: 1; }
+  48.75% { transform: translate(922px, 0px); opacity: 0; }
+  100% { transform: translate(922px, 0px); opacity: 0; }
+}
+.diagram .mv-ph2 { opacity: 0; animation: mv-ph2 var(--T) linear infinite; }
+@keyframes mv-c-ro {
+  0% { transform: scaleX(0); }
+  51.25% { transform: scaleX(0); }
+  52% { transform: scaleX(0.08258); }
+  54% { transform: scaleX(0.31379); }
+  55.75% { transform: scaleX(0.55601); }
+  57.5% { transform: scaleX(0.80099); }
+  58.75% { transform: scaleX(0.84778); }
+  62.25% { transform: scaleX(0.9221); }
+  63.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-c-ro { transform-box: fill-box; transform-origin: 0 50%; animation: mv-c-ro var(--T) linear infinite; }
+@keyframes mv-c-b0 {
+  0% { opacity: 0; }
+  54.056% { opacity: 0; }
+  55.306% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-c-b0 { opacity: 0; animation: mv-c-b0 var(--T) linear infinite; }
+@keyframes mv-c-b1 {
+  0% { opacity: 0; }
+  55.805% { opacity: 0; }
+  57.055% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-c-b1 { opacity: 0; animation: mv-c-b1 var(--T) linear infinite; }
+@keyframes mv-c-b2 {
+  0% { opacity: 0; }
+  57.728% { opacity: 0; }
+  58.978% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-c-b2 { opacity: 0; animation: mv-c-b2 var(--T) linear infinite; }
+@keyframes mv-c-r2 {
+  0% { opacity: 0; }
+  57.956% { opacity: 0; }
+  59.206% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-c-r2 { opacity: 0; animation: mv-c-r2 var(--T) linear infinite; }
+@keyframes mv-c-r3 {
+  0% { opacity: 0; }
+  63.75% { opacity: 0; }
+  65% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-c-r3 { opacity: 0; animation: mv-c-r3 var(--T) linear infinite; }
+@keyframes mv-c-v1 {
+  0% { opacity: 0; }
+  58.728% { opacity: 0; }
+  59.978% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-c-v1 { opacity: 0; animation: mv-c-v1 var(--T) linear infinite; }
+@keyframes mv-c-v2 {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  66% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-c-v2 { opacity: 0; animation: mv-c-v2 var(--T) linear infinite; }
+@keyframes mv-ph3 {
+  0% { transform: translate(118px, 0px); opacity: 0; }
+  51.25% { transform: translate(118px, 0px); opacity: 0; }
+  51.5% { opacity: 1; }
+  52% { transform: translate(171.6px, 0px); }
+  54% { transform: translate(321.68px, 0px); }
+  55.75% { transform: translate(478.907px, 0px); }
+  57.5% { transform: translate(637.92px, 0px); }
+  58.75% { transform: translate(668.293px, 0px); }
+  62.25% { transform: translate(716.533px, 0px); }
+  63.75% { transform: translate(767.096px, 0px); }
+  64.75% { transform: translate(788px, 0px); }
+  68.75% { transform: translate(805.867px, 0px); }
+  70% { transform: translate(922px, 0px); }
+  73.5% { transform: translate(922px, 0px); opacity: 1; }
+  73.75% { transform: translate(922px, 0px); opacity: 0; }
+  100% { transform: translate(922px, 0px); opacity: 0; }
+}
+.diagram .mv-ph3 { opacity: 0; animation: mv-ph3 var(--T) linear infinite; }
+@keyframes mv-d-r1 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-d-r1 { opacity: 0; animation: mv-d-r1 var(--T) linear infinite; }
+@keyframes mv-d-ro {
+  0% { transform: scaleX(0); }
+  76.5% { transform: scaleX(0); }
+  77.75% { transform: scaleX(0.08465); }
+  83.75% { transform: scaleX(0.99887); }
+  83.752% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-d-ro { transform-box: fill-box; transform-origin: 0 50%; animation: mv-d-ro var(--T) linear infinite; }
+@keyframes mv-d-r2 {
+  0% { opacity: 0; }
+  83.752% { opacity: 0; }
+  85.002% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-d-r2 { opacity: 0; animation: mv-d-r2 var(--T) linear infinite; }
+@keyframes mv-d-w1 {
+  0% { opacity: 0; }
+  77.733% { opacity: 0; }
+  78.983% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-d-w1 { opacity: 0; animation: mv-d-w1 var(--T) linear infinite; }
+@keyframes mv-d-b0 {
+  0% { opacity: 0; }
+  80.131% { opacity: 0; }
+  81.381% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-d-b0 { opacity: 0; animation: mv-d-b0 var(--T) linear infinite; }
+@keyframes mv-d-b1 {
+  0% { opacity: 0; }
+  81.739% { opacity: 0; }
+  82.989% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-d-b1 { opacity: 0; animation: mv-d-b1 var(--T) linear infinite; }
+@keyframes mv-d-b2 {
+  0% { opacity: 0; }
+  83.254% { opacity: 0; }
+  84.504% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-d-b2 { opacity: 0; animation: mv-d-b2 var(--T) linear infinite; }
+@keyframes mv-d-p {
+  0% { opacity: 0; }
+  87.75% { opacity: 0; }
+  89% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-d-p { opacity: 0; animation: mv-d-p var(--T) linear infinite; }
+@keyframes mv-ph4 {
+  0% { transform: translate(118px, 0px); opacity: 0; }
+  76.5% { transform: translate(118px, 0px); opacity: 0; }
+  76.75% { opacity: 1; }
+  77.75% { transform: translate(135.229px, 0px); }
+  83.75% { transform: translate(321.297px, 0px); }
+  87.75% { transform: translate(855.383px, 0px); }
+  88.5% { transform: translate(922px, 0px); }
+  97.5% { transform: translate(922px, 0px); opacity: 1; }
+  97.75% { transform: translate(922px, 0px); opacity: 0; }
+  100% { transform: translate(922px, 0px); opacity: 0; }
+}
+.diagram .mv-ph4 { opacity: 0; animation: mv-ph4 var(--T) linear infinite; }
+@keyframes mv-i-old {
+  0% { opacity: 1; }
+  67.25% { opacity: 1; }
+  68.5% { opacity: 0; }
+  98% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-i-old { animation: mv-i-old var(--T) linear infinite; }
+@keyframes mv-i-new {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.75% { opacity: 1; }
+  95% { opacity: 1; }
+  96.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-i-new { opacity: 0; animation: mv-i-new var(--T) linear infinite; }
+@keyframes mv-i-newm {
+  0% { transform: translate(0px, 0px); }
+  67.5% { transform: translate(0px, 0px); }
+  69.25% { transform: translate(0px, -16px); }
+  100% { transform: translate(0px, -16px); }
+}
+.diagram .mv-i-newm { animation: mv-i-newm var(--T) linear infinite; }
+@keyframes mv-i-n349 {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.75% { opacity: 1; }
+  67.5% { opacity: 1; }
+  68.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-i-n349 { opacity: 0; animation: mv-i-n349 var(--T) linear infinite; }
+@keyframes mv-i-n348 {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68.75% { opacity: 1; }
+  95% { opacity: 1; }
+  96.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-i-n348 { opacity: 0; animation: mv-i-n348 var(--T) linear infinite; }
+@keyframes mv-i-180 {
+  0% { transform: translate(0px, 0px); }
+  37.25% { transform: translate(0px, 0px); }
+  39% { transform: translate(0px, 16px); }
+  67.5% { transform: translate(0px, 16px); }
+  69.25% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+.diagram .mv-i-180 { animation: mv-i-180 var(--T) linear infinite; }
+@keyframes mv-i-a349 {
+  0% { opacity: 1; }
+  37.5% { opacity: 1; }
+  38.75% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-i-a349 { animation: mv-i-a349 var(--T) linear infinite; }
+@keyframes mv-s-1 {
+  0% { opacity: 0; }
+  27.5% { opacity: 0; }
+  28.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-s-1 { opacity: 0; animation: mv-s-1 var(--T) linear infinite; }
+@keyframes mv-s-2 {
+  0% { opacity: 0; }
+  33.5% { opacity: 0; }
+  34.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-s-2 { opacity: 0; animation: mv-s-2 var(--T) linear infinite; }
+@keyframes mv-s-3 {
+  0% { opacity: 0; }
+  43% { opacity: 0; }
+  44.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-s-3 { opacity: 0; animation: mv-s-3 var(--T) linear infinite; }
+@keyframes mv-h-s0 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  63.75% { opacity: 1; }
+  65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-h-s0 { opacity: 0; animation: mv-h-s0 var(--T) linear infinite; }
+@keyframes mv-h-a1 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  54.056% { opacity: 1; }
+  55.306% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-h-a1 { opacity: 0; animation: mv-h-a1 var(--T) linear infinite; }
+@keyframes mv-h-a2 {
+  0% { opacity: 0; }
+  54.056% { opacity: 0; }
+  55.306% { opacity: 1; }
+  55.805% { opacity: 1; }
+  57.055% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-h-a2 { opacity: 0; animation: mv-h-a2 var(--T) linear infinite; }
+@keyframes mv-h-a3 {
+  0% { opacity: 0; }
+  55.805% { opacity: 0; }
+  57.055% { opacity: 1; }
+  57.728% { opacity: 1; }
+  58.978% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-h-a3 { opacity: 0; animation: mv-h-a3 var(--T) linear infinite; }
+@keyframes mv-h-a4 {
+  0% { opacity: 0; }
+  57.728% { opacity: 0; }
+  58.978% { opacity: 1; }
+  63.75% { opacity: 1; }
+  65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-h-a4 { opacity: 0; animation: mv-h-a4 var(--T) linear infinite; }
+@keyframes mv-h-c {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  60% { opacity: 1; }
+  63.75% { opacity: 1; }
+  65% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-h-c { opacity: 0; animation: mv-h-c var(--T) linear infinite; }
+@keyframes mv-p1-i {
+  0% { opacity: 1; }
+  67.75% { opacity: 1; }
+  69% { opacity: 0; }
+  98% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-p1-i { animation: mv-p1-i var(--T) linear infinite; }
+@keyframes mv-p1-j {
+  0% { opacity: 0; }
+  67.75% { opacity: 0; }
+  69% { opacity: 1; }
+  98% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-p1-j { opacity: 0; animation: mv-p1-j var(--T) linear infinite; }
+@keyframes mv-p1-shift {
+  0% { transform: translate(0px, 0px); }
+  67.75% { transform: translate(0px, 0px); }
+  69.5% { transform: translate(18px, 0px); }
+  98% { transform: translate(18px, 0px); }
+  99.75% { transform: translate(0px, 0px); }
+  100% { transform: translate(0px, 0px); }
+}
+.diagram .mv-p1-shift { animation: mv-p1-shift var(--T) linear infinite; }
+@keyframes mv-p1-x0 {
+  0% { opacity: 1; }
+  35.25% { opacity: 1; }
+  36.5% { opacity: 0; }
+  98% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-p1-x0 { animation: mv-p1-x0 var(--T) linear infinite; }
+@keyframes mv-p1-x1 {
+  0% { opacity: 0; }
+  35.25% { opacity: 0; }
+  36.5% { opacity: 1; }
+  98% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-p1-x1 { opacity: 0; animation: mv-p1-x1 var(--T) linear infinite; }
+@keyframes mv-p1-r2u {
+  0% { opacity: 0; }
+  67.5% { opacity: 0; }
+  68.75% { opacity: 1; }
+  98% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-p1-r2u { opacity: 0; animation: mv-p1-r2u var(--T) linear infinite; }
+@keyframes mv-lock {
+  0% { opacity: 0; }
+  5.45% { opacity: 0; }
+  6.7% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-lock { animation: mv-lock var(--T) linear infinite; }
+@keyframes mv-v-r1 {
+  0% { opacity: 0; }
+  38.25% { opacity: 0; }
+  39.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-v-r1 { opacity: 0; animation: mv-v-r1 var(--T) linear infinite; }
+@keyframes mv-v-n1 {
+  0% { opacity: 0; }
+  44.25% { opacity: 0; }
+  45.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-v-n1 { opacity: 0; animation: mv-v-n1 var(--T) linear infinite; }
+@keyframes mv-v-d {
+  0% { opacity: 1; }
+  67.25% { opacity: 1; }
+  68.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-v-d { opacity: 0; animation: mv-v-d var(--T) linear infinite; }
+@keyframes mv-v-d1 {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  58.728% { opacity: 1; }
+  59.978% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-v-d1 { opacity: 0; animation: mv-v-d1 var(--T) linear infinite; }
+@keyframes mv-p2-i0 {
+  0% { opacity: 1; }
+  37% { opacity: 1; }
+  38.25% { opacity: 0; }
+  98% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-p2-i0 { animation: mv-p2-i0 var(--T) linear infinite; }
+@keyframes mv-p2-i1 {
+  0% { opacity: 0; }
+  37% { opacity: 0; }
+  38.25% { opacity: 1; }
+  98% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-p2-i1 { opacity: 0; animation: mv-p2-i1 var(--T) linear infinite; }
+/* page 5057 once the night's updates start (54.056%, with the first block): 8 more versions land on it, 29 pages follow it */
+@keyframes mv-p5-o {
+  0% { opacity: 1; }
+  54.056% { opacity: 1; }
+  55.306% { opacity: 0; }
+  98% { opacity: 0; }
+  99.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-p5-o { animation: mv-p5-o var(--T) linear infinite; }
+@keyframes mv-p5-n {
+  0% { opacity: 0; }
+  54.056% { opacity: 0; }
+  55.306% { opacity: 1; }
+  98% { opacity: 1; }
+  99.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-p5-n { opacity: 0; animation: mv-p5-n var(--T) linear infinite; }
+@keyframes mv-v-l {
+  0% { opacity: 0; }
+  50% { opacity: 0; }
+  51.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-v-l { opacity: 0; animation: mv-v-l var(--T) linear infinite; }
+@keyframes mv-t1 {
+  0% { transform: translate(364.828px, 161px); opacity: 0; }
+  7.486% { transform: translate(364.828px, 161px); opacity: 0; }
+  7.736% { opacity: 1; }
+  8.492% { transform: translate(364.828px, 186px); }
+  9.986% { transform: translate(330px, 199px); }
+  17.256% { transform: translate(330px, 199px); opacity: 1; }
+  17.506% { transform: translate(330px, 199px); opacity: 0; }
+  100% { transform: translate(330px, 199px); opacity: 0; }
+}
+.diagram .mv-t1 { opacity: 0; animation: mv-t1 var(--T) linear infinite; }
+@keyframes mv-t1w {
+  0% { opacity: 0; }
+  9.986% { opacity: 0; }
+  11.236% { opacity: 1; }
+  17.256% { opacity: 1; }
+  18.506% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-t1w { opacity: 0; animation: mv-t1w var(--T) linear infinite; }
+@keyframes mv-t2w {
+  0% { transform: translate(399.4px, 161px); opacity: 0; }
+  30.75% { transform: translate(399.4px, 161px); opacity: 0; }
+  31% { opacity: 1; }
+  31.311% { transform: translate(399.4px, 196px); }
+  33.25% { transform: translate(322px, 289px); }
+  35.25% { transform: translate(322px, 289px); }
+  37% { transform: translate(322px, 451px); opacity: 1; }
+  37.25% { transform: translate(322px, 451px); opacity: 0; }
+  100% { transform: translate(322px, 451px); opacity: 0; }
+}
+.diagram .mv-t2w { opacity: 0; animation: mv-t2w var(--T) linear infinite; }
+@keyframes mv-t2r {
+  0% { transform: translate(536.08px, 127px); opacity: 0; }
+  36.5% { transform: translate(536.08px, 127px); opacity: 0; }
+  36.75% { opacity: 1; }
+  37.16% { transform: translate(536.08px, 196px); }
+  38.25% { transform: translate(470px, 289px); }
+  39% { transform: translate(470px, 289px); opacity: 1; }
+  39.25% { transform: translate(470px, 289px); opacity: 0; }
+  42.5% { transform: translate(806.76px, 127px); opacity: 0; }
+  42.75% { opacity: 1; }
+  42.789% { transform: translate(806.76px, 196px); }
+  44.25% { transform: translate(470px, 289px); }
+  45% { transform: translate(470px, 289px); opacity: 1; }
+  45.25% { transform: translate(470px, 289px); opacity: 0; }
+  100% { transform: translate(470px, 289px); opacity: 0; }
+}
+.diagram .mv-t2r { opacity: 0; animation: mv-t2r var(--T) linear infinite; }
+@keyframes mv-t2n {
+  0% { transform: translate(806.76px, 161px); opacity: 0; }
+  42.5% { transform: translate(806.76px, 161px); opacity: 0; }
+  42.657% { transform: translate(806.76px, 196px); }
+  42.75% { opacity: 1; }
+  44.25% { transform: translate(560px, 451px); }
+  45% { transform: translate(560px, 451px); opacity: 1; }
+  45.25% { transform: translate(560px, 451px); opacity: 0; }
+  100% { transform: translate(560px, 451px); opacity: 0; }
+}
+.diagram .mv-t2n { opacity: 0; animation: mv-t2n var(--T) linear infinite; }
+@keyframes mv-sw1 {
+  0% { transform: translate(228px, 0px); opacity: 0; }
+  58.75% { transform: translate(228px, 0px); opacity: 0; }
+  59% { opacity: 1; }
+  60.75% { transform: translate(612px, 0px); opacity: 1; }
+  61% { transform: translate(612px, 0px); opacity: 0; }
+  100% { transform: translate(612px, 0px); opacity: 0; }
+}
+.diagram .mv-sw1 { opacity: 0; animation: mv-sw1 var(--T) linear infinite; }
+@keyframes mv-sw2 {
+  0% { transform: translate(228px, 0px); opacity: 0; }
+  64.75% { transform: translate(228px, 0px); opacity: 0; }
+  65% { opacity: 1; }
+  67.25% { transform: translate(612px, 0px); opacity: 1; }
+  67.5% { transform: translate(612px, 0px); opacity: 0; }
+  100% { transform: translate(612px, 0px); opacity: 0; }
+}
+.diagram .mv-sw2 { opacity: 0; animation: mv-sw2 var(--T) linear infinite; }
+@keyframes mv-l2 {
+  0% { opacity: 0; }
+  5.478% { opacity: 0; }
+  6.728% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-l2 { animation: mv-l2 var(--T) linear infinite; }
+@keyframes mv-n0-0 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  58.75% { opacity: 1; }
+  59.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n0-0 { opacity: 0; animation: mv-n0-0 var(--T) linear infinite; }
+@keyframes mv-n0-1 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  59.5% { opacity: 1; }
+  68.75% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n0-1 { opacity: 0; animation: mv-n0-1 var(--T) linear infinite; }
+@keyframes mv-n0-2 {
+  0% { opacity: 0; }
+  68.75% { opacity: 0; }
+  69.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-n0-2 { opacity: 0; animation: mv-n0-2 var(--T) linear infinite; }
+@keyframes mv-n1-0 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  40% { opacity: 1; }
+  40.75% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n1-0 { opacity: 0; animation: mv-n1-0 var(--T) linear infinite; }
+@keyframes mv-n1-1 {
+  0% { opacity: 0; }
+  40% { opacity: 0; }
+  40.75% { opacity: 1; }
+  54.05% { opacity: 1; }
+  54.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n1-1 { opacity: 0; animation: mv-n1-1 var(--T) linear infinite; }
+@keyframes mv-n1-2 {
+  0% { opacity: 0; }
+  54.05% { opacity: 0; }
+  54.8% { opacity: 1; }
+  55.8% { opacity: 1; }
+  56.55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n1-2 { opacity: 0; animation: mv-n1-2 var(--T) linear infinite; }
+@keyframes mv-n1-3 {
+  0% { opacity: 0; }
+  55.8% { opacity: 0; }
+  56.55% { opacity: 1; }
+  57.75% { opacity: 1; }
+  58.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n1-3 { opacity: 0; animation: mv-n1-3 var(--T) linear infinite; }
+@keyframes mv-n1-4 {
+  0% { opacity: 0; }
+  57.75% { opacity: 0; }
+  58.5% { opacity: 1; }
+  68.75% { opacity: 1; }
+  69.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n1-4 { opacity: 0; animation: mv-n1-4 var(--T) linear infinite; }
+@keyframes mv-n2-4 {
+  0% { opacity: 0; }
+  57.75% { opacity: 0; }
+  58.5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-n2-4 { opacity: 0; animation: mv-n2-4 var(--T) linear infinite; }
+@keyframes mv-n3-0 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  25.75% { opacity: 1; }
+  54.05% { opacity: 1; }
+  54.8% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-n3-0 { opacity: 0; animation: mv-n3-0 var(--T) linear infinite; }
+@keyframes mv-u-note {
+  0% { opacity: 0; }
+  37.5% { opacity: 0; }
+  38.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-u-note { opacity: 0; animation: mv-u-note var(--T) linear infinite; }
+@keyframes mv-vac1 {
+  0% { opacity: 0; }
+  58.75% { opacity: 0; }
+  60% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-vac1 { opacity: 0; animation: mv-vac1 var(--T) linear infinite; }
+@keyframes mv-vac2b {
+  0% { transform: scaleX(0); }
+  64.75% { transform: scaleX(0); }
+  68.75% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+.diagram .mv-vac2b { transform-box: fill-box; transform-origin: 0 50%; animation: mv-vac2b var(--T) linear infinite; }
+@keyframes mv-ph-0 {
+  0% { opacity: 0; }
+  64.75% { opacity: 0; }
+  65.25% { opacity: 1; }
+  66% { opacity: 1; }
+  66.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-ph-0 { opacity: 0; animation: mv-ph-0 var(--T) linear infinite; }
+@keyframes mv-ph-1 {
+  0% { opacity: 0; }
+  66% { opacity: 0; }
+  66.5% { opacity: 1; }
+  67% { opacity: 1; }
+  67.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-ph-1 { opacity: 0; animation: mv-ph-1 var(--T) linear infinite; }
+@keyframes mv-ph-2 {
+  0% { opacity: 0; }
+  67% { opacity: 0; }
+  67.5% { opacity: 1; }
+  68% { opacity: 1; }
+  68.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-ph-2 { opacity: 0; animation: mv-ph-2 var(--T) linear infinite; }
+@keyframes mv-ph-3 {
+  0% { opacity: 0; }
+  68% { opacity: 0; }
+  68.5% { opacity: 1; }
+  68.75% { opacity: 1; }
+  69.25% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-ph-3 { opacity: 0; animation: mv-ph-3 var(--T) linear infinite; }
+@keyframes mv-ph-4 {
+  0% { opacity: 0; }
+  68.75% { opacity: 0; }
+  69.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-ph-4 { opacity: 0; animation: mv-ph-4 var(--T) linear infinite; }
+@keyframes mv-hot {
+  0% { opacity: 0; }
+  69.5% { opacity: 0; }
+  70.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-hot { opacity: 0; animation: mv-hot var(--T) linear infinite; }
+@keyframes mv-k-rv {
+  0% { opacity: 0; }
+  81% { opacity: 0; }
+  82.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-k-rv { opacity: 0; animation: mv-k-rv var(--T) linear infinite; }
+@keyframes mv-k-h0 {
+  0% { opacity: 0; }
+  76.5% { opacity: 0; }
+  77.1% { opacity: 1; }
+  80.25% { opacity: 1; }
+  80.85% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-k-h0 { opacity: 0; animation: mv-k-h0 var(--T) linear infinite; }
+@keyframes mv-k-h1 {
+  0% { opacity: 0; }
+  80.25% { opacity: 0; }
+  80.85% { opacity: 1; }
+  81.5% { opacity: 1; }
+  82.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-k-h1 { opacity: 0; animation: mv-k-h1 var(--T) linear infinite; }
+@keyframes mv-k-h2 {
+  0% { opacity: 0; }
+  81.5% { opacity: 0; }
+  82.1% { opacity: 1; }
+  82.5% { opacity: 1; }
+  83.1% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.diagram .mv-k-h2 { opacity: 0; animation: mv-k-h2 var(--T) linear infinite; }
+@keyframes mv-k-h3 {
+  0% { opacity: 0; }
+  82.5% { opacity: 0; }
+  83.1% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-k-h3 { opacity: 0; animation: mv-k-h3 var(--T) linear infinite; }
+@keyframes mv-o {
+  0% { opacity: 0; }
+  85% { opacity: 0; }
+  86.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-o { opacity: 0; animation: mv-o var(--T) linear infinite; }
+@keyframes mv-q0 {
+  0% { opacity: 0; }
+  88% { opacity: 0; }
+  89.25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-q0 { opacity: 0; animation: mv-q0 var(--T) linear infinite; }
+@keyframes mv-q1 {
+  0% { opacity: 0; }
+  89.75% { opacity: 0; }
+  91% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-q1 { opacity: 0; animation: mv-q1 var(--T) linear infinite; }
+@keyframes mv-q2 {
+  0% { opacity: 0; }
+  91.5% { opacity: 0; }
+  92.75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.diagram .mv-q2 { opacity: 0; animation: mv-q2 var(--T) linear infinite; }
+@keyframes mv-t4r {
+  0% { transform: translate(393px, 251px); opacity: 0; }
+  79.75% { transform: translate(393px, 251px); opacity: 0; }
+  80% { opacity: 1; }
+  80.864% { transform: translate(393px, 292px); }
+  82.25% { transform: translate(342px, 292px); }
+  84.5% { transform: translate(342px, 292px); opacity: 1; }
+  84.75% { transform: translate(342px, 292px); opacity: 0; }
+  100% { transform: translate(342px, 292px); opacity: 0; }
+}
+.diagram .mv-t4r { opacity: 0; animation: mv-t4r var(--T) linear infinite; }
+</style>
+<g class="stage">
+<!-- Sessions: two lanes on a time axis; each step shows one run -->
+<text class="mv-hd" x="30" y="101">SESSIONS</text>
+<g class="p123"><rect class="f-panel-2 s-line" x="92" y="91" width="98" height="15" rx="7.5" stroke-width="1"/><text class="mv-10 sb mid f-ink" x="141" y="102">PostgreSQL 18.6</text></g>
+<g class="p4"><rect class="f-panel-2 s-line" x="92" y="91" width="112" height="15" rx="7.5" stroke-width="1"/><text class="mv-10 sb mid f-ink" x="148" y="102">MySQL 8.4 · InnoDB</text></g>
+<g class="p1"><text class="tiny" x="204" y="102">lock-based: the report locks the table it reads</text></g>
+<g class="p2"><text class="tiny" x="204" y="102">MVCC: the report reads its snapshot, the writer never waits</text></g>
+<g class="p3"><text class="tiny" x="204" y="102">the report stays open while 3,000 more orders change</text></g>
+<g class="p4"><text class="tiny" x="218" y="102">the same report and writer: old versions wait in undo logs</text></g>
+<g class="p1"><text class="mv-10 end f-muted" x="930" y="102">seconds from the first UPDATE · one run on a laptop</text></g>
+<g class="p23"><text class="mv-10 end f-muted" x="930" y="102">seconds from the report’s BEGIN · one run on a laptop</text></g>
+<g class="p4"><text class="mv-10 end f-muted" x="930" y="102">seconds from START TRANSACTION · one run</text></g>
+<circle class="f-blue" cx="35" cy="122" r="4"/><text class="sub sb f-ink" x="44" y="126">report</text><text class="mv-10 f-muted" x="44" y="139">nightly, long</text>
+<circle class="f-purple" cx="35" cy="156" r="4"/><text class="sub sb f-ink" x="44" y="160">writer</text><text class="mv-10 f-muted" x="44" y="173">order updates</text>
+<line class="mv-track" x1="118" y1="127" x2="922" y2="127"/><line class="mv-track" x1="118" y1="161" x2="922" y2="161"/>
+<line class="mv-axis" x1="118" y1="181" x2="922" y2="181"/>
+<g class="p1"><line class="mv-axis" x1="118" y1="178" x2="118" y2="184"/><text class="mv-9 mid f-muted" x="118" y="194">0 s</text><line class="mv-axis" x1="278.8" y1="178" x2="278.8" y2="184"/><text class="mv-9 mid f-muted" x="278.8" y="194">2 s</text><line class="mv-axis" x1="439.6" y1="178" x2="439.6" y2="184"/><text class="mv-9 mid f-muted" x="439.6" y="194">4 s</text><line class="mv-axis" x1="600.4" y1="178" x2="600.4" y2="184"/><text class="mv-9 mid f-muted" x="600.4" y="194">6 s</text><line class="mv-axis" x1="761.2" y1="178" x2="761.2" y2="184"/><text class="mv-9 mid f-muted" x="761.2" y="194">8 s</text><line class="mv-axis" x1="922" y1="178" x2="922" y2="184"/><text class="mv-9 mid f-muted" x="922" y="194">10 s</text></g>
+<g class="p2"><line class="mv-axis" x1="118" y1="178" x2="118" y2="184"/><text class="mv-9 mid f-muted" x="118" y="194">0 s</text><line class="mv-axis" x1="252" y1="178" x2="252" y2="184"/><text class="mv-9 mid f-muted" x="252" y="194">0.5 s</text><line class="mv-axis" x1="386" y1="178" x2="386" y2="184"/><text class="mv-9 mid f-muted" x="386" y="194">1 s</text><line class="mv-axis" x1="520" y1="178" x2="520" y2="184"/><text class="mv-9 mid f-muted" x="520" y="194">1.5 s</text><line class="mv-axis" x1="654" y1="178" x2="654" y2="184"/><text class="mv-9 mid f-muted" x="654" y="194">2 s</text><line class="mv-axis" x1="788" y1="178" x2="788" y2="184"/><text class="mv-9 mid f-muted" x="788" y="194">2.5 s</text><line class="mv-axis" x1="922" y1="178" x2="922" y2="184"/><text class="mv-9 mid f-muted" x="922" y="194">3 s</text></g>
+<g class="p3"><line class="mv-axis" x1="118" y1="178" x2="118" y2="184"/><text class="mv-9 mid f-muted" x="118" y="194">0 s</text><line class="mv-axis" x1="296.67" y1="178" x2="296.67" y2="184"/><text class="mv-9 mid f-muted" x="296.67" y="194">10 s</text><line class="mv-axis" x1="475.33" y1="178" x2="475.33" y2="184"/><text class="mv-9 mid f-muted" x="475.33" y="194">20 s</text><line class="mv-axis" x1="654" y1="178" x2="654" y2="184"/><text class="mv-9 mid f-muted" x="654" y="194">30 s</text><line class="mv-axis" x1="832.67" y1="178" x2="832.67" y2="184"/><text class="mv-9 mid f-muted" x="832.67" y="194">40 s</text></g>
+<g class="p4"><line class="mv-axis" x1="118" y1="178" x2="118" y2="184"/><text class="mv-9 mid f-muted" x="118" y="194">0 s</text><line class="mv-axis" x1="232.86" y1="178" x2="232.86" y2="184"/><text class="mv-9 mid f-muted" x="232.86" y="194">10 s</text><line class="mv-axis" x1="347.71" y1="178" x2="347.71" y2="184"/><text class="mv-9 mid f-muted" x="347.71" y="194">20 s</text><line class="mv-axis" x1="462.57" y1="178" x2="462.57" y2="184"/><text class="mv-9 mid f-muted" x="462.57" y="194">30 s</text><line class="mv-axis" x1="577.43" y1="178" x2="577.43" y2="184"/><text class="mv-9 mid f-muted" x="577.43" y="194">40 s</text><line class="mv-axis" x1="692.29" y1="178" x2="692.29" y2="184"/><text class="mv-9 mid f-muted" x="692.29" y="194">50 s</text><line class="mv-axis" x1="807.14" y1="178" x2="807.14" y2="184"/><text class="mv-9 mid f-muted" x="807.14" y="194">60 s</text><line class="mv-axis" x1="922" y1="178" x2="922" y2="184"/><text class="mv-9 mid f-muted" x="922" y="194">70 s</text></g>
+<g class="p1"><g class="mv-a-w1"><text class="mv-10 mono f-purple" x="118" y="152">UPDATE … id = 497001 (paid → shipped)</text><rect class="f-purple" x="118" y="157" width="3" height="8" rx="2"/></g><rect class="mv-open mv-a-w1o" x="121" y="157" width="160.21" height="8" rx="2"/><g class="mv-a-w1c"><text class="mv-9 sb f-green" x="284.212" y="164">COMMIT</text></g><g class="mv-a-r1"><text class="mv-10 mono f-red" x="159.808" y="118">LOCK TABLE orders IN SHARE MODE: waits 1.5 s</text></g><rect class="f-red-soft s-red mv-a-r1b" x="159.81" y="123" width="122.21" height="8" rx="2"/><rect class="f-orange-soft s-orange mv-a-r2b" x="282.02" y="123" width="566.02" height="8" rx="2"/><g class="mv-a-r2"><text class="mv-10 mono f-orange" x="459.70000000000005" y="118">SELECT … GROUP BY status; holds ShareLock</text></g><g class="mv-a-r3"><text class="mv-9 sb f-ink" x="852.032" y="130">COMMIT</text></g><g class="mv-a-w2"><text class="mv-10 mono f-purple" x="364.828" y="152">UPDATE orders SET status = 'cancelled' WHERE id = 495179</text></g><rect class="f-red-soft s-red mv-a-w2b" x="364.83" y="157" width="402.8" height="8" rx="2"/><g class="mv-a-w3"><text class="mv-10 sb f-red" x="771.6320000000001" y="164">✕ 55P03 after 5.0 s</text></g></g>
+<g class="p1"><g class="mv-ph1"><line class="s-ink" x1="0" y1="110" x2="0" y2="183" stroke-width="1.5"/><circle class="f-ink" cx="0" cy="181" r="3"/></g></g>
+<g class="p2"><g class="mv-b-r1"><text class="mv-10 mono f-blue" x="118" y="118">BEGIN REPEATABLE READ; SELECT … → 487,245 delivered</text><rect class="f-blue" x="118" y="123" width="10.45" height="8" rx="2"/></g><rect class="mv-open mv-b-r1o" x="128.45" y="123" width="793.55" height="8" rx="2"/><g class="mv-b-w1"><text class="mv-10 mono f-purple" x="399.40000000000003" y="152">BEGIN; UPDATE … id = 495179: UPDATE 1, no wait</text><rect class="f-purple" x="399.4" y="157" width="2" height="8" rx="2"/></g><rect class="mv-open mv-b-w1o" x="401.28" y="157" width="271.48" height="8" rx="2"/><g class="mv-b-w2"><text class="mv-9 sb f-green" x="675.76" y="164">COMMIT</text></g><g class="mv-b-r2"><text class="mv-10 mono f-blue" x="536.08" y="118">SELECT … 495179 → delivered</text><rect class="f-blue" x="536.08" y="123" width="3" height="8" rx="2"/></g><g class="mv-b-r3"><text class="mv-10 mono f-blue" x="806.76" y="118">→ delivered</text><rect class="f-blue" x="806.76" y="123" width="3" height="8" rx="2"/></g><g class="mv-b-r3"><text class="mv-10 mono f-green" x="806.76" y="152">→ cancelled</text><rect class="f-green" x="806.76" y="157" width="3" height="8" rx="2"/></g></g>
+<g class="p2"><g class="mv-ph2"><line class="s-ink" x1="0" y1="110" x2="0" y2="183" stroke-width="1.5"/><circle class="f-ink" cx="0" cy="181" r="3"/></g></g>
+<g class="p3"><text class="mv-10 mono f-blue" x="118" y="118">open: REPEATABLE READ, backend_xmin 165806</text><rect class="mv-open mv-c-ro" x="118" y="123" width="649.1" height="8" rx="2"/><rect class="f-purple" x="136.76" y="157" width="3" height="8" rx="2"/><g class="mv-c-b0"><rect class="f-purple" x="316.93" y="157" width="10.75" height="8" rx="2"/></g><g class="mv-c-b1"><rect class="f-purple" x="474.33" y="157" width="10.58" height="8" rx="2"/></g><g class="mv-c-b2"><rect class="f-purple" x="631.38" y="157" width="13.08" height="8" rx="2"/></g><g class="mv-c-b0"><text class="mv-10 mono mid f-purple" x="321.68" y="152">+1,000 updates, one per transaction</text></g><g class="mv-c-r2"><rect class="f-blue" x="649" y="123" width="3" height="8" rx="2"/></g><g class="mv-c-r3"><text class="mv-10 sb end f-ink" x="765.096" y="118">COMMIT</text></g><g class="mv-c-v1"><line class="mv-vline s-amber" x1="667.76" y1="112" x2="667.76" y2="178"/><text class="mv-10 sb f-amber-ink" x="671.7573333333333" y="164">VACUUM: 0 removed</text></g><g class="mv-c-v2"><line class="mv-vline s-green" x1="788" y1="112" x2="788" y2="178"/><text class="mv-10 sb f-green" x="792" y="152">VACUUM: 3,001 removed</text></g></g>
+<g class="p3"><g class="mv-ph3"><line class="s-ink" x1="0" y1="110" x2="0" y2="183" stroke-width="1.5"/><circle class="f-ink" cx="0" cy="181" r="3"/></g></g>
+<g class="p4"><g class="mv-d-r1"><text class="mv-10 mono f-blue" x="118" y="118">START TRANSACTION WITH CONSISTENT SNAPSHOT</text></g><rect class="mv-open mv-d-ro" x="118" y="123" width="203.53" height="8" rx="2"/><g class="mv-d-r2"><text class="mv-9 sb f-ink" x="325.5268571428571" y="130">COMMIT</text></g><g class="mv-d-w1"><text class="mv-10 mono f-purple" x="134.99885714285713" y="152">UPDATE … 495179 (trx 8626) + 3,000</text><rect class="f-purple" x="135" y="157" width="3" height="8" rx="2"/></g><g class="mv-d-b0"><rect class="f-purple" x="202.99" y="157" width="7.09" height="8" rx="2"/></g><g class="mv-d-b1"><rect class="f-purple" x="252.96" y="157" width="6.97" height="8" rx="2"/></g><g class="mv-d-b2"><rect class="f-purple" x="300.05" y="157" width="6.86" height="8" rx="2"/></g><g class="mv-d-p"><line class="mv-vline s-green" x1="855.38" y1="112" x2="855.38" y2="178"/><text class="mv-10 sb end f-green" x="851.3828571428572" y="152">purge: history list length 3,002 → 0</text></g></g>
+<g class="p4"><g class="mv-ph4"><line class="s-ink" x1="0" y1="110" x2="0" y2="183" stroke-width="1.5"/><circle class="f-ink" cx="0" cy="181" r="3"/></g></g>
+<!-- orders_pkey leaf page 1359: the index entries around 495179 -->
+<g class="p123"><rect class="mv-pan" x="30" y="204" width="176" height="94" rx="8"/><text class="tiny sb f-ink" x="40" y="219">orders_pkey</text><text class="mv-10 end f-muted" x="198" y="219">leaf 1359</text><rect class="mv-row" x="38" y="226" width="160" height="14" rx="3"/><text class="mv-10 mono f-ink" x="44" y="236.5"><tspan class="f-muted">347</tspan>  495178 → (4390,95)</text><g class="mv-i-old"><rect class="mv-row" x="38" y="242" width="160" height="14" rx="3"/><text class="mv-10 mono f-ink" x="44" y="252.5"><tspan class="f-muted">348</tspan>  495179 → (2392,2)</text></g><g class="mv-i-new"><g class="mv-i-newm"><rect class="f-purple-soft s-purple" x="38" y="258" width="160" height="14" rx="3" stroke-width="1"/><g class="mv-i-n349"><text class="mv-10 mono f-purple" x="44" y="268.5"><tspan class="f-muted">349</tspan>  495179 → (5057,91)</text></g><g class="mv-i-n348"><text class="mv-10 mono f-purple" x="44" y="268.5"><tspan class="f-muted">348</tspan>  495179 → (5057,91)</text></g></g></g><g class="mv-i-180"><rect class="mv-row" x="38" y="258" width="160" height="14" rx="3"/><g class="mv-i-a349"><text class="mv-10 mono f-ink" x="44" y="268.5"><tspan class="f-muted">349</tspan>  495180 → (1657,49)</text></g><g class="mv-i-n349"><text class="mv-10 mono f-ink" x="44" y="268.5"><tspan class="f-muted">350</tspan>  495180 → (1657,49)</text></g></g></g>
+<g class="p123"><rect class="mv-pan" x="30" y="306" width="176" height="164" rx="8"/></g>
+<g class="p1"><text class="mv-hd" x="40" y="322">WHY THE CANCEL WAITS</text><text class="tiny f-ink" x="40" y="340">The report locks orders in</text><text class="tiny f-ink" x="40" y="354">SHARE mode. Every UPDATE</text><text class="tiny f-ink" x="40" y="368">needs ROW EXCLUSIVE, which</text><text class="tiny f-ink" x="40" y="382">conflicts with it, so each</text><text class="tiny f-ink" x="40" y="396">side waits for the other.</text><text class="tiny f-ink" x="40" y="418">InnoDB at SERIALIZABLE locks</text><text class="tiny f-ink" x="40" y="432">on its own: 502,025 shared</text><text class="tiny f-ink" x="40" y="446">record locks for this report;</text><text class="tiny f-ink" x="40" y="460">the cancel got ERROR 1205.</text></g>
+<g class="p2"><text class="mv-hd" x="40" y="322">THE REPORT’S SNAPSHOT</text><text class="label mono f-teal" x="40" y="342">165806:165806:</text><text class="mv-10 f-muted" x="40" y="356">xmin : xmax : none in progress</text><g class="mv-s-1"><text class="tiny f-ink" x="40" y="376">It sees a version if its xmin</text><text class="tiny f-ink" x="40" y="390">committed before 165806 and</text><text class="tiny f-ink" x="40" y="404">its xmax did not.</text></g><g class="mv-s-2"><text class="tiny f-purple" x="40" y="424">The writer is xid 165806:</text><text class="tiny f-purple" x="40" y="438">too new for this snapshot.</text></g><g class="mv-s-3"><text class="mv-10 f-green" x="40" y="452">The writer’s next snapshot:</text><text class="mv-10 mono sb f-green" x="40" y="465">165807:165807:</text></g></g>
+<g class="p3"><text class="mv-hd" x="40" y="322">THE XMIN HORIZON</text><text class="mv-10 f-muted" x="40" y="338">pg_stat_activity, report:</text><g class="mv-h-s0"><text class="mv-10 mono f-ink" x="40" y="354">idle in transaction</text><text class="mv-10 mono f-ink" x="40" y="369">backend_xmin 165806</text></g><g class="mv-h-a1"><text class="mv-10 mono f-amber-ink" x="40" y="384">age 1 XID</text></g><g class="mv-h-a2"><text class="mv-10 mono f-amber-ink" x="40" y="384">age 1,001 XIDs</text></g><g class="mv-h-a3"><text class="mv-10 mono f-amber-ink" x="40" y="384">age 2,001 XIDs</text></g><g class="mv-h-a4"><text class="mv-10 mono f-amber-ink" x="40" y="384">age 3,001 XIDs · open 29 s</text></g><g class="mv-h-c"><text class="tiny f-ink" x="40" y="406">VACUUM keeps every version</text><text class="tiny f-ink" x="40" y="420">whose xmax is 165806 or</text><text class="tiny f-ink" x="40" y="434">newer: the report might</text><text class="tiny f-ink" x="40" y="448">still need it.</text></g><g class="mv-c-r3"><text class="mv-10 mono f-green" x="40" y="354">COMMIT at 36.3 s</text><text class="mv-10 mono f-green" x="40" y="369">backend_xmin: none</text><text class="tiny f-ink" x="40" y="392">No old snapshot is left:</text><text class="tiny f-ink" x="40" y="406">the next VACUUM’s cutoff</text><text class="tiny f-ink" x="40" y="420">is 168807, so all 3,001</text><text class="tiny f-ink" x="40" y="434">dead versions go.</text></g></g>
+<!-- Heap page 2392: line pointers from the start, tuples from the end; the zoomed tuples below -->
+<g class="p123"><rect class="mv-pan" x="218" y="204" width="402" height="140" rx="8"/><text class="tiny sb f-ink" x="228" y="219">heap page 2392</text><g class="mv-p1-i"><text class="mv-10 end f-muted" x="612" y="219">98 line pointers · 48 B free</text></g><g class="mv-p1-j"><text class="mv-10 end f-green" x="612" y="219">lp 2 unused · 128 B free</text></g><rect class="mv-cell2" x="228" y="228" width="24" height="16" rx="2"/><text class="mv-9 mid f-muted" x="240" y="239">hdr</text><rect class="mv-cell" x="252" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="261" y="239">1</text><rect class="mv-cell" x="270" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="279" y="239">2</text><rect class="mv-cell" x="288" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="297" y="239">3</text><rect class="mv-cell" x="306" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="315" y="239">4</text><rect class="mv-cell" x="324" y="228" width="34" height="16" rx="2"/><text class="mv-9 mid f-ink" x="341" y="239">… 98</text><g class="mv-p1-j"><rect class="mv-free" x="270" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-muted" x="279" y="239">2</text></g><rect class="mv-free" x="358" y="228" width="40" height="16" rx="2"/><g class="mv-p1-j"><rect class="mv-free" x="398" y="228" width="18" height="16" rx="2"/></g><g class="mv-p1-i"><text class="mv-9 mid f-muted" x="378" y="239">48 B</text></g><g class="mv-p1-j"><text class="mv-9 mid f-green" x="387" y="239">128 B</text></g><g class="mv-p1-shift"><rect class="mv-cell2" x="398" y="228" width="142" height="16" rx="2"/><text class="mv-9 mid f-muted" x="469" y="239">tuples 98 … 5</text><rect class="mv-cell" x="540" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="549" y="239">4</text><rect class="mv-cell" x="558" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="567" y="239">3</text></g><g class="mv-i-old"><rect class="mv-cell" x="576" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="585" y="239">2</text><path class="mv-ptr" d="M279 244C279 256 585 256 585 247" marker-end="url(#ah-muted)"/></g><rect class="mv-cell" x="594" y="228" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="603" y="239">1</text><text class="mv-9 f-muted" x="230" y="262">lp</text><text class="mv-9 f-muted" x="252" y="262">t_xmin</text><text class="mv-9 f-muted" x="298" y="262">t_xmax</text><text class="mv-9 f-muted" x="344" y="262">t_ctid</text><text class="mv-9 f-muted" x="408" y="262">id</text><text class="mv-9 f-muted" x="454" y="262">status</text><rect class="mv-row" x="224" y="266" width="390" height="14" rx="3"/><text class="mv-10 mono f-muted" x="230" y="276.5">1</text><text class="mv-10 mono f-ink" x="252" y="276.5">775</text><text class="mv-10 mono f-ink" x="298" y="276.5">0</text><text class="mv-10 mono f-ink" x="344" y="276.5">(2392,1)</text><text class="mv-10 mono f-ink" x="408" y="276.5">216210</text><text class="mv-10 mono f-ink" x="454" y="276.5">delivered</text><g class="mv-i-old"><rect class="mv-row" x="224" y="282" width="390" height="14" rx="3"/><text class="mv-10 mono f-muted" x="230" y="292.5">2</text><text class="mv-10 mono f-ink" x="252" y="292.5">775</text><g class="mv-p1-x0"><text class="mv-10 mono f-ink" x="298" y="292.5">0</text></g><g class="mv-p1-x1"><text class="mv-10 mono sb f-purple" x="298" y="292.5">165806</text></g><g class="mv-p1-x0"><text class="mv-10 mono f-ink" x="344" y="292.5">(2392,2)</text></g><g class="mv-p1-x1"><text class="mv-10 mono sb f-purple" x="344" y="292.5">(5057,91)</text></g><text class="mv-10 mono f-ink" x="408" y="292.5">495179</text><text class="mv-10 mono f-ink" x="454" y="292.5">delivered</text></g><g class="mv-p1-r2u"><rect class="mv-free" x="224" y="282" width="390" height="14" rx="3"/><text class="mv-10 mono f-muted" x="230" y="292.5">2</text><text class="mv-10 f-green" x="252" y="292.5">unused: VACUUM removed the dead version, its space is free</text></g><rect class="mv-row" x="224" y="298" width="390" height="14" rx="3"/><text class="mv-10 mono f-muted" x="230" y="308.5">3</text><text class="mv-10 mono f-ink" x="252" y="308.5">775</text><text class="mv-10 mono f-ink" x="298" y="308.5">0</text><text class="mv-10 mono f-ink" x="344" y="308.5">(2392,3)</text><text class="mv-10 mono f-ink" x="408" y="308.5">173516</text><text class="mv-10 mono f-ink" x="454" y="308.5">delivered</text><rect class="mv-row" x="224" y="314" width="390" height="14" rx="3"/><text class="mv-10 mono f-muted" x="230" y="324.5">4</text><text class="mv-10 mono f-ink" x="252" y="324.5">775</text><text class="mv-10 mono f-ink" x="298" y="324.5">0</text><text class="mv-10 mono f-ink" x="344" y="324.5">(2392,4)</text><text class="mv-10 mono f-ink" x="408" y="324.5">178043</text><text class="mv-10 mono f-ink" x="454" y="324.5">cancelled</text><text class="mv-9 f-muted" x="228" y="340">xmin 775 is frozen (VACUUM FULL rewrote the table): every snapshot sees it</text></g>
+<g class="p1"><g class="mv-lock"><rect class="none s-orange" x="218" y="204" width="402" height="140" rx="8" stroke-width="2" stroke-dasharray="6 4"/><rect class="none s-orange" x="218" y="352" width="402" height="118" rx="8" stroke-width="2" stroke-dasharray="6 4"/><rect class="f-orange-soft s-orange" x="346" y="209" width="112" height="14" rx="7" stroke-width="1"/><rect class="f-orange" x="352" y="215" width="8" height="6" rx="1.2"/><path class="none s-orange" d="M353.8 215v-2a2.2 2.2 0 0 1 4.4 0v2" stroke-width="1.3"/><text class="mv-9 sb f-orange" x="364" y="219.5">ShareLock: report</text></g></g>
+<g class="p2"><g class="mv-v-r1"><rect class="f-blue-soft s-blue" x="518" y="283" width="50" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-blue" x="543" y="292">report ✓</text></g><g class="mv-v-n1"><rect class="f-panel-2 s-line" x="572" y="283" width="38" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-muted" x="591" y="292">new ✗</text></g></g>
+<g class="p3"><g class="mv-v-d"><g class="mv-v-d1"><rect class="f-blue-soft s-blue" x="518" y="283" width="50" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-blue" x="543" y="292">report ✓</text><rect class="f-amber-soft s-amber" x="572" y="283" width="38" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-amber-ink" x="591" y="292">dead</text></g><g class="mv-c-v1"><rect class="f-amber-soft s-amber" x="518" y="283" width="92" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-amber-ink" x="564" y="292">kept: cutoff</text></g></g></g>
+<!-- Heap page 5057, the last page: where the new version lands -->
+<g class="p123"><rect class="mv-pan" x="218" y="352" width="402" height="118" rx="8"/><text class="tiny sb f-ink" x="228" y="367">heap page 5057</text><g class="mv-p5-o"><text class="tiny sb f-ink" x="228" y="367"><tspan class="none">heap page 5057 </tspan><tspan class="mv-10 f-muted" font-weight="400">· the last page</tspan></text></g><g class="mv-p2-i0"><text class="mv-10 end f-muted" x="612" y="367">90 line pointers · 760 B free</text></g><g class="mv-p5-o"><g class="mv-p2-i1"><text class="mv-10 end f-purple" x="612" y="367">91 line pointers · 676 B free</text></g></g><g class="mv-p5-n"><text class="mv-10 end f-purple" x="612" y="367">99 line pointers · 44 B free</text></g><rect class="mv-cell2" x="228" y="374" width="24" height="16" rx="2"/><text class="mv-9 mid f-muted" x="240" y="385">hdr</text><rect class="mv-cell" x="252" y="374" width="48" height="16" rx="2"/><text class="mv-9 mid f-ink" x="276" y="385">1 … 88</text><rect class="mv-cell" x="300" y="374" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="309" y="385">89</text><rect class="mv-cell" x="318" y="374" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="327" y="385">90</text><rect class="mv-free" x="336" y="374" width="152" height="16" rx="2"/><g class="mv-p2-i0"><text class="mv-9 mid f-muted" x="412" y="385">760 B free</text></g><g class="mv-p5-o"><g class="mv-p2-i1"><text class="mv-9 mid f-muted" x="412" y="385">676 B</text></g></g><g class="mv-p5-n"><text class="mv-9 mid f-muted" x="412" y="385">44 B</text></g><g class="mv-p5-o"><g class="mv-p2-i1"><rect class="f-purple-soft s-purple" x="336" y="374" width="18" height="16" rx="2"/><text class="mv-9 mid sb f-purple" x="345" y="385">91</text><rect class="f-purple-soft s-purple" x="470" y="374" width="18" height="16" rx="2"/><text class="mv-9 mid sb f-purple" x="479" y="385">91</text><path class="none s-purple" d="M345 390C345 400 479 400 479 393" stroke-width="1.2" marker-end="url(#ah-purple)"/></g></g><g class="mv-p5-n"><rect class="f-purple-soft s-purple" x="336" y="374" width="40" height="16" rx="2"/><text class="mv-9 mid sb f-purple" x="356" y="385">91 … 99</text><rect class="f-purple-soft s-purple" x="448" y="374" width="40" height="16" rx="2"/><text class="mv-9 mid sb f-purple" x="468" y="385">99 … 91</text></g><rect class="mv-cell" x="488" y="374" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="497" y="385">90</text><rect class="mv-cell" x="506" y="374" width="18" height="16" rx="2"/><text class="mv-9 mid f-ink" x="515" y="385">89</text><rect class="mv-cell2" x="524" y="374" width="88" height="16" rx="2"/><text class="mv-9 mid f-muted" x="568" y="385">tuples 88 … 1</text><text class="mv-9 f-muted" x="230" y="408">lp</text><text class="mv-9 f-muted" x="252" y="408">t_xmin</text><text class="mv-9 f-muted" x="298" y="408">t_xmax</text><text class="mv-9 f-muted" x="344" y="408">t_ctid</text><text class="mv-9 f-muted" x="408" y="408">id</text><text class="mv-9 f-muted" x="454" y="408">status</text><rect class="mv-row" x="224" y="412" width="390" height="14" rx="3"/><text class="mv-10 mono f-muted" x="230" y="422.5">89</text><text class="mv-10 mono f-ink" x="252" y="422.5">775</text><text class="mv-10 mono f-ink" x="298" y="422.5">0</text><text class="mv-10 mono f-ink" x="344" y="422.5">(5057,89)</text><text class="mv-10 mono f-ink" x="408" y="422.5">486582</text><text class="mv-10 mono f-ink" x="454" y="422.5">delivered</text><rect class="mv-row" x="224" y="428" width="390" height="14" rx="3"/><text class="mv-10 mono f-muted" x="230" y="438.5">90</text><text class="mv-10 mono f-ink" x="252" y="438.5">775</text><text class="mv-10 mono f-ink" x="298" y="438.5">0</text><text class="mv-10 mono f-ink" x="344" y="438.5">(5057,90)</text><text class="mv-10 mono f-ink" x="408" y="438.5">210629</text><text class="mv-10 mono f-ink" x="454" y="438.5">delivered</text><g class="mv-p2-i1"><rect class="f-purple-soft s-purple" x="224" y="444" width="390" height="14" rx="3" stroke-width="1"/><text class="mv-10 mono f-muted" x="230" y="454.5">91</text><text class="mv-10 mono sb f-purple" x="252" y="454.5">165806</text><text class="mv-10 mono sb f-purple" x="298" y="454.5">0</text><text class="mv-10 mono sb f-purple" x="344" y="454.5">(5057,91)</text><text class="mv-10 mono sb f-purple" x="408" y="454.5">495179</text><text class="mv-10 mono sb f-purple" x="454" y="454.5">cancelled</text></g></g>
+<g class="p2"><g class="mv-v-n1"><rect class="f-panel-2 s-line" x="518" y="445" width="50" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-muted" x="543" y="454">report ✗</text></g><g class="mv-v-n1"><rect class="f-green-soft s-green" x="572" y="445" width="38" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-green" x="591" y="454">new ✓</text></g></g>
+<g class="p3"><g class="mv-v-l"><rect class="f-green-soft s-green" x="518" y="445" width="92" height="12" rx="6" stroke-width="1"/><text class="mv-9 sb mid f-green" x="564" y="454">live version</text></g></g>
+<!-- Tokens -->
+<g class="p1"><g class="mv-t1"><circle class="f-purple pkt" r="5"/></g></g>
+<g class="p1"><g class="mv-a-w3"><circle class="f-red-soft s-red" cx="330" cy="199" r="8" stroke-width="1.5"/><text class="mv-10 b mid f-red" x="330" y="203">✕</text></g></g>
+<g class="p1"><g class="mv-t1w"><circle class="none s-red pulse" cx="330" cy="199" r="9" stroke-width="1.5"/></g></g>
+<g class="p2"><g class="mv-t2w"><circle class="f-purple pkt" r="5"/></g></g>
+<g class="p2"><g class="mv-t2r"><circle class="f-blue pkt" r="5"/></g></g>
+<g class="p2"><g class="mv-t2n"><circle class="f-green pkt" r="5"/></g></g>
+<g class="p3"><g class="mv-sw1"><line class="s-amber" x1="0" y1="226" x2="0" y2="330" stroke-width="2"/><line class="s-amber" x1="0" y1="372" x2="0" y2="460" stroke-width="2"/></g><g class="mv-sw2"><line class="s-teal" x1="0" y1="226" x2="0" y2="330" stroke-width="2"/><line class="s-teal" x1="0" y1="372" x2="0" y2="460" stroke-width="2"/></g></g>
+<!-- Right: pg_locks (step 1), pg_stat_user_tables and VACUUM (steps 2-3), costs (step 4) -->
+<rect class="mv-pan" x="632" y="204" width="298" height="266" rx="8"/>
+<g class="p1"><text class="tiny sb f-ink" x="642" y="219">pg_locks on orders</text><text class="mv-10 end f-muted" x="920" y="219">pg_stat_activity: Lock / relation</text><text class="mv-9 f-muted" x="642" y="237">t</text><text class="mv-9 f-muted" x="676" y="237">session</text><text class="mv-9 f-muted" x="722" y="237">mode</text><text class="mv-9 f-muted" x="830" y="237">state</text><g class="mv-a-w1"><rect class="mv-row" x="638" y="244" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="642" y="254.5">0.0 s</text><text class="mv-10 mono f-purple" x="676" y="254.5">writer</text><text class="mv-10 mono f-ink" x="722" y="254.5">RowExclusiveLock</text><text class="mv-10 mono sb f-ink" x="830" y="254.5">granted</text></g><g class="mv-a-r1"><rect class="mv-row" x="638" y="262" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="642" y="272.5">0.5 s</text><text class="mv-10 mono f-blue" x="676" y="272.5">report</text><text class="mv-10 mono f-ink" x="722" y="272.5">ShareLock</text><text class="mv-10 mono sb f-red" x="830" y="272.5">waits: writer</text></g><g class="mv-l2"><rect class="mv-row" x="638" y="280" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="642" y="290.5">2.0 s</text><text class="mv-10 mono f-blue" x="676" y="290.5">report</text><text class="mv-10 mono f-ink" x="722" y="290.5">ShareLock</text><text class="mv-10 mono sb f-orange" x="830" y="290.5">granted</text></g><g class="mv-a-w2"><rect class="mv-row" x="638" y="298" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="642" y="308.5">3.1 s</text><text class="mv-10 mono f-purple" x="676" y="308.5">writer</text><text class="mv-10 mono f-ink" x="722" y="308.5">RowExclusiveLock</text><text class="mv-10 mono sb f-red" x="830" y="308.5">waits: report</text></g><g class="mv-a-w3"><rect class="mv-row" x="638" y="316" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="642" y="326.5">8.1 s</text><text class="mv-10 mono f-purple" x="676" y="326.5">writer</text><text class="mv-10 mono f-ink" x="722" y="326.5">UPDATE canceled</text><text class="mv-10 mono sb f-red" x="830" y="326.5">✕ 55P03</text></g><g class="mv-a-r3"><rect class="mv-row" x="638" y="334" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="642" y="344.5">9.1 s</text><text class="mv-10 mono f-blue" x="676" y="344.5">report</text><text class="mv-10 mono f-ink" x="722" y="344.5">COMMIT</text><text class="mv-10 mono sb f-muted" x="830" y="344.5">released</text></g><g class="mv-a-w3"><rect class="f-red-soft s-red" x="642" y="362" width="278" height="54" rx="6" stroke-width="1.2"/><text class="mv-10 mono sb f-red" x="652" y="380">ERROR:  55P03: canceling statement</text><text class="mv-10 mono sb f-red" x="652" y="394">due to lock timeout</text><text class="mv-10 f-muted" x="652" y="408">after 5,004 ms, with lock_timeout = '5s'</text></g><g class="mv-a-w2"><text class="tiny f-ink" x="642" y="436">pg_blocking_pids() named the other session</text><text class="tiny f-ink" x="642" y="450">each time; without lock_timeout the cancel</text><text class="tiny f-ink" x="642" y="464">would wait until the report commits.</text></g></g>
+<g class="p23"><text class="tiny sb f-ink" x="642" y="219">pg_stat_user_tables · orders</text><text class="mv-10 end f-muted" x="920" y="219">estimates</text><rect class="mv-row" x="638" y="226" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="644" y="236.5">n_live_tup</text><rect class="mv-row" x="638" y="243" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="644" y="253.5">n_dead_tup</text><rect class="mv-row" x="638" y="260" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="644" y="270.5">n_tup_upd</text><rect class="mv-row" x="638" y="277" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="644" y="287.5">n_tup_hot_upd</text><rect class="mv-row" x="638" y="294" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="644" y="304.5">n_tup_newpage_upd</text><rect class="mv-row" x="638" y="311" width="286" height="14" rx="3"/><text class="mv-10 mono f-muted" x="644" y="321.5">heap pages</text><g class="mv-n0-0"><text class="mv-10 mono sb end f-ink" x="918" y="236.5">500,000</text></g><g class="mv-n0-1"><text class="mv-10 mono sb end f-ink" x="918" y="236.5">500,010</text></g><g class="mv-n0-2"><text class="mv-10 mono sb end f-ink" x="918" y="236.5">499,413</text></g><g class="mv-n1-0"><text class="mv-10 mono sb end f-ink" x="918" y="253.5">0</text></g><g class="mv-n1-1"><text class="mv-10 mono sb end f-amber-ink" x="918" y="253.5">1</text></g><g class="mv-n1-2"><text class="mv-10 mono sb end f-amber-ink" x="918" y="253.5">1,001</text></g><g class="mv-n1-3"><text class="mv-10 mono sb end f-amber-ink" x="918" y="253.5">2,001</text></g><g class="mv-n1-4"><text class="mv-10 mono sb end f-amber-ink" x="918" y="253.5">3,001</text></g><g class="mv-n0-2"><text class="mv-10 mono sb end f-green" x="918" y="253.5">0</text></g><g class="mv-n1-0"><text class="mv-10 mono sb end f-ink" x="918" y="270.5">0</text></g><g class="mv-n1-1"><text class="mv-10 mono sb end f-ink" x="918" y="270.5">1</text></g><g class="mv-n1-2"><text class="mv-10 mono sb end f-ink" x="918" y="270.5">1,001</text></g><g class="mv-n1-3"><text class="mv-10 mono sb end f-ink" x="918" y="270.5">2,001</text></g><g class="mv-n2-4"><text class="mv-10 mono sb end f-ink" x="918" y="270.5">3,001</text></g><g class="mv-n3-0"><text class="mv-10 mono sb end f-ink" x="918" y="287.5">0</text></g><g class="mv-n1-2"><text class="mv-10 mono sb end f-ink" x="918" y="287.5">31</text></g><g class="mv-n1-3"><text class="mv-10 mono sb end f-ink" x="918" y="287.5">75</text></g><g class="mv-n2-4"><text class="mv-10 mono sb end f-ink" x="918" y="287.5">104</text></g><g class="mv-n1-0"><text class="mv-10 mono sb end f-ink" x="918" y="304.5">0</text></g><g class="mv-n1-1"><text class="mv-10 mono sb end f-ink" x="918" y="304.5">1</text></g><g class="mv-n1-2"><text class="mv-10 mono sb end f-ink" x="918" y="304.5">970</text></g><g class="mv-n1-3"><text class="mv-10 mono sb end f-ink" x="918" y="304.5">1,926</text></g><g class="mv-n2-4"><text class="mv-10 mono sb end f-ink" x="918" y="304.5">2,897</text></g><g class="mv-n3-0"><text class="mv-10 mono sb end f-ink" x="918" y="321.5">5,058</text></g><g class="mv-n1-2"><text class="mv-10 mono sb end f-ink" x="918" y="321.5">5,068</text></g><g class="mv-n1-3"><text class="mv-10 mono sb end f-ink" x="918" y="321.5">5,077</text></g><g class="mv-n2-4"><text class="mv-10 mono sb end f-amber-ink" x="918" y="321.5">5,087</text></g><line class="mv-sep" x1="642" y1="334" x2="920" y2="334"/></g>
+<g class="p2"><g class="mv-u-note"><text class="tiny sb f-purple" x="642" y="352">Not a HOT update</text><text class="tiny f-ink" x="642" y="368">Page 2392 had 48 B free, so the new</text><text class="tiny f-ink" x="642" y="382">version went to page 5057, and</text><text class="tiny f-ink" x="642" y="396">orders_pkey got a second entry.</text><text class="tiny f-ink" x="642" y="416">Nobody waited: the UPDATE took 5 ms,</text><text class="tiny f-ink" x="642" y="430">and the report’s read, made while the</text><text class="tiny f-ink" x="642" y="444">writer was still open, took 1.3 ms.</text></g></g>
+<g class="p3"><text class="tiny sb f-ink" x="642" y="350">VACUUM (VERBOSE) orders</text><g class="mv-vac1"><text class="mv-10 mono f-amber-ink" x="642" y="366">tuples: 0 removed, 3001 are dead but</text><text class="mv-10 mono f-amber-ink" x="642" y="379">not yet removable · cutoff 165806</text></g><g class="mv-c-v2"><text class="mv-10 mono sb f-green" x="642" y="397">after COMMIT: 3001 removed</text><rect class="mv-cell" x="642" y="403" width="276" height="8" rx="3"/><rect class="f-teal mv-vac2b" x="642" y="403" width="276" height="8" rx="3"/></g><g class="mv-ph-0"><text class="mv-10 f-teal" x="642" y="423">scanning heap: 5,087 pages</text></g><g class="mv-ph-1"><text class="mv-10 f-teal" x="642" y="423">vacuuming indexes: 2,897 dead item IDs</text></g><g class="mv-ph-2"><text class="mv-10 f-teal" x="642" y="423">vacuuming heap</text></g><g class="mv-ph-3"><text class="mv-10 f-teal" x="642" y="423">cleaning up indexes</text></g><g class="mv-ph-4"><text class="mv-10 f-teal" x="642" y="423">done in 33 ms · index scans: 1</text></g><g class="mv-hot"><text class="mv-10 sb f-ink" x="642" y="444">HOT: 104 of 3,001 updates (full pages)</text><text class="mv-10 sb f-green" x="642" y="459">fillfactor 90, same run: 3,001 of 3,001</text></g></g>
+<g class="p4"><text class="mv-hd-amber" x="642" y="220">WHAT IT COSTS IN POSTGRESQL</text><text class="tiny sb f-ink" x="642" y="240">Bloat</text><text class="mv-10 f-ink" x="642" y="254">orders grew from 5,058 to 5,087 pages tonight.</text><text class="mv-10 f-ink" x="642" y="267">VACUUM frees space inside pages, not the file.</text><text class="tiny sb f-ink" x="642" y="290">Autovacuum</text><text class="mv-10 f-ink" x="642" y="304">starts at 50 + 20% of the rows: 100,050 dead</text><text class="mv-10 f-ink" x="642" y="317">rows for orders. Tonight’s 3,001: no run.</text><text class="tiny sb f-ink" x="642" y="340">Freezing</text><text class="mv-10 f-ink" x="642" y="354">XIDs are 32-bit. A table 200 million XIDs old</text><text class="mv-10 f-ink" x="642" y="367">gets a forced vacuum; 3 million before wrap-</text><text class="mv-10 f-ink" x="642" y="380">around, the server stops assigning XIDs.</text><text class="tiny sb f-ink" x="642" y="403">Sessions left idle in a transaction</text><text class="mv-10 mono f-ink" x="642" y="417">idle_in_transaction_session_timeout</text><text class="mv-10 f-ink" x="642" y="430">is 0 (off) by default; set, it ends them:</text><text class="mv-10 mono sb f-red" x="642" y="443">FATAL: 25P03 … idle-in-transaction timeout</text><text class="mv-10 f-muted" x="642" y="462">Watch pg_stat_activity.backend_xmin and n_dead_tup.</text></g>
+<!-- Step 4: InnoDB undo logs, Oracle undo segments, comparison -->
+<g class="p4"><rect class="mv-pan" x="30" y="204" width="382" height="160" rx="8"/><text class="tiny sb f-ink" x="40" y="219">MySQL 8.4 · InnoDB</text><text class="mv-10 end f-muted" x="404" y="219">same report, same writer</text><text class="mv-9 f-muted" x="40" y="238">clustered index PRIMARY: the row is updated in place</text><rect class="f-purple-soft s-purple" x="38" y="243" width="366" height="16" rx="3" stroke-width="1"/><text class="mv-10 mono f-ink" x="44" y="254.5">495179 · 42 · <tspan class="sb f-purple">cancelled</tspan> · DB_TRX_ID 8626 · DB_ROLL_PTR</text><circle class="f-purple" cx="393" cy="251" r="3"/><path class="none s-purple" d="M393 254V292H342" stroke-width="1.2" marker-end="url(#ah-purple)"/><text class="mv-9 f-muted" x="40" y="279">undo log (update undo, in a rollback segment)</text><rect class="f-teal-soft s-teal" x="38" y="284" width="300" height="16" rx="3" stroke-width="1"/><text class="mv-10 mono f-ink" x="44" y="295.5">before trx 8626: status = <tspan class="sb f-teal">delivered</tspan></text><g class="mv-k-rv"><text class="tiny f-blue" x="40" y="320">The report’s read view can’t see trx 8626, so</text><text class="tiny f-blue" x="40" y="334">it follows DB_ROLL_PTR and reads delivered.</text></g><text class="tiny sb f-amber-ink" x="40" y="354">History list length</text><g class="mv-k-h0"><text class="tiny mono sb f-amber-ink" x="152" y="354">7</text></g><g class="mv-k-h1"><text class="tiny mono sb f-amber-ink" x="152" y="354">1,002</text></g><g class="mv-k-h2"><text class="tiny mono sb f-amber-ink" x="152" y="354">2,002</text></g><g class="mv-k-h3"><text class="tiny mono sb f-amber-ink" x="152" y="354">3,002</text></g><g class="mv-d-p"><text class="mv-10 f-green" x="192" y="354">→ 0 after purge, 46 s after COMMIT</text></g><rect class="mv-pan" x="420" y="204" width="200" height="160" rx="8"/><text class="tiny sb f-ink" x="430" y="219">Oracle AI Database 26ai</text><g class="mv-o"><text class="tiny f-ink" x="430" y="240">An UPDATE writes the old</text><text class="tiny f-ink" x="430" y="254">values to an undo segment.</text><text class="tiny f-ink" x="430" y="274">A query rebuilds blocks as</text><text class="tiny f-ink" x="430" y="288">of its start from that undo.</text><text class="tiny f-ink" x="430" y="308">Old undo is overwritten after</text><text class="tiny f-ink" x="430" y="322">the retention period, and a</text><text class="tiny f-ink" x="430" y="336">long query can then fail:</text><text class="mv-10 mono sb f-red" x="430" y="352">ORA-01555 snapshot too old</text></g><rect class="mv-pan" x="30" y="372" width="590" height="98" rx="8"/><text class="mv-hd" x="40" y="388">WHERE THE OLD VERSION OF 495179 LIVES</text><g class="mv-q0"><rect class="mv-row" x="38" y="396" width="574" height="18" rx="3"/><text class="tiny sb f-ink" x="46" y="408.5">PostgreSQL</text><text class="tiny f-ink" x="140" y="408.5">in the table, page 2392</text><text class="tiny f-ink" x="324" y="408.5">until VACUUM</text><text class="tiny f-amber-ink" x="448" y="408.5">the table bloats</text></g><g class="mv-q1"><rect class="mv-row" x="38" y="418" width="574" height="18" rx="3"/><text class="tiny sb f-ink" x="46" y="430.5">InnoDB</text><text class="tiny f-ink" x="140" y="430.5">undo log</text><text class="tiny f-ink" x="324" y="430.5">until purge</text><text class="tiny f-amber-ink" x="448" y="430.5">undo and history list grow</text></g><g class="mv-q2"><rect class="mv-row" x="38" y="440" width="574" height="18" rx="3"/><text class="tiny sb f-ink" x="46" y="452.5">Oracle</text><text class="tiny f-ink" x="140" y="452.5">undo segment</text><text class="tiny f-ink" x="324" y="452.5">until overwritten</text><text class="tiny f-red" x="448" y="452.5">long queries may fail</text></g></g>
+<g class="p4"><g class="mv-t4r"><circle class="f-blue pkt" r="5"/></g></g>
+</g>
+</svg>

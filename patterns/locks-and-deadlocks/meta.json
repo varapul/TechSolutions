@@ -1,0 +1,46 @@
+{
+  "aka": ["Row locks", "Lock waits", "Deadlock detection"],
+  "steps": [
+    {
+      "title": "One open transaction",
+      "caption": "A forgets to COMMIT: B and C queue for order 497003, then A's next UPDATE closes a cycle.",
+      "body": "Acme's back-office script runs `UPDATE orders SET status = 'cancelled' WHERE id = 497003` in a transaction and then sits **idle in transaction**: nobody has typed COMMIT, so the row lock stays. The warehouse job, which has just updated order 499846, and the shop app both try to update 497003 and wait; at 10 s `pg_stat_activity` shows them 9.0 and 8.0 s into a `Lock` wait, while the support screen's SELECT returned at once. At 20 s the script's next UPDATE asks for order 499846, which the warehouse job holds, and the two transactions now wait for each other."
+    },
+    {
+      "title": "Row locks and the queue",
+      "caption": "The row lock is xmax in the row: B waits on A's xid, C on the tuple lock, and readers don't wait.",
+      "body": "An UPDATE that leaves key columns alone takes a FOR NO KEY UPDATE row lock, and PostgreSQL records it in the row itself: the version of 497003 at ctid (774,54) gets `xmax = 165763`, A's transaction ID, so row locks need no shared memory and mostly don't appear in `pg_locks`. The first waiter takes the `tuple` lock on (774,54) and waits for a `ShareLock` on transaction 165763, granted only when A ends; later writers queue for the tuple lock, and readers take no row lock at all. `pg_blocking_pids()` gives the wait-for graph: C waits for B, B for A and A for B, a cycle."
+    },
+    {
+      "title": "Detect, abort, prevent",
+      "caption": "After deadlock_timeout (1 s) A is aborted with 40P01; sorted locks, timeouts and SKIP LOCKED help.",
+      "body": "PostgreSQL doesn't look for deadlocks when a wait starts: after `deadlock_timeout` (1 s by default) the waiting process searches the wait-for graph, finds the cycle and usually aborts its own transaction, so A gets `ERROR: deadlock detected` (SQLSTATE 40P01) and B and C finish after 20.0 and 19.0 s. In more runs, locking both orders in id order with `ORDER BY id FOR UPDATE` left B waiting 5.5 s without a cycle, `lock_timeout = '2s'` stopped C after 2.0 s (55P03), and `idle_in_transaction_session_timeout` ended the forgotten transaction. For a job queue, `FOR UPDATE SKIP LOCKED` gives each packer a different paid order, and `NOWAIT` fails at once instead of waiting."
+    },
+    {
+      "title": "Schema changes and InnoDB",
+      "caption": "A waiting ALTER TABLE queues every read behind it; InnoDB detects deadlocks at once and locks gaps.",
+      "body": "`ALTER TABLE orders ADD COLUMN gift_note text` needs an ACCESS EXCLUSIVE lock, so it waited 7.0 s behind a report's open transaction, and every plain SELECT that arrived meanwhile queued behind the ALTER (6.0 and 5.0 s), although the report blocks no reader. With `SET lock_timeout = '2s'` the ALTER gave up after 2.0 s, reads waited at most 1.0 s, and the retry took 2.6 ms. On MySQL 8.4, InnoDB rolled back A 5 ms after the same cycle formed (`innodb_deadlock_detect` is on by default), and under REPEATABLE READ its next-key and gap locks made new orders for customers 1049 and 1050 wait 3.5 and 4.0 s, where PostgreSQL inserted both at once."
+    }
+  ],
+  "related": ["isolation-levels", "mvcc", "optimistic-concurrency", "competing-consumers", "postgresql", "expand-and-contract", "retry-with-backoff", "priority-queue"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — Explicit Locking (table and row lock modes, deadlocks, advisory locks)", "url": "https://www.postgresql.org/docs/18/explicit-locking.html" },
+    { "title": "PostgreSQL 18 documentation — Lock Management (deadlock_timeout)", "url": "https://www.postgresql.org/docs/18/runtime-config-locks.html" },
+    { "title": "PostgreSQL 18 documentation — Client Connection Defaults (lock_timeout, statement_timeout, idle_in_transaction_session_timeout, transaction_timeout)", "url": "https://www.postgresql.org/docs/18/runtime-config-client.html" },
+    { "title": "PostgreSQL 18 documentation — SELECT: the locking clause (NOWAIT, SKIP LOCKED)", "url": "https://www.postgresql.org/docs/18/sql-select.html#SQL-FOR-UPDATE-SHARE" },
+    { "title": "PostgreSQL 18 documentation — pg_locks", "url": "https://www.postgresql.org/docs/18/view-pg-locks.html" },
+    { "title": "PostgreSQL 18 documentation — System Information Functions (pg_blocking_pids)", "url": "https://www.postgresql.org/docs/18/functions-info.html" },
+    { "title": "PostgreSQL 18 documentation — Error Reporting and Logging (log_lock_waits, log_lock_failures)", "url": "https://www.postgresql.org/docs/18/runtime-config-logging.html" },
+    { "title": "PostgreSQL 18 documentation — ALTER TABLE (lock levels, ADD COLUMN, VALIDATE CONSTRAINT)", "url": "https://www.postgresql.org/docs/18/sql-altertable.html" },
+    { "title": "PostgreSQL 18 documentation — pgrowlocks", "url": "https://www.postgresql.org/docs/18/pgrowlocks.html" },
+    { "title": "PostgreSQL source — README.tuplock: how tuple locks and their waits work (REL_18_STABLE)", "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/heap/README.tuplock" },
+    { "title": "PostgreSQL source — lock manager README: wait queues and deadlock detection (REL_18_STABLE)", "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/storage/lmgr/README" },
+    { "title": "MySQL 8.4 Reference Manual — InnoDB Locking (record, gap, next-key and insert intention locks)", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html" },
+    { "title": "MySQL 8.4 Reference Manual — Deadlock Detection (innodb_deadlock_detect)", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-deadlock-detection.html" },
+    { "title": "MySQL 8.4 Reference Manual — Metadata Locking", "url": "https://dev.mysql.com/doc/refman/8.4/en/metadata-locking.html" },
+    { "title": "MySQL 8.4 Reference Manual — Locking Reads (NOWAIT and SKIP LOCKED)", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html" },
+    { "title": "MySQL 8.0 Release Notes — Changes in MySQL 8.0.18 (deadlock detection moved to a background thread)", "url": "https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-18.html" },
+    { "title": "Microsoft Learn — Deadlocks guide (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-deadlocks-guide" },
+    { "title": "Microsoft Learn — Transaction locking and row versioning guide (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-transaction-locking-and-row-versioning-guide" }
+  ]
+}

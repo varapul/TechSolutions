@@ -209,6 +209,9 @@ Choose **RDS** when you want a standard engine with backups, patching and failov
 ## Related database topics
 
 - [Query Execution Plans](../query-execution-plans/) — Read EXPLAIN the way the planner thinks: scans, joins, estimated against actual rows, and the statistics behind each choice.
+- [MVCC](../mvcc/) — Multi-version concurrency control: an update writes a new row version, readers see a snapshot, and vacuum removes dead versions.
+- [Write-Ahead Log](../write-ahead-log/) — Log each change before applying it, so a commit survives a crash, recovery replays the log, and replicas and backups follow it.
+- [Connection Pooling](../connection-pooling/) — Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database.
 
 ## References
 

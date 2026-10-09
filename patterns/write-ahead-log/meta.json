@@ -1,0 +1,52 @@
+{
+  "aka": ["WAL", "redo log", "transaction log"],
+  "steps": [
+    {
+      "title": "No log: force every page",
+      "caption": "Without a log, COMMIT must force 8 pages into 7 files, and a crash mid-write can tear a page.",
+      "body": "Acme Shop's checkout commits order 500001 for customer 42: one row in `orders` and two in `order_items`. That changes **8 pages in 7 files**: two heap pages and two index leaves for the new rows, the identity sequence, and three parent pages whose rows the foreign-key checks lock. If COMMIT had to write them itself, every commit would wait for scattered 8 kB writes and an fsync per file (a checkpoint that wrote one such order's pages took 6–7 ms), and a crash part-way could leave the items on disk without their order, or a **torn page**, half new and half old."
+    },
+    {
+      "title": "Log first, pages later",
+      "caption": "Each change appends a WAL record; COMMIT flushes the log to 0/7600C308, and the pages stay dirty.",
+      "body": "PostgreSQL logs first: each change appends a **WAL record** to the WAL buffers and stamps the page with the record's **LSN**, its byte position in the log. COMMIT adds a commit record and waits only until the WAL is flushed up to it: 12 records, 41,268 bytes and one fdatasync, 0.37 ms in one run on a laptop. The 8 pages stay dirty in shared buffers until the background writer or the next checkpoint writes them, and because a CHECKPOINT (redo point 0/76000028) had just run, 7 of the 12 records carry a **full-page image** of the page they change."
+    },
+    {
+      "title": "Replay after a crash",
+      "caption": "A crash wipes memory; recovery replays the WAL from the redo point, and a standby replays it too.",
+      "body": "We killed the server 2 seconds after the commit, before any of the 8 pages had reached disk. On restart it read the last checkpoint from `pg_control` and replayed the WAL from the redo point 0/76000028 to its end, restoring each page from its image and reapplying the rest: order 500001 was back, and an end-of-recovery checkpoint wrote the pages. The same WAL streams to a **standby**, which had replayed the commit 1.6 ms after the flush, goes to an **archive** for point-in-time recovery, and feeds **logical decoding** for [change data capture](../change-data-capture/)."
+    },
+    {
+      "title": "What durability costs",
+      "caption": "Each commit waits for one WAL flush; page images swell WAL after checkpoints. InnoDB does the same.",
+      "body": "Each commit waits for its WAL flush: one client managed about 2,200 orders a second with `synchronous_commit = on` and 3,400 with `off`, which can lose the last few hundred milliseconds of commits in a crash but never corrupts the data; with 8 clients, one fsync served 2.8 commits on average. Page images make the first change to each page after a checkpoint expensive (41,268 bytes of WAL for the first order, 742 for the next), so checkpoints are spaced minutes apart and their writes spread over 90% of the interval. MySQL's InnoDB does the same jobs with its **redo log** and a **doublewrite buffer** that keeps a copy of each page before writing it in place."
+    }
+  ],
+  "related": ["read-replicas", "change-data-capture", "disaster-recovery-strategies", "mvcc", "lsm-tree", "postgresql", "amazon-rds-aurora", "event-sourcing"],
+  "references": [
+    { "title": "PostgreSQL 18 documentation — Write-Ahead Logging (WAL)", "url": "https://www.postgresql.org/docs/18/wal-intro.html" },
+    { "title": "PostgreSQL 18 documentation — Reliability (torn pages, full-page images, CRCs)", "url": "https://www.postgresql.org/docs/18/wal-reliability.html" },
+    { "title": "PostgreSQL 18 documentation — Asynchronous Commit", "url": "https://www.postgresql.org/docs/18/wal-async-commit.html" },
+    { "title": "PostgreSQL 18 documentation — WAL Configuration (checkpoints, group commit)", "url": "https://www.postgresql.org/docs/18/wal-configuration.html" },
+    { "title": "PostgreSQL 18 documentation — WAL Internals (LSNs, segments, pg_control)", "url": "https://www.postgresql.org/docs/18/wal-internals.html" },
+    { "title": "PostgreSQL 18 documentation — Server Configuration: Write Ahead Log", "url": "https://www.postgresql.org/docs/18/runtime-config-wal.html" },
+    { "title": "PostgreSQL 18 documentation — Resource Consumption (the background writer)", "url": "https://www.postgresql.org/docs/18/runtime-config-resource.html" },
+    { "title": "PostgreSQL 18 documentation — Continuous Archiving and Point-in-Time Recovery (PITR)", "url": "https://www.postgresql.org/docs/18/continuous-archiving.html" },
+    { "title": "PostgreSQL 18 documentation — Log-Shipping Standby Servers", "url": "https://www.postgresql.org/docs/18/warm-standby.html" },
+    { "title": "PostgreSQL 18 documentation — Logical Decoding Concepts", "url": "https://www.postgresql.org/docs/18/logicaldecoding-explanation.html" },
+    { "title": "PostgreSQL 18 documentation — pg_walinspect", "url": "https://www.postgresql.org/docs/18/pgwalinspect.html" },
+    { "title": "PostgreSQL 18 documentation — Release 18 (data checksums by default, WAL rows in pg_stat_io)", "url": "https://www.postgresql.org/docs/18/release-18.html" },
+    { "title": "PostgreSQL source — access/transam README, Write-Ahead Log Coding (REL_18_STABLE)", "url": "https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/access/transam/README" },
+    { "title": "C. Mohan, D. Haderle, B. Lindsay, H. Pirahesh and P. Schwarz — ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks Using Write-Ahead Logging (ACM TODS, 1992)", "url": "https://dl.acm.org/doi/10.1145/128765.128770" },
+    { "title": "MySQL 8.4 Reference Manual — Redo Log", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-redo-log.html" },
+    { "title": "MySQL 8.4 Reference Manual — Doublewrite Buffer", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-doublewrite-buffer.html" },
+    { "title": "MySQL 8.4 Reference Manual — InnoDB Startup Options and System Variables (innodb_flush_log_at_trx_commit)", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-parameters.html" },
+    { "title": "MySQL 8.4 Reference Manual — InnoDB Recovery", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html" },
+    { "title": "MySQL 8.4 Reference Manual — The Binary Log", "url": "https://dev.mysql.com/doc/refman/8.4/en/binary-log.html" },
+    { "title": "Microsoft Learn — SQL Server transaction log architecture and management guide", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-transaction-log-architecture-and-management-guide" },
+    { "title": "Microsoft Learn — Control transaction durability (SQL Server)", "url": "https://learn.microsoft.com/en-us/sql/relational-databases/logs/control-transaction-durability" },
+    { "title": "SQLite — Write-Ahead Logging", "url": "https://www.sqlite.org/wal.html" },
+    { "title": "SQLite — PRAGMA synchronous", "url": "https://www.sqlite.org/pragma.html#pragma_synchronous" },
+    { "title": "Alexandre Verbitski et al. — Amazon Aurora: Design Considerations for High Throughput Cloud-Native Relational Databases (SIGMOD 2017)", "url": "https://www.amazon.science/publications/amazon-aurora-design-considerations-for-high-throughput-cloud-native-relational-databases" }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "aka": ["Log-structured merge-tree", "LSM-tree", "SSTable compaction"],
+  "steps": [
+    {
+      "title": "B-tree: pages in place",
+      "caption": "In time order, 50,000 inserts dirty 172 index pages; for random orders they dirty all 4,927 leaves.",
+      "body": "Acme keeps `order_events` in PostgreSQL 18.6, here in a copy `ev` with a B-tree on `order_id`. The next 50,000 events arrive almost in key order, because an order's events come within a day, so they change **172 index pages** at the right edge (166 of them new, from leaf splits), with 13 full-page images and 11.5 MB of WAL. 50,000 review events for random orders change **all 4,927 leaves**: each is an 8 kB page to write back at the next checkpoint, and its first change after the checkpoint logged a full-page image, 4,932 of them in 36.6 MB of WAL, **1,631 bytes per event** instead of 341."
+    },
+    {
+      "title": "LSM: log, sort, flush",
+      "caption": "The LSM model appends the 50,000 reviews to a WAL, sorts them in memory and flushes 3 sorted files.",
+      "body": "An LSM tree never changes a page in place. In a small Python model fed the same 50,000 reviews, each event is appended to a write-ahead log (2.4 MB, 48 bytes per event) and put into a sorted in-memory **memtable**; every 15,000 events the memtable is written out as an immutable sorted file in level 0, three files of 0.62 MB, each written once, front to back. Older data sits below in L1 to L3, each level one sorted run cut into files by key range."
+    },
+    {
+      "title": "Reads and compaction",
+      "caption": "Order 181,236: bloom filters skip 2 files and key ranges 2 levels; 2 files read. Then L0 compacts.",
+      "body": "Reading order 181,236 checks the memtable, the L0 files newest first, then the one file per level whose key range covers it: **bloom filters** (10 bits per key) rule out L0 #227 and #226, key ranges rule out L1 and L2, and only #225 (the review) and L3 #86 (placed, paid, shipped) are read; over 4,000 random orders that is 1.1 files per lookup. Deleting the events of 9,755 cancelled orders writes 30,199 **tombstones**. When L0 holds 4 files, **compaction** merges them with the L1 files they overlap (4.3 MB written); the tombstones travel down with the data and can only be dropped where no older copy of their key can lie below, in practice at the last level."
+    },
+    {
+      "title": "Write, read, space",
+      "caption": "B-tree: one root-to-leaf path per read, pages rewritten in place. LSM: cheap writes, more to merge.",
+      "body": "Per 32-byte event the PostgreSQL run wrote 341 bytes in key order and 1,631 for random keys; the model's leveled LSM wrote 139 and 369 bytes, size-tiered 194 and 192, all as long sequential writes. Reads go the other way: the B-tree finds an order on one root-to-leaf path (3 index and 3 heap pages), while the LSM checks 4 bloom filters and reads 2 files, and a range scan has to merge every level. The **RUM conjecture** (EDBT 2016) says no design minimises read, update and memory overhead at once: PostgreSQL, InnoDB and SQL Server use B-trees, while RocksDB, MyRocks, Cassandra, ScyllaDB and LevelDB use LSM trees and pay in background compaction, which stalls writes when it falls behind."
+    }
+  ],
+  "related": ["b-tree-index", "write-ahead-log", "cassandra", "merge-sort", "hash-table", "postgresql", "amazon-dynamodb", "row-vs-column-storage"],
+  "references": [
+    { "title": "Patrick O'Neil, Edward Cheng, Dieter Gawlick and Elizabeth O'Neil — The Log-Structured Merge-Tree (LSM-Tree) (Acta Informatica, 1996)", "url": "https://link.springer.com/article/10.1007/s002360050048" },
+    { "title": "Manos Athanassoulis et al. — Designing Access Methods: The RUM Conjecture (EDBT 2016)", "url": "https://openproceedings.org/2016/conf/edbt/paper-12.pdf" },
+    { "title": "RocksDB wiki — Leveled Compaction", "url": "https://github.com/facebook/rocksdb/wiki/Leveled-Compaction" },
+    { "title": "RocksDB wiki — Universal Compaction (size-tiered)", "url": "https://github.com/facebook/rocksdb/wiki/Universal-Compaction" },
+    { "title": "RocksDB wiki — RocksDB Tuning Guide (write, read and space amplification)", "url": "https://github.com/facebook/rocksdb/wiki/RocksDB-Tuning-Guide" },
+    { "title": "RocksDB wiki — Write Stalls", "url": "https://github.com/facebook/rocksdb/wiki/Write-Stalls" },
+    { "title": "RocksDB wiki — RocksDB Bloom Filter", "url": "https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter" },
+    { "title": "LevelDB — Implementation notes (files, levels and compactions)", "url": "https://github.com/google/leveldb/blob/main/doc/impl.md" },
+    { "title": "Apache Cassandra 5.0 documentation — Storage engine", "url": "https://cassandra.apache.org/doc/latest/cassandra/architecture/storage-engine.html" },
+    { "title": "Apache Cassandra 5.0 documentation — Compaction overview", "url": "https://cassandra.apache.org/doc/latest/cassandra/managing/operating/compaction/overview.html" },
+    { "title": "PostgreSQL 18 documentation — Write Ahead Log settings (full_page_writes, wal_compression)", "url": "https://www.postgresql.org/docs/18/runtime-config-wal.html" },
+    { "title": "PostgreSQL 18 documentation — The Cumulative Statistics System (pg_stat_wal, pg_stat_io)", "url": "https://www.postgresql.org/docs/18/monitoring-stats.html" },
+    { "title": "MySQL 8.4 Reference Manual — Change Buffer", "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-change-buffer.html" },
+    { "title": "Mostafa Elhemali et al. — Amazon DynamoDB: A Scalable, Predictably Performant, and Fully Managed NoSQL Database Service (USENIX ATC 2022)", "url": "https://www.usenix.org/conference/atc22/presentation/elhemali" }
+  ]
+}

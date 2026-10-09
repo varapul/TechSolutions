@@ -1,0 +1,1207 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="diagram" viewBox="0 0 960 576" width="960" height="576" data-stage="0 80 960 400" role="img" aria-labelledby="dg-title dg-desc">
+<!-- @generated:base (npm run sync; do not edit by hand) -->
+<title id="dg-title">Write-Ahead Log</title>
+<desc id="dg-desc">Write-Ahead Log. Log each change before applying it, so a commit survives a crash, recovery replays the log, and replicas and backups follow it. Step 1, No log: force every page: Without a log, COMMIT must force 8 pages into 7 files, and a crash mid-write can tear a page. Step 2, Log first, pages later: Each change appends a WAL record; COMMIT flushes the log to 0/7600C308, and the pages stay dirty. Step 3, Replay after a crash: A crash wipes memory; recovery replays the WAL from the redo point, and a standby replays it too. Step 4, What durability costs: Each commit waits for one WAL flush; page images swell WAL after checkpoints. InnoDB does the same.</desc>
+<style>
+.diagram{--T:20s;--bg:#ffffff;--panel:#f6f8fa;--panel-2:#eaeef2;--line:#d1d9e0;--wire:#8c959f;--ink:#1f2328;--muted:#59636e;--faint:#6e7781;--blue:#0969da;--green:#1a7f37;--red:#cf222e;--amber:#bf8700;--amber-ink:#9a6700;--purple:#8250df;--teal:#1b7c83;--orange:#bc4c00;--pink:#bf3989;--blue-soft:rgba(9,105,218,0.1);--green-soft:rgba(26,127,55,0.1);--red-soft:rgba(207,34,46,0.1);--amber-soft:rgba(191,135,0,0.14);--purple-soft:rgba(130,80,223,0.1);--teal-soft:rgba(27,124,131,0.12);--orange-soft:rgba(188,76,0,0.1);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif}
+@media (prefers-color-scheme: dark){.diagram{--bg:#0d1117;--panel:#161b22;--panel-2:#21262d;--line:#3d444d;--wire:#6e7681;--ink:#e6edf3;--muted:#9198a1;--faint:#7d8590;--blue:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922;--amber-ink:#d29922;--purple:#a371f7;--teal:#39c5cf;--orange:#db6d28;--pink:#db61a2;--blue-soft:rgba(68,147,248,0.16);--green-soft:rgba(63,185,80,0.16);--red-soft:rgba(248,81,73,0.16);--amber-soft:rgba(210,153,34,0.18);--purple-soft:rgba(163,113,247,0.18);--teal-soft:rgba(57,197,207,0.16);--orange-soft:rgba(219,109,40,0.16)}
+}
+.diagram .bg{fill:var(--bg)}
+.diagram text{fill:var(--ink);font-size:14px}
+.diagram .eyebrow{font-size:11px;font-weight:700;letter-spacing:0.12em;fill:var(--muted)}
+.diagram .title{font-size:26px;font-weight:700;letter-spacing:-0.01em}
+.diagram .caption{font-size:16px}
+.diagram .step{font-size:12px;fill:var(--faint)}
+.diagram .step.on{fill:var(--ink);font-weight:600}
+.diagram .track{fill:var(--line)}
+.diagram .bar{fill:var(--blue);transform-box:fill-box;transform-origin:0 50%}
+.diagram .box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.diagram .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 6}
+.diagram .wire{fill:none;stroke:var(--wire);stroke-width:2}
+.diagram .dash{stroke-dasharray:6 5}
+.diagram .pkt{stroke:var(--bg);stroke-width:2}
+.diagram .label{font-size:15px;font-weight:600}
+.diagram .sub{font-size:12px;fill:var(--muted)}
+.diagram .tiny{font-size:11px;fill:var(--muted)}
+.diagram .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+.diagram .b{font-weight:700}
+.diagram .sb{font-weight:600}
+.diagram .mid{text-anchor:middle}
+.diagram .end{text-anchor:end}
+.diagram .none{fill:none}
+.diagram .f-bg{fill:var(--bg)}
+.diagram .f-panel{fill:var(--panel)}
+.diagram .f-panel-2{fill:var(--panel-2)}
+.diagram .f-line{fill:var(--line)}
+.diagram .f-wire{fill:var(--wire)}
+.diagram .f-ink{fill:var(--ink)}
+.diagram .f-muted{fill:var(--muted)}
+.diagram .f-faint{fill:var(--faint)}
+.diagram .f-blue{fill:var(--blue)}
+.diagram .f-green{fill:var(--green)}
+.diagram .f-red{fill:var(--red)}
+.diagram .f-amber{fill:var(--amber)}
+.diagram .f-amber-ink{fill:var(--amber-ink)}
+.diagram .f-purple{fill:var(--purple)}
+.diagram .f-teal{fill:var(--teal)}
+.diagram .f-orange{fill:var(--orange)}
+.diagram .f-pink{fill:var(--pink)}
+.diagram .f-blue-soft{fill:var(--blue-soft)}
+.diagram .f-green-soft{fill:var(--green-soft)}
+.diagram .f-red-soft{fill:var(--red-soft)}
+.diagram .f-amber-soft{fill:var(--amber-soft)}
+.diagram .f-purple-soft{fill:var(--purple-soft)}
+.diagram .f-teal-soft{fill:var(--teal-soft)}
+.diagram .f-orange-soft{fill:var(--orange-soft)}
+.diagram .s-bg{stroke:var(--bg)}
+.diagram .s-line{stroke:var(--line)}
+.diagram .s-wire{stroke:var(--wire)}
+.diagram .s-ink{stroke:var(--ink)}
+.diagram .s-muted{stroke:var(--muted)}
+.diagram .s-blue{stroke:var(--blue)}
+.diagram .s-green{stroke:var(--green)}
+.diagram .s-red{stroke:var(--red)}
+.diagram .s-amber{stroke:var(--amber)}
+.diagram .s-purple{stroke:var(--purple)}
+.diagram .s-teal{stroke:var(--teal)}
+.diagram .s-orange{stroke:var(--orange)}
+.diagram .s-pink{stroke:var(--pink)}
+@media (prefers-reduced-motion: reduce){.diagram:not(.live),.diagram:not(.live) *{animation:none !important}
+}
+.diagram .pulse{animation:pulse 1s ease-in-out infinite}
+.diagram .spin{transform-box:fill-box;transform-origin:50% 50%;animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}
+50%{opacity:0.35}
+}
+@keyframes spin{to{transform:rotate(360deg)}
+}
+.diagram .p1{opacity:1;animation:p1 var(--T) linear infinite}
+@keyframes p1{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p2{opacity:0;animation:p2 var(--T) linear infinite}
+@keyframes p2{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p12{opacity:1;animation:p12 var(--T) linear infinite}
+@keyframes p12{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}100%{opacity:0}}
+.diagram .p3{opacity:0;animation:p3 var(--T) linear infinite}
+@keyframes p3{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p13{opacity:1;animation:p13 var(--T) linear infinite}
+@keyframes p13{0%{opacity:0}1.5%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p23{opacity:0;animation:p23 var(--T) linear infinite}
+@keyframes p23{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p123{opacity:1;animation:p123 var(--T) linear infinite}
+@keyframes p123{0%{opacity:0}1.5%{opacity:1}25%{opacity:1}50%{opacity:1}73.5%{opacity:1}75%{opacity:0}100%{opacity:0}}
+.diagram .p4{opacity:0;animation:p4 var(--T) linear infinite}
+@keyframes p4{0%{opacity:0}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p14{opacity:1;animation:p14 var(--T) linear infinite}
+@keyframes p14{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p24{opacity:0;animation:p24 var(--T) linear infinite}
+@keyframes p24{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p124{opacity:1;animation:p124 var(--T) linear infinite}
+@keyframes p124{0%{opacity:1}25%{opacity:1}48.5%{opacity:1}50%{opacity:0}75%{opacity:0}76.5%{opacity:1}100%{opacity:1}}
+.diagram .p34{opacity:0;animation:p34 var(--T) linear infinite}
+@keyframes p34{0%{opacity:0}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .p134{opacity:1;animation:p134 var(--T) linear infinite}
+@keyframes p134{0%{opacity:1}23.5%{opacity:1}25%{opacity:0}50%{opacity:0}51.5%{opacity:1}75%{opacity:1}100%{opacity:1}}
+.diagram .p234{opacity:0;animation:p234 var(--T) linear infinite}
+@keyframes p234{0%{opacity:0}25%{opacity:0}26.5%{opacity:1}50%{opacity:1}75%{opacity:1}98.5%{opacity:1}100%{opacity:0}}
+.diagram .bar1{transform:scaleX(1);animation:bar1 var(--T) linear infinite}
+@keyframes bar1{0%{transform:scaleX(0)}25%,100%{transform:scaleX(1)}}
+.diagram .bar2{transform:scaleX(0);animation:bar2 var(--T) linear infinite}
+@keyframes bar2{0%,25%{transform:scaleX(0)}50%,100%{transform:scaleX(1)}}
+.diagram .bar3{transform:scaleX(0);animation:bar3 var(--T) linear infinite}
+@keyframes bar3{0%,50%{transform:scaleX(0)}75%,100%{transform:scaleX(1)}}
+.diagram .bar4{transform:scaleX(0);animation:bar4 var(--T) linear infinite}
+@keyframes bar4{0%,75%{transform:scaleX(0)}100%,100%{transform:scaleX(1)}}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-wire" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-ink" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-muted" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-blue" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-green" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-red" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-amber" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-purple" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-teal" d="M0 0L10 5L0 10z"/></marker>
+<marker id="ah-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="f-orange" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<!-- @end:base -->
+<!-- @generated:chrome (npm run sync; do not edit by hand) -->
+<rect class="bg" width="960" height="576"/>
+<g class="meta">
+  <text class="eyebrow" x="40" y="34">DATABASE INTERNALS &amp; PERFORMANCE</text>
+  <text class="title" x="40" y="64">Write-Ahead Log</text>
+  <rect class="track" x="40" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar1" x="40" y="494" width="214" height="4" rx="2"/>
+  <text class="step p234" x="40" y="518">1 · No log: force every page</text>
+  <text class="step on p1" x="40" y="518">1 · No log: force every page</text>
+  <rect class="track" x="262" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar2" x="262" y="494" width="214" height="4" rx="2"/>
+  <text class="step p134" x="262" y="518">2 · Log first, pages later</text>
+  <text class="step on p2" x="262" y="518">2 · Log first, pages later</text>
+  <rect class="track" x="484" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar3" x="484" y="494" width="214" height="4" rx="2"/>
+  <text class="step p124" x="484" y="518">3 · Replay after a crash</text>
+  <text class="step on p3" x="484" y="518">3 · Replay after a crash</text>
+  <rect class="track" x="706" y="494" width="214" height="4" rx="2"/>
+  <rect class="bar bar4" x="706" y="494" width="214" height="4" rx="2"/>
+  <text class="step p123" x="706" y="518">4 · What durability costs</text>
+  <text class="step on p4" x="706" y="518">4 · What durability costs</text>
+  <text class="caption p1" x="40" y="552">Without a log, COMMIT must force 8 pages into 7 files, and a crash mid-write can tear a page.</text>
+  <text class="caption p2" x="40" y="552">Each change appends a WAL record; COMMIT flushes the log to 0/7600C308, and the pages stay dirty.</text>
+  <text class="caption p3" x="40" y="552">A crash wipes memory; recovery replays the WAL from the redo point, and a standby replays it too.</text>
+  <text class="caption p4" x="40" y="552">Each commit waits for one WAL flush; page images swell WAL after checkpoints. InnoDB does the same.</text>
+</g>
+<!-- @end:chrome -->
+<style>
+/* Write-Ahead Log. One order through PostgreSQL 18.6's write path, from one run on a laptop
+   (throwaway server loaded with the Acme Shop sample data; LSNs, pages and records are from that run).
+   0-25%   no log: the order dirties 8 pages; COMMIT would force them to 7 files; the crash at 3.35 s
+           tears page 5057 after 4 of 8 writes (6-7 ms per order for a checkpoint writing such pages)
+   25-50%  CHECKPOINT (redo 0/76000028); 12 WAL records 6.0-8.15 s (7 page images), pages turn dirty with
+           their LSNs; COMMIT flushes the WAL to 0/7600C308 (8.3-8.6 s), 0.37 ms; pages stay dirty
+   50-75%  crash at 10.4 s: memory lost; recovery replays pg_wal from the redo point (11.2-12.6 s),
+           end-of-recovery checkpoint writes the pages (12.8-13.3 s); standby, archive, logical decoding
+   75-100% costs: pgbench commit rates, page images after a checkpoint, checkpoint spreading, InnoDB */
+.diagram .wl-hd{font-size:10px;font-weight:700;letter-spacing:.1em;fill:var(--muted)}
+.diagram .wl-10{font-size:10px}
+.diagram .wl-95{font-size:9.5px}
+.diagram .wl-9{font-size:9px}
+.diagram .wl-pan{fill:var(--panel);stroke:var(--line);stroke-width:1.2}
+.diagram .wl-in{fill:var(--bg);stroke:var(--line);stroke-width:1.2}
+.diagram .wl-row{fill:var(--bg);stroke:var(--line);stroke-width:.8}
+.diagram .wl-ck{fill:var(--amber)}
+.diagram .wl-ot{fill:var(--wire)}
+.diagram .wl-of{fill:var(--panel-2);stroke:var(--wire);stroke-width:.8}
+.diagram .wl-rc{fill:var(--teal)}
+.diagram .wl-fp{fill:var(--teal);fill-opacity:.22;stroke:var(--teal);stroke-width:1}
+.diagram .wl-cm{fill:var(--green)}
+.diagram .wl-dirty{fill:var(--purple-soft);stroke:var(--purple);stroke-width:1.5}
+.diagram .wl-lost{fill:var(--red-soft);stroke:var(--red);stroke-width:1.5;stroke-dasharray:4 3}
+.diagram .wl-ok{fill:var(--green-soft);stroke:var(--green);stroke-width:1.5}
+.diagram .wl-hl{fill:var(--blue-soft);stroke:var(--blue);stroke-width:1.2}
+.diagram .wl-bar{fill:var(--panel-2);stroke:var(--line);stroke-width:1}
+.diagram .wl-sec{fill:var(--bg);stroke:var(--line);stroke-width:1}
+.diagram .wl-thin{stroke-width:1.5}
+.diagram .wl-hb{opacity:0;animation:wl-hb var(--T) linear infinite}
+.diagram .wl-ho{opacity:0;animation:wl-ho var(--T) linear infinite}
+.diagram .wl-hi{opacity:0;animation:wl-hi var(--T) linear infinite}
+.diagram .wl-hc{opacity:0;animation:wl-hc var(--T) linear infinite}
+.diagram .wl-c1a{animation:wl-c1a var(--T) linear infinite}
+.diagram .wl-c1b{animation:wl-c1b var(--T) linear infinite}
+.diagram .wl-c1c{animation:wl-c1c var(--T) linear infinite}
+.diagram .wl-c2a{opacity:0;animation:wl-c2a var(--T) linear infinite}
+.diagram .wl-i0{opacity:0;animation:wl-i0 var(--T) linear infinite}
+.diagram .wl-i1{opacity:0;animation:wl-i1 var(--T) linear infinite}
+.diagram .wl-i2{opacity:0;animation:wl-i2 var(--T) linear infinite}
+.diagram .wl-i3{opacity:0;animation:wl-i3 var(--T) linear infinite}
+.diagram .wl-f0{opacity:0;animation:wl-f0 var(--T) linear infinite}
+.diagram .wl-f1{opacity:0;animation:wl-f1 var(--T) linear infinite}
+.diagram .wl-fs{opacity:0;animation:wl-fs var(--T) linear infinite}
+.diagram .wl-tc{opacity:0;animation:wl-tc var(--T) linear infinite}
+.diagram .wl-tn{opacity:0;animation:wl-tn var(--T) linear infinite}
+.diagram .wl-lg0{opacity:0;animation:wl-lg0 var(--T) linear infinite}
+.diagram .wl-lg1{opacity:0;animation:wl-lg1 var(--T) linear infinite}
+.diagram .wl-lg2{opacity:0;animation:wl-lg2 var(--T) linear infinite}
+.diagram .wl-lg3{opacity:0;animation:wl-lg3 var(--T) linear infinite}
+.diagram .wl-lg4{opacity:0;animation:wl-lg4 var(--T) linear infinite}
+.diagram .wl-lg5{opacity:0;animation:wl-lg5 var(--T) linear infinite}
+.diagram .wl-lg6{opacity:0;animation:wl-lg6 var(--T) linear infinite}
+.diagram .wl-lg7{opacity:0;animation:wl-lg7 var(--T) linear infinite}
+.diagram .wl-lg8{opacity:0;animation:wl-lg8 var(--T) linear infinite}
+.diagram .wl-lgn{opacity:0;animation:wl-lgn var(--T) linear infinite}
+.diagram .wl-s{animation:wl-s var(--T) linear infinite}
+.diagram .wl-torn{animation:wl-torn var(--T) linear infinite}
+.diagram .wl-m0{opacity:0;animation:wl-m0 var(--T) linear infinite}
+.diagram .wl-m1{opacity:0;animation:wl-m1 var(--T) linear infinite}
+.diagram .wl-m2{opacity:0;animation:wl-m2 var(--T) linear infinite}
+.diagram .wl-m3{opacity:0;animation:wl-m3 var(--T) linear infinite}
+.diagram .wl-m4{opacity:0;animation:wl-m4 var(--T) linear infinite}
+.diagram .wl-m5{opacity:0;animation:wl-m5 var(--T) linear infinite}
+.diagram .wl-m6{opacity:0;animation:wl-m6 var(--T) linear infinite}
+.diagram .wl-m7{opacity:0;animation:wl-m7 var(--T) linear infinite}
+.diagram .wl-m8{opacity:0;animation:wl-m8 var(--T) linear infinite}
+.diagram .wl-m9{opacity:0;animation:wl-m9 var(--T) linear infinite}
+.diagram .wl-m10{opacity:0;animation:wl-m10 var(--T) linear infinite}
+.diagram .wl-m11{opacity:0;animation:wl-m11 var(--T) linear infinite}
+.diagram .wl-m12{opacity:0;animation:wl-m12 var(--T) linear infinite}
+.diagram .wl-m13{opacity:0;animation:wl-m13 var(--T) linear infinite}
+.diagram .wl-m14{opacity:0;animation:wl-m14 var(--T) linear infinite}
+.diagram .wl-mf0{opacity:0;animation:wl-mf0 var(--T) linear infinite}
+.diagram .wl-mf1{opacity:0;animation:wl-mf1 var(--T) linear infinite}
+.diagram .wl-d0{opacity:0;animation:wl-d0 var(--T) linear infinite}
+.diagram .wl-d1{opacity:0;animation:wl-d1 var(--T) linear infinite}
+.diagram .wl-d2{opacity:0;animation:wl-d2 var(--T) linear infinite}
+.diagram .wl-d3{opacity:0;animation:wl-d3 var(--T) linear infinite}
+.diagram .wl-d4{opacity:0;animation:wl-d4 var(--T) linear infinite}
+.diagram .wl-d5{opacity:0;animation:wl-d5 var(--T) linear infinite}
+.diagram .wl-d6{opacity:0;animation:wl-d6 var(--T) linear infinite}
+.diagram .wl-d7{opacity:0;animation:wl-d7 var(--T) linear infinite}
+.diagram .wl-d8{opacity:0;animation:wl-d8 var(--T) linear infinite}
+.diagram .wl-d9{opacity:0;animation:wl-d9 var(--T) linear infinite}
+.diagram .wl-cmk{opacity:0;animation:wl-cmk var(--T) linear infinite}
+.diagram .wl-rdk{opacity:0;animation:wl-rdk var(--T) linear infinite}
+.diagram .wl-df0{opacity:0;animation:wl-df0 var(--T) linear infinite}
+.diagram .wl-df1{opacity:0;animation:wl-df1 var(--T) linear infinite}
+.diagram .wl-df2{opacity:0;animation:wl-df2 var(--T) linear infinite}
+.diagram .wl-fla{opacity:0;animation:wl-fla var(--T) linear infinite}
+.diagram .wl-cur{opacity:0;animation:wl-cur var(--T) linear infinite}
+.diagram .wl-aseq{animation:wl-aseq var(--T) linear infinite}
+.diagram .wl-aord{animation:wl-aord var(--T) linear infinite}
+.diagram .wl-aopk{animation:wl-aopk var(--T) linear infinite}
+.diagram .wl-acus{animation:wl-acus var(--T) linear infinite}
+.diagram .wl-aitm{animation:wl-aitm var(--T) linear infinite}
+.diagram .wl-aipk{animation:wl-aipk var(--T) linear infinite}
+.diagram .wl-apr0{animation:wl-apr0 var(--T) linear infinite}
+.diagram .wl-apr1{animation:wl-apr1 var(--T) linear infinite}
+.diagram .wl-witm{opacity:0;animation:wl-witm var(--T) linear infinite}
+.diagram .wl-kitm{animation:wl-kitm var(--T) linear infinite}
+.diagram .wl-wipk{opacity:0;animation:wl-wipk var(--T) linear infinite}
+.diagram .wl-kipk{animation:wl-kipk var(--T) linear infinite}
+.diagram .wl-wpr0{opacity:0;animation:wl-wpr0 var(--T) linear infinite}
+.diagram .wl-kpr0{animation:wl-kpr0 var(--T) linear infinite}
+.diagram .wl-wpr1{opacity:0;animation:wl-wpr1 var(--T) linear infinite}
+.diagram .wl-kpr1{animation:wl-kpr1 var(--T) linear infinite}
+.diagram .wl-word{opacity:0;animation:wl-word var(--T) linear infinite}
+.diagram .wl-kord{animation:wl-kord var(--T) linear infinite}
+.diagram .wl-bolt1{animation:wl-bolt1 var(--T) linear infinite}
+.diagram .wl-ft1{animation:wl-ft1 var(--T) linear infinite}
+.diagram .wl-bseq{opacity:0;animation:wl-bseq var(--T) linear infinite}
+.diagram .wl-cseq{opacity:0;animation:wl-cseq var(--T) linear infinite}
+.diagram .wl-rseq{opacity:0;animation:wl-rseq var(--T) linear infinite}
+.diagram .wl-bord{opacity:0;animation:wl-bord var(--T) linear infinite}
+.diagram .wl-bl0{opacity:0;animation:wl-bl0 var(--T) linear infinite}
+.diagram .wl-bl1{opacity:0;animation:wl-bl1 var(--T) linear infinite}
+.diagram .wl-cord{opacity:0;animation:wl-cord var(--T) linear infinite}
+.diagram .wl-rord{opacity:0;animation:wl-rord var(--T) linear infinite}
+.diagram .wl-bopk{opacity:0;animation:wl-bopk var(--T) linear infinite}
+.diagram .wl-copk{opacity:0;animation:wl-copk var(--T) linear infinite}
+.diagram .wl-ropk{opacity:0;animation:wl-ropk var(--T) linear infinite}
+.diagram .wl-bcus{opacity:0;animation:wl-bcus var(--T) linear infinite}
+.diagram .wl-ccus{opacity:0;animation:wl-ccus var(--T) linear infinite}
+.diagram .wl-rcus{opacity:0;animation:wl-rcus var(--T) linear infinite}
+.diagram .wl-bitm{opacity:0;animation:wl-bitm var(--T) linear infinite}
+.diagram .wl-citm{opacity:0;animation:wl-citm var(--T) linear infinite}
+.diagram .wl-ritm{opacity:0;animation:wl-ritm var(--T) linear infinite}
+.diagram .wl-bipk{opacity:0;animation:wl-bipk var(--T) linear infinite}
+.diagram .wl-cipk{opacity:0;animation:wl-cipk var(--T) linear infinite}
+.diagram .wl-ripk{opacity:0;animation:wl-ripk var(--T) linear infinite}
+.diagram .wl-bpr0{opacity:0;animation:wl-bpr0 var(--T) linear infinite}
+.diagram .wl-cpr0{opacity:0;animation:wl-cpr0 var(--T) linear infinite}
+.diagram .wl-rpr0{opacity:0;animation:wl-rpr0 var(--T) linear infinite}
+.diagram .wl-bpr1{opacity:0;animation:wl-bpr1 var(--T) linear infinite}
+.diagram .wl-cpr1{opacity:0;animation:wl-cpr1 var(--T) linear infinite}
+.diagram .wl-rpr1{opacity:0;animation:wl-rpr1 var(--T) linear infinite}
+.diagram .wl-sf0{opacity:0;animation:wl-sf0 var(--T) linear infinite}
+.diagram .wl-sf1{opacity:0;animation:wl-sf1 var(--T) linear infinite}
+.diagram .wl-sf2{opacity:0;animation:wl-sf2 var(--T) linear infinite}
+.diagram .wl-dla{opacity:0;animation:wl-dla var(--T) linear infinite}
+.diagram .wl-ft2{opacity:0;animation:wl-ft2 var(--T) linear infinite}
+.diagram .wl-eseq{opacity:0;animation:wl-eseq var(--T) linear infinite}
+.diagram .wl-gseq{opacity:0;animation:wl-gseq var(--T) linear infinite}
+.diagram .wl-eord{opacity:0;animation:wl-eord var(--T) linear infinite}
+.diagram .wl-gord{opacity:0;animation:wl-gord var(--T) linear infinite}
+.diagram .wl-eopk{opacity:0;animation:wl-eopk var(--T) linear infinite}
+.diagram .wl-gopk{opacity:0;animation:wl-gopk var(--T) linear infinite}
+.diagram .wl-ecus{opacity:0;animation:wl-ecus var(--T) linear infinite}
+.diagram .wl-gcus{opacity:0;animation:wl-gcus var(--T) linear infinite}
+.diagram .wl-eitm{opacity:0;animation:wl-eitm var(--T) linear infinite}
+.diagram .wl-gitm{opacity:0;animation:wl-gitm var(--T) linear infinite}
+.diagram .wl-eipk{opacity:0;animation:wl-eipk var(--T) linear infinite}
+.diagram .wl-gipk{opacity:0;animation:wl-gipk var(--T) linear infinite}
+.diagram .wl-epr0{opacity:0;animation:wl-epr0 var(--T) linear infinite}
+.diagram .wl-gpr0{opacity:0;animation:wl-gpr0 var(--T) linear infinite}
+.diagram .wl-epr1{opacity:0;animation:wl-epr1 var(--T) linear infinite}
+.diagram .wl-gpr1{opacity:0;animation:wl-gpr1 var(--T) linear infinite}
+.diagram .wl-eca{opacity:0;animation:wl-eca var(--T) linear infinite}
+.diagram .wl-ft3{opacity:0;animation:wl-ft3 var(--T) linear infinite}
+.diagram .wl-bolt2{opacity:0;animation:wl-bolt2 var(--T) linear infinite}
+.diagram .wl-lr1{animation:wl-lr1 var(--T) linear infinite}
+.diagram .wl-lr2{opacity:0;animation:wl-lr2 var(--T) linear infinite}
+.diagram .wl-x0{opacity:0;animation:wl-x0 var(--T) linear infinite}
+.diagram .wl-x1{opacity:0;animation:wl-x1 var(--T) linear infinite}
+.diagram .wl-x2{opacity:0;animation:wl-x2 var(--T) linear infinite}
+.diagram .wl-st{opacity:0;animation:wl-st var(--T) linear infinite}
+.diagram .wl-ga0{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-ga0 var(--T) linear infinite}
+.diagram .wl-ga1{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-ga1 var(--T) linear infinite}
+.diagram .wl-ga2{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-ga2 var(--T) linear infinite}
+.diagram .wl-gb0{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-gb0 var(--T) linear infinite}
+.diagram .wl-gb1{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-gb1 var(--T) linear infinite}
+.diagram .wl-gb2{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-gb2 var(--T) linear infinite}
+.diagram .wl-gb3{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-gb3 var(--T) linear infinite}
+.diagram .wl-gc{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);animation:wl-gc var(--T) linear infinite}
+@keyframes wl-hb{0%{opacity:0}2%{opacity:0}3.25%{opacity:1}3.5%{opacity:1}4.75%{opacity:0}28%{opacity:0}29.25%{opacity:1}29.5%{opacity:1}30.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-ho{0%{opacity:0}3.5%{opacity:0}4.75%{opacity:1}7.5%{opacity:1}8.75%{opacity:0}29.5%{opacity:0}30.75%{opacity:1}35%{opacity:1}36.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-hi{0%{opacity:0}7.5%{opacity:0}8.75%{opacity:1}11.5%{opacity:1}12.75%{opacity:0}35%{opacity:0}36.25%{opacity:1}40.25%{opacity:1}41.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-hc{0%{opacity:0}11.5%{opacity:0}12.75%{opacity:1}23.5%{opacity:1}24.75%{opacity:0}40.25%{opacity:0}41.5%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-c1a{0%{opacity:0}11.75%{opacity:0}13%{opacity:1}23.5%{opacity:1}24.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-c1b{0%{opacity:0}16.75%{opacity:0}18%{opacity:1}23.5%{opacity:1}24.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-c1c{0%{opacity:0}18%{opacity:0}19.25%{opacity:1}23.5%{opacity:1}24.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-c2a{0%{opacity:0}43.75%{opacity:0}45%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-i0{0%{opacity:0}25%{opacity:0}25.75%{opacity:1}33.5%{opacity:1}34.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-i1{0%{opacity:0}33.5%{opacity:0}34.25%{opacity:1}39.5%{opacity:1}40.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-i2{0%{opacity:0}39.5%{opacity:0}40.25%{opacity:1}40.75%{opacity:1}41.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-i3{0%{opacity:0}40.75%{opacity:0}41.5%{opacity:1}48.75%{opacity:1}49.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-f0{0%{opacity:0}25%{opacity:0}25.75%{opacity:1}42.75%{opacity:1}43.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-f1{0%{opacity:0}42.75%{opacity:0}43.5%{opacity:1}48.75%{opacity:1}49.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-fs{0%{opacity:0}43.25%{opacity:0}44.5%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-tc{0%{opacity:0}43%{opacity:0}44.25%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-tn{0%{opacity:0}45%{opacity:0}46.25%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg0{0%{opacity:0}52%{opacity:0}52.75%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg1{0%{opacity:0}52.5%{opacity:0}53.25%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg2{0%{opacity:0}54.75%{opacity:0}55.5%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg3{0%{opacity:0}55.25%{opacity:0}56%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg4{0%{opacity:0}63%{opacity:0}63.75%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg5{0%{opacity:0}64%{opacity:0}64.75%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg6{0%{opacity:0}66.75%{opacity:0}67.5%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg7{0%{opacity:0}67.5%{opacity:0}68.25%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lg8{0%{opacity:0}68%{opacity:0}68.75%{opacity:1}73.5%{opacity:1}74.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lgn{0%{opacity:0}68.5%{opacity:0}69.75%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-s{0%{opacity:0}15.25%{opacity:0}16.75%{opacity:1}23.5%{opacity:1}25%{opacity:0}100%{opacity:0}}
+@keyframes wl-torn{0%{opacity:0}16.75%{opacity:0}18%{opacity:1}23.5%{opacity:1}24.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-m0{0%{opacity:0}25%{opacity:0}25.6%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m1{0%{opacity:0}30%{opacity:0}30.6%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m2{0%{opacity:0}30.75%{opacity:0}31.35%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m3{0%{opacity:0}31.5%{opacity:0}32.1%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m4{0%{opacity:0}32.25%{opacity:0}32.85%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m5{0%{opacity:0}33%{opacity:0}33.6%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m6{0%{opacity:0}35.5%{opacity:0}36.1%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m7{0%{opacity:0}36.25%{opacity:0}36.85%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m8{0%{opacity:0}36.9%{opacity:0}37.5%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m9{0%{opacity:0}37.3%{opacity:0}37.9%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m10{0%{opacity:0}37.7%{opacity:0}38.3%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m11{0%{opacity:0}38.25%{opacity:0}38.85%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m12{0%{opacity:0}39%{opacity:0}39.6%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m13{0%{opacity:0}40.75%{opacity:0}41.35%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-m14{0%{opacity:0}46.5%{opacity:0}47.1%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-mf0{0%{opacity:0}44.5%{opacity:0}45.75%{opacity:1}51.5%{opacity:1}52.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-mf1{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}73.5%{opacity:1}74.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-d0{0%{opacity:0}25%{opacity:0}25.5%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d1{0%{opacity:0}41.5%{opacity:0}42%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d2{0%{opacity:0}41.75%{opacity:0}42.25%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d3{0%{opacity:0}42%{opacity:0}42.5%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d4{0%{opacity:0}42.25%{opacity:0}42.75%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d5{0%{opacity:0}42.5%{opacity:0}43%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d6{0%{opacity:0}42.75%{opacity:0}43.25%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d7{0%{opacity:0}43%{opacity:0}43.5%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d8{0%{opacity:0}47.25%{opacity:0}47.75%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-d9{0%{opacity:0}66%{opacity:0}66.5%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-cmk{0%{opacity:0}43%{opacity:0}44.25%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-rdk{0%{opacity:0}25%{opacity:0}26.25%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-df0{0%{opacity:0}25%{opacity:0}26.25%{opacity:1}42.75%{opacity:1}44%{opacity:0}100%{opacity:0}}
+@keyframes wl-df1{0%{opacity:0}43%{opacity:0}44.25%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-df2{0%{opacity:0}55.5%{opacity:0}56.75%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-fla{0%{opacity:0}41.5%{opacity:0}42.75%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-cur{0%{transform:translate(278px, 262px);opacity:0}56%{transform:translate(278px, 262px);opacity:0}56.1%{opacity:1}56.875%{transform:translate(500px, 262px);opacity:1;transform:translate(278px, 276px);opacity:0}56.975%{transform:translate(500px, 262px);opacity:0;opacity:1}57.75%{transform:translate(500px, 276px);opacity:1;transform:translate(278px, 290px);opacity:0}57.85%{transform:translate(500px, 276px);opacity:0;opacity:1}58.625%{transform:translate(500px, 290px);opacity:1;transform:translate(278px, 304px);opacity:0}58.725%{transform:translate(500px, 290px);opacity:0;opacity:1}59.5%{transform:translate(500px, 304px);opacity:1;transform:translate(278px, 318px);opacity:0}59.6%{transform:translate(500px, 304px);opacity:0;opacity:1}60.375%{transform:translate(500px, 318px);opacity:1;transform:translate(278px, 332px);opacity:0}60.475%{transform:translate(500px, 318px);opacity:0;opacity:1}61.25%{transform:translate(500px, 332px);opacity:1;transform:translate(278px, 346px);opacity:0}61.35%{transform:translate(500px, 332px);opacity:0;opacity:1}62.125%{transform:translate(500px, 346px);opacity:1;transform:translate(278px, 360px);opacity:0}62.225%{transform:translate(500px, 346px);opacity:0;opacity:1}62.68%{transform:translate(418.701px, 360px);opacity:1}62.78%{transform:translate(418.701px, 360px);opacity:0}100%{transform:translate(418.701px, 360px);opacity:0}}
+@keyframes wl-aseq{0%{opacity:0}4.25%{opacity:0}5%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-aord{0%{opacity:0}5%{opacity:0}5.75%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-aopk{0%{opacity:0}5.75%{opacity:0}6.5%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-acus{0%{opacity:0}6.5%{opacity:0}7.25%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-aitm{0%{opacity:0}8.25%{opacity:0}9%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-aipk{0%{opacity:0}9%{opacity:0}9.75%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-apr0{0%{opacity:0}10%{opacity:0}10.75%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-apr1{0%{opacity:0}10.75%{opacity:0}11.5%{opacity:1}23.5%{opacity:1}24.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-witm{0%{transform:translate(571px, 206px);opacity:0}12.25%{transform:translate(571px, 206px);opacity:0}12.5%{opacity:1}13.75%{transform:translate(862.5px, 332px);opacity:1}14%{transform:translate(862.5px, 332px);opacity:0}100%{transform:translate(862.5px, 332px);opacity:0}}
+@keyframes wl-kitm{0%{opacity:0}13.75%{opacity:0}14.25%{opacity:1}23.5%{opacity:1}24%{opacity:0}100%{opacity:0}}
+@keyframes wl-wipk{0%{transform:translate(673px, 206px);opacity:0}13%{transform:translate(673px, 206px);opacity:0}13.25%{opacity:1}14.5%{transform:translate(862.5px, 347px);opacity:1}14.75%{transform:translate(862.5px, 347px);opacity:0}100%{transform:translate(862.5px, 347px);opacity:0}}
+@keyframes wl-kipk{0%{opacity:0}14.5%{opacity:0}15%{opacity:1}23.5%{opacity:1}24%{opacity:0}100%{opacity:0}}
+@keyframes wl-wpr0{0%{transform:translate(775px, 206px);opacity:0}13.75%{transform:translate(775px, 206px);opacity:0}14%{opacity:1}15.25%{transform:translate(654.5px, 362px);opacity:1}15.5%{transform:translate(654.5px, 362px);opacity:0}100%{transform:translate(654.5px, 362px);opacity:0}}
+@keyframes wl-kpr0{0%{opacity:0}15.25%{opacity:0}15.75%{opacity:1}23.5%{opacity:1}24%{opacity:0}100%{opacity:0}}
+@keyframes wl-wpr1{0%{transform:translate(877px, 206px);opacity:0}14.5%{transform:translate(877px, 206px);opacity:0}14.75%{opacity:1}16%{transform:translate(658.915px, 362px);opacity:1}16.25%{transform:translate(658.915px, 362px);opacity:0}100%{transform:translate(658.915px, 362px);opacity:0}}
+@keyframes wl-kpr1{0%{opacity:0}16%{opacity:0}16.5%{opacity:1}23.5%{opacity:1}24%{opacity:0}100%{opacity:0}}
+@keyframes wl-word{0%{transform:translate(673px, 156px);opacity:0}15.25%{transform:translate(673px, 156px);opacity:0}15.5%{opacity:1}16.75%{transform:translate(862.5px, 272px);opacity:1}17%{transform:translate(862.5px, 272px);opacity:0}100%{transform:translate(862.5px, 272px);opacity:0}}
+@keyframes wl-kord{0%{opacity:0}16.75%{opacity:0}17.25%{opacity:1}23.5%{opacity:1}24%{opacity:0}100%{opacity:0}}
+@keyframes wl-bolt1{0%{opacity:0}16.75%{opacity:0}18%{opacity:1}23.5%{opacity:1}24.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-ft1{0%{opacity:0}18%{opacity:0}19.25%{opacity:1}23.5%{opacity:1}24.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-bseq{0%{opacity:0}30.75%{opacity:0}31.35%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-cseq{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}56.9%{opacity:1}57.4%{opacity:0}100%{opacity:0}}
+@keyframes wl-rseq{0%{opacity:0}56.9%{opacity:0}57.4%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-bord{0%{opacity:0}31.5%{opacity:0}32.1%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-bl0{0%{opacity:0}31.5%{opacity:0}32.1%{opacity:1}37.7%{opacity:1}37.95%{opacity:0}100%{opacity:0}}
+@keyframes wl-bl1{0%{opacity:0}37.95%{opacity:0}38.2%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-cord{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}56.9%{opacity:1}57.4%{opacity:0}100%{opacity:0}}
+@keyframes wl-rord{0%{opacity:0}56.9%{opacity:0}57.4%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-bopk{0%{opacity:0}32.25%{opacity:0}32.85%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-copk{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}57.75%{opacity:1}58.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-ropk{0%{opacity:0}57.75%{opacity:0}58.25%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-bcus{0%{opacity:0}33%{opacity:0}33.6%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-ccus{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}57.85%{opacity:1}58.35%{opacity:0}100%{opacity:0}}
+@keyframes wl-rcus{0%{opacity:0}57.85%{opacity:0}58.35%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-bitm{0%{opacity:0}35.5%{opacity:0}36.1%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-citm{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}58.7%{opacity:1}59.2%{opacity:0}100%{opacity:0}}
+@keyframes wl-ritm{0%{opacity:0}58.7%{opacity:0}59.2%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-bipk{0%{opacity:0}36.25%{opacity:0}36.85%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-cipk{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}59.3%{opacity:1}59.8%{opacity:0}100%{opacity:0}}
+@keyframes wl-ripk{0%{opacity:0}59.3%{opacity:0}59.8%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-bpr0{0%{opacity:0}38.25%{opacity:0}38.85%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-cpr0{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}59.55%{opacity:1}60.05%{opacity:0}100%{opacity:0}}
+@keyframes wl-rpr0{0%{opacity:0}59.55%{opacity:0}60.05%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-bpr1{0%{opacity:0}39%{opacity:0}39.6%{opacity:1}52%{opacity:1}53.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-cpr1{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}60.45%{opacity:1}60.95%{opacity:0}100%{opacity:0}}
+@keyframes wl-rpr1{0%{opacity:0}60.45%{opacity:0}60.95%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-sf0{0%{opacity:0}44.5%{opacity:0}45.75%{opacity:1}51.5%{opacity:1}52.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-sf1{0%{opacity:0}52.5%{opacity:0}53.5%{opacity:1}56%{opacity:1}56.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-sf2{0%{opacity:0}57%{opacity:0}58%{opacity:1}73.5%{opacity:1}74.5%{opacity:0}100%{opacity:0}}
+@keyframes wl-dla{0%{opacity:0}44.75%{opacity:0}46%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-ft2{0%{opacity:0}45%{opacity:0}46.25%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-eseq{0%{transform:translate(571px, 156px);opacity:0}64%{transform:translate(571px, 156px);opacity:0}64.25%{opacity:1}65.5%{transform:translate(758.5px, 317px);opacity:1}65.75%{transform:translate(758.5px, 317px);opacity:0}100%{transform:translate(758.5px, 317px);opacity:0}}
+@keyframes wl-gseq{0%{opacity:0}65.5%{opacity:0}66%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-eord{0%{transform:translate(673px, 156px);opacity:0}64.3%{transform:translate(673px, 156px);opacity:0}64.55%{opacity:1}65.8%{transform:translate(862.5px, 272px);opacity:1}66.05%{transform:translate(862.5px, 272px);opacity:0}100%{transform:translate(862.5px, 272px);opacity:0}}
+@keyframes wl-gord{0%{opacity:0}65.8%{opacity:0}66.3%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-eopk{0%{transform:translate(775px, 156px);opacity:0}64.6%{transform:translate(775px, 156px);opacity:0}64.85%{opacity:1}66.1%{transform:translate(862.5px, 287px);opacity:1}66.35%{transform:translate(862.5px, 287px);opacity:0}100%{transform:translate(862.5px, 287px);opacity:0}}
+@keyframes wl-gopk{0%{opacity:0}66.1%{opacity:0}66.6%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-ecus{0%{transform:translate(877px, 156px);opacity:0}64.9%{transform:translate(877px, 156px);opacity:0}65.15%{opacity:1}66.4%{transform:translate(654.5px, 302px);opacity:1}66.65%{transform:translate(654.5px, 302px);opacity:0}100%{transform:translate(654.5px, 302px);opacity:0}}
+@keyframes wl-gcus{0%{opacity:0}66.4%{opacity:0}66.9%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-eitm{0%{transform:translate(571px, 206px);opacity:0}65.2%{transform:translate(571px, 206px);opacity:0}65.45%{opacity:1}66.7%{transform:translate(862.5px, 332px);opacity:1}66.95%{transform:translate(862.5px, 332px);opacity:0}100%{transform:translate(862.5px, 332px);opacity:0}}
+@keyframes wl-gitm{0%{opacity:0}66.7%{opacity:0}67.2%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-eipk{0%{transform:translate(673px, 206px);opacity:0}65.5%{transform:translate(673px, 206px);opacity:0}65.75%{opacity:1}67%{transform:translate(862.5px, 347px);opacity:1}67.25%{transform:translate(862.5px, 347px);opacity:0}100%{transform:translate(862.5px, 347px);opacity:0}}
+@keyframes wl-gipk{0%{opacity:0}67%{opacity:0}67.5%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-epr0{0%{transform:translate(775px, 206px);opacity:0}65.8%{transform:translate(775px, 206px);opacity:0}66.05%{opacity:1}67.3%{transform:translate(654.5px, 362px);opacity:1}67.55%{transform:translate(654.5px, 362px);opacity:0}100%{transform:translate(654.5px, 362px);opacity:0}}
+@keyframes wl-gpr0{0%{opacity:0}67.3%{opacity:0}67.8%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-epr1{0%{transform:translate(877px, 206px);opacity:0}66.1%{transform:translate(877px, 206px);opacity:0}66.35%{opacity:1}67.6%{transform:translate(658.915px, 362px);opacity:1}67.85%{transform:translate(658.915px, 362px);opacity:0}100%{transform:translate(658.915px, 362px);opacity:0}}
+@keyframes wl-gpr1{0%{opacity:0}67.6%{opacity:0}68.1%{opacity:1}73.5%{opacity:1}74%{opacity:0}100%{opacity:0}}
+@keyframes wl-eca{0%{opacity:0}64%{opacity:0}65.25%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-ft3{0%{opacity:0}66.5%{opacity:0}67.75%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-bolt2{0%{opacity:0}52%{opacity:0}53.25%{opacity:1}55%{opacity:1}56.25%{opacity:0}100%{opacity:0}}
+@keyframes wl-lr1{0%{opacity:0}18.5%{opacity:0}19.75%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-lr2{0%{opacity:0}44.5%{opacity:0}45.75%{opacity:1}48.75%{opacity:1}50%{opacity:0}100%{opacity:0}}
+@keyframes wl-x0{0%{opacity:0}67.5%{opacity:0}68.75%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-x1{0%{opacity:0}69%{opacity:0}70.25%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-x2{0%{opacity:0}70.5%{opacity:0}71.75%{opacity:1}73.5%{opacity:1}74.75%{opacity:0}100%{opacity:0}}
+@keyframes wl-st{0%{transform:translate(300px, 394px);opacity:0}67.5%{transform:translate(300px, 394px);opacity:0}67.75%{opacity:1}69.5%{transform:translate(175px, 404px);opacity:1}69.75%{transform:translate(175px, 404px);opacity:0}100%{transform:translate(175px, 404px);opacity:0}}
+@keyframes wl-ga0{0%{transform:scaleX(0)}77%{transform:scaleX(0)}79.5%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes wl-ga1{0%{transform:scaleX(0)}78%{transform:scaleX(0)}80.5%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes wl-ga2{0%{transform:scaleX(0)}79%{transform:scaleX(0)}81.5%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes wl-gb0{0%{transform:scaleX(0)}80.5%{transform:scaleX(0)}83%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes wl-gb1{0%{transform:scaleX(0)}81.5%{transform:scaleX(0)}84%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes wl-gb2{0%{transform:scaleX(0)}82.5%{transform:scaleX(0)}85%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes wl-gb3{0%{transform:scaleX(0)}83.5%{transform:scaleX(0)}86%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+@keyframes wl-gc{0%{transform:scaleX(0)}85%{transform:scaleX(0)}89%{transform:scaleX(1)}98.5%{transform:scaleX(1)}99.5%{transform:scaleX(0)}100%{transform:scaleX(0)}}
+</style>
+<g class="stage">
+<!-- left: the transaction (steps 1-2), the server log (3), the settings (4) -->
+<rect class="wl-pan" x="30" y="106" width="192" height="288" rx="10"/>
+<g class="p12">
+<text class="wl-hd" x="30" y="100">CHECKOUT · TRANSACTION 949</text>
+</g>
+<g class="p3">
+<text class="wl-hd f-red" x="30" y="100">SERVER LOG · AFTER THE CRASH</text>
+</g>
+<g class="p4">
+<text class="wl-hd" x="30" y="100">POSTGRESQL 18 DEFAULTS</text>
+</g>
+<g class="p12">
+<rect class="wl-hl wl-hb" x="36" y="112" width="180" height="18" rx="5"/>
+<rect class="wl-hl wl-ho" x="36" y="134" width="180" height="46" rx="5"/>
+<rect class="wl-hl wl-hi" x="36" y="184" width="180" height="60" rx="5"/>
+<rect class="wl-hl wl-hc" x="36" y="248" width="180" height="18" rx="5"/>
+<text class="wl-10 mono f-ink" x="42" y="125">BEGIN;</text>
+<text class="wl-10 mono f-ink" x="42" y="148">INSERT INTO orders</text>
+<text class="wl-10 mono f-ink" x="48" y="161">VALUES (42,'pending',…);</text>
+<text class="wl-95 f-muted" x="42" y="175">→ id 500001 at (5057,91)</text>
+<text class="wl-10 mono f-ink" x="42" y="198">INSERT INTO order_items</text>
+<text class="wl-10 mono f-ink" x="48" y="211">VALUES (500001,1,42,…),</text>
+<text class="wl-10 mono f-ink" x="96" y="224">(500001,2,128,…);</text>
+<text class="wl-95 f-muted" x="42" y="238">→ (10416,81) and (10416,82)</text>
+<text class="wl-10 mono f-ink" x="42" y="261">COMMIT;</text>
+</g>
+<g class="p1">
+<text class="wl-95 sb f-red wl-c1a" x="42" y="280">→ waits for 8 page writes</text>
+<text class="wl-95 sb f-red wl-c1b" x="42" y="294">✕ crash during write 5 of 8</text>
+<g class="wl-c1c">
+<text class="wl-95 f-muted" x="42" y="322">With no log, a commit is only</text>
+<text class="wl-95 f-muted" x="42" y="335">durable once every page it</text>
+<text class="wl-95 f-muted" x="42" y="348">changed is on disk, and a crash</text>
+<text class="wl-95 f-muted" x="42" y="361">in between leaves half of it.</text>
+</g>
+</g>
+<g class="p2">
+<text class="wl-95 sb f-green wl-c2a" x="42" y="280">→ returns in 0.37 ms ✓</text>
+<rect class="wl-in" x="36" y="290" width="180" height="100" rx="8"/>
+<text class="wl-hd" x="44" y="304">WAL POSITION</text>
+<text class="wl-95 f-muted" x="44" y="320">insert</text>
+<text class="wl-95 f-muted" x="44" y="335">flush</text>
+<text class="wl-10 mono end f-ink wl-i0" x="210" y="320">0/76000130</text>
+<text class="wl-10 mono end f-blue wl-i1" x="210" y="320">0/76006370</text>
+<text class="wl-10 mono end f-blue wl-i2" x="210" y="320">0/7600C2E0</text>
+<text class="wl-10 mono end f-blue wl-i3" x="210" y="320">0/7600C308</text>
+<text class="wl-10 mono end f-ink wl-f0" x="210" y="335">0/76000130</text>
+<text class="wl-10 mono end f-green wl-f1" x="210" y="335">0/7600C308</text>
+<text class="wl-9 f-muted wl-fs" x="44" y="350">one fdatasync: 0.23 ms</text>
+<line class="wire" x1="48" y1="361" x2="48" y2="385"/>
+<circle class="f-amber" cx="48" cy="361" r="3"/>
+<text class="wl-9 sb f-amber-ink" x="56" y="364.5">03:37:24 CHECKPOINT</text>
+<g class="wl-tc">
+<circle class="f-green" cx="48" cy="373" r="3"/>
+<text class="wl-9 sb f-green" x="56" y="376.5">03:37:25 COMMIT</text>
+</g>
+<g class="wl-tn">
+<circle class="f-bg s-amber" cx="48" cy="385" r="2.5" stroke-width="1.5"/>
+<text class="wl-9 f-amber-ink" x="56" y="388.5">≤ 03:42:24 next checkpoint</text>
+</g>
+</g>
+<g class="p3">
+<g class="wl-lg0">
+<text class="wl-95 mono sb f-red" x="40" y="124">03:37:27 docker kill</text>
+</g>
+<g class="wl-lg1">
+<text class="wl-95 f-red" x="50" y="137">SIGKILL: all server processes die</text>
+</g>
+<g class="wl-lg2">
+<text class="wl-95 mono f-ink" x="40" y="156">03:37:29 restart</text>
+<text class="wl-95 f-ink" x="50" y="169">not properly shut down;</text>
+<text class="wl-95 f-ink" x="50" y="182">automatic recovery in progress</text>
+</g>
+<g class="wl-lg3">
+<text class="wl-95 mono f-amber-ink" x="50" y="199">redo starts at 0/76000028</text>
+</g>
+<g class="wl-lg4">
+<text class="wl-95 mono f-ink" x="50" y="216">redo done at 0/7600D630</text>
+<text class="wl-95 f-muted" x="50" y="229">elapsed: 0.00 s</text>
+</g>
+<g class="wl-lg5">
+<text class="wl-95 f-ink" x="50" y="246">checkpoint: wrote 13 buffers,</text>
+<text class="wl-95 f-muted" x="50" y="259">total 0.007 s</text>
+</g>
+<g class="wl-lg6">
+<text class="wl-95 f-ink" x="50" y="276">ready to accept connections</text>
+</g>
+<g class="wl-lg7">
+<text class="wl-95 mono f-ink" x="40" y="300">SELECT … FROM orders</text>
+<text class="wl-95 mono f-ink" x="40" y="313">WHERE id = 500001;</text>
+</g>
+<g class="wl-lg8">
+<text class="wl-95 sb f-green" x="40" y="327">→ 1 row: 42, pending, 20491.28 ✓</text>
+</g>
+<g class="wl-lgn">
+<text class="wl-9 f-muted" x="40" y="350">The 8 pages never reached disk before</text>
+<text class="wl-9 f-muted" x="40" y="362">the crash: replaying the WAL rebuilt</text>
+<text class="wl-9 f-muted" x="40" y="374">them, then a checkpoint wrote them.</text>
+</g>
+</g>
+<g class="p4">
+<text class="wl-95 mono f-ink" x="40" y="126">synchronous_commit</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="126">on</text>
+<text class="wl-95 mono f-ink" x="40" y="142">wal_writer_delay</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="142">200ms</text>
+<text class="wl-95 mono f-ink" x="40" y="158">commit_delay</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="158">0</text>
+<text class="wl-95 mono f-ink" x="40" y="174">full_page_writes</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="174">on</text>
+<text class="wl-95 mono f-ink" x="40" y="190">wal_compression</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="190">off</text>
+<text class="wl-95 mono f-ink" x="40" y="206">checkpoint_timeout</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="206">5min</text>
+<text class="wl-95 mono f-ink" x="40" y="222">max_wal_size</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="222">1GB</text>
+<text class="wl-95 mono f-ink" x="40" y="238">…completion_target</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="238">0.9</text>
+<text class="wl-95 mono f-ink" x="40" y="254">wal_buffers (auto)</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="254">8MB</text>
+<text class="wl-95 mono f-ink" x="40" y="270">data_checksums</text>
+<text class="wl-95 mono end sb f-amber-ink" x="212" y="270">on</text>
+<text class="wl-9 f-muted" x="40" y="300">wal_buffers is 1/32 of shared_buffers</text>
+<text class="wl-9 f-muted" x="40" y="312">(256 MB here). Checksums are on by</text>
+<text class="wl-9 f-muted" x="40" y="324">default since 18, so the first hint-bit</text>
+<text class="wl-9 f-muted" x="40" y="336">change to a page after a checkpoint</text>
+<text class="wl-9 f-muted" x="40" y="348">logs a page image too.</text>
+<text class="wl-9 f-muted" x="40" y="372">Measured with pgbench on a laptop,</text>
+<text class="wl-9 f-muted" x="40" y="384">10 s per run: round the numbers.</text>
+</g>
+<g class="p1">
+<!-- step 1: no log -->
+<text class="wl-hd f-red" x="236" y="100">WITHOUT A LOG</text>
+<rect class="wl-pan" x="236" y="106" width="270" height="126" rx="10"/>
+<text class="wl-10 sb f-ink" x="248" y="126">COMMIT has to put every changed</text>
+<text class="wl-10 sb f-ink" x="248" y="140">page on disk before it returns:</text>
+<text class="wl-10 f-ink" x="248" y="160">· 8 pages of 8 kB, in 7 different files</text>
+<text class="wl-10 f-ink" x="248" y="174">· each one written at its own offset</text>
+<text class="wl-10 f-ink" x="248" y="188">· one fsync per file</text>
+<text class="wl-95 f-muted" x="248" y="210">A checkpoint that wrote one such order</text>
+<text class="wl-95 f-muted" x="248" y="223">took 6–7 ms, every commit would wait.</text>
+<text class="wl-hd" x="236" y="252">ORDERS PAGE 5057 ON DISK</text>
+<rect class="wl-pan" x="236" y="258" width="270" height="136" rx="10"/>
+<text class="wl-95 f-muted" x="248" y="276">8 kB page = 16 sectors of 512 B</text>
+<rect class="wl-sec" x="248" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="263.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="279" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="294.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="310" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="325.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="341" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="356.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="372" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="387.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="403" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="418.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="434" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="449.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="465" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-sec" x="480.5" y="284" width="13" height="26" rx="2"/>
+<g class="wl-s">
+<rect class="wl-dirty" x="248" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="263.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="279" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="294.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="310" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="325.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="341" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="356.5" y="284" width="13" height="26" rx="2"/>
+<rect class="wl-dirty" x="372" y="284" width="13" height="26" rx="2"/>
+</g>
+<g class="wl-torn">
+<rect class="none s-red" x="244" y="280" width="254" height="34" rx="6" stroke-width="2"/>
+<text class="wl-95 sb f-purple" x="248" y="326">9 sectors new</text>
+<text class="wl-95 sb end f-muted" x="494" y="326">7 sectors old</text>
+<text class="wl-10 sb f-red" x="248" y="348">Power fails mid-write: a torn page,</text>
+<text class="wl-10 sb f-red" x="248" y="362">half new and half old.</text>
+<text class="wl-95 f-muted" x="248" y="380">Nothing in the data files can repair it.</text>
+</g>
+</g>
+<g class="p23">
+<!-- WAL buffers -->
+<text class="wl-hd" x="236" y="100">WAL BUFFERS · IN MEMORY</text>
+<text class="wl-95 mono end f-muted" x="506" y="100">8 MB</text>
+<rect class="wl-pan" x="236" y="106" width="270" height="126" rx="10"/>
+<text class="wl-9 mono f-muted" x="244" y="121">…0000</text>
+<rect class="wl-row" x="278" y="113" width="222" height="10"/>
+<text class="wl-9 mono f-muted" x="244" y="134">…2000</text>
+<rect class="wl-row" x="278" y="126" width="222" height="10"/>
+<text class="wl-9 mono f-muted" x="244" y="147">…4000</text>
+<rect class="wl-row" x="278" y="139" width="222" height="10"/>
+<text class="wl-9 mono f-muted" x="244" y="160">…6000</text>
+<rect class="wl-row" x="278" y="152" width="222" height="10"/>
+<text class="wl-9 mono f-muted" x="244" y="173">…8000</text>
+<rect class="wl-row" x="278" y="165" width="222" height="10"/>
+<text class="wl-9 mono f-muted" x="244" y="186">…A000</text>
+<rect class="wl-row" x="278" y="178" width="222" height="10"/>
+<text class="wl-9 mono f-muted" x="244" y="199">…C000</text>
+<rect class="wl-row" x="278" y="191" width="222" height="10"/>
+<text class="wl-9 mono f-muted" x="244" y="212">…E000</text>
+<rect class="wl-row" x="278" y="204" width="222" height="10"/>
+<!-- pg_wal -->
+<text class="wl-hd" x="236" y="252">PG_WAL · ON DISK</text>
+<text class="wl-95 mono end f-muted" x="506" y="252">000000010000000000000076</text>
+<rect class="wl-pan" x="236" y="258" width="270" height="136" rx="10"/>
+<text class="wl-9 mono f-muted" x="244" y="273">…0000</text>
+<rect class="wl-row" x="278" y="264" width="222" height="12"/>
+<text class="wl-9 mono f-muted" x="244" y="287">…2000</text>
+<rect class="wl-row" x="278" y="278" width="222" height="12"/>
+<text class="wl-9 mono f-muted" x="244" y="301">…4000</text>
+<rect class="wl-row" x="278" y="292" width="222" height="12"/>
+<text class="wl-9 mono f-muted" x="244" y="315">…6000</text>
+<rect class="wl-row" x="278" y="306" width="222" height="12"/>
+<text class="wl-9 mono f-muted" x="244" y="329">…8000</text>
+<rect class="wl-row" x="278" y="320" width="222" height="12"/>
+<text class="wl-9 mono f-muted" x="244" y="343">…A000</text>
+<rect class="wl-row" x="278" y="334" width="222" height="12"/>
+<text class="wl-9 mono f-muted" x="244" y="357">…C000</text>
+<rect class="wl-row" x="278" y="348" width="222" height="12"/>
+<text class="wl-9 mono f-muted" x="244" y="371">…E000</text>
+<rect class="wl-row" x="278" y="362" width="222" height="12"/>
+</g>
+<g class="p23">
+<g class="wl-m0">
+<rect class="wl-ck" x="279.08" y="113" width="1.6" height="10"/>
+<rect class="wl-ot" x="279.95" y="113" width="1.6" height="10"/>
+<rect class="wl-ck" x="281.47" y="113" width="3.25" height="10"/>
+<rect class="wl-ot" x="284.72" y="113" width="1.6" height="10"/>
+</g>
+<g class="wl-m1">
+<rect class="wl-of" x="286.24" y="114" width="213.76" height="8"/>
+<rect class="wl-of" x="278" y="127" width="6.07" height="8"/>
+<rect class="wl-ot" x="284.07" y="126" width="2.17" height="10"/>
+</g>
+<g class="wl-m2">
+<rect class="wl-rc" x="286.24" y="126" width="2.82" height="10"/>
+</g>
+<g class="wl-m3">
+<rect class="wl-fp" x="289.06" y="127" width="205.31" height="8"/>
+</g>
+<g class="wl-m4">
+<rect class="wl-fp" x="494.36" y="127" width="5.64" height="8"/>
+<rect class="wl-fp" x="278" y="140" width="22.11" height="8"/>
+</g>
+<g class="wl-m5">
+<rect class="wl-fp" x="300.11" y="140" width="199.89" height="8"/>
+<rect class="wl-fp" x="278" y="153" width="23.85" height="8"/>
+</g>
+<g class="wl-m6">
+<rect class="wl-fp" x="301.85" y="153" width="151.54" height="8"/>
+</g>
+<g class="wl-m7">
+<rect class="wl-fp" x="453.39" y="153" width="46.61" height="8"/>
+<rect class="wl-fp" x="278" y="166" width="11.27" height="8"/>
+</g>
+<g class="wl-m8">
+<rect class="wl-rc" x="289.27" y="165" width="2.6" height="10"/>
+</g>
+<g class="wl-m9">
+<rect class="wl-rc" x="291.88" y="165" width="1.95" height="10"/>
+</g>
+<g class="wl-m10">
+<rect class="wl-rc" x="293.83" y="165" width="1.6" height="10"/>
+</g>
+<g class="wl-m11">
+<rect class="wl-fp" x="295.34" y="166" width="204.66" height="8"/>
+<rect class="wl-fp" x="278" y="179" width="18.64" height="8"/>
+</g>
+<g class="wl-m12">
+<rect class="wl-fp" x="296.64" y="179" width="203.36" height="8"/>
+<rect class="wl-fp" x="278" y="192" width="19.95" height="8"/>
+</g>
+<g class="wl-m13">
+<rect class="wl-cm" x="297.95" y="191" width="3" height="10"/>
+</g>
+<g class="wl-m14">
+<rect class="wl-of" x="299.03" y="192" width="60.05" height="8"/>
+<rect class="wl-of" x="359.08" y="192" width="72.84" height="8"/>
+<rect class="wl-of" x="431.93" y="192" width="68.07" height="8"/>
+<rect class="wl-of" x="278" y="205" width="140.7" height="8"/>
+</g>
+<text class="wl-95 end f-muted wl-mf0" x="500" y="227">12 records · 7 page images · 41,268 B</text>
+<text class="wl-95 end sb f-red wl-mf1" x="500" y="227">lost in the crash</text>
+</g>
+<g class="p23">
+<g class="wl-d0">
+<rect class="wl-ck" x="279.08" y="264" width="1.6" height="12"/>
+<rect class="wl-ot" x="279.95" y="264" width="1.6" height="12"/>
+<rect class="wl-ck" x="281.47" y="264" width="3.25" height="12"/>
+<rect class="wl-ot" x="284.72" y="264" width="1.6" height="12"/>
+</g>
+<g class="wl-d1">
+<rect class="wl-of" x="286.24" y="265" width="213.76" height="10"/>
+<rect class="wl-of" x="278" y="279" width="6.07" height="10"/>
+</g>
+<g class="wl-d2">
+<rect class="wl-ot" x="284.07" y="278" width="2.17" height="12"/>
+<rect class="wl-rc" x="286.24" y="278" width="2.82" height="12"/>
+<rect class="wl-fp" x="289.06" y="279" width="205.31" height="10"/>
+<text class="wl-9 sb f-teal" x="293.06" y="287">orders 5057 · page image</text>
+<rect class="wl-fp" x="494.36" y="279" width="5.64" height="10"/>
+<rect class="wl-fp" x="278" y="293" width="22.11" height="10"/>
+</g>
+<g class="wl-d3">
+<rect class="wl-fp" x="300.11" y="293" width="199.89" height="10"/>
+<text class="wl-9 sb f-teal" x="304.11" y="301">customers 0 · page image</text>
+<rect class="wl-fp" x="278" y="307" width="23.85" height="10"/>
+</g>
+<g class="wl-d4">
+<rect class="wl-fp" x="301.85" y="307" width="151.54" height="10"/>
+<text class="wl-9 sb f-teal" x="305.85" y="315">order_items 10416 · image</text>
+<rect class="wl-fp" x="453.39" y="307" width="46.61" height="10"/>
+<text class="wl-9 sb f-teal" x="457.39" y="315">4812</text>
+<rect class="wl-fp" x="278" y="321" width="11.27" height="10"/>
+</g>
+<g class="wl-d5">
+<rect class="wl-rc" x="289.27" y="320" width="2.6" height="12"/>
+<rect class="wl-rc" x="291.88" y="320" width="1.95" height="12"/>
+<rect class="wl-rc" x="293.83" y="320" width="1.6" height="12"/>
+<rect class="wl-fp" x="295.34" y="321" width="204.66" height="10"/>
+<text class="wl-9 sb f-teal" x="299.34" y="329">products 0 · page image</text>
+<rect class="wl-fp" x="278" y="335" width="18.64" height="10"/>
+</g>
+<g class="wl-d6">
+<rect class="wl-fp" x="296.64" y="335" width="203.36" height="10"/>
+<text class="wl-9 sb f-teal" x="300.64" y="343">products 1 · page image</text>
+<rect class="wl-fp" x="278" y="349" width="19.95" height="10"/>
+</g>
+<g class="wl-d7">
+<rect class="wl-cm" x="297.95" y="348" width="3" height="12"/>
+</g>
+<g class="wl-d8">
+<rect class="wl-of" x="299.03" y="349" width="60.05" height="10"/>
+<rect class="wl-of" x="359.08" y="349" width="72.84" height="10"/>
+<rect class="wl-of" x="431.93" y="349" width="68.07" height="10"/>
+<rect class="wl-of" x="278" y="363" width="140.7" height="10"/>
+</g>
+<g class="wl-d9">
+<rect class="wl-ck" x="418.7" y="362" width="3.25" height="12"/>
+</g>
+<g class="wl-cmk">
+<rect class="f-green" x="298.95" y="346" width="2" height="16"/>
+<rect class="f-bg" x="302.95" y="349" width="48" height="10"/>
+<text class="wl-9 sb f-green" x="303.95" y="357">COMMIT</text>
+</g>
+<g class="wl-rdk">
+<rect class="f-amber" x="279.08" y="262" width="2" height="16"/>
+</g>
+<text class="wl-95 end f-muted wl-df0" x="500" y="388">redo point 0/76000028 = last checkpoint</text>
+<text class="wl-95 end sb f-green wl-df1" x="500" y="388">flushed to 0/7600C308 at COMMIT</text>
+<text class="wl-95 end sb f-blue wl-df2" x="500" y="388">replayed 0/76000028 → 0/7600F448</text>
+<g class="wl-fla">
+<line class="s-green" x1="355" y1="233" x2="355" y2="256" stroke-width="2" marker-end="url(#ah-green)"/>
+<text class="wl-9 sb end f-green" x="349" y="241.5">flush at COMMIT</text>
+</g>
+<g class="wl-cur"><rect class="f-blue" x="-1.5" y="0" width="3" height="16" rx="1"/></g>
+</g>
+<g class="p123">
+<!-- shared buffers -->
+<text class="wl-hd" x="520" y="100">SHARED BUFFERS · IN MEMORY</text>
+<text class="wl-95 mono end f-muted" x="930" y="100">256 MB</text>
+<rect class="wl-pan" x="518" y="106" width="412" height="126" rx="10"/>
+<rect class="wl-in" x="522" y="112" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="528" y="125">orders_id_seq</text>
+<text class="wl-9 mono f-muted" x="528" y="137">block 0</text>
+<rect class="wl-in" x="624" y="112" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="630" y="125">orders</text>
+<text class="wl-9 mono f-muted" x="630" y="137">block 5057</text>
+<rect class="wl-in" x="726" y="112" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="732" y="125">orders_pkey</text>
+<text class="wl-9 mono f-muted" x="732" y="137">block 1373</text>
+<rect class="wl-in" x="828" y="112" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="834" y="125">customers</text>
+<text class="wl-9 mono f-muted" x="834" y="137">block 0</text>
+<text class="wl-9 sb end f-orange" x="920" y="137">FK lock</text>
+<rect class="wl-in" x="522" y="162" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="528" y="175">order_items</text>
+<text class="wl-9 mono f-muted" x="528" y="187">block 10416</text>
+<rect class="wl-in" x="624" y="162" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="630" y="175">order_items_pkey</text>
+<text class="wl-9 mono f-muted" x="630" y="187">block 4812</text>
+<rect class="wl-in" x="726" y="162" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="732" y="175">products</text>
+<text class="wl-9 mono f-muted" x="732" y="187">block 0</text>
+<text class="wl-9 sb end f-orange" x="818" y="187">FK lock</text>
+<rect class="wl-in" x="828" y="162" width="98" height="44" rx="6"/>
+<text class="wl-95 sb f-ink" x="834" y="175">products</text>
+<text class="wl-9 mono f-muted" x="834" y="187">block 1</text>
+<text class="wl-9 sb end f-orange" x="920" y="187">FK lock</text>
+<!-- data files -->
+<text class="wl-hd" x="520" y="252">DATA FILES · ON DISK</text>
+<text class="wl-95 mono end f-muted" x="930" y="252">base/16384/</text>
+<rect class="wl-pan" x="518" y="258" width="412" height="136" rx="10"/>
+<text class="wl-9 mono f-muted" x="526" y="275.5">16487</text>
+<text class="wl-95 f-ink" x="560" y="275.5">orders</text>
+<rect class="wl-bar" x="652" y="268" width="214" height="8" rx="2"/>
+<rect class="f-wire" x="861" y="266" width="3" height="12"/>
+<text class="wl-9 end f-muted" x="926" y="275.5">5,058 p</text>
+<text class="wl-9 mono f-muted" x="526" y="290.5">16492</text>
+<text class="wl-95 f-ink" x="560" y="290.5">orders_pkey</text>
+<rect class="wl-bar" x="652" y="283" width="214" height="8" rx="2"/>
+<rect class="f-wire" x="861" y="281" width="3" height="12"/>
+<text class="wl-9 end f-muted" x="926" y="290.5">1,374 p</text>
+<text class="wl-9 mono f-muted" x="526" y="305.5">16480</text>
+<text class="wl-95 f-ink" x="560" y="305.5">customers</text>
+<rect class="wl-bar" x="652" y="298" width="214" height="8" rx="2"/>
+<rect class="f-wire" x="653" y="296" width="3" height="12"/>
+<text class="wl-9 end f-muted" x="926" y="305.5">1,136 p</text>
+<text class="wl-9 mono f-muted" x="526" y="320.5">16415</text>
+<text class="wl-95 f-ink" x="560" y="320.5">orders_id_seq</text>
+<rect class="wl-bar" x="652" y="313" width="214" height="8" rx="2"/>
+<rect class="f-wire" x="757" y="311" width="3" height="12"/>
+<text class="wl-9 end f-muted" x="926" y="320.5">1 p</text>
+<text class="wl-9 mono f-muted" x="526" y="335.5">16493</text>
+<text class="wl-95 f-ink" x="560" y="335.5">order_items</text>
+<rect class="wl-bar" x="652" y="328" width="214" height="8" rx="2"/>
+<rect class="f-wire" x="861" y="326" width="3" height="12"/>
+<text class="wl-9 end f-muted" x="926" y="335.5">10,417 p</text>
+<text class="wl-9 mono f-muted" x="526" y="350.5">16496</text>
+<text class="wl-95 f-ink" x="560" y="350.5">order_items_pkey</text>
+<rect class="wl-bar" x="652" y="343" width="214" height="8" rx="2"/>
+<rect class="f-wire" x="861" y="341" width="3" height="12"/>
+<text class="wl-9 end f-muted" x="926" y="350.5">4,813 p</text>
+<text class="wl-9 mono f-muted" x="526" y="365.5">16497</text>
+<text class="wl-95 f-ink" x="560" y="365.5">products</text>
+<rect class="wl-bar" x="652" y="358" width="214" height="8" rx="2"/>
+<rect class="f-wire" x="653" y="356" width="3" height="12"/>
+<rect class="f-wire" x="657.41" y="356" width="3" height="12"/>
+<text class="wl-9 end f-muted" x="926" y="365.5">94 p</text>
+</g>
+<g class="p1">
+<g class="wl-aseq">
+<rect class="wl-dirty" x="522" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="528" y="149">dirty · 8 kB</text>
+</g>
+<g class="wl-aord">
+<rect class="wl-dirty" x="624" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="630" y="149">dirty · 8 kB</text>
+</g>
+<g class="wl-aopk">
+<rect class="wl-dirty" x="726" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="732" y="149">dirty · 8 kB</text>
+</g>
+<g class="wl-acus">
+<rect class="wl-dirty" x="828" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="834" y="149">dirty · 8 kB</text>
+</g>
+<g class="wl-aitm">
+<rect class="wl-dirty" x="522" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="528" y="199">dirty · 8 kB</text>
+</g>
+<g class="wl-aipk">
+<rect class="wl-dirty" x="624" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="630" y="199">dirty · 8 kB</text>
+</g>
+<g class="wl-apr0">
+<rect class="wl-dirty" x="726" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="732" y="199">dirty · 8 kB</text>
+</g>
+<g class="wl-apr1">
+<rect class="wl-dirty" x="828" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-purple" x="834" y="199">dirty · 8 kB</text>
+</g>
+<g class="wl-witm"><circle class="pkt f-red" r="5"/></g>
+<rect class="f-purple wl-kitm" x="860" y="325" width="5" height="14" rx="1"/>
+<g class="wl-wipk"><circle class="pkt f-red" r="5"/></g>
+<rect class="f-purple wl-kipk" x="860" y="340" width="5" height="14" rx="1"/>
+<g class="wl-wpr0"><circle class="pkt f-red" r="5"/></g>
+<rect class="f-purple wl-kpr0" x="652" y="355" width="5" height="14" rx="1"/>
+<g class="wl-wpr1"><circle class="pkt f-red" r="5"/></g>
+<rect class="f-purple wl-kpr1" x="656.41" y="355" width="5" height="14" rx="1"/>
+<g class="wl-word"><circle class="pkt f-red" r="5"/></g>
+<rect class="f-red wl-kord" x="860" y="265" width="5" height="14" rx="1"/>
+<g class="wl-bolt1">
+<path class="f-red" d="M488 258l-12 14h8l-5 12 14-17h-8l5-9z"/>
+<text class="wl-95 sb end f-red" x="472" y="276">crash</text>
+<text class="wl-9 sb end f-red" x="646" y="275.5">torn</text>
+</g>
+<text class="wl-95 sb mid f-red wl-ft1" x="724" y="388">crash after 4 of 8 writes: the items are on disk, their order isn’t</text>
+</g>
+<g class="p23">
+<g class="wl-bseq">
+<rect class="wl-dirty" x="522" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple" x="528" y="149">LSN 0/76002198</text>
+</g>
+<g class="wl-cseq">
+<rect class="wl-lost" x="522" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="528" y="149">lost</text>
+</g>
+<g class="wl-rseq">
+<rect class="wl-ok" x="522" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="528" y="149">LSN 0/76002198</text>
+</g>
+<rect class="wl-dirty wl-bord" x="624" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple wl-bl0" x="630" y="149">LSN 0/76003F30</text>
+<text class="wl-9 mono f-purple wl-bl1" x="630" y="149">LSN 0/76008280</text>
+<g class="wl-cord">
+<rect class="wl-lost" x="624" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="630" y="149">lost</text>
+</g>
+<g class="wl-rord">
+<rect class="wl-ok" x="624" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="630" y="149">LSN 0/76008280</text>
+</g>
+<g class="wl-bopk">
+<rect class="wl-dirty" x="726" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple" x="732" y="149">LSN 0/76004330</text>
+</g>
+<g class="wl-copk">
+<rect class="wl-lost" x="726" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="732" y="149">lost</text>
+</g>
+<g class="wl-ropk">
+<rect class="wl-ok" x="726" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="732" y="149">LSN 0/76004330</text>
+</g>
+<g class="wl-bcus">
+<rect class="wl-dirty" x="828" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple" x="834" y="149">LSN 0/76006370</text>
+</g>
+<g class="wl-ccus">
+<rect class="wl-lost" x="828" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="834" y="149">lost</text>
+</g>
+<g class="wl-rcus">
+<rect class="wl-ok" x="828" y="112" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="834" y="149">LSN 0/76006370</text>
+</g>
+<g class="wl-bitm">
+<rect class="wl-dirty" x="522" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple" x="528" y="199">LSN 0/76008200</text>
+</g>
+<g class="wl-citm">
+<rect class="wl-lost" x="522" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="528" y="199">lost</text>
+</g>
+<g class="wl-ritm">
+<rect class="wl-ok" x="522" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="528" y="199">LSN 0/76008200</text>
+</g>
+<g class="wl-bipk">
+<rect class="wl-dirty" x="624" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple" x="630" y="199">LSN 0/76008248</text>
+</g>
+<g class="wl-cipk">
+<rect class="wl-lost" x="624" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="630" y="199">lost</text>
+</g>
+<g class="wl-ripk">
+<rect class="wl-ok" x="624" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="630" y="199">LSN 0/76008248</text>
+</g>
+<g class="wl-bpr0">
+<rect class="wl-dirty" x="726" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple" x="732" y="199">LSN 0/7600A2B0</text>
+</g>
+<g class="wl-cpr0">
+<rect class="wl-lost" x="726" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="732" y="199">lost</text>
+</g>
+<g class="wl-rpr0">
+<rect class="wl-ok" x="726" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="732" y="199">LSN 0/7600A2B0</text>
+</g>
+<g class="wl-bpr1">
+<rect class="wl-dirty" x="828" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-purple" x="834" y="199">LSN 0/7600C2E0</text>
+</g>
+<g class="wl-cpr1">
+<rect class="wl-lost" x="828" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 sb f-red" x="834" y="199">lost</text>
+</g>
+<g class="wl-rpr1">
+<rect class="wl-ok" x="828" y="162" width="98" height="44" rx="6"/>
+<text class="wl-9 mono f-green" x="834" y="199">LSN 0/7600C2E0</text>
+</g>
+<text class="wl-95 end f-muted wl-sf0" x="924" y="227">8 dirty pages stay in memory</text>
+<text class="wl-95 end sb f-red wl-sf1" x="924" y="227">8 dirty pages lost</text>
+<text class="wl-95 end sb f-green wl-sf2" x="924" y="227">rebuilt from the WAL</text>
+<g class="wl-dla">
+<line class="wire dash" x1="724" y1="233" x2="724" y2="256" marker-end="url(#ah)"/>
+<text class="wl-9 f-muted" x="731" y="241.5">later: bgwriter or next checkpoint</text>
+</g>
+<text class="wl-95 mid f-ink wl-ft2" x="724" y="388">page 5057 on disk: 90 rows, LSN 0/64A3FE20 · in memory: 91 rows</text>
+<g class="wl-eseq"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gseq" x="756" y="310" width="5" height="14" rx="1"/>
+<g class="wl-eord"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gord" x="860" y="265" width="5" height="14" rx="1"/>
+<g class="wl-eopk"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gopk" x="860" y="280" width="5" height="14" rx="1"/>
+<g class="wl-ecus"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gcus" x="652" y="295" width="5" height="14" rx="1"/>
+<g class="wl-eitm"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gitm" x="860" y="325" width="5" height="14" rx="1"/>
+<g class="wl-eipk"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gipk" x="860" y="340" width="5" height="14" rx="1"/>
+<g class="wl-epr0"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gpr0" x="652" y="355" width="5" height="14" rx="1"/>
+<g class="wl-epr1"><circle class="pkt f-purple" r="4.5"/></g>
+<rect class="f-green wl-gpr1" x="656.41" y="355" width="5" height="14" rx="1"/>
+<g class="wl-eca">
+<line class="s-purple" x1="724" y1="233" x2="724" y2="256" stroke-width="2" marker-end="url(#ah-purple)"/>
+<text class="wl-9 sb f-purple" x="731" y="241.5">end-of-recovery checkpoint, 7 ms</text>
+</g>
+<text class="wl-95 sb mid f-green wl-ft3" x="724" y="388">page 5057 on disk after recovery: 91 rows, LSN 0/76008280</text>
+<g class="wl-bolt2">
+<path class="f-red" d="M500 150l-22 28h14l-10 22 26-32h-14l10-18z"/>
+<path class="f-red" d="M736 150l-22 28h14l-10 22 26-32h-14l10-18z"/>
+</g>
+</g>
+<g class="p12">
+<rect class="wl-pan" x="30" y="404" width="900" height="66" rx="10"/>
+<text class="wl-9  f-muted" x="42" y="419">how COMMIT is made durable</text>
+<text class="wl-9  f-muted" x="300" y="419">COMMIT waits for</text>
+<text class="wl-9  f-muted" x="512" y="419">writes</text>
+<text class="wl-9  f-muted" x="680" y="419">fsyncs</text>
+<text class="wl-9 end f-muted" x="918" y="419">time, one run on a laptop</text>
+<line class="s-line" x1="40" y1="424" x2="920" y2="424" stroke-width="1"/>
+<g class="wl-lr1">
+<circle class="f-red" cx="46" cy="437" r="3.5"/>
+<text class="wl-10 sb f-ink" x="56" y="441">force the changed pages</text>
+<text class="wl-10 f-ink" x="300" y="441">8 data pages in 7 files</text>
+<text class="wl-10 f-ink" x="512" y="441">8 × 8 kB, scattered</text>
+<text class="wl-10 mono f-ink" x="680" y="441">7</text>
+<text class="wl-10 end sb f-red" x="918" y="441">6–7 ms (a checkpoint writing them)</text>
+</g>
+<g class="wl-lr2">
+<circle class="f-green" cx="46" cy="457" r="3.5"/>
+<text class="wl-10 sb f-ink" x="56" y="461">write-ahead log</text>
+<text class="wl-10 mono f-ink" x="300" y="461">WAL up to 0/7600C308</text>
+<text class="wl-10 f-ink" x="512" y="461">1 sequential write</text>
+<text class="wl-10 mono f-ink" x="680" y="461">1</text>
+<text class="wl-10 end sb f-green" x="918" y="461">0.37 ms (fdatasync 0.23 ms)</text>
+</g>
+</g>
+<g class="p3">
+<g class="wl-x0">
+<rect class="wl-pan" x="30" y="404" width="290" height="66" rx="10"/>
+<text class="wl-hd f-teal" x="42" y="422">STANDBY · STREAMING REPLICATION</text>
+<text class="wl-10 f-ink" x="42" y="440">receives each record as it is written and replays it:</text>
+<text class="wl-10 mono f-ink" x="42" y="456">replay_lsn 0/7600C308, 1.6 ms after the flush</text>
+</g>
+<g class="wl-x1">
+<rect class="wl-pan" x="335" y="404" width="290" height="66" rx="10"/>
+<text class="wl-hd f-teal" x="347" y="422">WAL ARCHIVE · POINT-IN-TIME RECOVERY</text>
+<text class="wl-10 f-ink" x="347" y="440">archive_command copied …076 at 03:39:01;</text>
+<text class="wl-10 f-ink" x="347" y="456">base backup + archived WAL → any point in time</text>
+</g>
+<g class="wl-x2">
+<rect class="wl-pan" x="640" y="404" width="290" height="66" rx="10"/>
+<text class="wl-hd f-teal" x="652" y="422">LOGICAL DECODING → CDC</text>
+<text class="wl-10 f-ink" x="652" y="440">with wal_level = logical, a replication slot</text>
+<text class="wl-10 f-ink" x="652" y="456">turns the same records into row changes</text>
+</g>
+<g class="wl-st"><rect class="pkt f-teal" x="-5" y="-5" width="10" height="10" rx="2"/></g>
+</g>
+<g class="p4">
+<text class="wl-hd" x="236" y="100">COMMIT WAITS FOR A WAL FLUSH</text>
+<rect class="wl-pan" x="236" y="106" width="342" height="170" rx="10"/>
+<text class="wl-95 f-muted" x="248" y="123">pgbench, 10 s per run, one order per transaction</text>
+<text class="wl-95 mono f-ink" x="248" y="139">synchronous_commit = on · 1 client</text>
+<rect class="wl-bar" x="248" y="144" width="150" height="12" rx="2"/>
+<rect class="f-blue wl-ga0" x="248" y="144" width="41.28" height="12" rx="2"/>
+<text class="wl-10 sb f-ink" x="406" y="154">≈ 2,200 orders/s</text>
+<text class="wl-9 f-muted" x="406" y="166">1 fsync per commit</text>
+<text class="wl-95 mono f-ink" x="248" y="175">synchronous_commit = off · 1 client</text>
+<rect class="wl-bar" x="248" y="180" width="150" height="12" rx="2"/>
+<rect class="f-amber wl-ga1" x="248" y="180" width="64.57" height="12" rx="2"/>
+<text class="wl-10 sb f-ink" x="406" y="190">≈ 3,400 orders/s</text>
+<text class="wl-9 f-muted" x="406" y="202">5–8 fsyncs a second</text>
+<text class="wl-95 mono f-ink" x="248" y="211">on · 8 clients</text>
+<rect class="wl-bar" x="248" y="216" width="150" height="12" rx="2"/>
+<rect class="f-green wl-ga2" x="248" y="216" width="150" height="12" rx="2"/>
+<text class="wl-10 sb f-ink" x="406" y="226">7,957 orders/s</text>
+<text class="wl-9 f-muted" x="406" y="238">2.8 commits per fsync</text>
+<text class="wl-95 f-amber-ink" x="248" y="254">off may lose the last ≤ 3 × wal_writer_delay of</text>
+<text class="wl-95 f-amber-ink" x="248" y="266">commits in a crash, but never corrupts the data</text>
+<text class="wl-hd" x="592" y="100">PAGE IMAGES AFTER EACH CHECKPOINT</text>
+<rect class="wl-pan" x="592" y="106" width="338" height="170" rx="10"/>
+<text class="wl-95 f-muted" x="604" y="123">WAL written per order</text>
+<text class="wl-95 f-ink" x="604" y="139">first order after CHECKPOINT · 7 page images</text>
+<rect class="wl-bar" x="604" y="143" width="240" height="10" rx="2"/>
+<rect class="f-teal wl-gb0" x="604" y="143" width="240" height="10" rx="2"/>
+<text class="wl-10 sb f-ink" x="852" y="152">41,268 B</text>
+<text class="wl-95 f-ink" x="604" y="163">the next order, same pages</text>
+<rect class="wl-bar" x="604" y="167" width="240" height="10" rx="2"/>
+<rect class="f-teal wl-gb1" x="604" y="167" width="4.32" height="10" rx="2"/>
+<text class="wl-10 sb f-ink" x="852" y="176">742 B</text>
+<text class="wl-95 f-ink" x="604" y="197">pgbench, first 10 s after CHECKPOINT</text>
+<rect class="wl-bar" x="604" y="201" width="240" height="10" rx="2"/>
+<rect class="f-teal wl-gb2" x="604" y="201" width="240" height="10" rx="2"/>
+<text class="wl-10 sb f-ink" x="852" y="210">1,162 B</text>
+<text class="wl-95 f-ink" x="604" y="221">pgbench, the next 10 s</text>
+<rect class="wl-bar" x="604" y="225" width="240" height="10" rx="2"/>
+<rect class="f-teal wl-gb3" x="604" y="225" width="152.84" height="10" rx="2"/>
+<text class="wl-10 sb f-ink" x="852" y="234">740 B</text>
+<line class="s-line" x1="604" y1="182" x2="918" y2="182" stroke-width="1" stroke-dasharray="3 3"/>
+<text class="wl-95 f-muted" x="604" y="254">1,238 page images in those first 10 s, 36% of the WAL:</text>
+<text class="wl-95 f-muted" x="604" y="266">mostly customers and products pages the FK checks locked</text>
+<text class="wl-hd" x="236" y="290">CHECKPOINTS SPREAD THEIR WRITES</text>
+<rect class="wl-pan" x="236" y="296" width="342" height="174" rx="10"/>
+<text class="wl-10 f-ink" x="248" y="314">One starts every checkpoint_timeout, or sooner if</text>
+<text class="wl-10 f-ink" x="248" y="328">max_wal_size would fill, and paces its writes to</text>
+<text class="wl-10 f-ink" x="248" y="342">end at 0.9 of the interval. One timed checkpoint:</text>
+<rect class="wl-in" x="248" y="350" width="318" height="44" rx="6"/>
+<text class="wl-9 mono f-ink" x="256" y="364">03:44:04 checkpoint starting: time</text>
+<text class="wl-9 mono f-ink" x="256" y="376">03:48:34 checkpoint complete: wrote 19880</text>
+<text class="wl-9 mono f-ink" x="256" y="388">  buffers (60.7%) … write=269.907 s</text>
+<rect class="wl-bar" x="248" y="402" width="318" height="10" rx="2"/>
+<rect class="f-amber wl-gc" x="248" y="402" width="286.2" height="10" rx="2"/>
+<text class="wl-9 f-amber-ink" x="248" y="424">writes spread over 270 s of the 300 s interval</text>
+<text class="wl-95 f-muted" x="248" y="444">Fewer checkpoints: fewer page images and less I/O,</text>
+<text class="wl-95 f-muted" x="248" y="457">but more WAL to replay after a crash.</text>
+<text class="wl-hd" x="592" y="290">INNODB (MYSQL 8.4) DOES THE SAME JOBS</text>
+<rect class="wl-pan" x="592" y="296" width="338" height="174" rx="10"/>
+<text class="wl-10 f-ink" x="604" y="316"><tspan class="sb f-teal">redo log</tspan>: its WAL, 32 files in #innodb_redo,</text>
+<text class="wl-95 mono f-ink" x="604" y="330">innodb_redo_log_capacity = 100 MB</text>
+<text class="wl-95 mono f-ink" x="604" y="350">innodb_flush_log_at_trx_commit = 1</text>
+<text class="wl-10 f-ink" x="604" y="364">writes and flushes the log at every commit;</text>
+<text class="wl-10 f-ink" x="604" y="378">2 or 0 flush it about once a second instead.</text>
+<text class="wl-10 f-ink" x="604" y="398"><tspan class="sb f-teal">doublewrite buffer</tspan>: each 16 kB page goes to a</text>
+<text class="wl-10 f-ink" x="604" y="412">.dblwr file first, then to its place, so a torn</text>
+<text class="wl-10 f-ink" x="604" y="426">page is restored from that copy; PostgreSQL</text>
+<text class="wl-10 f-ink" x="604" y="440">restores it from the page image in its WAL.</text>
+<text class="wl-9 f-muted" x="604" y="460">Defaults read from a MySQL 8.4.11 server.</text>
+</g>
+</g>
+</svg>

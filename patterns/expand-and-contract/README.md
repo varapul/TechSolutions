@@ -117,6 +117,10 @@ The idea scales up and down. A [strangler fig](../strangler-fig/) migration appl
 
 - [Continuous Delivery](../continuous-delivery/) — Keep every change releasable: a deployment pipeline builds once, tests in stages and promotes the same artifact to production.
 
+## Related database topics
+
+- [Locks & Deadlocks](../locks-and-deadlocks/) — Row locks make writers wait for each other; two transactions waiting on each other is a deadlock, and the database aborts one.
+
 ## References
 
 - [Danilo Sato — Parallel Change (martinfowler.com)](https://martinfowler.com/bliki/ParallelChange.html)

@@ -1,0 +1,125 @@
+{
+  "aka": [
+    "connection pool",
+    "database connection pooler"
+  ],
+  "steps": [
+    {
+      "title": "Too many connections",
+      "caption": "800 connections hit max_connections = 100: 37 pods fail; a connection per checkout is 43× slower.",
+      "body": "Acme's checkout service runs **40 pods**, each with a pool of **20 connections**: 800 in all, against PostgreSQL's default `max_connections` of **100**, three of them kept for superusers. Started together, only pods 26, 29 and 31 got all 20 (60 backends); the other **37** were turned away with `remaining connection slots are reserved for roles with the SUPERUSER attribute` (25) or `sorry, too many clients already` (12). Connecting for every transaction instead is far slower: with 8 clients, pgbench `-C` ran **353** checkouts a second against **15,103** with the connections kept open."
+    },
+    {
+      "title": "Why connections cost",
+      "caption": "Each connection is its own process: 6.4 ms to set up (TLS, SCRAM), about 1.7 MB of private memory.",
+      "body": "PostgreSQL forks a **backend process** for every connection. With `log_connections = setup_durations` (new in PostgreSQL 18) the server logged **6.4 ms** per new connection: 0.2 ms to fork, about 2.1 ms of TLS and 3.2 ms of SCRAM-SHA-256 authentication, mostly the client hashing the password 4,096 times. `ps` shows 22 MB per backend, but only about **1.7 MB** of it is private; since PostgreSQL 14 idle connections barely slow snapshots down, yet beyond about 32 busy connections the 4 cores only added latency."
+    },
+    {
+      "title": "Pooling in practice",
+      "caption": "PgBouncer in transaction mode: 800 client connections share 20 server connections at 4,007 tps.",
+      "body": "Each pod keeps its pool of 20 but connects to **PgBouncer** in **transaction mode**, which lends one of its **20 server connections** to a client for the length of a transaction. At 100 checkouts a second per pod, all 40 pods ran: **4,007 tps** at 1.7 ms on average, and `SHOW POOLS` showed 800 active clients with none waiting. A pool of **8**, the (2 × cores) + spindles starting point for 4 cores with the data cached, served the same load at 1.5 ms."
+    },
+    {
+      "title": "What pooling breaks",
+      "caption": "Transaction pooling leaks session state to the next client and adds a hop; RDS Proxy pins instead.",
+      "body": "A server connection outlives the transaction, so session state leaks: pod 7's `SET statement_timeout = '5ms'` stayed on server pid 6715 and cancelled pod 12's `count(*)`. `LISTEN`, session advisory locks and temporary tables break the same way, while protocol-level prepared statements work since PgBouncer 1.21. The extra hop added 0.26 ms per checkout and PgBouncer runs on one core, so run more than one; Amazon **RDS Proxy** pins a client to its connection when it sees session state, and **MySQL** gives each connection a thread instead of a process."
+    }
+  ],
+  "related": [
+    "postgresql",
+    "amazon-rds-aurora",
+    "aws-lambda",
+    "autoscaling",
+    "bulkhead",
+    "kubernetes",
+    "mvcc",
+    "locks-and-deadlocks",
+    "table-partitioning"
+  ],
+  "references": [
+    {
+      "title": "PostgreSQL 18 documentation — Connections and Authentication (max_connections, reserved slots)",
+      "url": "https://www.postgresql.org/docs/18/runtime-config-connection.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Error Reporting and Logging (log_connections = setup_durations)",
+      "url": "https://www.postgresql.org/docs/18/runtime-config-logging.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Client Connection Defaults (statement_timeout, idle timeouts)",
+      "url": "https://www.postgresql.org/docs/18/runtime-config-client.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — pgbench",
+      "url": "https://www.postgresql.org/docs/18/pgbench.html"
+    },
+    {
+      "title": "PostgreSQL 14 release notes (snapshot scalability)",
+      "url": "https://www.postgresql.org/docs/release/14.0/"
+    },
+    {
+      "title": "PostgreSQL 18 release notes (log_connections stages, search_path reporting)",
+      "url": "https://www.postgresql.org/docs/release/18.0/"
+    },
+    {
+      "title": "Andres Freund — Analyzing the Limits of Connection Scalability in Postgres (2020)",
+      "url": "https://techcommunity.microsoft.com/blog/adforpostgresql/analyzing-the-limits-of-connection-scalability-in-postgres/1757266"
+    },
+    {
+      "title": "Andres Freund — Improving Postgres Connection Scalability: Snapshots (2020)",
+      "url": "https://techcommunity.microsoft.com/blog/adforpostgresql/improving-postgres-connection-scalability-snapshots/1806462"
+    },
+    {
+      "title": "PgBouncer — Features (pool modes and the SQL feature map)",
+      "url": "https://www.pgbouncer.org/features.html"
+    },
+    {
+      "title": "PgBouncer — Configuration",
+      "url": "https://www.pgbouncer.org/config.html"
+    },
+    {
+      "title": "PgBouncer — Usage (SHOW POOLS and the admin console)",
+      "url": "https://www.pgbouncer.org/usage.html"
+    },
+    {
+      "title": "PgBouncer — Changelog",
+      "url": "https://www.pgbouncer.org/changelog.html"
+    },
+    {
+      "title": "PostgreSQL wiki — Number Of Database Connections",
+      "url": "https://wiki.postgresql.org/wiki/Number_Of_Database_Connections"
+    },
+    {
+      "title": "HikariCP wiki — About Pool Sizing",
+      "url": "https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing"
+    },
+    {
+      "title": "HikariCP — README (connectionTimeout, maxLifetime, maximumPoolSize)",
+      "url": "https://github.com/brettwooldridge/HikariCP"
+    },
+    {
+      "title": "Amazon RDS User Guide — RDS Proxy concepts and terminology",
+      "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.howitworks.html"
+    },
+    {
+      "title": "Amazon RDS User Guide — Avoiding pinning an RDS Proxy",
+      "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy-pinning.html"
+    },
+    {
+      "title": "Amazon RDS User Guide — RDS Proxy connection considerations",
+      "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy-connections.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — Connection Interfaces (threads and the thread cache)",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/connection-interfaces.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — MySQL Enterprise Thread Pool",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/thread-pool.html"
+    },
+    {
+      "title": "AWS Lambda Developer Guide — Understanding Lambda function scaling",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html"
+    }
+  ]
+}

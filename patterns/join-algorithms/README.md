@@ -168,7 +168,7 @@ You rarely choose the method yourself. What you control is what the planner can 
 - [N+1 Queries](../n-plus-one-queries/) — One query for a list, then one more for every row: how ORMs fall into it, how to spot it, and how batching or a join fixes it.
 - [Normalization & Denormalization](../normalization/) — Store each fact once to keep data consistent, then copy some on purpose where reads must be fast, and keep the copies in step.
 - [PostgreSQL](../postgresql/) — A relational database: ACID transactions with MVCC, a write-ahead log for durability and replication, SQL and rich indexes.
-- Row vs Column Storage *(planned)* — Store rows together for transactions or columns together for analytics, and why a column store scans and compresses so much faster.
+- [Row vs Column Storage](../row-vs-column-storage/) — Store rows together for transactions or columns together for analytics, and why a column store scans and compresses so much faster.
 
 ## References
 

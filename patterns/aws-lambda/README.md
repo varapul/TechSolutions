@@ -175,6 +175,10 @@ def handler(event, context):  # Invoke: one batch of up to 10 SQS messages
 
 - [FinOps](../finops/) — Cloud cost as a shared responsibility: allocate spend to the teams that cause it, optimise it and track the cost per unit of value.
 
+## Related database topics
+
+- [Connection Pooling](../connection-pooling/) — Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database.
+
 ## References
 
 - [AWS Lambda Developer Guide — What is AWS Lambda?](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)

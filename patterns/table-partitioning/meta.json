@@ -1,0 +1,94 @@
+{
+  "aka": [
+    "Declarative partitioning",
+    "Range partitioning",
+    "Partition pruning"
+  ],
+  "steps": [
+    {
+      "title": "One table, slow cleanup",
+      "caption": "A week's report reads all 11,030 pages; deleting old months leaves dead rows and 87 MB of WAL.",
+      "body": "Acme keeps 12 months of `order_events`, and all 1,500,000 rows (86 MB, stored in time order) sit in one table. A report on one week runs a **Parallel Seq Scan** of all 11,030 pages to count 16,408 rows, and the retention job's `DELETE … WHERE happened_at < '2025-10-01'` marks 639,726 rows dead in 0.31 s while writing **70 MB of WAL**: a record for every row and an image of every page it touched. VACUUM then writes 17 MB more and leaves 4,703 empty pages behind, but the file stays 86 MB."
+    },
+    {
+      "title": "Partition by month",
+      "caption": "Each month becomes a table of its own with its own indexes, and every row is routed by happened_at.",
+      "body": "`CREATE TABLE … PARTITION BY RANGE (happened_at)` turns `order_events` into a parent that stores nothing, and each `PARTITION OF … FOR VALUES FROM ('2026-09-01') TO ('2026-10-01')` is an ordinary table that holds the rows from its lower bound up to, but not including, its upper one. Acme creates 25 of them, December 2024 to December 2026, and copies the rows in: PostgreSQL routes every row, old or new, to the partition whose range holds its `happened_at`. An index created on the parent is created on every partition too, so `order_events_2026_09` has its own primary key and `order_id` index."
+    },
+    {
+      "title": "Pruning and retention",
+      "caption": "The week now reads 2 of 25 partitions, and retention detaches and drops 10 old months in 38 ms.",
+      "body": "With constants in the `WHERE` clause the planner prunes the other 23 partitions before it builds the plan, so two sequential scans read **1,052 pages instead of 11,030** (9 ms against 30 ms in one run). Retention becomes `DETACH PARTITION … CONCURRENTLY` and `DROP TABLE` for each month before October 2025: 20 statements, 38 ms and 159 kB of WAL in all, 67 MB of files freed at once and no dead rows. The detach doesn't block reports, where a plain `DROP TABLE` of a partition made one queue for 2.04 s, but the foreign key to `orders` still makes both steps lock `orders`, so the job runs with a short `lock_timeout`."
+    },
+    {
+      "title": "Keys, plans and limits",
+      "caption": "Unique keys must include happened_at, queries without it search every partition, all on one server.",
+      "body": "A primary key on `id` alone is rejected, so the key becomes `(id, happened_at)` and no index checks that `id` by itself is unique. `WHERE order_id = 250000` can't be pruned: it searches all 15 partitions, 28 pages against 5 on one table, and with 368 daily partitions just planning such a query took 4.0 ms instead of 0.02 ms. Every partition still lives on the same server, unlike [sharding](../sharding/), and MySQL 8.4 has the same rule for unique keys but, unlike PostgreSQL, allows no foreign keys on partitioned InnoDB tables."
+    }
+  ],
+  "related": [
+    "sharding",
+    "index-types",
+    "query-execution-plans",
+    "mvcc",
+    "write-ahead-log",
+    "postgresql",
+    "cassandra",
+    "amazon-dynamodb",
+    "medallion-architecture"
+  ],
+  "references": [
+    {
+      "title": "PostgreSQL 18 documentation — Table Partitioning (declarative partitioning, pruning, maintenance, best practices)",
+      "url": "https://www.postgresql.org/docs/18/ddl-partitioning.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — ALTER TABLE (ATTACH PARTITION, DETACH PARTITION … CONCURRENTLY)",
+      "url": "https://www.postgresql.org/docs/18/sql-altertable.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Query Planning (enable_partition_pruning, enable_partitionwise_join, enable_partitionwise_aggregate)",
+      "url": "https://www.postgresql.org/docs/18/runtime-config-query.html"
+    },
+    {
+      "title": "PostgreSQL 18 documentation — Routine Vacuuming (autovacuum and partitioned tables)",
+      "url": "https://www.postgresql.org/docs/18/routine-vacuuming.html"
+    },
+    {
+      "title": "PostgreSQL 18 release notes",
+      "url": "https://www.postgresql.org/docs/18/release-18.html"
+    },
+    {
+      "title": "pg_partman 5.5.0 documentation",
+      "url": "https://github.com/pgpartman/pg_partman/blob/v5.5.0/doc/pg_partman.md"
+    },
+    {
+      "title": "Amazon RDS User Guide — Managing PostgreSQL partitions with the pg_partman extension",
+      "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/PostgreSQL_Partitions.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — Partitioning",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/partitioning.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — Partitioning Keys, Primary Keys, and Unique Keys",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/partitioning-limitations-partitioning-keys-unique-keys.html"
+    },
+    {
+      "title": "MySQL 8.4 Reference Manual — Restrictions and Limitations on Partitioning",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/partitioning-limitations.html"
+    },
+    {
+      "title": "Microsoft Learn — Partitioned tables and indexes (SQL Server)",
+      "url": "https://learn.microsoft.com/en-us/sql/relational-databases/partitions/partitioned-tables-and-indexes"
+    },
+    {
+      "title": "Amazon DynamoDB Developer Guide — Using time to live (TTL)",
+      "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
+    },
+    {
+      "title": "Apache Cassandra documentation — Time Window Compaction Strategy",
+      "url": "https://cassandra.apache.org/doc/latest/cassandra/managing/operating/compaction/twcs.html"
+    }
+  ]
+}

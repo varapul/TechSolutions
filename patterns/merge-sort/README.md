@@ -128,6 +128,7 @@ Slicing (`items[:mid]`) copies each half, which keeps the code short but allocat
 ## Related database topics
 
 - [Join Algorithms](../join-algorithms/) — Nested loop, hash join and merge join: how each joins two tables, what it costs, and when the planner picks it.
+- [LSM Tree vs B-Tree](../lsm-tree/) — Two storage engine designs: update pages in place, or append in memory and merge sorted files, and what each costs to read and write.
 
 ## References
 

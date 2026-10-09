@@ -269,6 +269,10 @@ kubectl rollout undo deployment/catalog            # go back to the previous Rep
 - [Supply Chain Security (SLSA)](../supply-chain-security/) — Prove that what you deploy was built from your source: build provenance, SBOMs, signatures and a check before every deploy.
 - [Policy as Code](../policy-as-code/) — Write rules as code and check them automatically in CI and at deploy time, so guardrails replace manual approval gates.
 
+## Related database topics
+
+- [Connection Pooling](../connection-pooling/) — Share a few database connections among many requests, so connection setup and per-connection memory stop limiting the database.
+
 ## References
 
 - [Kubernetes documentation — Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/)
