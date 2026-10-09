@@ -1,0 +1,21 @@
+{
+  "summary": "query หนึ่งตัวดึง list แล้วอีกหนึ่งตัวต่อทุกแถว: ORM ตกหลุมนี้ได้ยังไง จับได้ยังไง และ batching หรือ join แก้มันได้ยังไง",
+  "steps": [
+    {
+      "title": "73 query ต่อหน้าเดียว",
+      "body": "endpoint **My orders** ของ Acme แสดง order ล่าสุด 20 รายการของ customer 42 พร้อม item และชื่อ product ถ้าใช้ lazy loading ตัว ORM จะส่ง query 1 ตัวไปดึง order, 1 ตัวต่อ order ไปดึง item ของมัน และ 1 ตัวต่อ item ไปดึง product ของมัน: **1 + 20 + 52 = 73 query** ส่งทีละตัวและรอ round trip ทีละรอบ ถึง query แต่ละตัวจะเร็ว หน้านี้ก็ยังใช้เวลา **33 ms** ที่ฝั่งแอป (median ของการเปิดหน้า 100 ครั้ง ในการรันครั้งหนึ่งบน laptop) และถ้าสมมติว่ามี page view 100 ครั้งต่อวินาที ก็เท่ากับ 7,300 query ต่อวินาที"
+    },
+    {
+      "title": "Lazy loading ใน loop",
+      "body": "โค้ดดูเหมือน query เดียว แต่ `order.items` กับ `item.product` เป็นแบบ lazy: เข้าถึงครั้งแรกเมื่อไรก็รัน query หนึ่งตัว ใน server log จะเห็น statement เดิมซ้ำไปซ้ำมาโดยเปลี่ยนแค่ `$1` ส่วน **pg_stat_statements** ก็รวบมันเหลือ 3 entry ที่มี 1, 20 และ 52 call ตัว PostgreSQL ใช้เวลาวางแผนและรันทั้ง 73 ตัวรวมกันแค่ **1.9 ms** ส่วนอีก 31 ms ของการเปิดหน้าหมดไปกับ round trip และ overhead ของแต่ละ statement"
+    },
+    {
+      "title": "Batch ตาม key หรือใช้ join",
+      "body": "ขอ child ทั้งหมดในทีเดียว ถ้าใช้ `.preload` ตัว ORM จะส่ง query ของ order ก่อน แล้วตามด้วย `order_items WHERE order_id = ANY($1)` โดยส่ง id ของ order ทั้ง 20 ตัวไปเป็น array เดียว แล้วก็ `products WHERE id = ANY($1)` พร้อม id ของ product 52 ตัว: **3 query, 1.9 ms** หรือจะใช้ statement เดียวที่ join สาม table แล้วรวบ item ของแต่ละ order ซ้อนไว้ด้วย `json_agg` ก็ได้: **1 query, 1.2 ms**"
+    },
+    {
+      "title": "กับดัก",
+      "body": "preload แค่ของที่หน้านั้น render จริง แล้วส่ง key ไปเป็น array เดียว: `IN` list ที่มี parameter หนึ่งตัวต่อ key จะเป็น statement ใหม่ทุกครั้งที่ความยาวเปลี่ยน และ PostgreSQL จำกัด statement หนึ่งไว้ที่ 65,535 parameter อย่า join child collection สองชุดใน query เดียว: item กับ event รวมกันทำให้ 52 + 60 แถวกลายเป็น 156 แถว ส่วน cache จะซ่อน N+1 ไว้จนกว่าจะ miss และ GraphQL resolver ก็ตกหลุมนี้ทีละ field ตัว batching loader อย่าง **DataLoader** จะเก็บ key ของ tick เดียวรวมเป็น batch call เดียว ก็เลยกลายเป็น query เดียว"
+    }
+  ]
+}

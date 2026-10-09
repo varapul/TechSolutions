@@ -1,0 +1,21 @@
+{
+  "summary": "เก็บข้อมูลแต่ละอย่างไว้ที่เดียวเพื่อให้ข้อมูลไม่ขัดกัน แล้วค่อยตั้งใจ copy บางส่วนไว้ตรงที่ต้องอ่านเร็ว และคอยดูแลให้ copy ตรงกับต้นฉบับ",
+  "steps": [
+    {
+      "title": "table กว้างตัวเดียว",
+      "body": "prototype ของ Acme เก็บ order line ละหนึ่งแถวไว้ใน `order_lines_wide` ที่ตรงนี้สร้างขึ้นใหม่ด้วย `CREATE TABLE … AS SELECT` จาก sample data: 1,250,000 แถวใน 25,280 page (198 MB) โดยมี email และประเทศของ customer กับชื่อและราคาของ product ซ้ำอยู่ในทุก line พอ customer 1 เปลี่ยน email ก็ต้องเขียน email ใหม่ลงทั้ง **6,537** line ของเขา (33 ms และ WAL 2.5 MB ในการรันครั้งหนึ่งบน laptop) และ update ที่พลาดไปบาง line จะทิ้งให้มี email สองค่า ส่วน product ใหม่ก็เก็บไม่ได้จนกว่าจะมีคนสั่ง (`null value in column \"order_id\"`) และการลบ order 124446 ก็ลบทุกอย่างที่รู้เกี่ยวกับ customer 5797 ไปด้วย"
+    },
+    {
+      "title": "ข้อมูลแต่ละอย่างอยู่ที่เดียว",
+      "body": "การ normalise ทำตาม dependency ขั้น **1NF**: หนึ่ง cell มีค่าเดียว ขั้น **2NF**: ไม่มีอะไรขึ้นกับแค่บางส่วนของ key `(order_id, line_no)` ข้อมูลของตัว order เองเลยย้ายไปอยู่ใน `orders` ขั้น **3NF**: ไม่มีอะไรขึ้นกับ column อื่นที่ไม่ใช่ key ทำให้ email กับประเทศย้ายไปที่ `customers` และชื่อกับราคาของ product ย้ายไปที่ `products` ผลที่ได้คือ sample schema ที่ยึดกันไว้ด้วย foreign key: การเปลี่ยน email แบบเดียวกันเหลือแค่ **หนึ่งแถว** ใน `customers` (0.04 ms และ WAL 328 bytes) และ table ทั้งสี่ใช้พื้นที่ 131 MB แทน 198"
+    },
+    {
+      "title": "ตั้งใจ copy",
+      "body": "copy บางอย่างก็คุ้มค่า อย่าง `orders.total_thb` ช่วยให้ไม่ต้องรวมยอด line ทุกครั้งที่แสดง list ของ order: order 2,633 รายการของ customer 1 อ่าน **2,085 page ใน 2.6 ms** ถ้าใช้ total ที่เก็บไว้ และ 12,654 page ใน 11 ms ถ้าใช้ `SUM(qty × price_thb)` ตัว copy ต้องดูแลให้ถูกอยู่เสมอ: ตรงนี้ใช้ row trigger บน `order_items` ปรับ total ใน transaction เดียวกัน หรือจะใช้โค้ดฝั่งแอป, materialized view หรือ change stream แทนก็ได้ ส่วน `order_items.price_thb` กับ `orders.shipping_country` ไม่ใช่ copy เลย: มันบันทึกราคาที่จ่ายจริงและปลายทางที่ส่ง order ไป ทำให้ line ยังเป็น 2,646.15 อยู่หลังจาก product ขึ้นราคาเป็น 2,799.00"
+    },
+    {
+      "title": "Join กับ copy",
+      "body": "การอ่าน order 41 พร้อม email และชื่อ product ต้อง join สี่ table: index lookup 5 ครั้งและ 17 page เทียบกับ 4 page จาก table กว้าง ทั้งคู่ใช้เวลาน้อยกว่าหนึ่ง millisecond มาก ส่วน copy ต้องจ่ายราคาตอน write ทุกครั้งแทน: line ใหม่ 10,000 line เขียน **WAL 5.2 MB ใน 0.20 s** ตอนมี trigger และ 2.2 MB ใน 0.10 s ตอนไม่มี และ write path ไหนที่ข้าม trigger ก็จะทำให้ total เพี้ยนไปเรื่อย ๆ MongoDB ก็เลือกเรื่องเดียวกันนี้ในชื่อ **embed or reference** ส่วน **single-table design** ของ DynamoDB เก็บ customer กับ order ของเขาไว้ใน item collection เดียว และ read model ของ CQRS ก็ย้าย copy ไปไว้ใน store แยก"
+    }
+  ]
+}

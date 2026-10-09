@@ -1,0 +1,21 @@
+{
+  "summary": "B-tree index หา row เจอได้ด้วยการอ่านแค่สามหรือสี่ page ยังไง อ่าน range ออกมาตามลำดับได้ยังไง และทุก insert ต้องจ่ายเท่าไรเพื่อให้มันเรียงอยู่เสมอ",
+  "steps": [
+    {
+      "title": "ไม่มี index: อ่านทั้ง table",
+      "body": "เครื่องมือ support ของ Acme ขอดู order ของลูกค้า 42 แต่ `customer_id` ไม่มี index เพราะ PostgreSQL ไม่สร้าง index ให้ foreign key เอง plan เดียวที่ทำได้คือ **sequential scan** เป็น Gather ที่มี worker สองตัวทำงานขนานกัน อ่าน `orders` ครบทั้ง **5,058 page** เช็กทุก row แล้วทิ้งไป **499,821** row เพื่อเก็บไว้แค่ **179** row (ราว 11 ms ในการรันครั้งหนึ่งบน laptop) งานที่ทำเลยโตตามขนาด table ไม่ได้โตตามขนาดคำตอบ"
+    },
+    {
+      "title": "ไต่ลงไปตาม B-tree",
+      "body": "`CREATE INDEX ON orders (customer_id)` สร้าง B-tree ขนาด 705 page ที่มีสามชั้น ตอน lookup จะเทียบ 42 กับ key ใน root page 286 แล้วตาม downlink ลงไปที่ page 3 ต่อไปที่ leaf page 14 ใน leaf นี้ key เรียงกันอยู่ และ entry ของ 42 เก็บ **179 TID** ไว้ใน posting list สองชุด จากนั้น PostgreSQL ก็รวบ TID ไว้ใน bitmap แล้วอ่าน **175 heap page** ตามลำดับ page: อ่านแค่ **3 + 175 page** แทน 5,058 page ใช้เวลาราว 0.09 ms"
+    },
+    {
+      "title": "planner ใช้ index ตอนไหน",
+      "body": "leaf page มี link ไปหา page ข้างเคียง ทำให้ `BETWEEN 42 AND 47` ไต่ลงแค่ครั้งเดียว แล้วเดินไปทางขวาจาก leaf 14 เข้า leaf 15 (index 4 page, 902 row) ส่วน planner คิดราคาแต่ละ plan จาก statistics ของมัน: order 2,633 รายการของลูกค้า 1 ยังไปผ่าน index แต่ต้องแตะ heap ถึง 2,080 page ส่วน `status = 'delivered'` ตรงกับ 487,245 row ตัว planner เลยอ่าน table แบบ sequential ทั้งที่มี `orders_status_idx` อยู่"
+    },
+    {
+      "title": "ทุกการเขียนต้องจ่ายอะไร",
+      "body": "order ใหม่ลงที่ heap page 5,057 แล้ว key ของมันก็เข้าไปที่ leaf 14 ที่มีที่ว่างเหลือ 104 byte: leaf นี้รับ order ใหม่ของลูกค้า 42 ได้ 39 รายการ แล้ว order ที่ 40 ก็ทำให้มัน **split** โดยย้าย key 43–46 ไปที่ page ใหม่ 705 และเพิ่ม separator 43 เข้าไปที่ page 3 การ insert order 50,000 รายการเขียน WAL 8.5 MB ตอนมีแค่ primary key, 12.4 MB ตอนมี `orders_customer_id_idx` และ 15.6 MB ตอนมี index บน `status` ด้วย อีกอย่างคือ update ที่เปลี่ยนค่าใน column ที่มี index จะเป็น HOT update ไม่ได้ **ทำ index ให้ foreign key ที่ใช้ query** และ drop index ที่ไม่มีใครใช้ทิ้งไป"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "summary": "ตอบ query จาก index อย่างเดียว: ใส่ column ที่ query select ไว้ใน index ด้วย จะได้ไม่ต้องอ่าน table เลย และ scan ก็เป็นแบบ index-only",
+  "steps": [
+    {
+      "title": "heap หนึ่ง page ต่อหนึ่ง row",
+      "body": "ถ้ามี index บน `(customer_id, created_at)` ตัว PostgreSQL 18.6 จะเดินผ่าน index สาม page (root, internal, leaf) ไปถึง entry ล่าสุดของลูกค้า 42 ที่อยู่บน leaf page 58 กันหมด ตัว entry เก็บแค่ key กับที่อยู่ของ row (tid ของมัน) และ row ทั้ง 20 ตัวอยู่บน 20 page ที่ต่างกันใน heap ขนาด 40 MB: `EXPLAIN (ANALYZE, BUFFERS)` รายงาน `shared hit=23` คือ index 3 page กับ heap 20 page เพื่อให้ได้ 20 row ถ้า cache ยัง cold อยู่ ก็เท่ากับการอ่านแบบ random 20 ครั้ง"
+    },
+    {
+      "title": "INCLUDE: ได้ index-only scan",
+      "body": "covering index `(customer_id, created_at) INCLUDE (id, status, total_thb)` เก็บ column ที่ select ไว้ในทุก leaf entry (56 byte แทน 24) แต่ไม่ได้เก็บใน root และ internal page ตัว plan กลายเป็น **Index Only Scan** ที่มี `Heap Fetches: 0` และ `shared hit=4`: index 3 page กับ visibility map 1 page ส่วน column ที่ include ไว้ใช้นำทางการค้นหรือการ sort ไม่ได้ และต้อง include `id` ด้วย เพราะ index entry ของ PostgreSQL ไม่ได้พก primary key ไว้"
+    },
+    {
+      "title": "visibility map เป็นตัวตัดสิน",
+      "body": "index entry ไม่ได้เก็บข้อมูล visibility ไว้ ตัว scan เลยต้องเช็ก all-visible bit ของ heap page ของแต่ละ entry และจะเข้า heap ก็ต่อเมื่อ bit นั้นไม่ได้ถูกตั้งไว้ หลัง `UPDATE` order 2 รายการของลูกค้า 42 แล้ว row version ใหม่บน page 5057 กับ version ที่ตายแล้วบน page 2392 และ 4806 ทำให้ต้องเสีย `Heap Fetches: 4` (`shared hit=8`) และ scan ก็ mark entry ที่ตายแล้ว 2 ตัวไว้ระหว่างที่ผ่าน จากนั้น `VACUUM` ก็ตั้ง page 5057 ให้เป็น all-visible อีกครั้ง แล้วตัวเลขนี้ก็ลดลงเหลือ 0"
+    },
+    {
+      "title": "ต้นทุน และ engine อื่น",
+      "body": "covering index ใช้พื้นที่ 32 MB แทน 15 MB ทุก insert ต้องเขียน entry ที่กว้างขึ้น และการ update status ก็เป็น HOT ไม่ได้อีกแล้ว: ก่อนหน้านี้ 80 จาก 990 ครั้งเป็น HOT แต่หลังจากนี้ไม่มีเลย ส่วน page ที่เปลี่ยนไประหว่างรอบ vacuum ก็ทำให้ต้องเสีย heap fetch อีก ใน InnoDB ทุก entry ของ secondary index พก primary key ไว้ และ clustered index เป็นที่เก็บ row ส่วน SQL Server ก็มี `INCLUDE` เหมือนกัน โดยเก็บ column ไว้ที่ระดับ leaf เท่านั้น"
+    }
+  ]
+}

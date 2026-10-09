@@ -1,0 +1,21 @@
+{
+  "summary": "Nested loop, hash join และ merge join: แต่ละแบบ join สอง table ยังไง มีต้นทุนเท่าไหร่ และ planner เลือกใช้ตอนไหน",
+  "steps": [
+    {
+      "title": "Nested loop ที่ไม่มี index",
+      "body": "customer 2 มี order 45 ตัวตั้งแต่ 1 กันยายน และ query ดึง event ล่าสุดของแต่ละ order ด้วย `LATERAL` subquery ที่รันหนึ่งครั้งต่อหนึ่ง order: นี่คือ **nested loop** ตัว `order_events` ไม่มี index บน `order_id` (foreign key ไม่ได้สร้าง index ให้) ทำให้แต่ละ loop จาก 45 loop เป็น full scan ของ event 1,500,000 ตัว: 67.5 ล้าน row และอ่าน page 496,350 ครั้ง เพื่อได้ผลลัพธ์แค่ 45 row ใช้เวลา 1.8 s ในการรันหนึ่งรอบบน laptop"
+    },
+    {
+      "title": "Nested loop + index",
+      "body": "order 45 ตัวชุดเดิม join กับ item ของมัน: ด้าน inner เป็น index scan บน `order_items_pkey` ทำให้ outer row แต่ละตัวมีต้นทุนเป็นการไล่ลง B-tree สามชั้นหนึ่งรอบบวก heap page หนึ่ง page รวม 182 page สำหรับ lookup 45 ครั้งและ 117 row ใน 14 ms (ส่วนใหญ่เป็นการ scan `orders`) ตัว nested loop ชนะเมื่อด้าน outer เล็กและ join column ด้าน inner มี index: งานประมาณ N × log M และ row แรกกลับมาทันที"
+    },
+    {
+      "title": "Hash join, merge join",
+      "body": "**Hash join** (ยอดขายต่อ category ในเดือนกันยายน): PostgreSQL สร้าง hash table จาก input ที่เล็กกว่า คือ order 23,436 ตัวใน 32,768 bucket (1,216 kB, batch เดียว) แล้วอ่าน order item ทั้ง 1,250,000 ตัวรอบเดียวพร้อม probe เข้าไป: ตรงกัน 58,590 ตัว ใช้ 84 ms แต่ถ้าลด `work_mem` เหลือ 64 kB มันจะแบ่งเป็น 8 batch ที่ spill ลง disk ใช้ 293 ms ส่วน **Merge join** (order 100,001–300,000): input ทั้งสองฝั่งออกมาจาก primary key index ของตัวเองเรียงตาม `order_id` อยู่แล้ว เลยไล่แต่ละฝั่งรอบเดียวก็ join กันได้: 500,000 row ไม่ต้อง sort ใช้ 262 ms"
+    },
+    {
+      "title": "planner เลือกยังไง",
+      "body": "สำหรับแต่ละลำดับการ join และแต่ละวิธี planner ประมาณ cost จากจำนวน row ที่ประมาณไว้แล้วเก็บตัวที่ถูกที่สุด แท่งในภาพคือค่าประมาณของมันสำหรับแต่ละ query โดยปิดวิธีอื่นไว้ ค่าประมาณจำนวน row ที่ผิดอาจทำให้เลือกวิธีผิด ถ้าเกิน 8 table (`join_collapse_limit`) มันจะคงลำดับ JOIN ที่คุณเขียนไว้บางส่วน และตั้งแต่ 12 table (`geqo_threshold`) มันจะค้นหาด้วย genetic algorithm ส่วน MySQL 8.4 มี nested loop และมี hash join ตั้งแต่ 8.0.18 แต่ไม่มี merge join"
+    }
+  ]
+}

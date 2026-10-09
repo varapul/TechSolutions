@@ -1,0 +1,21 @@
+{
+  "summary": "อ่าน EXPLAIN แบบที่ planner คิด: scan, join, จำนวน row ที่ประมาณไว้เทียบกับของจริง และ statistics ที่อยู่เบื้องหลังแต่ละการตัดสินใจ",
+  "steps": [
+    {
+      "title": "report ช้า",
+      "body": "report ของ Acme Shop รวมยอด order 30 วันล่าสุดแยกตามประเทศของ customer: order 23,213 ตัวกลายเป็น 6 row แล้วพอรันบน PostgreSQL 18.6 มันใช้เวลา **106 ms** (รัน `EXPLAIN ANALYZE` หนึ่งครั้งบน laptop โดยปิด parallel query) แล้วทีมก็เริ่มเดา: ใส่ index ทุก column, เพิ่ม memory, ขยาย instance ให้ใหญ่ขึ้น แต่ไม่มีข้อไหนเลยที่ไปดูว่า database ทำอะไรจริง ๆ"
+    },
+    {
+      "title": "อ่าน plan",
+      "body": "`EXPLAIN (ANALYZE, BUFFERS)` พิมพ์ plan tree ออกมา ให้อ่านจาก node ที่อยู่ในสุดขึ้นมา แล้วเทียบ `rows` ที่ประมาณไว้ของแต่ละ node กับจำนวน row จริง ตัว `Seq Scan` บน orders **ประมาณไว้ 48 row แต่คืนมา 23,213 row** ทำให้ `Nested Loop` ที่อยู่ข้างบนไป lookup `customers_pkey` หนึ่งครั้งต่อหนึ่ง row: `loops=23213` ใช้ประมาณ 46 ms และ 69,639 จาก 74,704 buffer จุดที่ต้องดูคือ node ที่แพงที่สุด และช่องว่างใหญ่ช่องแรกระหว่างค่าประมาณกับของจริงมักจะอธิบายได้ว่าทำไม"
+    },
+    {
+      "title": "ค่าประมาณเทียบกับของจริง",
+      "body": "planner ประมาณจำนวน row จาก `pg_stats` ตัว histogram ของ `created_at` ถูกสร้างไว้ก่อนที่ order ของ 30 วันล่าสุดจะเข้ามา และไปจบที่ **2026-09-02 23:58** ทำให้ `created_at >= '2026-09-03'` ตกเลย bucket สุดท้ายไป แล้ว planner ก็ใช้ค่าขั้นต่ำ 0.01%: 48 row แต่พอ `ANALYZE orders` แล้ว ช่วงนี้ครอบ 4.59 จาก 100 bucket ค่าประมาณกลายเป็น **22,956** แล้ว plan ก็เปลี่ยนไปใช้ `Hash Join` และ report อ่าน **6,198 buffer แทน 74,704** (88 ms แทน 106 ms ในการรันรอบนี้)"
+    },
+    {
+      "title": "กับดักบน production",
+      "body": "`EXPLAIN` เปล่า ๆ แสดงแค่ค่าประมาณ ส่วน `EXPLAIN ANALYZE` รัน statement จริง ๆ เลยต้องครอบ `UPDATE` หรือ `DELETE` ด้วย `BEGIN … ROLLBACK` ไว้ ส่วน plan ก็เปลี่ยนไปตาม parameter ด้วย: หลังรันห้าครั้ง prepared statement อาจเปลี่ยนไปใช้ **generic plan** (`plan_cache_mode = auto`) ที่มองไม่เห็น `$1` และในกรณีนี้สมมติไว้ 166,667 row คือหนึ่งในสามของ table ส่วนบน production ตัว `auto_explain` จะ log plan ของ statement ที่ช้า และ `pg_stat_statements` บอกว่า statement ไหนกินต้นทุนรวมมากที่สุด"
+    }
+  ]
+}

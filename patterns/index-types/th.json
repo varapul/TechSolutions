@@ -1,0 +1,21 @@
+{
+  "summary": "ไปไกลกว่า B-tree: hash, GIN สำหรับ array, JSON และ text, GiST, BRIN สำหรับข้อมูลที่เรียงตามเวลา รวมถึง partial index และ expression index",
+  "steps": [
+    {
+      "title": "B-tree ตัวเดียวใช้กับทุกอย่าง",
+      "body": "Acme Shop ให้ทุก column ที่ใช้ค้นหามี B-tree ธรรมดาหนึ่งตัว ตัวที่อยู่บน `status` (3,464 kB) เก็บ order ทั้ง 500,000 ตัวเพื่อหาแค่ 3,000 ตัวที่ยังเปิดอยู่ แล้วต้อง sort ทั้งหมดเพื่อคืนแค่ 20 ตัว ส่วน unique index บน `email` ใช้กับ `lower(email) = …` ไม่ได้ การ login เลยต้อง scan customer ทั้ง 100,000 คน ตัวที่อยู่บน `happened_at` กินที่ 32 MB และไม่มี B-tree ตัวไหนมองเข้าไปข้างใน `attrs @> '{…}'` ได้ ทำให้ต้องเช็ค product ทั้ง 10,000 ตัว"
+    },
+    {
+      "title": "Partial และ expression",
+      "body": "**partial index** เก็บแค่ row ที่ผ่าน `WHERE` ของมัน: order ที่เปิดอยู่ 3,000 ตัว ใช้ `created_at` เป็น key ในขนาด 88 kB แทน 3,464 kB แล้วคิวก็อ่านแค่ leaf page เดียว ตัว planner จะใช้มันก็ต่อเมื่อพิสูจน์ได้ว่าเงื่อนไขของ query ทำให้ predicate ของ index เป็นจริงด้วย ส่วน **expression index** เก็บ `lower(email)` ทำให้ login เป็น lookup ครั้งเดียว และพอเป็น `UNIQUE` index มันก็ปฏิเสธ address เดียวกันที่พิมพ์ตัวพิมพ์เล็กใหญ่ต่างไปด้วย"
+    },
+    {
+      "title": "BRIN และ GIN",
+      "body": "**BRIN** เก็บสรุปหนึ่งชุด คือ `happened_at` ที่ต่ำสุดและสูงสุด ต่อทุก 128 heap page: สรุป 87 ชุดในขนาด 24 kB วิธีนี้ใช้ได้ก็เพราะ event ถูกเก็บเรียงตามเวลา (`pg_stats` correlation 1.00) ทำให้มีแค่ range เดียวที่ตรง แล้วระบบก็อ่าน 128 page ของ range นั้นและ recheck ส่วน **GIN** เป็น inverted index: แต่ละ key (ถ้าใช้ `jsonb_path_ops` ก็คือ hash ของ path กับ value) ชี้ไปที่ list ของ row ที่มี key นั้นแบบเรียงแล้ว ทำให้ `@>` หา row ที่อยู่ในทั้งสอง list แล้วดึงมา 8 row โครงสร้างเดียวกันนี้ใช้กับ array และ full-text search ได้ด้วย"
+    },
+    {
+      "title": "ต้นทุนและข้อจำกัด",
+      "body": "ถ้าเขียนเป็น `NOT IN ('delivered', 'cancelled')` order ที่เปิดอยู่ชุดเดิมก็พิสูจน์ predicate ไม่ได้แล้ว partial index เลยถูกข้ามไป ส่วน **hash** index ตอบได้แค่ `=` (ไม่มี `UNIQUE`, range หรือการเรียงลำดับ และเขียนลง WAL ทำให้ปลอดภัยตอน crash ตั้งแต่ PostgreSQL 10) ตัว BRIN บน `orders.created_at` (correlation 0.22) ตรง 37 จาก 40 range แล้วแพ้ scan ธรรมดา และ **pending list** ของ GIN ทำให้ insert ถูกลง แต่ทุก search ต้องอ่านมันจนกว่า `VACUUM` หรือ `gin_clean_pending_list()` จะ merge มันเข้าไป ส่วน **GiST** ใช้กับ range, geometry และ nearest-neighbour search ตัว **SP-GiST** ใช้กับ quad-tree และ prefix และ InnoDB ของ MySQL มี index แบบ B-tree, `FULLTEXT` และ `SPATIAL` แต่ไม่มีแบบ partial หรือ BRIN"
+    }
+  ]
+}

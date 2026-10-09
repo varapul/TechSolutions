@@ -1,0 +1,21 @@
+{
+  "summary": "index หลาย column ใช้ได้กับ query ที่ใช้ leading column ของมัน: เอา column ที่เทียบด้วย equality ไว้ก่อน แล้วเอา column ที่ใช้ range หรือ sort ไว้ท้ายสุด",
+  "steps": [
+    {
+      "title": "เอา column ผิดตัวขึ้นก่อน",
+      "body": "Acme Shop มี index บน **(created_at, customer_id)** อยู่แล้ว หน้าจอประวัติขอ order สถานะ delivered 20 รายการล่าสุดของลูกค้า 42 และสิ่งที่ดีที่สุดที่ PostgreSQL 18 ทำได้กับ index นี้คือเดินถอยหลังจาก entry ล่าสุด แล้วเช็ก `customer_id = 42` ทีละ entry: ใช้ 52,936 entry และ 226 buffer เพื่อให้ได้ 20 row ส่วนลูกค้า 1012 ที่มี order 34 รายการ ตัว planner เลิกใช้ index ไปเลย: มันอ่าน table ครบทั้ง 5,058 page แล้วค่อย sort"
+    },
+    {
+      "title": "หลัก leftmost prefix",
+      "body": "B-tree บน (a, b) เรียงตาม `a` และเรียงตาม `b` เฉพาะในกลุ่ม entry ที่มี `a` เท่ากัน ถ้าเป็น **(customer_id, created_at)** เงื่อนไข equality บน leading column จะตกลงที่ช่วงเดียวที่ต่อเนื่องกัน คือ entry 179 ตัวของลูกค้า 42 และในช่วงนั้น entry ก็เรียงตาม `created_at` อยู่แล้ว ส่วนเงื่อนไขบน `created_at` อย่างเดียวไม่มีช่วงเดียวให้ seek ไปหา: ค่าที่ตรงเงื่อนไขกระจายอยู่ในช่วงของลูกค้าทุกคน"
+    },
+    {
+      "title": "equality ก่อน sort ไว้ท้าย",
+      "body": "พอรัน `CREATE INDEX ON orders (customer_id, created_at)` แล้ว ตัว plan ก็ยังเป็น Index Scan Backward ที่มี `Index Cond: (customer_id = 42)` เหมือนเดิม แต่คราวนี้มัน seek ไปที่ท้ายช่วง หยิบ 20 entry จากล่าสุดก่อนแล้วหยุด: ใช้ 23 buffer และไม่มี Sort node ส่วน dashboard (`status = 'pending' AND created_at >= '2026-10-02'`) ก็ใช้กฎเดียวกันกับ **(status, created_at)** คือ equality ก่อน range ไว้ท้าย มันเลยอ่านแค่ entry 210 ตัวที่ต้องใช้พอดี: 213 buffer แทน 526"
+    },
+    {
+      "title": "Skip scan กับต้นทุน",
+      "body": "ด้วย **skip scan** ของ PostgreSQL 18 ตัว (status, created_at) ตอบ `created_at >= '2026-10-02'` ที่ไม่มีเงื่อนไข status ได้ด้วย: ค้น index 6 ครั้งไล่ไปตาม status ทั้ง 5 ค่า ใช้ 579 buffer ทำให้ index เก่า (created_at, customer_id) เอาออกได้ถ้าไม่มีอะไรอื่นต้องใช้มัน ส่วน (customer_id, created_at) ใช้แทนไม่ได้: มีลูกค้า 95,880 คนให้ skip ตัว planner เลยเลือกอ่านทั้ง table ดีกว่า ทุก INSERT ต้องเขียนลงทุก index (ตรงนี้มี index สี่ตัวก็เป็น WAL 5 record ส่วนตอนมีแค่ primary key คือ 2 record) และ index บน (customer_id) อย่างเดียวก็จะซ้ำซ้อน ถ้ามี (customer_id, created_at) อยู่แล้ว"
+    }
+  ]
+}
